@@ -23,7 +23,7 @@ class PDFMakerCmdTest < Test::Unit::TestCase
   end
 
   def common_buildpdf(bookdir, templatedir, configfile, targetpdffile, option = nil)
-    pend 'Use FULL_INTEGRATION_TEST=1 to run performance tests' unless ENV['FULL_INTEGRATION_TEST']
+    pend('Use FULL_INTEGRATION_TEST=1 to run performance tests') unless ENV['FULL_INTEGRATION_TEST']
     unless /mswin|mingw|cygwin/.match?(RUBY_PLATFORM)
       config = prepare_samplebook(@tmpdir1, bookdir, templatedir, configfile)
       builddir = File.join(@tmpdir1, config['bookname'] + '-pdf')

@@ -22,7 +22,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     ReVIEW::I18n.setup(@config['language'])
   end
 
-  def test_advanced_inline_elements_ast_processing # rubocop:disable Metrics/CyclomaticComplexity
+  def test_advanced_inline_elements_ast_processing
     content = <<~EOB
       = Advanced Inline Elements
 

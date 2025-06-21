@@ -3,7 +3,7 @@
 # Pure AST Mode Example - JSONBuilderを使わないfull ASTモードの推奨使用方法
 
 require 'review/compiler'
-require 'review/htmlbuilder'  # or any other builder
+require 'review/htmlbuilder' # or any other builder
 require 'review/ast/json_serializer'
 
 module ReVIEW
@@ -18,11 +18,11 @@ module ReVIEW
       def compile(chapter)
         builder = @builder_class.new
         compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
-        
+
         # コンパイル実行
         output = compiler.compile(chapter)
         ast_result = compiler.ast_result
-        
+
         Result.new(ast_result, output, @builder_class)
       end
 
@@ -47,13 +47,12 @@ module ReVIEW
 
         # AST構造の統計情報
         def statistics
-          stats = {
+          {
             total_nodes: count_nodes(@ast),
             node_types: collect_node_types(@ast).tally,
             builder_output_size: @output.length,
             builder_type: @builder_class.name
           }
-          stats
         end
 
         # 特定タイプのノードを検索
@@ -118,7 +117,7 @@ if __FILE__ == $0
   config['language'] = 'ja'
   book = ReVIEW::Book::Base.new
   book.config = config
-  
+
   # I18n初期化
   ReVIEW::I18n.setup(config['language'])
 
@@ -141,7 +140,7 @@ if __FILE__ == $0
   pure_compiler = ReVIEW::AST::PureCompiler.new(ReVIEW::HTMLBuilder)
   result = pure_compiler.compile(chapter)
 
-  puts "=== Pure AST Mode Results ==="
+  puts '=== Pure AST Mode Results ==='
   puts "HTML Output length: #{result.output.length}"
   puts "AST Statistics: #{result.statistics}"
   puts "Code blocks found: #{result.code_blocks.size}"

@@ -73,14 +73,14 @@ class TestASTBasic < Test::Unit::TestCase
     assert html_result.include?('<h1>')
 
     # Verify that AST result is obtained
-    assert_not_nil ast_result
+    assert_not_nil(ast_result)
     assert_equal ReVIEW::AST::DocumentNode, ast_result.class
     assert ast_result.children.any?
 
     # Convert AST to JSON for verification
     options = ReVIEW::AST::JSONSerializer::Options.new(pretty: true)
     json_result = ReVIEW::AST::JSONSerializer.serialize(ast_result, options)
-    
+
     parsed = JSON.parse(json_result)
     assert parsed.is_a?(Hash)
     assert_equal 'DocumentNode', parsed['type']

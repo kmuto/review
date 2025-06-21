@@ -32,7 +32,7 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
   end
 
   def test_all_verification_files
-    pend 'This test is temporarily disabled due to JSONBuilder removal'
+    pend('This test is temporarily disabled due to JSONBuilder removal')
     @test_files.each do |file_path|
       basename = File.basename(file_path, '.re')
       puts "\n=== Testing #{basename} ==="
@@ -45,7 +45,7 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
   end
 
   def test_structure_consistency
-    pend 'This test is temporarily disabled due to JSONBuilder removal'
+    pend('This test is temporarily disabled due to JSONBuilder removal')
     # Test that AST and Traditional modes produce structurally consistent JSON
     @test_files.each do |file_path|
       basename = File.basename(file_path, '.re')
@@ -80,7 +80,7 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
   end
 
   def test_element_coverage
-    pend 'This test is temporarily disabled due to JSONBuilder removal'
+    pend('This test is temporarily disabled due to JSONBuilder removal')
     # Test that all major Re:VIEW elements are properly represented in JSON
     coverage_test_file = File.join(@fixtures_dir, 'complex_structure.re')
     content = File.read(coverage_test_file)
@@ -99,7 +99,7 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
   end
 
   def test_inline_element_preservation
-    pend 'This test is temporarily disabled due to JSONBuilder removal'
+    pend('This test is temporarily disabled due to JSONBuilder removal')
     # Test that inline elements are properly preserved in AST mode vs simplified in traditional mode
     inline_test_file = File.join(@fixtures_dir, 'inline_elements.re')
     content = File.read(inline_test_file)
@@ -120,7 +120,7 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
   end
 
   def test_performance_comparison
-    pend 'This test is temporarily disabled due to JSONBuilder removal'
+    pend('This test is temporarily disabled due to JSONBuilder removal')
     # Test that JSON generation performance is reasonable across modes
     large_test_file = File.join(@fixtures_dir, 'complex_structure.re')
     content = File.read(large_test_file)
@@ -251,7 +251,7 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
 
   # Dummy builder that doesn't render anything
   class DummyBuilder
-    def initialize(strict = false, *args, **kwargs)
+    def initialize(_strict = false, *_args, **_kwargs)
       @output = StringIO.new
     end
 
@@ -270,7 +270,7 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
       # No-op for all builder methods
     end
 
-    def respond_to_missing?(method_name, include_private = false)
+    def respond_to_missing?(_method_name, _include_private = false)
       true
     end
   end
