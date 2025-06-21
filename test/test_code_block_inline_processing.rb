@@ -110,11 +110,11 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
     assert_equal false, builder.interprets_inline_in_code?
 
     # Test HTMLBuilder (should not interpret)
-    html_builder = ReVIEW::HTMLBuilder.new(@config, StringIO.new)
+    html_builder = ReVIEW::HTMLBuilder.new
     assert_equal false, html_builder.interprets_inline_in_code?
 
     # Test IDGXMLBuilder (should interpret)
-    idg_builder = ReVIEW::IDGXMLBuilder.new(@config, StringIO.new)
+    idg_builder = ReVIEW::IDGXMLBuilder.new
     assert_equal true, idg_builder.interprets_inline_in_code?
   end
 

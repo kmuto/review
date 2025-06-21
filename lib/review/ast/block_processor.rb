@@ -515,7 +515,7 @@ module ReVIEW
 
       # Extract argument safely
       def safe_arg(args, index)
-        return nil unless args
+        return nil unless args && index && index.is_a?(Integer) && index >= 0 && args.size > index
 
         args[index]
       end
