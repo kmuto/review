@@ -2,7 +2,7 @@
 
 require_relative 'test_helper'
 require 'review/ast'
-require 'review/jsonbuilder'
+require 'review/htmlbuilder'
 require 'review/compiler'
 require 'review/book'
 require 'review/book/chapter'
@@ -44,7 +44,7 @@ class TestASTBasic < Test::Unit::TestCase
   end
 
   def test_json_builder_basic
-    builder = ReVIEW::JSONBuilder.new
+    builder = ReVIEW::HTMLBuilder.new
     compiler = ReVIEW::Compiler.new(builder)
 
     chapter_content = <<~EOB

@@ -219,7 +219,7 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
 
     # Test that serialization works without errors
     hash = {}
-    options = ReVIEW::AST::JSONSerializer::Options.new(jsonbuilder_mode: true)
+    options = ReVIEW::AST::JSONSerializer::Options.new
 
     assert_nothing_raised do
       code_block.send(:serialize_properties, hash, options)
@@ -227,7 +227,7 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
 
     # Check that basic properties are included
     assert_equal 'test', hash[:id]
-    # Caption is now serialized as array in jsonbuilder_mode
+    # Caption is now serialized as CaptionNode structure
     assert_instance_of(Array, hash[:caption])
     assert_equal 1, hash[:caption].size
     assert_equal 'TextNode', hash[:caption][0][:type]

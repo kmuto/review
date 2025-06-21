@@ -4,7 +4,7 @@ require_relative 'test_helper'
 require 'review/book'
 require 'review/compiler'
 require 'review/configure'
-require 'review/jsonbuilder'
+require 'review/htmlbuilder'
 require 'review/ast'
 require 'review/ast/config'
 require 'fileutils'
@@ -186,7 +186,7 @@ class ASTFullModeValidationTest < Test::Unit::TestCase
     ast_config = ReVIEW::AST::Config.new(config)
     compiler_options = ast_config.compiler_options
 
-    builder = ReVIEW::JSONBuilder.new
+    builder = ReVIEW::HTMLBuilder.new
     compiler = ReVIEW::Compiler.new(builder, **compiler_options)
 
     chapter = ReVIEW::Book::Chapter.new(book, 1, 'test', nil, StringIO.new(content))

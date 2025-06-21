@@ -7,6 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/ast'
+require 'review/ast/column_node'
 
 module ReVIEW
   module AST

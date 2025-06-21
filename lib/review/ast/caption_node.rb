@@ -83,15 +83,12 @@ module ReVIEW
         children.empty? || children.all? { |child| child.respond_to?(:content) && child.content.to_s.strip.empty? }
       end
 
-      # Override serialize_to_hash to return appropriate format
+      # Override serialize_to_hash to return CaptionNode structure
       def serialize_to_hash(options)
         if children.empty?
           ''
-        elsif options && options.respond_to?(:jsonbuilder_mode) && options.jsonbuilder_mode
-          # JSONBuilder mode - always return children array structure
-          children.map { |child| child.serialize_to_hash(options) }
         else
-          # Non-JSONBuilder mode - return full CaptionNode structure
+          # Return full CaptionNode structure
           super
         end
       end

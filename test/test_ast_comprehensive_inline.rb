@@ -6,7 +6,7 @@ require 'review/ast/renderer'
 require 'review/compiler'
 require 'review/htmlbuilder'
 require 'review/index_builder'
-require 'review/jsonbuilder'
+require 'review/htmlbuilder'
 require 'review/book'
 require 'review/book/chapter'
 
@@ -43,8 +43,8 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
       Table reference: @<table>{table1}.
     EOB
 
-    # Use JsonBuilder to get JSON output and verify AST structure
-    builder = ReVIEW::JSONBuilder.new
+    # Use HTMLBuilder with AST mode to get JSON output and verify AST structure
+    builder = ReVIEW::HTMLBuilder.new
     compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
@@ -138,22 +138,22 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
       Final paragraph with normal text.
     EOB
 
-    builder = ReVIEW::JSONBuilder.new
+    builder = ReVIEW::HTMLBuilder.new
     compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
-    json_result = compiler.compile(chapter)
+    html_result = compiler.compile(chapter)
     ast_root = compiler.ast_result
 
-    # Verify JSON output contains inline element content
-    assert(json_result.include?('bold'), 'JSON should include bold content')
-    assert(json_result.include?('italic'), 'JSON should include italic content')
-    assert(json_result.include?('code'), 'JSON should include code content')
-    assert(json_result.include?('typewriter'), 'JSON should include typewriter content')
-    assert(json_result.include?('漢字'), 'JSON should include ruby content')
-    assert(json_result.include?('example.com'), 'JSON should include href content')
-    assert(json_result.include?('HTTP'), 'JSON should include kw content')
+    # Verify HTML output contains inline element content
+    assert(html_result.include?('bold'), 'HTML should include bold content')
+    assert(html_result.include?('italic'), 'HTML should include italic content')
+    assert(html_result.include?('code'), 'HTML should include code content')
+    assert(html_result.include?('typewriter'), 'HTML should include typewriter content')
+    assert(html_result.include?('漢字'), 'HTML should include ruby content')
+    assert(html_result.include?('example.com'), 'HTML should include href content')
+    assert(html_result.include?('HTTP'), 'HTML should include kw content')
 
     # Check that paragraphs are processed via AST with inline elements
     paragraph_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
@@ -192,7 +192,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
       Final paragraph with normal text only.
     EOB
 
-    builder = ReVIEW::JSONBuilder.new
+    builder = ReVIEW::HTMLBuilder.new
     compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
@@ -247,7 +247,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
       After embed blocks.
     EOB
 
-    builder = ReVIEW::JSONBuilder.new
+    builder = ReVIEW::HTMLBuilder.new
     compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
@@ -310,7 +310,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
       After raw commands.
     EOB
 
-    builder = ReVIEW::JSONBuilder.new
+    builder = ReVIEW::HTMLBuilder.new
     compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
@@ -364,7 +364,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     EOB
 
     # Test AST structure with JsonBuilder
-    builder_ast = ReVIEW::JSONBuilder.new
+    builder_ast = ReVIEW::HTMLBuilder.new
     compiler_ast = ReVIEW::Compiler.new(builder_ast, ast_mode: true)
     chapter_ast = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter_ast.content = content

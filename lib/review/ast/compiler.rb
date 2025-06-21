@@ -72,7 +72,7 @@ module ReVIEW
         # For test compatibility, use a special calculation for line numbers
         f = LineInput.from_string(@chapter.content)
 
-        # Initialize title to match JSONBuilder behavior
+        # Initialize title from chapter
         title = @chapter.respond_to?(:title) ? @chapter.title : ''
         @ast_root = AST::DocumentNode.new(
           location: SnapshotLocation.new(@chapter.basename, f.lineno + 1),
@@ -86,10 +86,7 @@ module ReVIEW
         # Full AST mode: build complete AST without rendering
         do_compile_with_ast_building
         # In full AST mode, render the AST using the builder
-        # (unless it's JSONBuilder which handles AST differently)
-        unless @builder.class.name == 'ReVIEW::JSONBuilder'
-          @ast_renderer.render(@ast_root)
-        end
+        @ast_renderer.render(@ast_root)
 
         # Record performance statistics
         @performance_tracker.end_timing(:total_compilation_time)

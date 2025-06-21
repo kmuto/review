@@ -7,7 +7,7 @@
 require 'json'
 require_relative 'test_helper'
 require 'review'
-require 'review/jsonbuilder'
+require 'review/htmlbuilder'
 
 # Simple chapter object for testing
 class FakeChapter
@@ -27,7 +27,7 @@ end
 
 class TestReVIEWParser < Test::Unit::TestCase
   def setup
-    @builder = ReVIEW::JSONBuilder.new
+    @builder = ReVIEW::HTMLBuilder.new
     @config = ReVIEW::Configure.values
     @config['secnolevel'] = 2
     @config['language'] = 'ja'

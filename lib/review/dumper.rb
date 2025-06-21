@@ -8,7 +8,7 @@
 
 require 'review/compiler'
 require 'review/book'
-require 'review/jsonbuilder'
+require 'review/htmlbuilder'
 require 'review/ast/json_serializer'
 require 'json'
 
@@ -50,9 +50,9 @@ module ReVIEW
       # Create a temporary chapter for standalone file
       content = File.read(path)
 
-      # Create builder and compiler with full AST mode enabled
-      builder = ReVIEW::JSONBuilder.new
-      # Full AST mode: process everything via AST
+      # Create builder and compiler with Pure AST mode
+      # Use HTMLBuilder as a dummy builder since we only need AST
+      builder = ReVIEW::HTMLBuilder.new
       compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
 
       # Create mock chapter object
@@ -66,33 +66,18 @@ module ReVIEW
       # Get the AST root node from the compiler
       ast_root = compiler.ast_result
 
-      # Serialize to JSON if we have an AST root
+      # Serialize AST to JSON
       if ast_root
         ReVIEW::AST::JSONSerializer.serialize(ast_root, @serializer_options)
       else
-        # Fallback to builder result
-        builder.result
+        raise "Failed to generate AST for #{path}"
       end
     end
 
     def dump_with_builder(path, book)
-      # Use JSONBuilder to process the file
-      content = File.read(path)
-
-      # Create compiler with JSONBuilder
-      builder = ReVIEW::JSONBuilder.new
-      compiler = ReVIEW::Compiler.new(builder)
-
-      # Create mock chapter object
-      basename = File.basename(path)
-      chap = ReVIEW::Book::Chapter.new(book, nil, basename, path)
-      chap.instance_variable_set(:@content, content)
-
-      # Compile
-      compiler.compile(chap)
-
-      # Return builder result
-      builder.result
+      # Legacy mode: use AST mode for consistency
+      # This method is deprecated - use dump_ast instead
+      dump_ast(path, book)
     end
   end
 end

@@ -4,7 +4,7 @@
 require_relative 'test_helper'
 require 'review'
 require 'review/ast/config'
-require 'review/jsonbuilder'
+require 'review/htmlbuilder'
 require 'json'
 require 'stringio'
 require 'fileutils'
@@ -213,7 +213,7 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
     ast_config = ReVIEW::AST::Config.new(review_config)
     compiler_options = ast_config.compiler_options
 
-    json_builder = ReVIEW::JSONBuilder.new
+    json_builder = ReVIEW::HTMLBuilder.new
     compiler = ReVIEW::Compiler.new(json_builder, **compiler_options)
 
     # Set up book and chapter

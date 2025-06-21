@@ -7,14 +7,13 @@ module ReVIEW
     module JSONSerializer
       # Options for JSON serialization
       class Options
-        attr_accessor :pretty, :include_location, :include_empty_arrays, :indent, :jsonbuilder_mode
+        attr_accessor :pretty, :include_location, :include_empty_arrays, :indent
 
-        def initialize(include_empty_arrays: false, pretty: true, jsonbuilder_mode: false)
+        def initialize(include_empty_arrays: false, pretty: true)
           @pretty = pretty
           @include_empty_arrays = include_empty_arrays
           @include_location = true
           @indent = '  '
-          @jsonbuilder_mode = jsonbuilder_mode
         end
 
         def to_h
@@ -22,8 +21,7 @@ module ReVIEW
             pretty: pretty,
             include_location: include_location,
             include_empty_arrays: include_empty_arrays,
-            indent: indent,
-            jsonbuilder_mode: jsonbuilder_mode
+            indent: indent
           }
         end
       end

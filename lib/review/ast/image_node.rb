@@ -57,7 +57,7 @@ module ReVIEW
       def caption_to_h
         return nil unless @caption
 
-        # For JSONBuilder compatibility, return children array directly
+        # Return caption children array for serialization
         @caption.children.map(&:to_h)
       end
 

@@ -2,7 +2,7 @@
 
 require_relative 'test_helper'
 require 'review/compiler'
-require 'review/jsonbuilder'
+require 'review/htmlbuilder'
 require 'review/dumper'
 require 'stringio'
 
