@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
 require_relative 'test_helper'
-require 'ostruct'
+require 'review/snapshot_location'
 require 'review/ast/code_block_node'
 require 'review/ast/paragraph_node'
 require 'review/ast/text_node'
 require 'review/ast/inline_node'
+require 'review/ast/json_serializer'
 require 'review/builder'
 require 'review/htmlbuilder'
 require 'review/idgxmlbuilder'
@@ -20,13 +21,13 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
   end
 
   def create_test_location
-    OpenStruct.new(filename: 'test.re', lineno: 5)
+    ReVIEW::SnapshotLocation.new('test.re', 5)
   end
 
   def test_code_block_node_original_text_preservation
     lines = ['puts @<b>{hello}', 'puts "world"']
     original_text = lines.join("\n")
-    
+
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       id: 'sample',
@@ -64,7 +65,7 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
 
     assert_equal processed_lines, code_block.processed_lines
     assert_equal 1, code_block.processed_lines.size
-    assert_instance_of ReVIEW::AST::ParagraphNode, code_block.processed_lines.first
+    assert_instance_of(ReVIEW::AST::ParagraphNode, code_block.processed_lines.first)
   end
 
   def test_get_lines_for_builder
@@ -175,12 +176,12 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
     )
 
     # Test that original_text is properly inherited from base Node class
-    assert_respond_to code_block, :original_text
+    assert_respond_to(code_block, :original_text)
     assert_equal 'test content', code_block.original_text
 
     # Test other inherited attributes
-    assert_respond_to code_block, :location
-    assert_respond_to code_block, :children
+    assert_respond_to(code_block, :location)
+    assert_respond_to(code_block, :children)
     assert_equal @location, code_block.location
   end
 
@@ -218,15 +219,19 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
 
     # Test that serialization works without errors
     hash = {}
-    options = OpenStruct.new
-    
+    options = ReVIEW::AST::JSONSerializer::Options.new(jsonbuilder_mode: true)
+
     assert_nothing_raised do
       code_block.send(:serialize_properties, hash, options)
     end
 
     # Check that basic properties are included
     assert_equal 'test', hash[:id]
-    assert_equal 'Test Caption', hash[:caption]
+    # Caption is now serialized as array in jsonbuilder_mode
+    assert_instance_of(Array, hash[:caption])
+    assert_equal 1, hash[:caption].size
+    assert_equal 'TextNode', hash[:caption][0][:type]
+    assert_equal 'Test Caption', hash[:caption][0][:content]
     assert_equal ['puts hello'], hash[:lines]
   end
 
@@ -241,7 +246,7 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
     paragraph = ReVIEW::AST::ParagraphNode.new(location: @location)
     paragraph.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'puts '))
     paragraph.add_child(inline_node)
-    
+
     paragraph
   end
 end

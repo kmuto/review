@@ -21,6 +21,9 @@ class ASTLaTeXCompatibilityTest < Test::Unit::TestCase
   end
 
   def test_latex_performance_comparison
+    # Skip performance test for normal runs - only run with FULL_INTEGRATION_TEST=1
+    pend 'Use FULL_INTEGRATION_TEST=1 to run performance tests' unless ENV['FULL_INTEGRATION_TEST']
+
     test_performance_comparison(ReVIEW::LATEXBuilder)
   end
 

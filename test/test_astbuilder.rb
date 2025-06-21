@@ -132,7 +132,12 @@ class TestReVIEWParser < Test::Unit::TestCase
     # Check heading
     heading = ast['children'].find { |node| node['type'] == 'HeadlineNode' }
     assert_not_nil(heading, 'Heading node should exist')
-    assert_equal 'Chapter Title', heading['caption'], "Heading caption should be 'Chapter Title'"
+
+    # Caption is now a CaptionNode with children
+    assert_equal 'CaptionNode', heading['caption']['type'], 'Caption should be a CaptionNode'
+    caption_markup_text = heading['caption']['children'].first
+    assert_equal 'TextNode', caption_markup_text['type'], 'Caption should contain a TextNode'
+    assert_equal 'Chapter Title', caption_markup_text['content'], "Caption text should be 'Chapter Title'"
 
     # Check paragraph
     paragraph = ast['children'].find { |node| node['type'] == 'ParagraphNode' }

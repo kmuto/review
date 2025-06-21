@@ -147,7 +147,10 @@ module ReVIEW
       prefix, _anchor = headline_prefix(level)
 
       label = label.nil? ? '' : %Q( id="#{label}")
-      toccaption = escape(compile_inline(caption.gsub(/@<fn>\{.+?\}/, '')).gsub(/<[^>]+>/, ''))
+      # Handle both string captions and CaptionNode objects
+      caption_str = caption.respond_to?(:to_text) ? caption.to_text : caption.to_s
+      toccaption_str = caption_str.gsub(/@<fn>\{.+?\}/, '')
+      toccaption = escape(compile_inline(toccaption_str).gsub(/<[^>]+>/, ''))
       puts %Q(<title#{label} aid:pstyle="h#{level}">#{prefix}#{compile_inline(caption)}</title><?dtp level="#{level}" section="#{prefix}#{toccaption}"?>)
     end
 

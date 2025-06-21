@@ -286,7 +286,14 @@ class JSONBuilderTest < Test::Unit::TestCase
     # Check headline
     headline = json['children'].find { |child| child['type'] == 'HeadlineNode' }
     assert_not_nil(headline)
-    assert_equal 'Test Headline', headline['caption']
+    expected_caption = [
+      {
+        'type' => 'TextNode',
+        'content' => 'Test Headline',
+        'location' => { 'filename' => nil, 'lineno' => 1 }
+      }
+    ]
+    assert_equal expected_caption, headline['caption']
 
     # Check paragraph with inline elements
     paragraph = json['children'].find { |child| child['type'] == 'ParagraphNode' }
@@ -551,8 +558,16 @@ class JSONBuilderTest < Test::Unit::TestCase
     tables = json['children'].select { |child| child['type'] == 'TableNode' }
 
     assert_equal 2, headlines.size
-    assert(headlines.any? { |h| h['level'] == 1 && h['caption'] == 'Chapter Title' })
-    assert(headlines.any? { |h| h['level'] == 2 && h['caption'] == 'Section Title' })
+    # Check for headlines with expected caption content
+    chapter_headline = headlines.find { |h| h['level'] == 1 }
+    section_headline = headlines.find { |h| h['level'] == 2 }
+
+    assert_not_nil(chapter_headline)
+    assert_not_nil(section_headline)
+
+    # Check caption content (now as TextNode array)
+    assert_equal 'Chapter Title', chapter_headline['caption'][0]['content']
+    assert_equal 'Section Title', section_headline['caption'][0]['content']
 
     assert paragraphs.size >= 3
     assert_equal 1, code_blocks.size
@@ -595,7 +610,14 @@ class JSONBuilderTest < Test::Unit::TestCase
 
     headline = json['children'].find { |child| child['type'] == 'HeadlineNode' }
     assert_not_nil(headline)
-    assert_equal 'Direct AST Test', headline['caption']
+    expected_caption = [
+      {
+        'type' => 'TextNode',
+        'content' => 'Direct AST Test',
+        'location' => { 'filename' => nil, 'lineno' => 1 }
+      }
+    ]
+    assert_equal expected_caption, headline['caption']
   end
 
   def test_json_output_format

@@ -32,7 +32,7 @@ module ReVIEW
       def compile_image_to_ast(_type, args)
         create_and_add_node(AST::ImageNode,
                             id: args[0],
-                            caption: args[1],
+                            caption: process_caption(args, 1),
                             metric: args[2])
       end
 
@@ -56,21 +56,21 @@ module ReVIEW
                when :table
                  create_node(AST::TableNode,
                              id: args[0],
-                             caption: args[1],
+                             caption: process_caption(args, 1),
                              headers: headers,
                              rows: rows,
                              table_type: :table)
                when :emtable
                  create_node(AST::TableNode,
                              id: nil, # emtable has no ID
-                             caption: args[0],
+                             caption: process_caption(args, 0),
                              headers: headers,
                              rows: rows,
                              table_type: :emtable)
                when :imgtable
                  create_node(AST::TableNode,
                              id: args[0],
-                             caption: args[1],
+                             caption: process_caption(args, 1),
                              headers: headers,
                              rows: rows,
                              table_type: :imgtable,
@@ -79,7 +79,7 @@ module ReVIEW
                  # Fallback for unknown table types
                  create_node(AST::TableNode,
                              id: args[0],
-                             caption: args[1],
+                             caption: process_caption(args, 1),
                              headers: headers,
                              rows: rows,
                              table_type: type)
@@ -255,22 +255,18 @@ module ReVIEW
           end
         end
 
-        processed_caption = process_caption(args, 1)
-
         create_and_add_node(AST::TableNode,
                             id: safe_arg(args, 0),
-                            caption: processed_caption,
+                            caption: process_caption(args, 1),
                             headers: headers,
                             rows: rows)
       end
 
       # Build image AST node
       def build_image_ast(_command_name, args, _lines)
-        processed_caption = process_caption(args, 1)
-
         create_and_add_node(AST::ImageNode,
                             id: safe_arg(args, 0),
-                            caption: processed_caption,
+                            caption: processed_caption(args, 1),
                             metric: safe_arg(args, 2))
       end
 
@@ -337,7 +333,6 @@ module ReVIEW
                                    embed_type: :raw,
                                    lines: lines || [],
                                    arg: safe_arg(args, 0))
-
         # Render immediately in hybrid mode
         if @ast_compiler.ast_renderer && args&.any?
           @ast_compiler.builder.raw(args.first)
@@ -496,12 +491,9 @@ module ReVIEW
           end
         end
 
-        # Process caption
-        processed_caption = process_caption(args, config[:caption_index])
-
         create_and_add_node(AST::CodeBlockNode,
                             id: safe_arg(args, config[:id_index]),
-                            caption: processed_caption,
+                            caption: process_caption(args, config[:caption_index]),
                             lang: safe_arg(args, config[:lang_index]) || config[:default_lang],
                             lines: lines || [],
                             line_numbers: config[:line_numbers] || false,

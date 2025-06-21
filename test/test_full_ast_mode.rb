@@ -36,7 +36,18 @@ class TestFullASTMode < Test::Unit::TestCase
     # Check headline
     assert_equal 'HeadlineNode', json['children'][0]['type']
     assert_equal 1, json['children'][0]['level']
-    assert_equal 'Test Chapter', json['children'][0]['caption']
+    expected_caption = {
+      'type' => 'CaptionNode',
+      'location' => { 'filename' => File.basename(temp_file), 'lineno' => 1 },
+      'children' => [
+        {
+          'type' => 'TextNode',
+          'content' => 'Test Chapter',
+          'location' => { 'filename' => File.basename(temp_file), 'lineno' => 1 }
+        }
+      ]
+    }
+    assert_equal expected_caption, json['children'][0]['caption']
 
     # Check paragraph
     assert_equal 'ParagraphNode', json['children'][1]['type']
@@ -44,7 +55,18 @@ class TestFullASTMode < Test::Unit::TestCase
     # Check code block
     assert_equal 'CodeBlockNode', json['children'][2]['type']
     assert_equal 'sample', json['children'][2]['id']
-    assert_equal 'Sample Code', json['children'][2]['caption']
+    expected_caption = {
+      'type' => 'CaptionNode',
+      'location' => { 'filename' => File.basename(temp_file), 'lineno' => 5 },
+      'children' => [
+        {
+          'type' => 'TextNode',
+          'content' => 'Sample Code',
+          'location' => { 'filename' => File.basename(temp_file), 'lineno' => 5 }
+        }
+      ]
+    }
+    assert_equal expected_caption, json['children'][2]['caption']
   end
 
   def test_full_ast_mode_with_inline_elements

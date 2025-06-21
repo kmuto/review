@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'review/ast/node'
+require 'review/ast/caption_node'
 
 module ReVIEW
   module AST
@@ -9,15 +10,20 @@ module ReVIEW
 
       def initialize(location: nil, id: nil, caption: nil, metric: nil, **kwargs)
         super(location: location, id: id, **kwargs)
-        @caption = caption || [] # caption is now an array of nodes
+        @caption = CaptionNode.parse(caption, location: location)
         @metric = metric
+      end
+
+      # Get caption text for legacy Builder compatibility
+      def caption_markup_text
+        @caption&.to_text || ''
       end
 
       # Override to_h to exclude children array for ImageNode
       def to_h
         result = super
         result.merge!(
-          caption: caption.is_a?(Array) ? caption.map(&:to_h) : caption,
+          caption: caption_to_h,
           metric: metric
         )
         # ImageNode is a leaf node - remove children array if present
@@ -46,11 +52,21 @@ module ReVIEW
         hash
       end
 
+      private
+
+      def caption_to_h
+        return nil unless @caption
+
+        # For JSONBuilder compatibility, return children array directly
+        @caption.children.map(&:to_h)
+      end
+
       protected
 
       def serialize_properties(hash, options)
         hash[:id] = id if id && !id.empty?
-        hash[:caption] = caption.is_a?(Array) ? caption.map { |child| child.serialize_to_hash(options) } : caption
+        # For backward compatibility, serialize caption as its children array
+        hash[:caption] = @caption ? @caption.serialize_to_hash(options) : nil
         hash[:metric] = metric
         hash
       end

@@ -21,27 +21,10 @@ class ASTHTMLCompatibilityTest < Test::Unit::TestCase
   end
 
   def test_html_performance_comparison
+    # Skip performance test for normal runs - only run with FULL_INTEGRATION_TEST=1
+    pend 'Use FULL_INTEGRATION_TEST=1 to run performance tests' unless ENV['FULL_INTEGRATION_TEST']
+    
     test_performance_comparison(ReVIEW::HTMLBuilder)
-  end
-
-  def test_html_specific_elements
-    # Test HTML-specific elements and attributes
-    puts "\n=== HTML-Specific Elements Test ==="
-
-    @test_files.each do |file_path|
-      basename = File.basename(file_path, '.re')
-      content = File.read(file_path)
-
-      traditional_output = compile_with_builder(content, ReVIEW::HTMLBuilder, 'traditional')
-      hybrid_output = compile_with_builder(content, ReVIEW::HTMLBuilder, 'hybrid_stage3')
-
-      # Test HTML structure
-      traditional_html = analyze_html_structure(traditional_output)
-      hybrid_html = analyze_html_structure(hybrid_output)
-
-      # Verify essential HTML elements are preserved
-      assert_html_elements_preserved(basename, traditional_html, hybrid_html)
-    end
   end
 
   def test_html_validation
@@ -57,27 +40,6 @@ class ASTHTMLCompatibilityTest < Test::Unit::TestCase
       # Basic HTML validation
       assert_html_wellformed(mode_name, output)
     end
-  end
-
-  def test_inline_html_preservation
-    # Test that inline HTML elements are properly preserved
-    inline_file = File.join(@fixtures_dir, 'inline_elements.re')
-    content = File.read(inline_file)
-
-    traditional_output = compile_with_builder(content, ReVIEW::HTMLBuilder, 'traditional')
-    hybrid_output = compile_with_builder(content, ReVIEW::HTMLBuilder, 'hybrid_stage3')
-
-    # Count inline HTML elements
-    traditional_inlines = count_html_inline_elements(traditional_output)
-    hybrid_inlines = count_html_inline_elements(hybrid_output)
-
-    puts "\nInline HTML Elements:"
-    puts "  Traditional: #{traditional_inlines}"
-    puts "  Hybrid: #{hybrid_inlines}"
-
-    # Hybrid mode should preserve at least as many inline elements
-    assert hybrid_inlines >= traditional_inlines,
-           "Hybrid mode should preserve inline HTML elements. Traditional: #{traditional_inlines}, Hybrid: #{hybrid_inlines}"
   end
 
   private

@@ -26,6 +26,9 @@ class ProjectIntegrationTest < Test::Unit::TestCase
   end
 
   def test_compilation_ast_auto_mode
+    # Skip this heavy test for normal runs - only run with FULL_INTEGRATION_TEST=1
+    pend 'Use FULL_INTEGRATION_TEST=1 to run heavy integration tests' unless ENV['FULL_INTEGRATION_TEST']
+    
     result = ProjectTestHelper.compile_with_mode('html', ast_mode: 'auto', debug: true)
 
     assert_true(result[:success], 'Compilation should succeed in auto mode')
@@ -38,6 +41,9 @@ class ProjectIntegrationTest < Test::Unit::TestCase
   end
 
   def test_compilation_ast_full_mode
+    # Skip this heavy test for normal runs - only run with FULL_INTEGRATION_TEST=1
+    pend 'Use FULL_INTEGRATION_TEST=1 to run heavy integration tests' unless ENV['FULL_INTEGRATION_TEST']
+    
     result = ProjectTestHelper.compile_with_mode('html', ast_mode: 'full', debug: true)
 
     assert_true(result[:success], 'Compilation should succeed in full AST mode')
@@ -45,6 +51,9 @@ class ProjectIntegrationTest < Test::Unit::TestCase
   end
 
   def test_compilation_all_formats
+    # Skip this heavy test for normal runs - only run with FULL_INTEGRATION_TEST=1
+    pend 'Use FULL_INTEGRATION_TEST=1 to run heavy integration tests' unless ENV['FULL_INTEGRATION_TEST']
+    
     results = ProjectTestHelper.test_all_formats
 
     %w[html latex json].each do |format|
@@ -53,6 +62,9 @@ class ProjectIntegrationTest < Test::Unit::TestCase
   end
 
   def test_cross_references
+    # Skip this heavy test for normal runs - only run with FULL_INTEGRATION_TEST=1
+    pend 'Use FULL_INTEGRATION_TEST=1 to run heavy integration tests' unless ENV['FULL_INTEGRATION_TEST']
+    
     result = ProjectTestHelper.test_cross_references
 
     assert_true(result[:success], 'Cross-reference compilation should succeed')

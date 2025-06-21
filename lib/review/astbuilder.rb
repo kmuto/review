@@ -52,13 +52,16 @@ module ReVIEW
     end
 
     def headline(level, label, caption)
+      # Handle both string captions and CaptionNode objects
+      caption_value = caption.respond_to?(:to_text) ? caption.to_text : caption.to_s
+
       node = {
         'type' => 'heading',
         'attrs' => {
           'level' => level,
           'label' => label
         },
-        'value' => caption,
+        'value' => caption_value,
         'children' => []
       }
       add_node(node)

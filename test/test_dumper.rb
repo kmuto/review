@@ -44,7 +44,18 @@ class TestDumper < Test::Unit::TestCase
     # Check headline
     assert_equal 'HeadlineNode', json['children'][0]['type']
     assert_equal 1, json['children'][0]['level']
-    assert_equal 'Test Chapter', json['children'][0]['caption']
+    expected_caption = {
+      'type' => 'CaptionNode',
+      'location' => { 'filename' => 'test.re', 'lineno' => 1 },
+      'children' => [
+        {
+          'type' => 'TextNode',
+          'content' => 'Test Chapter',
+          'location' => { 'filename' => 'test.re', 'lineno' => 1 }
+        }
+      ]
+    }
+    assert_equal expected_caption, json['children'][0]['caption']
 
     # Check paragraph
     assert_equal 'ParagraphNode', json['children'][1]['type']
@@ -52,7 +63,18 @@ class TestDumper < Test::Unit::TestCase
     # Check code block
     assert_equal 'CodeBlockNode', json['children'][2]['type']
     assert_equal 'sample', json['children'][2]['id']
-    assert_equal 'Sample Code', json['children'][2]['caption']
+    expected_caption = {
+      'type' => 'CaptionNode',
+      'location' => { 'filename' => 'test.re', 'lineno' => 5 },
+      'children' => [
+        {
+          'type' => 'TextNode',
+          'content' => 'Sample Code',
+          'location' => { 'filename' => 'test.re', 'lineno' => 5 }
+        }
+      ]
+    }
+    assert_equal expected_caption, json['children'][2]['caption']
   end
 
   def test_dump_builder_mode

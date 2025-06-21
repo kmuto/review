@@ -718,7 +718,17 @@ module ReVIEW
     end
 
     def text(str, block_mode = false)
+      # Handle CaptionNode objects in AST mode
+      if str.respond_to?(:to_text)
+        str = str.to_text
+      end
+
       return '' if str.empty?
+
+      # For AST mode, use safe text processing without fence replacement
+      if @ast_mode
+        return text_for_ast(str, block_mode)
+      end
 
       words = replace_fence(str).split(/(@<\w+>\{(?:[^}\\]|\\.)*?\})/, -1)
       words.each do |w|
@@ -740,6 +750,56 @@ module ReVIEW
       result
     rescue StandardError => e
       error e.message, location: location
+    end
+
+    def text_for_ast(str, block_mode = false)
+      # Handle CaptionNode objects
+      if str.respond_to?(:to_text)
+        str = str.to_text
+      end
+
+      return '' if str.empty?
+
+      # Use simple regex for inline elements in AST mode without fence replacement
+      words = str.split(/(@<\w+>\{(?:[^}\\]|\\.)*?\})/, -1)
+      words.each do |w|
+        if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w)
+          error "`@<xxx>' seen but is not valid inline op: #{w}", location: location
+        end
+      end
+
+      result = +''
+      until words.empty?
+        result << if in_non_escaped_command? && block_mode
+                    words.shift
+                  else
+                    @builder.nofunc_text(words.shift)
+                  end
+        break if words.empty?
+
+        result << compile_inline_for_ast(words.shift.gsub('\\}', '}').gsub('\\\\', '\\'))
+      end
+      result
+    rescue StandardError => e
+      error e.message, location: location
+    end
+
+    def compile_inline_for_ast(str)
+      # AST mode inline compilation without fence replacement
+      op, arg = /\A@<(\w+)>\{(.*?)\}\z/.match(str).captures
+      unless inline_defined?(op)
+        raise CompileError, "no such inline op: #{op}"
+      end
+
+      @builder.__send__(op, arg)
+    rescue NoMethodError => e
+      if e.message =~ /undefined method `(\w+)'/
+        raise CompileError, "builder does not support inline op: #{$1}"
+      else
+        raise
+      end
+    rescue ArgumentError => e
+      raise CompileError, e.message
     end
     public :text # called from builder
 

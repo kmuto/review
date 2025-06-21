@@ -179,6 +179,6 @@ class TestASTPhase2 < Test::Unit::TestCase
     headline_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::HeadlineNode) }
     assert_not_nil(headline_node)
     assert_equal(1, headline_node.level)
-    assert_equal('Test Chapter', headline_node.caption)
+    assert_equal('Test Chapter', headline_node.caption_markup_text)
   end
 end

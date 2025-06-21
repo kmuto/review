@@ -69,12 +69,12 @@ class TestASTComprehensive < Test::Unit::TestCase
     # Check list block
     list_block = code_blocks.find { |n| n.id == 'sample' }
     assert_not_nil(list_block)
-    assert_equal 'Sample Code', list_block.caption
+    assert_equal 'Sample Code', list_block.caption_markup_text
     assert_equal 'ruby', list_block.lang
     assert_equal false, list_block.line_numbers
 
     # Check emlist block
-    emlist_block = code_blocks.find { |n| n.caption == 'Ruby Example' && n.id.nil? }
+    emlist_block = code_blocks.find { |n| n.caption_markup_text == 'Ruby Example' && n.id.nil? }
     assert_not_nil(emlist_block)
     assert_equal 'ruby', emlist_block.lang
 
@@ -86,7 +86,7 @@ class TestASTComprehensive < Test::Unit::TestCase
     # Check cmd block
     cmd_block = code_blocks.find { |n| n.lang == 'shell' }
     assert_not_nil(cmd_block)
-    assert_equal 'Terminal Commands', cmd_block.caption
+    assert_equal 'Terminal Commands', cmd_block.caption_markup_text
   end
 
   def test_table_ast_processing
@@ -123,7 +123,7 @@ class TestASTComprehensive < Test::Unit::TestCase
     # Check first table with headers
     main_table = table_nodes.find { |n| n.id == 'envvars' }
     assert_not_nil(main_table)
-    assert_equal 'Environment Variables', main_table.caption
+    assert_equal 'Environment Variables', main_table.caption_markup_text
     assert_equal ['Name	Meaning'], main_table.headers
     assert_equal 3, main_table.rows.size
 
@@ -158,13 +158,13 @@ class TestASTComprehensive < Test::Unit::TestCase
     # Check main image
     main_image = image_nodes.find { |n| n.id == 'diagram' }
     assert_not_nil(main_image)
-    assert_equal 'System Diagram', main_image.caption
+    assert_equal 'System Diagram', main_image.caption_markup_text
     assert_equal 'scale=0.5', main_image.metric
 
     # Check indepimage
     indep_image = image_nodes.find { |n| n.id == 'logo' }
     assert_not_nil(indep_image)
-    assert_equal 'Company Logo', indep_image.caption
+    assert_equal 'Company Logo', indep_image.caption_markup_text
   end
 
   def test_special_inline_elements_ast_processing

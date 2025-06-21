@@ -144,11 +144,17 @@ module ReVIEW
         # For AST mode, we only handle simple headlines (no tagged sections for now)
         # Tagged sections - for now, just create a regular headline
         # TODO: Implement proper tagged section support in AST if needed
+        processed_caption = AST::CaptionNode.parse(
+          caption,
+          location: location,
+          inline_processor: inline_processor
+        )
+
         node = AST::HeadlineNode.new(
           location: location,
           level: level,
           label: label,
-          caption: caption
+          caption: processed_caption
         )
         if level == 1 && @ast_root && @ast_root.title.nil?
           @ast_root.title = caption
@@ -223,7 +229,13 @@ module ReVIEW
 
       # Build headline AST node
       def build_headline_ast(level, label, caption)
-        node = AST::HeadlineNode.new(location: location, level: level, label: label, caption: caption)
+        processed_caption = AST::CaptionNode.parse(
+          caption,
+          location: location,
+          inline_processor: inline_processor
+        )
+
+        node = AST::HeadlineNode.new(location: location, level: level, label: label, caption: processed_caption)
         @current_ast_node.add_child(node)
       end
 

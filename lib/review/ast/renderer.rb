@@ -44,6 +44,8 @@ module ReVIEW
           visit_inline(node)
         when AST::TextNode
           visit_text(node)
+        when AST::CaptionNode
+          visit_caption(node)
         when AST::EmbedNode
           visit_embed(node)
         else
@@ -148,36 +150,44 @@ module ReVIEW
         end
         lines.concat(node.rows) if node.rows.any?
 
+        # Render caption using unified processing
+        caption = render_caption_content(node.caption)
+
         # Call appropriate builder method based on table type
         case node.table_type
         when :emtable
-          @builder.emtable(lines, node.caption)
+          @builder.emtable(lines, caption)
         when :imgtable
-          @builder.imgtable(lines, node.id, node.caption, node.metric)
+          @builder.imgtable(lines, node.id, caption, node.metric)
         else
-          @builder.table(lines, node.id, node.caption)
+          @builder.table(lines, node.id, caption)
         end
       end
 
       def visit_image(node)
+        # Render caption using unified processing
+        caption = render_caption_content(node.caption)
         # Image builder method expects lines parameter (usually empty for images)
-        @builder.image([], node.id, node.caption, node.metric)
+        @builder.image([], node.id, caption, node.metric)
       end
 
       def visit_code_block(node)
         lines = node.lines || []
+        # Render caption using unified processing
+        caption = render_caption_content(node.caption)
+
         if node.line_numbers
-          if node.id && node.caption
-            @builder.listnum(lines, node.id, node.caption, node.lang)
+          if node.id && caption && !caption.empty?
+            @builder.listnum(lines, node.id, caption, node.lang)
           else
-            @builder.emlistnum(lines, node.caption, node.lang)
+            @builder.emlistnum(lines, caption, node.lang)
           end
-        elsif node.id && node.caption
-          @builder.list(lines, node.id, node.caption, node.lang)
+        elsif node.id && caption && !caption.empty?
+          @builder.list(lines, node.id, caption, node.lang)
         elsif node.lang == 'shell'
-          @builder.cmd(lines, node.caption)
+          @builder.cmd(lines, caption)
         else
-          @builder.emlist(lines, node.caption, node.lang)
+          @builder.emlist(lines, caption, node.lang)
         end
       end
 
@@ -256,26 +266,37 @@ module ReVIEW
         end
       end
 
+      def visit_caption(node)
+        # CaptionNode is processed inline and returns text for the builder
+        render_inline_content(node)
+      end
+
       def visit_column(node)
-        # Render column caption if it contains inline elements
-        caption = if node.caption.is_a?(Array) && node.caption.any?
-                    # Caption is an array of nodes (inline elements)
-                    result = +''
-                    node.caption.each do |caption_node|
-                      result << visit_node(caption_node).to_s
-                    end
-                    result
-                  elsif node.caption.is_a?(String)
-                    # Caption is a simple string
-                    node.caption
-                  else
-                    # No caption
-                    ''
-                  end
+        # Render column caption using the unified caption processing
+        caption = render_caption_content(node.caption)
 
         @builder.column_begin(node.level, node.label, caption)
         visit_children(node)
         @builder.column_end(node.level)
+      end
+
+      # Unified caption content rendering
+      def render_caption_content(caption)
+        case caption
+        when AST::CaptionNode
+          render_inline_content(caption)
+        when Array
+          # Legacy array format
+          result = +''
+          caption.each do |caption_node|
+            result << visit_node(caption_node).to_s
+          end
+          result
+        when String
+          caption
+        else
+          ''
+        end
       end
     end
   end

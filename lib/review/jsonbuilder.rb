@@ -31,7 +31,7 @@ module ReVIEW
       # In AST mode, check if compiler has provided an AST result
       if @compiler.ast_result
         # Use the AST from the compiler
-        options = ReVIEW::AST::JSONSerializer::Options.new(include_empty_arrays: true)
+        options = ReVIEW::AST::JSONSerializer::Options.new(include_empty_arrays: true, pretty: true, jsonbuilder_mode: true)
         ReVIEW::AST::JSONSerializer.serialize(@compiler.ast_result, options)
       else
         # Use our internal document node
