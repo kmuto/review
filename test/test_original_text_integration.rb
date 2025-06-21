@@ -5,7 +5,6 @@ require 'review/snapshot_location'
 require 'review/configure'
 require 'review/compiler'
 require 'review/htmlbuilder'
-require 'review/htmlbuilder'
 require 'review/idgxmlbuilder'
 require 'stringio'
 require 'tempfile'
@@ -30,7 +29,7 @@ class TestOriginalTextIntegration < Test::Unit::TestCase
         # For subclasses that require config and io
         begin
           builder = builder_class.new({}, StringIO.new)
-        rescue StandardError => e
+        rescue StandardError => _e
           # Skip if can't instantiate due to dependencies
           next
         end

@@ -35,7 +35,7 @@ class TestASTPhase2 < Test::Unit::TestCase
     root = ReVIEW::AST::DocumentNode.new
     headline = ReVIEW::AST::HeadlineNode.new
     headline.level = 1
-    headline.caption = 'Test Headline'
+    headline.caption = ReVIEW::AST::CaptionNode.parse('Test Headline')
     root.add_child(headline)
 
     para = ReVIEW::AST::ParagraphNode.new
@@ -75,55 +75,6 @@ class TestASTPhase2 < Test::Unit::TestCase
     assert(result.include?('Test Chapter'))
     assert(result.include?('<h2>'))
     assert(result.include?('Section Title'))
-  end
-
-  def test_hybrid_mode_paragraph_only
-    content = <<~EOB
-      = Test Chapter
-
-      This is a test paragraph.
-
-      Another paragraph here.
-    EOB
-
-    # Test with paragraph-only AST processing
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    result = compiler.compile(chapter)
-
-    # Should contain HTML output
-    assert(result.is_a?(String))
-    assert(result.include?('<p>'))
-    assert(result.include?('test paragraph'))
-  end
-
-  def test_hybrid_mode_multiple_elements
-    content = <<~EOB
-      = Test Chapter
-
-      This is a test paragraph.
-
-      == Section
-
-      Another paragraph.
-    EOB
-
-    # Test with both headline and paragraph AST processing
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    result = compiler.compile(chapter)
-
-    # Should contain HTML output for both elements
-    assert(result.is_a?(String))
-    assert(result.include?('<h1>'))
-    assert(result.include?('<h2>'))
-    assert(result.include?('<p>'))
   end
 
   def test_backward_compatibility

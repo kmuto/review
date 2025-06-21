@@ -42,7 +42,7 @@ module ReVIEW
       def to_h
         result = {
           type: self.class.name.split('::').last,
-          location: location_to_h,
+          location: location&.to_h,
           children: children.map(&:to_h)
         }
         result[:node_type] = @type if @type && !@type.empty?
@@ -66,7 +66,7 @@ module ReVIEW
 
         # Include location information
         if options.include_location
-          hash[:location] = location_to_h
+          hash[:location] = location&.to_h
         end
 
         # Call node-specific serialization
@@ -95,17 +95,6 @@ module ReVIEW
         end
 
         hash
-      end
-
-      private
-
-      def location_to_h
-        return nil unless location
-
-        {
-          filename: location.filename,
-          lineno: location.lineno
-        }
       end
     end
   end

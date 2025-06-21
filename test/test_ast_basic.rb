@@ -29,13 +29,13 @@ class TestASTBasic < Test::Unit::TestCase
     node = ReVIEW::AST::HeadlineNode.new
     node.level = 1
     node.label = 'test-label'
-    node.caption = 'Test Headline'
+    node.caption = ReVIEW::AST::CaptionNode.parse('Test Headline')
 
     hash = node.to_h
     assert_equal 'HeadlineNode', hash[:type]
     assert_equal 1, hash[:level]
     assert_equal 'test-label', hash[:label]
-    assert_equal 'Test Headline', hash[:caption]
+    assert_equal({ children: [{ content: 'Test Headline', location: nil, type: 'TextNode' }], location: nil, type: 'CaptionNode' }, hash[:caption])
   end
 
   def test_paragraph_node
@@ -91,7 +91,7 @@ class TestASTBasic < Test::Unit::TestCase
     node = ReVIEW::AST::DocumentNode.new
     child_node = ReVIEW::AST::HeadlineNode.new
     child_node.level = 1
-    child_node.caption = 'Test'
+    child_node.caption = ReVIEW::AST::CaptionNode.parse('Test')
 
     node.add_child(child_node)
 
@@ -102,6 +102,6 @@ class TestASTBasic < Test::Unit::TestCase
     assert_equal 1, parsed['children'].size
     assert_equal 'HeadlineNode', parsed['children'][0]['type']
     assert_equal 1, parsed['children'][0]['level']
-    assert_equal 'Test', parsed['children'][0]['caption']
+    assert_equal({ 'children' => [{ 'content' => 'Test', 'location' => nil, 'type' => 'TextNode' }], 'location' => nil, 'type' => 'CaptionNode' }, parsed['children'][0]['caption'])
   end
 end

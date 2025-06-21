@@ -38,7 +38,7 @@ module ReVIEW
 
         # Include location information
         if options.include_location
-          hash[:location] = location_to_h
+          hash[:location] = location&.to_h
         end
 
         # Call node-specific serialization
@@ -55,17 +55,6 @@ module ReVIEW
         hash[:arg] = arg
         hash[:embed_type] = embed_type
         hash
-      end
-
-      private
-
-      def location_to_h
-        return nil unless location
-
-        {
-          filename: location.filename,
-          lineno: location.lineno
-        }
       end
     end
   end

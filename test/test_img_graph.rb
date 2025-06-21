@@ -9,7 +9,7 @@ class ImgGraphTest < Test::Unit::TestCase
     @config = ReVIEW::Configure.values
     @tmpdir = Dir.mktmpdir
 
-    @playwright_path = install_playwright
+    @playwright_path = install_playwright if ENV['FULL_INTEGRATION_TEST']
     @config['imagedir'] = @tmpdir
     @config['playwright_options']['playwright_path'] = @playwright_path
 
@@ -56,7 +56,7 @@ EOB
   end
 
   def test_make_mermaid_pdf
-    pend('いったん無視')
+    pend('いったん無視') unless ENV['FULL_INTEGRATION_TEST']
 
     unless @playwright_path
       $stderr.puts 'skip test_make_mermaid_pdf (cannot find playwright)'
@@ -70,7 +70,7 @@ EOB
   end
 
   def test_make_mermaid_svg
-    pend('いったん無視')
+    pend('いったん無視') unless ENV['FULL_INTEGRATION_TEST']
 
     unless @playwright_path
       $stderr.puts 'skip test_make_mermaid_svg (cannot find playwright)'

@@ -75,7 +75,7 @@ module ReVIEW
 
       # Check if caption contains any inline elements
       def contains_inline?
-        children.any? { |child| child.is_a?(InlineNode) }
+        children.any?(InlineNode)
       end
 
       # Check if caption is empty

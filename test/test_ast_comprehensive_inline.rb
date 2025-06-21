@@ -6,7 +6,6 @@ require 'review/ast/renderer'
 require 'review/compiler'
 require 'review/htmlbuilder'
 require 'review/index_builder'
-require 'review/htmlbuilder'
 require 'review/book'
 require 'review/book/chapter'
 

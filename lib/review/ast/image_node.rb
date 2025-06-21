@@ -23,7 +23,7 @@ module ReVIEW
       def to_h
         result = super
         result.merge!(
-          caption: caption_to_h,
+          caption: caption&.to_h,
           metric: metric
         )
         # ImageNode is a leaf node - remove children array if present
@@ -42,7 +42,7 @@ module ReVIEW
 
         # Include location information
         if options.include_location
-          hash[:location] = location_to_h
+          hash[:location] = location&.to_h
         end
 
         # Call node-specific serialization
@@ -50,15 +50,6 @@ module ReVIEW
 
         # ImageNode is a leaf node - do not include children array
         hash
-      end
-
-      private
-
-      def caption_to_h
-        return nil unless @caption
-
-        # Return caption children array for serialization
-        @caption.children.map(&:to_h)
       end
 
       protected
@@ -69,17 +60,6 @@ module ReVIEW
         hash[:caption] = @caption ? @caption.serialize_to_hash(options) : nil
         hash[:metric] = metric
         hash
-      end
-
-      private
-
-      def location_to_h
-        return nil unless location
-
-        {
-          filename: location.filename,
-          lineno: location.lineno
-        }
       end
     end
   end

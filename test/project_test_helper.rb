@@ -76,11 +76,7 @@ class ProjectTestHelper
 
       puts "DEBUG: Running command: #{cmd}" if debug
       result = case target_format
-               when 'html'
-                 `#{cmd} basic_elements.re 2>&1`
-               when 'latex'
-                 `#{cmd} basic_elements.re 2>&1`
-               when 'json'
+               when 'html', 'latex', 'json'
                  `#{cmd} basic_elements.re 2>&1`
                else
                  `#{cmd} comprehensive_test.re 2>&1`
@@ -102,7 +98,7 @@ class ProjectTestHelper
       Dir.chdir(old_dir)
       # Clean up temporary config file
       temp_config_file = File.join(project_dir, "temp_config_#{target_format}.yml")
-      File.delete(temp_config_file) if File.exist?(temp_config_file)
+      FileUtils.rm_f(temp_config_file)
     end
   end
 

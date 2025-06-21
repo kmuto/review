@@ -21,6 +21,13 @@ module ReVIEW
       "#{@filename}:#{@lineno}"
     end
 
+    def to_h
+      {
+        filename: filename,
+        lineno: lineno
+      }
+    end
+
     alias_method :to_s, :string
 
     def snapshot

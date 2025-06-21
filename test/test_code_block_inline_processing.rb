@@ -153,7 +153,6 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
     bold_inline.add_child(bold_text)
 
     italic_text1 = ReVIEW::AST::TextNode.new(location: @location, content: 'italic ')
-    italic_text2 = ReVIEW::AST::TextNode.new(location: @location, content: '')
     italic_inline = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'i')
     italic_inline.add_child(italic_text1)
     italic_inline.add_child(bold_inline)

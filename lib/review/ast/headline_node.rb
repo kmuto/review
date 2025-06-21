@@ -11,7 +11,7 @@ module ReVIEW
         super(location: location, **kwargs)
         @level = level
         @label = label
-        @caption = caption || [] # caption is now an array of nodes
+        @caption = caption # caption is now an array of nodes
       end
 
       # Get caption text for legacy Builder compatibility
@@ -23,13 +23,7 @@ module ReVIEW
         super.merge(
           level: level,
           label: label,
-          caption: if caption.is_a?(Array)
-                     caption.map(&:to_h)
-                   elsif caption.respond_to?(:to_h)
-                     caption.to_h
-                   else
-                     caption
-                   end
+          caption: caption&.to_h
         )
       end
 
@@ -38,13 +32,7 @@ module ReVIEW
       def serialize_properties(hash, options)
         hash[:level] = level
         hash[:label] = label
-        hash[:caption] = if caption.is_a?(Array)
-                           caption.map { |child| child.serialize_to_hash(options) }
-                         elsif caption.respond_to?(:serialize_to_hash)
-                           caption.serialize_to_hash(options)
-                         else
-                           caption
-                         end
+        hash[:caption] = caption&.serialize_to_hash(options)
         hash
       end
     end

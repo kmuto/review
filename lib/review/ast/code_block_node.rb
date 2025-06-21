@@ -63,7 +63,7 @@ module ReVIEW
         hash[:id] = id if id && !id.empty?
         hash[:lang] = lang
         # For backward compatibility, serialize caption as its children array
-        hash[:caption] = @caption ? @caption.serialize_to_hash(options) : nil
+        hash[:caption] = @caption&.serialize_to_hash(options)
         hash[:lines] = lines
         hash[:line_numbers] = line_numbers
         hash[:code_type] = code_type if code_type
