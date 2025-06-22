@@ -297,25 +297,19 @@ module ReVIEW
         when :pagebreak
           "//pagebreak\n\n"
         when :olnum
-          args = node.instance_variable_get(:@args)
-          "//olnum[#{args&.join(', ')}]\n\n"
+          "//olnum[#{node.args&.join(', ')}]\n\n"
         when :firstlinenum
-          args = node.instance_variable_get(:@args)
-          "//firstlinenum[#{args&.join(', ')}]\n\n"
+          "//firstlinenum[#{node.args&.join(', ')}]\n\n"
         when :tsize
-          args = node.instance_variable_get(:@args)
-          "//tsize[#{args&.join(', ')}]\n\n"
+          "//tsize[#{node.args&.join(', ')}]\n\n"
         when :footnote
-          args = node.instance_variable_get(:@args)
           content = visit_children(node)
-          "//footnote[#{args&.join('][') || ''}][#{content.strip}]\n\n"
+          "//footnote[#{node.args&.join('][') || ''}][#{content.strip}]\n\n"
         when :endnote
-          args = node.instance_variable_get(:@args)
           content = visit_children(node)
-          "//endnote[#{args&.join('][') || ''}][#{content.strip}]\n\n"
+          "//endnote[#{node.args&.join('][') || ''}][#{content.strip}]\n\n"
         when :label
-          args = node.instance_variable_get(:@args)
-          "//label[#{args&.first}]\n\n"
+          "//label[#{node.args&.first}]\n\n"
         when :printendnotes
           "//printendnotes\n\n"
         when :beginchild
@@ -325,17 +319,52 @@ module ReVIEW
         when :texequation
           # Math equation blocks
           text = '//texequation'
-          if node.instance_variable_get(:@id) || node.instance_variable_get(:@caption)
-            id = node.instance_variable_get(:@id)
-            caption = node.instance_variable_get(:@caption)
-            text += "[#{id}]" if id
-            text += "[#{caption}]" if caption
+          if node.id || node.caption
+            text += "[#{node.id}]" if node.id
+            text += "[#{node.caption}]" if node.caption
           end
           text += "{\n"
           text += visit_children(node)
           text += "//}\n\n"
 
           text
+        when :doorquote
+          text = '//doorquote'
+          text += "[#{node.args.join('][') if node.args&.any?}]"
+          text += "{\n"
+          text += visit_children(node)
+          text += "//}\n\n"
+        when :bibpaper
+          text = '//bibpaper'
+          text += "[#{node.args.join('][') if node.args&.any?}]"
+          text += "{\n"
+          text += visit_children(node)
+          text += "//}\n\n"
+        when :talk
+          text = '//talk'
+          text += "{\n"
+          text += visit_children(node)
+          text += "//}\n\n"
+        when :graph
+          text = '//graph'
+          text += "[#{node.args.join('][') if node.args&.any?}]"
+          text += "{\n"
+          text += visit_children(node)
+          text += "//}\n\n"
+        when :address
+          "//address{\n" + visit_children(node) + "//}\n\n"
+        when :bpo
+          "//bpo\n\n"
+        when :hr
+          "//hr\n\n"
+        when :parasep
+          "//parasep\n\n"
+        when :box
+          text = '//box'
+          text += "[#{node.args.first}]" if node.args&.any?
+          text += "{\n"
+          text += visit_children(node)
+          text += "//}\n\n"
         else
           visit_children(node)
         end

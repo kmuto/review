@@ -422,15 +422,17 @@ module ReVIEW
           block_processor.compile_minicolumn_to_ast(name, args, lines)
         when :embed
           block_processor.compile_embed_to_ast(args, lines)
-        when :read, :quote, :lead, :centering, :flushright
+        when :read, :quote, :blockquote, :lead, :centering, :flushright, :address, :talk
           block_processor.compile_block_to_ast(lines, name)
+        when :doorquote, :bibpaper, :graph, :box
+          block_processor.build_block_command_ast(name, args, lines)
         when :raw
           # For raw blocks, use EmbedNode
           node = AST::EmbedNode.new(
             location: location,
             embed_type: :raw,
             arg: args && args[0],
-            lines: lines || []
+            lines: lines
           )
           @current_ast_node.add_child(node)
         when :comment
@@ -439,27 +441,23 @@ module ReVIEW
             location: location,
             block_type: :comment
           )
-          if lines
-            lines.each do |line|
-              text_node = AST::TextNode.new(location: location, content: line)
-              node.add_child(text_node)
-            end
+
+          lines.each do |line|
+            text_node = AST::TextNode.new(location: location, content: line)
+            node.add_child(text_node)
           end
           @current_ast_node.add_child(node)
-        when :blankline, :noindent, :pagebreak, :olnum, :firstlinenum, :tsize, :footnote, :endnote, :label, :printendnotes
+        when :blankline, :noindent, :pagebreak, :olnum, :firstlinenum, :tsize, :footnote, :endnote, :label, :printendnotes, :hr, :bpo, :parasep
           # Control commands without content or with special handling
           node = AST::BlockNode.new(
             location: location,
-            block_type: name
+            block_type: name,
+            args: args
           )
-          # Store arguments if any
-          node.instance_variable_set(:@args, args) if args
           # Store lines if any
-          if lines
-            lines.each do |line|
-              text_node = AST::TextNode.new(location: location, content: line)
-              node.add_child(text_node)
-            end
+          lines.each do |line|
+            text_node = AST::TextNode.new(location: location, content: line)
+            node.add_child(text_node)
           end
           @current_ast_node.add_child(node)
         when :beginchild, :endchild
@@ -471,17 +469,16 @@ module ReVIEW
           @current_ast_node.add_child(node)
         when :texequation
           # Math equations - treat as specialized block
+          # ??? should use CodeBlockNode?
           node = AST::BlockNode.new(
             location: location,
-            block_type: :texequation
+            block_type: :texequation,
+            id: args && args[0],
+            caption: args && args[1]
           )
-          node.instance_variable_set(:@id, args && args[0])
-          node.instance_variable_set(:@caption, args && args[1])
-          if lines
-            lines.each do |line|
-              text_node = AST::TextNode.new(location: location, content: line)
-              node.add_child(text_node)
-            end
+          lines.each do |line|
+            text_node = AST::TextNode.new(location: location, content: line)
+            node.add_child(text_node)
           end
           @current_ast_node.add_child(node)
         else
@@ -565,6 +562,25 @@ module ReVIEW
       # Expose performance tracker for external access
       attr_reader :performance_tracker
 
+      # Helper method to create and add block nodes with inline processing
+      def create_and_add_block_node(block_type:, args: nil, lines: nil, caption: nil, **options)
+        lines ||= []
+        node = AST::BlockNode.new(
+          location: location,
+          block_type: block_type,
+          args: args,
+          caption: caption,
+          **options
+        )
+
+        lines.each do |line|
+          inline_processor.parse_inline_elements(line, node)
+        end
+
+        add_child_to_current_node(node)
+        node
+      end
+
       private
 
       def read_command(f)
@@ -572,7 +588,7 @@ module ReVIEW
         line = f.gets
         name = line.slice(/[a-z]+/).to_sym
         args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
-        lines = block_open?(line) ? read_block(f) : nil
+        lines = block_open?(line) ? read_block(f) : []
         [name, args, lines]
       end
 

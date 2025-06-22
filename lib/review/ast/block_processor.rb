@@ -175,6 +175,20 @@ module ReVIEW
           build_footnote_ast(command_name, args, lines)
         when :raw
           build_raw_ast(args, lines)
+        when :doorquote
+          build_doorquote_ast(args, lines)
+        when :bibpaper
+          build_bibpaper_ast(args, lines)
+        when :talk
+          build_talk_ast(args, lines)
+        when :graph
+          build_graph_ast(args, lines)
+        when :address, :flushright, :centering
+          build_text_block_ast(command_name, args, lines)
+        when :bpo, :hr, :parasep
+          build_line_command_ast(command_name, args, lines)
+        when :box
+          build_box_ast(args, lines)
         else
           # Unknown block command - raise error instead of creating generic node
           raise CompileError, "Unknown block command: //#{command_name}"
@@ -499,6 +513,78 @@ module ReVIEW
         end
 
         row_node
+      end
+
+      # Build doorquote AST node
+      def build_doorquote_ast(args, lines)
+        @ast_compiler.create_and_add_block_node(
+          block_type: :doorquote,
+          args: args,
+          lines: lines
+        )
+      end
+
+      # Build bibpaper AST node
+      def build_bibpaper_ast(args, lines)
+        @ast_compiler.create_and_add_block_node(
+          block_type: :bibpaper,
+          args: args,
+          lines: lines
+        )
+      end
+
+      # Build talk AST node
+      def build_talk_ast(args, lines)
+        @ast_compiler.create_and_add_block_node(
+          block_type: :talk,
+          args: args,
+          lines: lines
+        )
+      end
+
+      # Build graph AST node
+      def build_graph_ast(args, lines)
+        @ast_compiler.create_and_add_block_node(
+          block_type: :graph,
+          args: args,
+          lines: lines
+        )
+      end
+
+      # Build text block AST node (address, flushright, centering)
+      def build_text_block_ast(command_name, args, lines)
+        @ast_compiler.create_and_add_block_node(
+          block_type: command_name,
+          args: args,
+          lines: lines
+        )
+      end
+
+      # Build line command AST node (bpo, hr, parasep)
+      def build_line_command_ast(command_name, args, lines)
+        lines ||= []
+        node = AST::BlockNode.new(
+          location: @ast_compiler.location,
+          block_type: command_name,
+          args: args
+        )
+
+        # Line commands typically don't have content lines
+        lines.each do |line|
+          text_node = AST::TextNode.new(location: @ast_compiler.location, content: line)
+          node.add_child(text_node)
+        end
+
+        @ast_compiler.add_child_to_current_node(node)
+      end
+
+      # Build box AST node
+      def build_box_ast(args, lines)
+        @ast_compiler.create_and_add_block_node(
+          block_type: :box,
+          args: args,
+          lines: lines
+        )
       end
 
       # Configuration for different code block types
