@@ -162,11 +162,11 @@ module ReVIEW
       # === List Node ===
       def visit_list(node)
         case node.list_type
-        when :ul, 'ul', 'unordered'
+        when :ul
           visit_unordered_list(node)
-        when :ol, 'ol', 'ordered'
+        when :ol
           visit_ordered_list(node)
-        when :dl, 'dl', 'definition'
+        when :dl
           visit_definition_list(node)
         else
           visit_children(node)

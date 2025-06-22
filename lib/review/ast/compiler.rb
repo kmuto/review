@@ -230,21 +230,21 @@ module ReVIEW
       end
 
       def render_list_to_builder(node)
-        case node.list_type.to_s
-        when 'ul', 'unordered'
+        case node.list_type
+        when :ul
           @builder.ul_begin
           node.children.each do |item|
             @builder.ul_item_begin([render_children_to_text(item)])
             @builder.ul_item_end
           end
           @builder.ul_end
-        when 'ol', 'ordered'
+        when :ol
           @builder.ol_begin
           node.children.each_with_index do |item, index|
             @builder.ol_item([render_children_to_text(item)], index + 1)
           end
           @builder.ol_end
-        when 'dl', 'definition'
+        when :dl
           @builder.dl_begin
           node.children.each do |item|
             next unless item.respond_to?(:children) && item.children.any?

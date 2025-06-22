@@ -97,8 +97,7 @@ module ReVIEW
           hash['id'] = node.id if node.respond_to?(:id) && node.id
           hash['metric'] = node.metric if node.respond_to?(:metric) && node.metric
         when ReVIEW::AST::ListNode
-          list_type = determine_list_type(node)
-          hash['list_type'] = node.list_type.to_s if node.respond_to?(:list_type)
+          hash['list_type'] = node.list_type
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
         when ReVIEW::AST::TextNode
           return node.content.to_s
@@ -163,23 +162,6 @@ module ReVIEW
           else
             node.to_s
           end
-        end
-      end
-
-      def determine_list_type(node)
-        if node.respond_to?(:list_type)
-          case node.list_type.to_s
-          when 'ul', 'unordered'
-            'unordered_list'
-          when 'ol', 'ordered'
-            'ordered_list'
-          when 'dl', 'definition'
-            'definition_list'
-          else
-            'unordered_list'
-          end
-        else
-          'unordered_list'
         end
       end
 
@@ -309,13 +291,7 @@ module ReVIEW
               metric: hash['metric']
             )
           when 'ListNode'
-            list_type = case hash['list_type']
-                        when 'ul', 'unordered' then :ul
-                        when 'ol', 'ordered' then :ol
-                        when 'dl', 'definition' then :dl
-                        else :ul
-                        end
-            node = ReVIEW::AST::ListNode.new(list_type: list_type)
+            node = ReVIEW::AST::ListNode.new(list_type: hash['list_type'].to_sym)
 
             # Process children (should be ListItemNode objects)
             if hash['children']
