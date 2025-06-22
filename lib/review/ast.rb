@@ -19,7 +19,9 @@ require 'review/ast/inline_node'
 require 'review/ast/text_node'
 require 'review/ast/embed_node'
 require 'review/ast/block_node'
+require 'review/ast/column_node'
 require 'review/ast/minicolumn_node'
+require 'review/ast/caption_node'
 
 # AST Processing classes
 require 'review/ast/compiler'

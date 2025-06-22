@@ -123,24 +123,22 @@ module ReVIEW
             hash['embed_type'] = 'raw'
             hash['content'] = node.arg.to_s
           end
+        when ReVIEW::AST::ListItemNode
+          hash['level'] = node.level if node.respond_to?(:level) && node.level
+          hash['number'] = node.number if node.respond_to?(:number) && node.number
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+        when ReVIEW::AST::ColumnNode
+          hash['level'] = node.level
+          hash['label'] = node.label
+          hash['caption'] = extract_text(node.caption)
+          hash['content'] = node.children.map { |child| serialize_to_hash(child, options) }
+        when ReVIEW::AST::MinicolumnNode
+          hash['minicolumn_type'] = node.minicolumn_type.to_s if node.respond_to?(:minicolumn_type) && node.minicolumn_type
+          hash['caption'] = extract_text(node.caption) if node.respond_to?(:caption) && node.caption
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
         else
-          # Handle ListItemNode by checking class name
-          if node.class.name == 'ReVIEW::AST::ListItemNode'
-            hash['level'] = node.level if node.respond_to?(:level) && node.level
-            hash['number'] = node.number if node.respond_to?(:number) && node.number
-            hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
-          # Handle ColumnNode by checking class name since the constant might not be loaded yet
-          elsif node.class.name == 'ReVIEW::AST::ColumnNode'
-            hash['level'] = node.level
-            hash['label'] = node.label
-            hash['caption'] = extract_text(node.caption)
-            hash['content'] = node.children.map { |child| serialize_to_hash(child, options) }
-          elsif node.class.name == 'ReVIEW::AST::MinicolumnNode'
-            hash['minicolumn_type'] = node.minicolumn_type.to_s if node.respond_to?(:minicolumn_type) && node.minicolumn_type
-            hash['caption'] = extract_text(node.caption) if node.respond_to?(:caption) && node.caption
-            hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
-          elsif node.children&.any?
-            # Generic handling
+          # Generic handling for unknown node types
+          if node.children&.any?
             hash['children'] = node.children.map { |child| serialize_to_hash(child, options) }
           end
         end
