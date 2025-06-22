@@ -49,8 +49,8 @@ module ReVIEW
         hash[:table_type] = table_type
         # For backward compatibility, serialize caption as its children array
         hash[:caption] = @caption ? @caption.serialize_to_hash(options) : nil
-        hash[:headers] = headers if headers && headers.any?
-        hash[:rows] = rows if rows && rows.any?
+        hash[:headers] = headers if headers&.any?
+        hash[:rows] = rows if rows&.any?
         hash[:metric] = metric if metric
         hash
       end

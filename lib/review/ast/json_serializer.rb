@@ -140,7 +140,7 @@ module ReVIEW
             hash['minicolumn_type'] = node.minicolumn_type.to_s if node.respond_to?(:minicolumn_type) && node.minicolumn_type
             hash['caption'] = extract_text(node.caption) if node.respond_to?(:caption) && node.caption
             hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
-          elsif node.children && node.children.any?
+          elsif node.children&.any?
             # Generic handling
             hash['children'] = node.children.map { |child| serialize_to_hash(child, options) }
           end

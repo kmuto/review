@@ -69,15 +69,15 @@ module ReVIEW
       end
 
       def dirname
-        @path && File.dirname(@path)
+        @path&.then { |p| File.dirname(p) }
       end
 
       def basename
-        @path && File.basename(@path)
+        @path&.then { |p| File.basename(p) }
       end
 
       def name
-        @name && File.basename(@name, '.*')
+        @name&.then { |n| File.basename(n, '.*') }
       end
 
       alias_method :id, :name

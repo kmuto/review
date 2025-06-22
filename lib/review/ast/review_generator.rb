@@ -116,7 +116,7 @@ module ReVIEW
           end
         when 'kw'
           # kw can have optional description
-          if node.args && node.args.size > 0
+          if node.args&.any?
             "@<kw>{#{content}, #{node.args.join(', ')}}"
           else
             "@<kw>{#{content}}"

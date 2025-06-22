@@ -159,11 +159,11 @@ module ReVIEW
           # Convert TableNode structure to Builder format
           # Builder expects all lines including headers, separator, and rows
           lines = []
-          if node.headers && node.headers.any?
+          if node.headers&.any?
             lines.concat(node.headers)
             lines << '------------' # Add separator line
           end
-          lines.concat(node.rows) if node.rows && node.rows.any?
+          lines.concat(node.rows) if node.rows&.any?
 
           if lines.any?
             # Handle different table types

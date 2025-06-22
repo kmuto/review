@@ -50,7 +50,7 @@ module ReVIEW
         else
           @content = nil
         end
-        if !@content && @path && File.exist?(@path)
+        if !@content && @path&.then { |p| File.exist?(p) }
           @content = File.read(@path, mode: 'rt:BOM|utf-8')
           @number = nil if %w[nonum nodisp notoc].include?(find_first_header_option)
         end

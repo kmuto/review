@@ -136,7 +136,7 @@ module ReVIEW
             parent_level = level - 1
             parent_list = current_lists[parent_level]
 
-            if parent_list && parent_list.children.any?
+            if parent_list&.children&.any?
               # Get the last item at parent level to attach nested list to
               last_parent_item = parent_list.children.last
 
