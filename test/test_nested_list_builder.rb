@@ -6,29 +6,32 @@ require 'review/ast/list_parser'
 require 'review/ast/list_node'
 require 'review/ast/text_node'
 require 'review/ast/paragraph_node'
+require 'review/ast/compiler'
+require 'review/ast/inline_processor'
+require 'review/htmlbuilder'
 require 'review/location'
 
 class TestNestedListBuilder < Test::Unit::TestCase
   def setup
-    # Create mock objects for location_provider and inline_processor
-    @mock_location_provider = Object.new
-    @mock_inline_processor = Object.new
+    # Set up real compiler and inline processor for more realistic testing
+    config = ReVIEW::Configure.values
+    config['secnolevel'] = 2
+    config['language'] = 'ja'
+    book = ReVIEW::Book::Base.new
+    book.config = config
+    ReVIEW::I18n.setup(config['language'])
 
-    # Define location method for location_provider
-    def @mock_location_provider.location
-      ReVIEW::Location.new('test.re', 1)
-    end
+    # Create real builder and compiler
+    html_builder = ReVIEW::HTMLBuilder.new
+    compiler = ReVIEW::AST::Compiler.new(html_builder)
 
-    # Define parse_inline_elements method for inline_processor
-    def @mock_inline_processor.parse_inline_elements(content, parent_node)
-      text_node = ReVIEW::AST::TextNode.new(
-        location: ReVIEW::Location.new('test.re', 1),
-        content: content
-      )
-      parent_node.add_child(text_node)
-    end
+    # Use real inline processor from compiler
+    inline_processor = compiler.inline_processor
 
-    @builder = ReVIEW::AST::NestedListBuilder.new(@mock_location_provider, @mock_inline_processor)
+    # Create location provider that provides consistent locations
+    location_provider = compiler
+
+    @builder = ReVIEW::AST::NestedListBuilder.new(location_provider, inline_processor)
   end
 
   def create_list_item_data(type, level, content, continuation_lines = [], metadata = {})
