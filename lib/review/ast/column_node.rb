@@ -8,11 +8,15 @@ module ReVIEW
     class ColumnNode < Node
       attr_accessor :level, :label, :caption, :column_type
 
-      def initialize(location: nil, level: nil, label: nil, caption: nil, column_type: 'column', **kwargs)
+      def initialize(location: nil, level: nil, label: nil, caption: nil, column_type: 'column', inline_processor: nil, **kwargs)
         super(location: location, **kwargs)
         @level = level
         @label = label
-        @caption = CaptionNode.parse(caption, location: location)
+        @caption = if caption.is_a?(CaptionNode)
+                     caption
+                   else
+                     CaptionNode.parse(caption, location: location, inline_processor: inline_processor)
+                   end
         @column_type = column_type
       end
 

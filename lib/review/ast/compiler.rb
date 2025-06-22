@@ -143,6 +143,10 @@ module ReVIEW
           node.children.each { |child| render_ast_to_builder(child) }
         when AST::HeadlineNode
           @builder.headline(node.level, node.label, node.caption_markup_text)
+        when AST::ColumnNode
+          @builder.column_begin(node.level, node.label, node.caption.to_text)
+          node.children.each { |child| render_ast_to_builder(child) }
+          @builder.column_end(node.level)
         when AST::ParagraphNode
           lines = node.children.map do |child|
             render_ast_node_to_text(child)
@@ -364,29 +368,48 @@ module ReVIEW
           raise CompileError, 'Invalid header: max headline level is 6'
         end
 
-        # m[2] is optional tag parameter
+        # m[2] is optional tag parameter (e.g., [column])
+        tag = m[2]
         label = m[3] || m[5] # Label can be in position 3 (old syntax) or 5 (new syntax)
         caption = m[4].strip
 
-        # For AST mode, we only handle simple headlines (no tagged sections for now)
-        # Tagged sections - for now, just create a regular headline
-        # TODO: Implement proper tagged section support in AST if needed
         processed_caption = AST::CaptionNode.parse(
           caption,
           location: location,
           inline_processor: inline_processor
         )
 
-        node = AST::HeadlineNode.new(
-          location: location,
-          level: level,
-          label: label,
-          caption: processed_caption
-        )
-        if level == 1 && @ast_root && @ast_root.title.nil?
-          @ast_root.title = caption
+        # Before creating new section, handle section nesting
+        # Find appropriate parent level for this headline/section
+        current_node = find_appropriate_parent_for_level(level)
+        # Handle tagged sections
+        if tag == 'column'
+          node = AST::ColumnNode.new(
+            location: location,
+            level: level,
+            label: label,
+            caption: processed_caption,
+            column_type: 'column',
+            inline_processor: inline_processor
+          )
+          current_node.add_child(node)
+          # Set column as current node so subsequent content becomes its children
+          @current_ast_node = node
+        else
+          # Regular headline or unsupported tag
+          node = AST::HeadlineNode.new(
+            location: location,
+            level: level,
+            label: label,
+            caption: processed_caption
+          )
+          if level == 1 && @ast_root && @ast_root.title.nil?
+            @ast_root.title = caption
+          end
+          current_node.add_child(node)
+          # For regular headlines, reset current node to document level
+          @current_ast_node = @ast_root
         end
-        @current_ast_node.add_child(node)
       end
 
       def compile_paragraph_to_ast(f)
@@ -557,6 +580,31 @@ module ReVIEW
 
       def add_child_to_current_node(node)
         @current_ast_node.add_child(node)
+      end
+
+      # Find appropriate parent node for a given headline level
+      # This handles section nesting by traversing up the current node hierarchy
+      def find_appropriate_parent_for_level(level)
+        node = @current_ast_node
+
+        # Traverse up to find a node at the appropriate level
+        while node != @ast_root
+          # If current node is a ColumnNode or HeadlineNode, check its level
+          if node.respond_to?(:level) && node.level
+            # If we find a node at same or higher level, go to its parent
+            if node.level >= level
+              node = node.parent || @ast_root
+            else
+              # Current node level is lower, this is the right parent
+              break
+            end
+          else
+            # Move up one level
+            node = node.parent || @ast_root
+          end
+        end
+
+        node
       end
 
       # Expose performance tracker for external access

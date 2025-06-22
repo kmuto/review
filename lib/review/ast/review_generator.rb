@@ -334,23 +334,31 @@ module ReVIEW
           text += "{\n"
           text += visit_children(node)
           text += "//}\n\n"
+
+          text
         when :bibpaper
           text = '//bibpaper'
           text += "[#{node.args.join('][') if node.args&.any?}]"
           text += "{\n"
           text += visit_children(node)
           text += "//}\n\n"
+
+          text
         when :talk
           text = '//talk'
           text += "{\n"
           text += visit_children(node)
           text += "//}\n\n"
+
+          text
         when :graph
           text = '//graph'
           text += "[#{node.args.join('][') if node.args&.any?}]"
           text += "{\n"
           text += visit_children(node)
           text += "//}\n\n"
+
+          text
         when :address
           "//address{\n" + visit_children(node) + "//}\n\n"
         when :bpo
@@ -365,6 +373,8 @@ module ReVIEW
           text += "{\n"
           text += visit_children(node)
           text += "//}\n\n"
+
+          text
         else
           visit_children(node)
         end
