@@ -376,7 +376,7 @@ module ReVIEW
           block_processor.compile_minicolumn_to_ast(name, args, lines)
         when :embed
           block_processor.compile_embed_to_ast(args, lines)
-        when :read, :quote
+        when :read, :quote, :lead, :centering, :flushright
           block_processor.compile_block_to_ast(lines, name)
         when :raw
           # For raw blocks, use EmbedNode
@@ -386,6 +386,57 @@ module ReVIEW
             arg: args && args[0],
             lines: lines || []
           )
+          @current_ast_node.add_child(node)
+        when :comment
+          # Comment blocks are usually ignored, but we can preserve them in AST
+          node = AST::BlockNode.new(
+            location: location,
+            block_type: :comment
+          )
+          if lines
+            lines.each do |line|
+              text_node = AST::TextNode.new(location: location, content: line)
+              node.add_child(text_node)
+            end
+          end
+          @current_ast_node.add_child(node)
+        when :blankline, :noindent, :pagebreak, :olnum, :firstlinenum, :tsize, :footnote, :endnote, :label, :printendnotes
+          # Control commands without content or with special handling
+          node = AST::BlockNode.new(
+            location: location,
+            block_type: name
+          )
+          # Store arguments if any
+          node.instance_variable_set(:@args, args) if args
+          # Store lines if any
+          if lines
+            lines.each do |line|
+              text_node = AST::TextNode.new(location: location, content: line)
+              node.add_child(text_node)
+            end
+          end
+          @current_ast_node.add_child(node)
+        when :beginchild, :endchild
+          # Child nesting control
+          node = AST::BlockNode.new(
+            location: location,
+            block_type: name
+          )
+          @current_ast_node.add_child(node)
+        when :texequation
+          # Math equations - treat as specialized block
+          node = AST::BlockNode.new(
+            location: location,
+            block_type: :texequation
+          )
+          node.instance_variable_set(:@id, args && args[0])
+          node.instance_variable_set(:@caption, args && args[1])
+          if lines
+            lines.each do |line|
+              text_node = AST::TextNode.new(location: location, content: line)
+              node.add_child(text_node)
+            end
+          end
           @current_ast_node.add_child(node)
         else
           # Unknown block command - raise error instead of creating generic node

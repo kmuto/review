@@ -37,6 +37,14 @@ module ReVIEW
       def visit(node)
         return '' unless node
 
+        # Handle plain strings
+        return node if node.is_a?(String)
+
+        # Handle Hash objects (from JSON deserialization issues)
+        if node.is_a?(Hash)
+          return node.inspect # Convert hash to string representation for debugging
+        end
+
         method_name = "visit_#{node.class.name.split('::').last.sub(/Node$/, '').downcase}"
         if respond_to?(method_name, true)
           send(method_name, node)
@@ -50,7 +58,7 @@ module ReVIEW
       # @return [String] Concatenated text from all children
       def visit_children(node)
         return '' unless node.respond_to?(:children) && node.children
-        
+
         node.children.map { |child| visit(child) }.join
       end
 
@@ -63,14 +71,14 @@ module ReVIEW
       def visit_headline(node)
         text = '=' * (node.level || 1)
         text += "[#{node.label}]" if node.label && !node.label.empty?
-        
+
         caption_text = if node.caption.respond_to?(:to_text)
                          node.caption.to_text
                        else
                          node.caption.to_s
                        end
         text += ' ' + caption_text unless caption_text.empty?
-        
+
         text + "\n\n" + visit_children(node)
       end
 
@@ -78,7 +86,7 @@ module ReVIEW
       def visit_paragraph(node)
         content = visit_children(node)
         return '' if content.strip.empty?
-        
+
         content + "\n\n"
       end
 
@@ -90,7 +98,13 @@ module ReVIEW
       # === Inline Node ===
       def visit_inline(node)
         content = visit_children(node)
-        
+
+        # Debug: check if we're getting the content properly
+        if content.empty? && node.respond_to?(:args) && node.args&.any?
+          # Use first arg as content if children are empty
+          content = node.args.first.to_s
+        end
+
         case node.inline_type
         when 'href'
           # href has special syntax with URL
@@ -124,19 +138,19 @@ module ReVIEW
                      else
                        node.line_numbers ? 'emlistnum' : 'emlist'
                      end
-        
+
         # Build opening tag
-        text = "//" + block_type
+        text = '//' + block_type
         text += "[#{node.id}]" if node.id && !node.id.empty?
-        
+
         caption_text = caption_to_text(node.caption)
         text += "[#{caption_text}]" if caption_text && !caption_text.empty?
         text += "{\n"
-        
+
         # Add code lines
         text += (node.lines || []).join("\n")
         text += "\n" unless text.end_with?("\n")
-        
+
         text + "//}\n\n"
       end
 
@@ -164,33 +178,33 @@ module ReVIEW
       def visit_table(node)
         # Determine table type
         table_type = node.table_type || :table
-        
+
         # Build opening tag
         text = "//#{table_type}"
         text += "[#{node.id}]" if node.id && !node.id.empty?
-        
+
         caption_text = caption_to_text(node.caption)
         text += "[#{caption_text}]" if caption_text && !caption_text.empty?
         text += "{\n"
-        
+
         # Add headers
-        if node.headers && node.headers.any?
+        if node.headers&.any?
           text += node.headers.join("\t") + "\n"
-          text += "-" * 10 + "\n"
+          text += ('-' * 10) + "\n"
         end
-        
+
         # Add rows
         if node.rows
           node.rows.each { |row| text += row + "\n" }
         end
-        
+
         text + "//}\n\n"
       end
 
       # === Image Node ===
       def visit_image(node)
         text = "//image[#{node.id || ''}]"
-        
+
         caption_text = caption_to_text(node.caption)
         text += "[#{caption_text}]" if caption_text && !caption_text.empty?
         text += "[#{node.metric}]" if node.metric && !node.metric.empty?
@@ -200,11 +214,28 @@ module ReVIEW
       # === Minicolumn Node ===
       def visit_minicolumn(node)
         text = "//#{node.minicolumn_type}"
-        
+
         caption_text = caption_to_text(node.caption)
         text += "[#{caption_text}]" if caption_text && !caption_text.empty?
         text += "{\n"
-        text += visit_children(node)
+
+        # Handle children - they may be strings or nodes
+        if node.respond_to?(:children) && node.children&.any?
+          content_lines = []
+          node.children.each do |child|
+            if child.is_a?(String)
+              # Skip empty strings
+              content_lines << child unless child.strip.empty?
+            else
+              content_lines << visit(child)
+            end
+          end
+          if content_lines.any?
+            text += content_lines.join("\n")
+            text += "\n" unless text.end_with?("\n")
+          end
+        end
+
         text + "//}\n\n"
       end
 
@@ -215,6 +246,58 @@ module ReVIEW
           "//quote{\n" + visit_children(node) + "//}\n\n"
         when :read
           "//read{\n" + visit_children(node) + "//}\n\n"
+        when :lead
+          "//lead{\n" + visit_children(node) + "//}\n\n"
+        when :centering
+          "//centering{\n" + visit_children(node) + "//}\n\n"
+        when :flushright
+          "//flushright{\n" + visit_children(node) + "//}\n\n"
+        when :comment
+          "//comment{\n" + visit_children(node) + "//}\n\n"
+        when :blankline
+          "//blankline\n\n"
+        when :noindent
+          "//noindent\n" + visit_children(node)
+        when :pagebreak
+          "//pagebreak\n\n"
+        when :olnum
+          args = node.instance_variable_get(:@args)
+          "//olnum[#{args&.join(', ')}]\n\n"
+        when :firstlinenum
+          args = node.instance_variable_get(:@args)
+          "//firstlinenum[#{args&.join(', ')}]\n\n"
+        when :tsize
+          args = node.instance_variable_get(:@args)
+          "//tsize[#{args&.join(', ')}]\n\n"
+        when :footnote
+          args = node.instance_variable_get(:@args)
+          content = visit_children(node)
+          "//footnote[#{args&.join('][') || ''}][#{content.strip}]\n\n"
+        when :endnote
+          args = node.instance_variable_get(:@args)
+          content = visit_children(node)
+          "//endnote[#{args&.join('][') || ''}][#{content.strip}]\n\n"
+        when :label
+          args = node.instance_variable_get(:@args)
+          "//label[#{args&.first}]\n\n"
+        when :printendnotes
+          "//printendnotes\n\n"
+        when :beginchild
+          "//beginchild\n\n"
+        when :endchild
+          "//endchild\n\n"
+        when :texequation
+          # Math equation blocks
+          text = '//texequation'
+          if node.instance_variable_get(:@id) || node.instance_variable_get(:@caption)
+            id = node.instance_variable_get(:@id)
+            caption = node.instance_variable_get(:@caption)
+            text += "[#{id}]" if id
+            text += "[#{caption}]" if caption
+          end
+          text += "{\n"
+          text += visit_children(node)
+          text += "//}\n\n"
         else
           visit_children(node)
         end
@@ -246,19 +329,18 @@ module ReVIEW
 
       # === Column Node ===
       def visit_column(node)
-        text = "=" * (node.level || 1)
-        text += "[column]"
+        text = '=' * (node.level || 1)
+        text += '[column]'
         text += " #{node.caption.to_text}" if node.caption
         text + "\n\n" + visit_children(node)
       end
-
-      private
 
       # Helper method for unordered lists
       def visit_unordered_list(node)
         text = ''
         node.children&.each do |item|
-          next unless item.is_a?(ListItemNode)
+          next unless item.is_a?(ReVIEW::AST::ListItemNode)
+
           text += format_list_item('*', item.level || 1, item)
         end
         text + (text.empty? ? '' : "\n")
@@ -268,7 +350,8 @@ module ReVIEW
       def visit_ordered_list(node)
         text = ''
         node.children&.each_with_index do |item, index|
-          next unless item.is_a?(ListItemNode)
+          next unless item.is_a?(ReVIEW::AST::ListItemNode)
+
           number = item.number || (index + 1)
           text += format_list_item("#{number}.", item.level || 1, item)
         end
@@ -279,17 +362,17 @@ module ReVIEW
       def visit_definition_list(node)
         text = ''
         node.children&.each do |item|
-          next unless item.is_a?(ListItemNode)
-          
+          next unless item.is_a?(ReVIEW::AST::ListItemNode)
+
           # First child is term, rest are definitions
-          if item.children && item.children.any?
-            term = visit(item.children.first)
-            text += ": #{term}\n"
-            
-            item.children[1..-1].each do |defn|
-              defn_text = visit(defn)
-              text += "\t#{defn_text}\n" unless defn_text.strip.empty?
-            end
+          next unless item.children&.any?
+
+          term = visit(item.children.first)
+          text += ": #{term}\n"
+
+          item.children[1..-1].each do |defn|
+            defn_text = visit(defn)
+            text += "\t#{defn_text}\n" unless defn_text.strip.empty?
           end
         end
         text + (text.empty? ? '' : "\n")
@@ -301,25 +384,25 @@ module ReVIEW
         # Level 2+ gets additional spaces
         indent = ' ' * ((level - 1) * 2)
         content = visit_children(item).strip
-        
+
         # Handle nested lists
         lines = content.split("\n")
         first_line = lines.shift || ''
-        
+
         text = "#{indent}#{marker} #{first_line}\n"
-        
+
         # Add continuation lines with proper indentation
         lines.each do |line|
           text += "#{indent}  #{line}\n"
         end
-        
+
         text
       end
-      
+
       # Helper to extract text from caption nodes
       def caption_to_text(caption)
         return '' unless caption
-        
+
         if caption.respond_to?(:to_text)
           caption.to_text
         elsif caption.respond_to?(:to_s)

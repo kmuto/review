@@ -217,7 +217,7 @@ module ReVIEW
         # Parse table content
         headers = []
         rows = []
-        if lines && lines.any?
+        if lines&.any?
           separator_index = lines.find_index { |line| line.match?(/^[-=]{12,}$/) }
           if separator_index
             headers = lines[0...separator_index]

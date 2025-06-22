@@ -73,46 +73,45 @@ module ReVIEW
         end
 
         case node
-        when DocumentNode
+        when ReVIEW::AST::DocumentNode
           hash['content'] = node.children.map { |child| serialize_to_hash(child, options) }
-        when HeadlineNode
+        when ReVIEW::AST::HeadlineNode
           hash['level'] = node.level
           hash['label'] = node.label
           hash['caption'] = extract_text(node.caption)
-        when ParagraphNode
-          hash['content'] = serialize_inline_content(node, options)
-        when CodeBlockNode
+        when ReVIEW::AST::ParagraphNode
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+        when ReVIEW::AST::CodeBlockNode
           hash['caption'] = extract_text(node.caption)
           hash['lines'] = node.lines || []
           hash['id'] = node.id if node.respond_to?(:id) && node.id
           hash['lang'] = node.lang if node.respond_to?(:lang) && node.lang
           hash['numbered'] = node.respond_to?(:line_numbers) ? node.line_numbers : false
-        when TableNode
+        when ReVIEW::AST::TableNode
           hash['caption'] = extract_text(node.caption)
           hash['id'] = node.id if node.respond_to?(:id) && node.id
           hash['headers'] = node.headers if node.respond_to?(:headers) && node.headers
           hash['rows'] = node.rows if node.respond_to?(:rows) && node.rows
-        when ImageNode
+        when ReVIEW::AST::ImageNode
           hash['caption'] = extract_text(node.caption)
           hash['id'] = node.id if node.respond_to?(:id) && node.id
           hash['metric'] = node.metric if node.respond_to?(:metric) && node.metric
-        when ListNode
+        when ReVIEW::AST::ListNode
           list_type = determine_list_type(node)
-          hash['type'] = list_type
-          hash['items'] = process_list_items(node, list_type, options)
-        when TextNode
+          hash['list_type'] = node.list_type.to_s if node.respond_to?(:list_type)
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+        when ReVIEW::AST::TextNode
           return node.content.to_s
-        when InlineNode
+        when ReVIEW::AST::InlineNode
           hash['element'] = node.inline_type
-          hash['content'] = serialize_inline_content(node, options)
-        when CaptionNode
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+          hash['args'] = node.args if node.respond_to?(:args) && node.args
+        when ReVIEW::AST::CaptionNode
           return extract_text(node)
-        when ColumnNode
-          hash['level'] = node.level
-          hash['label'] = node.label
-          hash['caption'] = extract_text(node.caption)
-          hash['content'] = node.children.map { |child| serialize_to_hash(child, options) }
-        when EmbedNode
+        when ReVIEW::AST::BlockNode
+          hash['block_type'] = node.block_type.to_s
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+        when ReVIEW::AST::EmbedNode
           case node.embed_type
           when :block
             hash['embed_type'] = 'block'
@@ -126,8 +125,23 @@ module ReVIEW
             hash['content'] = node.arg.to_s
           end
         else
-          # Generic handling
-          if node.children && node.children.any?
+          # Handle ListItemNode by checking class name
+          if node.class.name == 'ReVIEW::AST::ListItemNode'
+            hash['level'] = node.level if node.respond_to?(:level) && node.level
+            hash['number'] = node.number if node.respond_to?(:number) && node.number
+            hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+          # Handle ColumnNode by checking class name since the constant might not be loaded yet
+          elsif node.class.name == 'ReVIEW::AST::ColumnNode'
+            hash['level'] = node.level
+            hash['label'] = node.label
+            hash['caption'] = extract_text(node.caption)
+            hash['content'] = node.children.map { |child| serialize_to_hash(child, options) }
+          elsif node.class.name == 'ReVIEW::AST::MinicolumnNode'
+            hash['minicolumn_type'] = node.minicolumn_type.to_s if node.respond_to?(:minicolumn_type) && node.minicolumn_type
+            hash['caption'] = extract_text(node.caption) if node.respond_to?(:caption) && node.caption
+            hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+          elsif node.children && node.children.any?
+            # Generic handling
             hash['children'] = node.children.map { |child| serialize_to_hash(child, options) }
           end
         end
@@ -152,25 +166,6 @@ module ReVIEW
         end
       end
 
-      def serialize_inline_content(node, options)
-        return '' unless node
-
-        if node.respond_to?(:children) && node.children
-          result = []
-          node.children.each do |child|
-            serialized = serialize_to_hash(child, options)
-            result << if serialized.is_a?(Hash) && serialized['type'] == 'InlineNode'
-                        serialized.to_json
-                      else
-                        serialized.to_s
-                      end
-          end
-          result.join
-        else
-          extract_text(node)
-        end
-      end
-
       def determine_list_type(node)
         if node.respond_to?(:list_type)
           case node.list_type.to_s
@@ -188,54 +183,12 @@ module ReVIEW
         end
       end
 
-      def process_list_items(node, list_type, options)
+      def process_list_items(node, _list_type, options)
         return [] unless node.respond_to?(:children) && node.children
 
-        case list_type
-        when 'unordered_list'
-          node.children.map { |item| serialize_inline_content(item, options) }
-        when 'ordered_list'
-          node.children.map.with_index(1) do |item, index|
-            {
-              'number' => index.to_s,
-              'content' => serialize_inline_content(item, options)
-            }
-          end
-        when 'definition_list'
-          items = []
-          node.children.each do |item|
-            next unless item.respond_to?(:children) && item.children.any?
-
-            # First child is the term (dt)
-            dt_node = item.children[0]
-            term = if dt_node.is_a?(TextNode)
-                     dt_node.content
-                   else
-                     serialize_inline_content(dt_node, options)
-                   end
-
-            # Remaining children are definition content (dd)
-            definition = if item.children.size > 1
-                           item.children[1..-1].map do |child|
-                             if child.is_a?(TextNode)
-                               child.content
-                             else
-                               serialize_inline_content(child, options)
-                             end
-                           end.join(' ')
-                         else
-                           ''
-                         end
-
-            items << {
-              'term' => term,
-              'definition' => definition
-            }
-          end
-          items
-        else
-          node.children.map { |item| serialize_inline_content(item, options) }
-        end
+        # For all list types, just serialize the children normally
+        # The ListItemNode structure will be preserved
+        node.children.map { |item| serialize_to_hash(item, options) }
       end
 
       # Deserialize JSON string to AST nodes
@@ -260,48 +213,54 @@ module ReVIEW
 
           case node_type
           when 'DocumentNode'
-            node = DocumentNode.new
+            node = ReVIEW::AST::DocumentNode.new
             if hash['content'] || hash['children']
               children = (hash['content'] || hash['children'] || []).map { |child| deserialize_from_hash(child) }
-              children.each { |child| node.add_child(child) if child.is_a?(Node) }
+              children.each { |child| node.add_child(child) if child.is_a?(ReVIEW::AST::Node) }
             end
             node
           when 'HeadlineNode'
-            HeadlineNode.new(
+            ReVIEW::AST::HeadlineNode.new(
               level: hash['level'],
               label: hash['label'],
               caption: hash['caption']
             )
           when 'ParagraphNode'
-            node = ParagraphNode.new
-            if hash['content']
-              # Handle inline content
+            node = ReVIEW::AST::ParagraphNode.new
+            if hash['children']
+              hash['children'].each do |child_hash|
+                child = deserialize_from_hash(child_hash)
+                node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
+              end
+            elsif hash['content']
+              # Backward compatibility: handle old content format
               if hash['content'].is_a?(String)
-                node.add_child(TextNode.new(content: hash['content']))
+                node.add_child(ReVIEW::AST::TextNode.new(content: hash['content']))
               elsif hash['content'].is_a?(Array)
                 hash['content'].each do |item|
                   child = deserialize_from_hash(item)
-                  node.add_child(child) if child.is_a?(Node)
+                  node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
                 end
-              end
-            elsif hash['children']
-              hash['children'].each do |child_hash|
-                child = deserialize_from_hash(child_hash)
-                node.add_child(child) if child.is_a?(Node)
               end
             end
             node
           when 'TextNode'
-            TextNode.new(content: hash['content'] || '')
+            ReVIEW::AST::TextNode.new(content: hash['content'] || '')
           when 'InlineNode'
-            node = InlineNode.new(inline_type: hash['element'] || hash['inline_type'])
-            if hash['content']
+            node = ReVIEW::AST::InlineNode.new(inline_type: hash['element'] || hash['inline_type'])
+            if hash['children']
+              hash['children'].each do |child_hash|
+                child = deserialize_from_hash(child_hash)
+                node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
+              end
+            elsif hash['content']
+              # Backward compatibility: handle old content format
               if hash['content'].is_a?(String)
-                node.add_child(TextNode.new(content: hash['content']))
+                node.add_child(ReVIEW::AST::TextNode.new(content: hash['content']))
               elsif hash['content'].is_a?(Array)
                 hash['content'].each do |item|
                   child = deserialize_from_hash(item)
-                  node.add_child(child) if child.is_a?(Node)
+                  node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
                 end
               end
             end
@@ -310,7 +269,7 @@ module ReVIEW
             end
             node
           when 'CodeBlockNode'
-            CodeBlockNode.new(
+            ReVIEW::AST::CodeBlockNode.new(
               id: hash['id'],
               caption: hash['caption'],
               lines: hash['lines'] || [],
@@ -318,7 +277,7 @@ module ReVIEW
               line_numbers: hash['numbered'] || false
             )
           when 'TableNode'
-            TableNode.new(
+            ReVIEW::AST::TableNode.new(
               id: hash['id'],
               caption: hash['caption'],
               headers: hash['headers'] || [],
@@ -326,89 +285,68 @@ module ReVIEW
               table_type: hash['table_type'] || :table
             )
           when 'ImageNode'
-            ImageNode.new(
+            ReVIEW::AST::ImageNode.new(
               id: hash['id'],
               caption: hash['caption'],
               metric: hash['metric']
             )
-          when 'ListNode', 'unordered_list', 'ordered_list', 'definition_list'
-            list_type = case hash['type']
-                        when 'unordered_list' then :ul
-                        when 'ordered_list' then :ol
-                        when 'definition_list' then :dl
+          when 'ListNode'
+            list_type = case hash['list_type']
+                        when 'ul', 'unordered' then :ul
+                        when 'ol', 'ordered' then :ol
+                        when 'dl', 'definition' then :dl
                         else :ul
                         end
-            node = ListNode.new(list_type: list_type)
-            
-            # Process list items
-            if hash['items']
-              hash['items'].each_with_index do |item, index|
-                if item.is_a?(String)
-                  # Simple text item
-                  item_node = ListItemNode.new(level: 1)
-                  item_node.add_child(TextNode.new(content: item))
-                  node.add_child(item_node)
-                elsif item.is_a?(Hash)
-                  if item['content']
-                    # Ordered list item with number
-                    item_node = ListItemNode.new(level: 1, number: item['number'])
-                    item_node.add_child(TextNode.new(content: item['content']))
-                    node.add_child(item_node)
-                  elsif item['term'] && item['definition']
-                    # Definition list item
-                    item_node = ListItemNode.new(level: 1)
-                    item_node.add_child(TextNode.new(content: item['term']))
-                    item_node.add_child(TextNode.new(content: item['definition']))
-                    node.add_child(item_node)
-                  end
-                end
-              end
-            elsif hash['children']
+            node = ReVIEW::AST::ListNode.new(list_type: list_type)
+
+            # Process children (should be ListItemNode objects)
+            if hash['children']
               hash['children'].each do |child_hash|
                 child = deserialize_from_hash(child_hash)
-                node.add_child(child) if child.is_a?(Node)
+                node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
               end
             end
             node
           when 'ListItemNode'
-            node = ListItemNode.new(
+            node = ReVIEW::AST::ListItemNode.new(
               level: hash['level'] || 1,
               number: hash['number']
             )
             if hash['children']
               hash['children'].each do |child_hash|
                 child = deserialize_from_hash(child_hash)
-                node.add_child(child) if child.is_a?(Node)
+                node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
               end
             end
             node
           when 'MinicolumnNode'
-            node = MinicolumnNode.new(
+            node = ReVIEW::AST::MinicolumnNode.new(
               minicolumn_type: hash['minicolumn_type'] || hash['column_type'],
               caption: hash['caption']
             )
             if hash['children'] || hash['content']
               children = (hash['children'] || hash['content'] || []).map { |child| deserialize_from_hash(child) }
-              children.each { |child| node.add_child(child) if child.is_a?(Node) }
+              children.each { |child| node.add_child(child) if child.is_a?(ReVIEW::AST::Node) }
             end
             node
           when 'BlockNode'
-            node = BlockNode.new(block_type: hash['block_type'] || :quote)
+            block_type = hash['block_type'] ? hash['block_type'].to_sym : :quote
+            node = ReVIEW::AST::BlockNode.new(block_type: block_type)
             if hash['children']
               hash['children'].each do |child_hash|
                 child = deserialize_from_hash(child_hash)
-                node.add_child(child) if child.is_a?(Node)
+                node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
               end
             end
             node
           when 'EmbedNode'
-            EmbedNode.new(
+            ReVIEW::AST::EmbedNode.new(
               embed_type: hash['embed_type']&.to_sym || :inline,
               arg: hash['arg'],
               lines: hash['lines']
             )
           when 'ColumnNode'
-            ColumnNode.new(
+            ReVIEW::AST::ColumnNode.new(
               level: hash['level'],
               label: hash['label'],
               caption: hash['caption'],
@@ -416,11 +354,11 @@ module ReVIEW
             )
           else
             # Unknown node type, create generic node
-            node = Node.new
+            node = ReVIEW::AST::Node.new
             if hash['children']
               hash['children'].each do |child_hash|
                 child = deserialize_from_hash(child_hash)
-                node.add_child(child) if child.is_a?(Node)
+                node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
               end
             end
             node
