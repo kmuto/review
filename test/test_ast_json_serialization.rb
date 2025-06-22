@@ -115,13 +115,17 @@ class TestASTJSONSerialization < Test::Unit::TestCase
 
     assert_equal 'CodeBlockNode', parsed['type']
     assert_equal 'example', parsed['id']
-    expected_caption = [
-      {
-        'type' => 'TextNode',
-        'content' => 'Example Code',
-        'location' => { 'filename' => 'test.re', 'lineno' => 42 }
-      }
-    ]
+    expected_caption = {
+      'type' => 'CaptionNode',
+      'location' => { 'filename' => 'test.re', 'lineno' => 42 },
+      'children' => [
+        {
+          'type' => 'TextNode',
+          'content' => 'Example Code',
+          'location' => { 'filename' => 'test.re', 'lineno' => 42 }
+        }
+      ]
+    }
     assert_equal expected_caption, parsed['caption']
     assert_equal 'ruby', parsed['lang']
     assert_equal ['def hello', '  puts "world"', 'end'], parsed['lines']
@@ -142,13 +146,17 @@ class TestASTJSONSerialization < Test::Unit::TestCase
 
     assert_equal 'TableNode', parsed['type']
     assert_equal 'data', parsed['id']
-    expected_caption = [
-      {
-        'type' => 'TextNode',
-        'content' => 'Sample Data',
-        'location' => { 'filename' => 'test.re', 'lineno' => 42 }
-      }
-    ]
+    expected_caption = {
+      'type' => 'CaptionNode',
+      'location' => { 'filename' => 'test.re', 'lineno' => 42 },
+      'children' => [
+        {
+          'type' => 'TextNode',
+          'content' => 'Sample Data',
+          'location' => { 'filename' => 'test.re', 'lineno' => 42 }
+        }
+      ]
+    }
     assert_equal expected_caption, parsed['caption']
     assert_equal [['Name', 'Age']], parsed['headers']
     assert_equal [['Alice', '25'], ['Bob', '30']], parsed['rows']
@@ -397,13 +405,17 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     code_json = parsed['children'][2]
     assert_equal 'CodeBlockNode', code_json['type']
     assert_equal 'example', code_json['id']
-    expected_caption = [
-      {
-        'type' => 'TextNode',
-        'content' => 'Code Example',
-        'location' => { 'filename' => 'test.re', 'lineno' => 42 }
-      }
-    ]
+    expected_caption = {
+      'type' => 'CaptionNode',
+      'location' => { 'filename' => 'test.re', 'lineno' => 42 },
+      'children' => [
+        {
+          'type' => 'TextNode',
+          'content' => 'Code Example',
+          'location' => { 'filename' => 'test.re', 'lineno' => 42 }
+        }
+      ]
+    }
     assert_equal expected_caption, code_json['caption']
     assert_equal 'ruby', code_json['lang']
     assert_equal ['puts "Hello, World!"'], code_json['lines']

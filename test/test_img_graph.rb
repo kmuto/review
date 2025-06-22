@@ -56,7 +56,7 @@ EOB
   end
 
   def test_make_mermaid_pdf
-    pend('いったん無視') unless ENV['FULL_INTEGRATION_TEST']
+    pend('playwright-ruby-clientが修正されるまでいったん無視')
 
     unless @playwright_path
       $stderr.puts 'skip test_make_mermaid_pdf (cannot find playwright)'
@@ -70,7 +70,7 @@ EOB
   end
 
   def test_make_mermaid_svg
-    pend('いったん無視') unless ENV['FULL_INTEGRATION_TEST']
+    pend('playwright-ruby-clientが修正されるまでいったん無視')
 
     unless @playwright_path
       $stderr.puts 'skip test_make_mermaid_svg (cannot find playwright)'
