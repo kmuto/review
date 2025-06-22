@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'review/ast/node'
+require 'review/ast/caption_node'
 
 module ReVIEW
   module AST
@@ -11,7 +12,7 @@ module ReVIEW
         super(location: location, **kwargs)
         @level = level
         @label = label
-        @caption = caption # caption is now an array of nodes
+        @caption = CaptionNode.parse(caption, location: location)
       end
 
       # Get caption text for legacy Builder compatibility

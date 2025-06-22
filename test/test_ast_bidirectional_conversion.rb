@@ -122,7 +122,7 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
   end
 
   def test_simple_round_trip_conversion
-    pend('Caption serialization needs to be fixed - currently outputs CaptionNode as JSON')
+    pend('Caption serialization issue: HeadlineNode caption becomes hash during JSON round-trip')
 
     content = <<~EOB
       = Test Chapter

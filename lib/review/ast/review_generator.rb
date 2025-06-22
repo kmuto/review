@@ -42,6 +42,14 @@ module ReVIEW
 
         # Handle Hash objects (from JSON deserialization issues)
         if node.is_a?(Hash)
+          if node['type'] == 'CaptionNode' || node['type'] == 'TextNode'
+            # Extract content from serialized node
+            if node['children']
+              return node['children'].map { |child| visit(child) }.join
+            elsif node['content']
+              return node['content'].to_s
+            end
+          end
           return node.inspect # Convert hash to string representation for debugging
         end
 
@@ -72,11 +80,7 @@ module ReVIEW
         text = '=' * (node.level || 1)
         text += "[#{node.label}]" if node.label && !node.label.empty?
 
-        caption_text = if node.caption.respond_to?(:to_text)
-                         node.caption.to_text
-                       else
-                         node.caption.to_s
-                       end
+        caption_text = caption_to_text(node.caption)
         text += ' ' + caption_text unless caption_text.empty?
 
         text + "\n\n" + visit_children(node)
@@ -406,6 +410,9 @@ module ReVIEW
 
         if caption.respond_to?(:to_text)
           caption.to_text
+        elsif caption.respond_to?(:children) && caption.children
+          # For CaptionNode, extract text from children
+          caption.children.map { |child| visit(child) }.join
         elsif caption.respond_to?(:to_s)
           caption.to_s
         else
