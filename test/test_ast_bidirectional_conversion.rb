@@ -122,7 +122,7 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
   end
 
   def test_simple_round_trip_conversion
-    pend('Caption serialization issue: HeadlineNode caption becomes hash during JSON round-trip')
+    # Test if caption serialization is now fixed with CaptionNode.to_h method
 
     content = <<~EOB
       = Test Chapter
@@ -155,7 +155,7 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
   end
 
   def test_inline_elements_round_trip
-    pend('Caption serialization needs to be fixed - currently outputs CaptionNode as JSON')
+    # Caption serialization is now fixed
 
     content = <<~EOB
       = Inline Test
@@ -207,7 +207,7 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
   end
 
   def test_code_block_round_trip
-    pend('Caption serialization needs to be fixed - currently outputs CaptionNode as JSON')
+    # Caption serialization is now fixed
 
     content = <<~EOB
       = Code Test
@@ -297,7 +297,7 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
   end
 
   def test_json_structure_consistency
-    pend('Caption serialization needs to be fixed - currently outputs CaptionNode as JSON')
+    # Caption serialization is now fixed
 
     content = <<~EOB
       = Structure Test

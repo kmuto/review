@@ -24,18 +24,11 @@ module ReVIEW
         result = super.merge(
           minicolumn_type: minicolumn_type
         )
-        result[:caption] = caption_to_h if @caption
+        result[:caption] = caption&.to_h if @caption
         result
       end
 
       private
-
-      def caption_to_h
-        return nil unless @caption
-
-        # Return caption children array for serialization
-        @caption.children.map(&:to_h)
-      end
 
       protected
 

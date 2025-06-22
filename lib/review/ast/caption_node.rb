@@ -83,6 +83,16 @@ module ReVIEW
         children.empty? || children.all? { |child| child.respond_to?(:content) && child.content.to_s.strip.empty? }
       end
 
+      # Convert caption to hash representation
+      def to_h
+        {
+          type: 'CaptionNode',
+          location: location&.to_h,
+          children: children.map(&:to_h),
+          text: to_text
+        }
+      end
+
       # Override serialize_to_hash to return CaptionNode structure
       def serialize_to_hash(options)
         if children.empty?

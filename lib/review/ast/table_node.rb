@@ -24,7 +24,7 @@ module ReVIEW
 
       def to_h
         result = super.merge(
-          caption: caption_to_h,
+          caption: caption&.to_h,
           headers: headers,
           rows: rows,
           table_type: table_type
@@ -34,13 +34,6 @@ module ReVIEW
       end
 
       private
-
-      def caption_to_h
-        return nil unless @caption
-
-        # Return caption children array for serialization
-        @caption.children.map(&:to_h)
-      end
 
       protected
 

@@ -220,10 +220,11 @@ module ReVIEW
             end
             node
           when 'HeadlineNode'
+            caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
             ReVIEW::AST::HeadlineNode.new(
               level: hash['level'],
               label: hash['label'],
-              caption: hash['caption']
+              caption: caption
             )
           when 'ParagraphNode'
             node = ReVIEW::AST::ParagraphNode.new
@@ -246,6 +247,15 @@ module ReVIEW
             node
           when 'TextNode'
             ReVIEW::AST::TextNode.new(content: hash['content'] || '')
+          when 'CaptionNode'
+            node = ReVIEW::AST::CaptionNode.new
+            if hash['children']
+              hash['children'].each do |child_hash|
+                child = deserialize_from_hash(child_hash)
+                node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
+              end
+            end
+            node
           when 'InlineNode'
             node = ReVIEW::AST::InlineNode.new(inline_type: hash['element'] || hash['inline_type'])
             if hash['children']
@@ -269,25 +279,28 @@ module ReVIEW
             end
             node
           when 'CodeBlockNode'
+            caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
             ReVIEW::AST::CodeBlockNode.new(
               id: hash['id'],
-              caption: hash['caption'],
+              caption: caption,
               lines: hash['lines'] || [],
               lang: hash['lang'],
               line_numbers: hash['numbered'] || false
             )
           when 'TableNode'
+            caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
             ReVIEW::AST::TableNode.new(
               id: hash['id'],
-              caption: hash['caption'],
+              caption: caption,
               headers: hash['headers'] || [],
               rows: hash['rows'] || [],
               table_type: hash['table_type'] || :table
             )
           when 'ImageNode'
+            caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
             ReVIEW::AST::ImageNode.new(
               id: hash['id'],
-              caption: hash['caption'],
+              caption: caption,
               metric: hash['metric']
             )
           when 'ListNode'
@@ -320,9 +333,10 @@ module ReVIEW
             end
             node
           when 'MinicolumnNode'
+            caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
             node = ReVIEW::AST::MinicolumnNode.new(
               minicolumn_type: hash['minicolumn_type'] || hash['column_type'],
-              caption: hash['caption']
+              caption: caption
             )
             if hash['children'] || hash['content']
               children = (hash['children'] || hash['content'] || []).map { |child| deserialize_from_hash(child) }
@@ -346,10 +360,11 @@ module ReVIEW
               lines: hash['lines']
             )
           when 'ColumnNode'
+            caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
             ReVIEW::AST::ColumnNode.new(
               level: hash['level'],
               label: hash['label'],
-              caption: hash['caption'],
+              caption: caption,
               column_type: hash['column_type']
             )
           else
