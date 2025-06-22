@@ -142,12 +142,17 @@ class TestFullASTMode < Test::Unit::TestCase
     assert_equal 'ruby', code_block['lang'], "Code block language should be 'ruby'"
 
     # Check note block (minicolumn)
-    generic_nodes = ast['children'].select { |node| node['type'] == 'Node' }
+    minicolumn_nodes = ast['children'].select { |node| node['type'] == 'MinicolumnNode' }
 
-    note_block = generic_nodes.find { |node| node['id'] == 'note' }
+    note_block = minicolumn_nodes.find { |node| node['minicolumn_type'] == 'note' }
     assert_not_nil(note_block, 'Note block should exist')
-    assert_equal 'note', note_block['id'], 'Note block should have correct id'
-    assert_equal 'Note Caption', note_block['content'], 'Note block should have correct caption'
+    assert_equal 'note', note_block['minicolumn_type'], 'Note block should have correct minicolumn_type'
+
+    # Check caption
+    assert_not_nil(note_block['caption'], 'Note block should have caption')
+    caption_text = note_block['caption']['children'].first['content']
+    assert_equal 'Note Caption', caption_text, 'Note block should have correct caption'
+
     assert_equal 3, note_block['children'].size, 'Note block should have 3 text children'
 
     # Check that note block contains expected text content
@@ -156,10 +161,10 @@ class TestFullASTMode < Test::Unit::TestCase
     assert_include(note_texts, 'It can have multiple lines.', 'Note should contain multiple lines')
 
     # Check read block
-    read_block = generic_nodes.find { |node| node['node_type'] == 'read' }
+    block_nodes = ast['children'].select { |node| node['type'] == 'BlockNode' }
+    read_block = block_nodes.find { |node| node['block_type'] == 'read' }
     assert_not_nil(read_block, 'Read block should exist')
-    assert_equal 'read', read_block['node_type'], 'Read block should have correct node_type'
-    assert_equal 'This is a read block.', read_block['content'], 'Read block should have correct content'
+    assert_equal 'read', read_block['block_type'], 'Read block should have correct block_type'
     assert_equal 1, read_block['children'].size, 'Read block should have 1 text child'
 
     # Check read block text content
@@ -168,18 +173,21 @@ class TestFullASTMode < Test::Unit::TestCase
     assert_equal 'This is a read block.', read_text['content'], 'Read block text should match'
 
     # Check memo block (another minicolumn type)
-    memo_block = generic_nodes.find { |node| node['id'] == 'memo' }
+    memo_block = minicolumn_nodes.find { |node| node['minicolumn_type'] == 'memo' }
     assert_not_nil(memo_block, 'Memo block should exist')
-    assert_equal 'memo', memo_block['id'], 'Memo block should have correct id'
-    assert_equal 'Memo Title', memo_block['content'], 'Memo block should have correct title'
+    assert_equal 'memo', memo_block['minicolumn_type'], 'Memo block should have correct minicolumn_type'
+
+    # Check memo caption
+    memo_caption_text = memo_block['caption']['children'].first['content']
+    assert_equal 'Memo Title', memo_caption_text, 'Memo block should have correct title'
 
     # Check quote block
-    quote_blocks = ast['children'].select { |node| node['type'] == 'ParagraphNode' }
-    # NOTE: quote might be processed as ParagraphNode depending on implementation
-    assert(quote_blocks.size >= 2, 'Should have multiple paragraph nodes including quote content')
+    quote_block = block_nodes.find { |node| node['block_type'] == 'quote' }
+    assert_not_nil(quote_block, 'Quote block should exist')
+    assert_equal 'quote', quote_block['block_type'], 'Quote block should have correct block_type'
 
-    # Verify overall structure
-    expected_types = ['HeadlineNode', 'ParagraphNode', 'Node', 'CodeBlockNode', 'Node', 'Node', 'ParagraphNode']
+    # Verify overall structure - updated for new node types
+    expected_types = ['HeadlineNode', 'ParagraphNode', 'MinicolumnNode', 'CodeBlockNode', 'BlockNode', 'MinicolumnNode', 'BlockNode']
     actual_types = ast['children'].map { |child| child['type'] }
     assert_equal expected_types.size, actual_types.size, 'Should have expected number of elements'
   end
