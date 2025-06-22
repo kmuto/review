@@ -92,6 +92,9 @@ module ReVIEW
         # Record performance statistics
         @performance_tracker.end_timing(:total_compilation_time)
         @performance_tracker.log_statistics
+
+        # Return the compiled AST
+        @ast_root
       end
 
       def do_compile_with_ast_building

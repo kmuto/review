@@ -251,6 +251,5 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
     chapter.content = content
 
     compiler.compile_to_ast(chapter)
-    compiler.ast_result
   end
 end
