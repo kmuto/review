@@ -238,13 +238,197 @@ module ReVIEW
         end
       end
 
-      # Deserialization methods are available but not currently used in production
-      # Commented out to reduce module complexity. Uncomment if needed.
+      # Deserialize JSON string to AST nodes
+      def deserialize(json_string)
+        hash = JSON.parse(json_string)
+        deserialize_from_hash(hash)
+      end
 
-      # def deserialize(json_string)
-      #   hash = JSON.parse(json_string, symbolize_names: true)
-      #   deserialize_from_hash(hash)
-      # end
+      # Deserialize hash to AST node
+      def deserialize_from_hash(hash)
+        return nil unless hash
+
+        case hash
+        when Array
+          hash.map { |item| deserialize_from_hash(item) }
+        when String
+          # Plain string is treated as text content
+          hash
+        when Hash
+          node_type = hash['type']
+          return hash.to_s unless node_type
+
+          case node_type
+          when 'DocumentNode'
+            node = DocumentNode.new
+            if hash['content'] || hash['children']
+              children = (hash['content'] || hash['children'] || []).map { |child| deserialize_from_hash(child) }
+              children.each { |child| node.add_child(child) if child.is_a?(Node) }
+            end
+            node
+          when 'HeadlineNode'
+            HeadlineNode.new(
+              level: hash['level'],
+              label: hash['label'],
+              caption: hash['caption']
+            )
+          when 'ParagraphNode'
+            node = ParagraphNode.new
+            if hash['content']
+              # Handle inline content
+              if hash['content'].is_a?(String)
+                node.add_child(TextNode.new(content: hash['content']))
+              elsif hash['content'].is_a?(Array)
+                hash['content'].each do |item|
+                  child = deserialize_from_hash(item)
+                  node.add_child(child) if child.is_a?(Node)
+                end
+              end
+            elsif hash['children']
+              hash['children'].each do |child_hash|
+                child = deserialize_from_hash(child_hash)
+                node.add_child(child) if child.is_a?(Node)
+              end
+            end
+            node
+          when 'TextNode'
+            TextNode.new(content: hash['content'] || '')
+          when 'InlineNode'
+            node = InlineNode.new(inline_type: hash['element'] || hash['inline_type'])
+            if hash['content']
+              if hash['content'].is_a?(String)
+                node.add_child(TextNode.new(content: hash['content']))
+              elsif hash['content'].is_a?(Array)
+                hash['content'].each do |item|
+                  child = deserialize_from_hash(item)
+                  node.add_child(child) if child.is_a?(Node)
+                end
+              end
+            end
+            if hash['args']
+              node.args = hash['args']
+            end
+            node
+          when 'CodeBlockNode'
+            CodeBlockNode.new(
+              id: hash['id'],
+              caption: hash['caption'],
+              lines: hash['lines'] || [],
+              lang: hash['lang'],
+              line_numbers: hash['numbered'] || false
+            )
+          when 'TableNode'
+            TableNode.new(
+              id: hash['id'],
+              caption: hash['caption'],
+              headers: hash['headers'] || [],
+              rows: hash['rows'] || [],
+              table_type: hash['table_type'] || :table
+            )
+          when 'ImageNode'
+            ImageNode.new(
+              id: hash['id'],
+              caption: hash['caption'],
+              metric: hash['metric']
+            )
+          when 'ListNode', 'unordered_list', 'ordered_list', 'definition_list'
+            list_type = case hash['type']
+                        when 'unordered_list' then :ul
+                        when 'ordered_list' then :ol
+                        when 'definition_list' then :dl
+                        else :ul
+                        end
+            node = ListNode.new(list_type: list_type)
+            
+            # Process list items
+            if hash['items']
+              hash['items'].each_with_index do |item, index|
+                if item.is_a?(String)
+                  # Simple text item
+                  item_node = ListItemNode.new(level: 1)
+                  item_node.add_child(TextNode.new(content: item))
+                  node.add_child(item_node)
+                elsif item.is_a?(Hash)
+                  if item['content']
+                    # Ordered list item with number
+                    item_node = ListItemNode.new(level: 1, number: item['number'])
+                    item_node.add_child(TextNode.new(content: item['content']))
+                    node.add_child(item_node)
+                  elsif item['term'] && item['definition']
+                    # Definition list item
+                    item_node = ListItemNode.new(level: 1)
+                    item_node.add_child(TextNode.new(content: item['term']))
+                    item_node.add_child(TextNode.new(content: item['definition']))
+                    node.add_child(item_node)
+                  end
+                end
+              end
+            elsif hash['children']
+              hash['children'].each do |child_hash|
+                child = deserialize_from_hash(child_hash)
+                node.add_child(child) if child.is_a?(Node)
+              end
+            end
+            node
+          when 'ListItemNode'
+            node = ListItemNode.new(
+              level: hash['level'] || 1,
+              number: hash['number']
+            )
+            if hash['children']
+              hash['children'].each do |child_hash|
+                child = deserialize_from_hash(child_hash)
+                node.add_child(child) if child.is_a?(Node)
+              end
+            end
+            node
+          when 'MinicolumnNode'
+            node = MinicolumnNode.new(
+              minicolumn_type: hash['minicolumn_type'] || hash['column_type'],
+              caption: hash['caption']
+            )
+            if hash['children'] || hash['content']
+              children = (hash['children'] || hash['content'] || []).map { |child| deserialize_from_hash(child) }
+              children.each { |child| node.add_child(child) if child.is_a?(Node) }
+            end
+            node
+          when 'BlockNode'
+            node = BlockNode.new(block_type: hash['block_type'] || :quote)
+            if hash['children']
+              hash['children'].each do |child_hash|
+                child = deserialize_from_hash(child_hash)
+                node.add_child(child) if child.is_a?(Node)
+              end
+            end
+            node
+          when 'EmbedNode'
+            EmbedNode.new(
+              embed_type: hash['embed_type']&.to_sym || :inline,
+              arg: hash['arg'],
+              lines: hash['lines']
+            )
+          when 'ColumnNode'
+            ColumnNode.new(
+              level: hash['level'],
+              label: hash['label'],
+              caption: hash['caption'],
+              column_type: hash['column_type']
+            )
+          else
+            # Unknown node type, create generic node
+            node = Node.new
+            if hash['children']
+              hash['children'].each do |child_hash|
+                child = deserialize_from_hash(child_hash)
+                node.add_child(child) if child.is_a?(Node)
+              end
+            end
+            node
+          end
+        else
+          hash
+        end
+      end
 
       # JSON schema definition for validation
       def json_schema
