@@ -790,7 +790,7 @@ module ReVIEW
         raise CompileError, "no such inline op: #{op}"
       end
 
-      @builder.__send__(op, arg)
+      @builder.__send__("inline_#{op}", arg)
     rescue NoMethodError => e
       if e.message =~ /undefined method `(\w+)'/
         raise CompileError, "builder does not support inline op: #{$1}"

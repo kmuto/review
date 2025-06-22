@@ -125,7 +125,7 @@ module ReVIEW
 
       def parse_ast_mode(mode_str)
         case mode_str.to_s.downcase
-        when 'full', 'true', '1'
+        when 'on', 'full', 'true', '1'
           :full
         when 'off', 'false', '0'
           :off

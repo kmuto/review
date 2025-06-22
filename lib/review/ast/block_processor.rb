@@ -128,6 +128,8 @@ module ReVIEW
 
         if lines
           lines.each do |line|
+            # For compatibility with existing tests, create TextNode directly
+            # Inline elements will be processed during rendering phase
             text_node = AST::TextNode.new(
               location: @ast_compiler.location,
               content: line

@@ -26,6 +26,10 @@ class DummyBuilder < ReVIEW::Builder
     ''
   end
 
+  def inline_b(_content)
+    ''
+  end
+
   def nofunc_text(str)
     str
   end

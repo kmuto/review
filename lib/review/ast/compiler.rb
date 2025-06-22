@@ -45,8 +45,16 @@ module ReVIEW
 
         @logger = ReVIEW.logger
 
-        # Performance measurement
-        @performance_tracker = PerformanceTracker.new(logger: @logger)
+        # Performance measurement - check if enabled via environment or config
+        performance_enabled = ENV['REVIEW_AST_PERFORMANCE'] == 'true' ||
+                              (defined?(ReVIEW::Configure.values) &&
+                               ReVIEW::Configure.values.dig('ast', 'performance') == true)
+        @performance_tracker = PerformanceTracker.new(enabled: performance_enabled, logger: @logger)
+
+        # Debug output if debug is enabled
+        if ENV['REVIEW_DEBUG_AST'] == 'true'
+          @logger.info("DEBUG: AST::Compiler initialized with performance_enabled: #{performance_enabled}")
+        end
       end
 
       attr_reader :builder, :ast_root, :current_ast_node
@@ -141,30 +149,48 @@ module ReVIEW
           end
           @builder.paragraph(lines)
         when AST::CodeBlockNode
+          # Process inline elements in code lines if builder requires it
+          processed_lines = if @builder && @builder.class.name.include?('IDGXML')
+                              node.lines.map { |line| process_table_line_inline_elements(line) }
+                            else
+                              node.lines
+                            end
+
           # Handle different code block types based on their requirements
           if node.id && !node.id.empty?
             # For blocks with ID (list, listnum, source)
             if node.line_numbers
-              @builder.listnum(node.lines, node.id, node.caption_markup_text || '', node.lang)
+              @builder.listnum(processed_lines, node.id, node.caption_markup_text || '', node.lang)
             else
-              @builder.list(node.lines, node.id, node.caption_markup_text || '', node.lang)
+              @builder.list(processed_lines, node.id, node.caption_markup_text || '', node.lang)
             end
           elsif node.line_numbers
             # For blocks without ID (emlist, emlistnum, cmd)
-            @builder.emlistnum(node.lines, node.caption_markup_text || '', node.lang)
+            @builder.emlistnum(processed_lines, node.caption_markup_text || '', node.lang)
           else
             # emlist (including cmd which is just emlist with shell lang)
-            @builder.emlist(node.lines, node.caption_markup_text || '', node.lang)
+            @builder.emlist(processed_lines, node.caption_markup_text || '', node.lang)
           end
         when AST::TableNode
           # Convert TableNode structure to Builder format
           # Builder expects all lines including headers, separator, and rows
           lines = []
           if node.headers&.any?
-            lines.concat(node.headers)
+            # Process inline elements in header lines
+            processed_headers = node.headers.map do |header_line|
+              process_table_line_inline_elements(header_line)
+            end
+            lines.concat(processed_headers)
             lines << '------------' # Add separator line
           end
-          lines.concat(node.rows) if node.rows&.any?
+
+          if node.rows&.any?
+            # Process inline elements in row lines
+            processed_rows = node.rows.map do |row_line|
+              process_table_line_inline_elements(row_line)
+            end
+            lines.concat(processed_rows)
+          end
 
           if lines.any?
             # Handle different table types
@@ -194,21 +220,27 @@ module ReVIEW
       def render_ast_node_to_text(node)
         case node
         when AST::TextNode
-          node.content
+          # Process inline elements in text content
+          process_table_line_inline_elements(node.content)
         when AST::InlineNode
           content = render_children_to_text(node)
           case node.inline_type
-          when 'b'
-            @builder.respond_to?(:inline_b) ? @builder.inline_b(content) : content
-          when 'i'
-            @builder.respond_to?(:inline_i) ? @builder.inline_i(content) : content
-          when 'code'
-            @builder.respond_to?(:inline_code) ? @builder.inline_code(content) : content
+          when 'fn'
+            arg = node.respond_to?(:args) && node.args ? node.args.first : content
+            @builder.inline_fn(arg)
+          when 'kw'
+            # For kw, reconstruct the argument format that builder expects
+            kw_arg = if node.respond_to?(:args) && node.args && node.args.length >= 2
+                       "#{node.args[0]}, #{node.args[1]}"
+                     else
+                       content
+                     end
+            @builder.inline_kw(kw_arg)
           when 'href'
             arg = node.respond_to?(:args) && node.args ? node.args.first : ''
-            @builder.respond_to?(:inline_href) ? @builder.inline_href(arg) : content
+            @builder.inline_href(arg)
           else
-            content
+            @builder.__send__("inline_#{node.inline_type}", content)
           end
         when AST::EmbedNode
           if node.embed_type == :inline
@@ -563,6 +595,18 @@ module ReVIEW
         end
 
         words
+      end
+
+      # Process inline elements within table cell content
+      def process_table_line_inline_elements(line)
+        return line unless line.include?('@<')
+
+        # Create a temporary paragraph node to process inline elements
+        temp_paragraph = AST::ParagraphNode.new(location: location)
+        inline_processor.parse_inline_elements(line, temp_paragraph)
+
+        # Convert back to text with processed inline elements
+        render_children_to_text(temp_paragraph)
       end
     end
   end

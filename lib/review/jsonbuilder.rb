@@ -397,6 +397,42 @@ module ReVIEW
       %Q({"type": "inline", "element": "table", "content": #{str.to_json}})
     end
 
+    def inline_em(str)
+      %Q({"type": "inline", "element": "em", "content": #{str.to_json}})
+    end
+
+    def inline_strong(str)
+      %Q({"type": "inline", "element": "strong", "content": #{str.to_json}})
+    end
+
+    def inline_del(str)
+      %Q({"type": "inline", "element": "del", "content": #{str.to_json}})
+    end
+
+    def inline_ins(str)
+      %Q({"type": "inline", "element": "ins", "content": #{str.to_json}})
+    end
+
+    def inline_sup(str)
+      %Q({"type": "inline", "element": "sup", "content": #{str.to_json}})
+    end
+
+    def inline_sub(str)
+      %Q({"type": "inline", "element": "sub", "content": #{str.to_json}})
+    end
+
+    def inline_u(str)
+      %Q({"type": "inline", "element": "u", "content": #{str.to_json}})
+    end
+
+    def inline_br(str)
+      %Q({"type": "inline", "element": "br", "content": #{str.to_json}})
+    end
+
+    def inline_fn(str)
+      %Q({"type": "inline", "element": "fn", "content": #{str.to_json}})
+    end
+
     # Text processing (inherited from Builder but customized for JSON)
     def nofunc_text(str)
       str.to_s
