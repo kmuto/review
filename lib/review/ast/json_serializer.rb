@@ -186,14 +186,14 @@ module ReVIEW
 
       # Helper method to create location from hash or use a default
       def restore_location(hash)
-        if hash['location']
-          # If location is serialized, restore it
-          # For now, use a simple implementation
-          nil # Location restoration can be implemented if needed
-        else
-          # Use a default location for deserialized nodes
-          nil
-        end
+        location_data = hash['location']
+        return nil unless location_data && location_data.is_a?(Hash)
+
+        filename = location_data['filename']
+        lineno = location_data['lineno']
+        return nil unless filename && lineno
+
+        ReVIEW::SnapshotLocation.new(filename, lineno)
       end
 
       # Deserialize hash to AST node
