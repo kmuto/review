@@ -34,7 +34,7 @@ module ReVIEW
   class JSONBuilder < Builder
     include TextUtils
 
-    def initialize
+    def initialize(strict = false, *args, **kwargs)
       super
       @json_content = []
       @current_level = 0

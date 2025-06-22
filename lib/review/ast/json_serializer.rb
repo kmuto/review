@@ -231,7 +231,12 @@ module ReVIEW
             if hash['children']
               hash['children'].each do |child_hash|
                 child = deserialize_from_hash(child_hash)
-                node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
+                if child.is_a?(ReVIEW::AST::Node)
+                  node.add_child(child)
+                elsif child.is_a?(String)
+                  # Convert plain string to TextNode
+                  node.add_child(ReVIEW::AST::TextNode.new(content: child))
+                end
               end
             elsif hash['content']
               # Backward compatibility: handle old content format
