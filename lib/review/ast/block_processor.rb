@@ -104,28 +104,26 @@ module ReVIEW
         list_node
       end
 
-      def compile_quote_to_ast(lines)
-        node = create_node(AST::ParagraphNode)
+      def compile_block_to_ast(lines, block_type)
+        # Create a BlockNode for quote blocks
+        node = AST::BlockNode.new(
+          location: @ast_compiler.location,
+          block_type: block_type
+        )
+
         if lines
           lines.each { |line| @ast_compiler.inline_processor.parse_inline_elements(line, node) }
         end
 
-        add_node_to_ast(node)
-
-        # Also render immediately to produce <blockquote> output
-        if @ast_compiler.ast_renderer
-          @ast_compiler.builder.quote(lines || [])
-        end
+        @ast_compiler.add_child_to_current_node(node)
       end
 
       def compile_minicolumn_to_ast(type, args, lines)
-        # For now, create a simple container node
-        # This could be extended to a specific MinicolumnNode type
-        node = AST::Node.new(
+        # Create a MinicolumnNode for note, memo, tip, etc.
+        node = AST::MinicolumnNode.new(
           location: @ast_compiler.location,
-          type: 'minicolumn',
-          id: type.to_s,
-          content: args && args[0] ? args[0] : nil
+          minicolumn_type: type.to_sym,
+          caption: args && args[0] ? args[0] : nil
         )
 
         if lines
@@ -148,28 +146,6 @@ module ReVIEW
           arg: args[0],
           lines: lines || []
         )
-
-        @ast_compiler.add_child_to_current_node(node)
-      end
-
-      def compile_read_to_ast(lines)
-        # Create a generic node for read blocks
-        node = AST::Node.new(
-          location: @ast_compiler.location,
-          type: 'read',
-          content: (lines || []).join("\n")
-        )
-
-        # Process each line as text content
-        if lines
-          lines.each do |line|
-            text_node = AST::TextNode.new(
-              location: @ast_compiler.location,
-              content: line
-            )
-            node.add_child(text_node)
-          end
-        end
 
         @ast_compiler.add_child_to_current_node(node)
       end
@@ -200,12 +176,8 @@ module ReVIEW
         when :raw
           build_raw_ast(args, lines)
         else
-          # Fallback - create generic node
-          generic_node = AST::Node.new(
-            location: @ast_compiler.location,
-            type: command_name.to_s
-          )
-          @ast_compiler.add_child_to_current_node(generic_node)
+          # Unknown block command - raise error instead of creating generic node
+          raise CompileError, "Unknown block command: //#{command_name}"
         end
       end
 

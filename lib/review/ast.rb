@@ -18,6 +18,8 @@ require 'review/ast/code_block_node'
 require 'review/ast/inline_node'
 require 'review/ast/text_node'
 require 'review/ast/embed_node'
+require 'review/ast/block_node'
+require 'review/ast/minicolumn_node'
 
 # AST Processing classes
 require 'review/ast/compiler'

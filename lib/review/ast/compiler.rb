@@ -140,15 +140,53 @@ module ReVIEW
           end
           @builder.paragraph(lines)
         when AST::CodeBlockNode
-          @builder.list(node.lines, node.id, node.caption_markup_text || '', node.lang)
+          # Handle different code block types based on their requirements
+          if node.id && !node.id.empty?
+            # For blocks with ID (list, listnum, source)
+            if node.line_numbers
+              @builder.listnum(node.lines, node.id, node.caption_markup_text || '', node.lang)
+            else
+              @builder.list(node.lines, node.id, node.caption_markup_text || '', node.lang)
+            end
+          elsif node.line_numbers
+            # For blocks without ID (emlist, emlistnum, cmd)
+            @builder.emlistnum(node.lines, node.caption_markup_text || '', node.lang)
+          else
+            # emlist (including cmd which is just emlist with shell lang)
+            @builder.emlist(node.lines, node.caption_markup_text || '', node.lang)
+          end
         when AST::TableNode
-          @builder.table(node.headers || [], node.id, node.caption_markup_text || '')
+          # Convert TableNode structure to Builder format
+          # Builder expects all lines including headers, separator, and rows
+          lines = []
+          if node.headers && node.headers.any?
+            lines.concat(node.headers)
+            lines << '------------' # Add separator line
+          end
+          lines.concat(node.rows) if node.rows && node.rows.any?
+
+          if lines.any?
+            # Handle different table types
+            case node.table_type
+            when :emtable
+              @builder.emtable(lines, node.caption_markup_text || '')
+            when :imgtable
+              @builder.imgtable(lines, node.id || '', node.caption_markup_text || '', node.metric)
+            else
+              # Regular table with ID
+              @builder.table(lines, node.id || '', node.caption_markup_text || '')
+            end
+          end
         when AST::ImageNode
-          @builder.image([], node.id, node.caption_markup_text || '')
+          @builder.image([], node.id || '', node.caption_markup_text || '')
         when AST::ListNode
           render_list_to_builder(node)
         when AST::EmbedNode
           render_embed_to_builder(node)
+        when AST::BlockNode
+          render_block_to_builder(node)
+        when AST::MinicolumnNode
+          render_minicolumn_to_builder(node)
         end
       end
 
@@ -166,9 +204,16 @@ module ReVIEW
           when 'code'
             @builder.respond_to?(:inline_code) ? @builder.inline_code(content) : content
           when 'href'
-            @builder.respond_to?(:inline_href) ? @builder.inline_href(content, node.arg) : content
+            arg = node.respond_to?(:args) && node.args ? node.args.first : ''
+            @builder.respond_to?(:inline_href) ? @builder.inline_href(arg) : content
           else
             content
+          end
+        when AST::EmbedNode
+          if node.embed_type == :inline
+            node.arg || ''
+          else
+            ''
           end
         else
           render_children_to_text(node)
@@ -213,9 +258,54 @@ module ReVIEW
       def render_embed_to_builder(node)
         case node.embed_type
         when :inline
-          @builder.nofunc_text(node.arg.to_s)
+          # Inline embeds are handled in render_ast_node_to_text
+        when :block
+          if node.lines && node.lines.any?
+            # Use the embed method with arg filter
+            @builder.embed(node.lines, node.arg)
+          end
         when :raw
-          @builder.nofunc_text(node.arg.to_s)
+          if node.lines && node.lines.any?
+            # For raw blocks, use the raw method
+            @builder.raw(node.arg, node.lines)
+          end
+        end
+      end
+
+      def render_block_to_builder(node)
+        case node.block_type
+        when :quote
+          quote_lines = node.children.map { |child| render_ast_node_to_text(child) }
+          @builder.quote(quote_lines)
+        when :read
+          # For read blocks, output the content directly
+          read_lines = node.children.map { |child| render_ast_node_to_text(child) }
+          @builder.nofunc_text(read_lines.join("\n")) if read_lines.any?
+        end
+      end
+
+      def render_minicolumn_to_builder(node)
+        # Extract text content from children
+        lines = node.children.map { |child| render_ast_node_to_text(child) }
+
+        # Call appropriate builder method based on minicolumn type
+        case node.minicolumn_type
+        when :note
+          @builder.note(lines, node.caption_markup_text)
+        when :memo
+          @builder.memo(lines, node.caption_markup_text)
+        when :tip
+          @builder.tip(lines, node.caption_markup_text)
+        when :info
+          @builder.info(lines, node.caption_markup_text)
+        when :warning
+          @builder.warning(lines, node.caption_markup_text)
+        when :important
+          @builder.important(lines, node.caption_markup_text)
+        when :caution
+          @builder.caution(lines, node.caption_markup_text)
+        when :notice
+          @builder.notice(lines, node.caption_markup_text)
         end
       end
 
@@ -282,20 +372,24 @@ module ReVIEW
           block_processor.compile_table_to_ast(name, args, lines)
         when :ul, :ol, :dl
           block_processor.compile_list_to_ast(name, lines)
-        when :quote
-          block_processor.compile_quote_to_ast(lines)
         when :note, :memo, :tip, :info, :warning, :important, :caution, :notice
           block_processor.compile_minicolumn_to_ast(name, args, lines)
         when :embed
           block_processor.compile_embed_to_ast(args, lines)
-        when :read
-          block_processor.compile_read_to_ast(lines)
+        when :read, :quote
+          block_processor.compile_block_to_ast(lines, name)
+        when :raw
+          # For raw blocks, use EmbedNode
+          node = AST::EmbedNode.new(
+            location: location,
+            embed_type: :raw,
+            arg: args && args[0],
+            lines: lines || []
+          )
+          @current_ast_node.add_child(node)
         else
-          # Fallback to original processing for unknown commands
-          # This would need access to the original compiler's syntax_descriptor method
-          # For now, create a generic node
-          generic_node = AST::Node.new(location: location, type: name.to_s)
-          @current_ast_node.add_child(generic_node)
+          # Unknown block command - raise error instead of creating generic node
+          raise CompileError, "Unknown block command: //#{name}"
         end
       end
 
