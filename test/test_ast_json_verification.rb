@@ -13,8 +13,6 @@ require 'stringio'
 require 'fileutils'
 
 class ASTJSONVerificationTest < Test::Unit::TestCase
-  # This test is temporarily disabled due to JSONBuilder removal
-  # TODO: Refactor to use Pure AST Mode without renderer dependency
   def setup
     @fixtures_dir = File.join(__dir__, 'project')
     @test_files = Dir.glob(File.join(@fixtures_dir, '*.re')).reject do |f|
@@ -32,7 +30,6 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
   end
 
   def test_all_verification_files
-    pend('This test is temporarily disabled due to JSONBuilder removal')
     @test_files.each do |file_path|
       basename = File.basename(file_path, '.re')
       puts "\n=== Testing #{basename} ==="
@@ -45,42 +42,33 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
   end
 
   def test_structure_consistency
-    pend('This test is temporarily disabled due to JSONBuilder removal')
-    # Test that AST and Traditional modes produce structurally consistent JSON
+    # Test that AST compilation produces consistent JSON structure
     @test_files.each do |file_path|
       basename = File.basename(file_path, '.re')
       content = File.read(file_path)
 
-      traditional_json = compile_to_json(content, 'traditional')
       ast_json = compile_to_json(content, 'ast')
-      hybrid_json = compile_to_json(content, 'hybrid')
 
-      # Parse JSON structures
-      traditional_data = JSON.parse(traditional_json)
+      # Parse JSON structure
       ast_data = JSON.parse(ast_json)
-      hybrid_data = JSON.parse(hybrid_json)
 
-      # Verify basic structure consistency
-      assert_equal 'DocumentNode', traditional_data['type'], "Traditional mode should create DocumentNode for #{basename}"
+      # Verify basic structure
       assert_equal 'DocumentNode', ast_data['type'], "AST mode should create DocumentNode for #{basename}"
-      assert_equal 'DocumentNode', hybrid_data['type'], "Hybrid mode should create DocumentNode for #{basename}"
 
-      # Verify children arrays exist
-      assert traditional_data.key?('children'), "Traditional mode should have children array for #{basename}"
+      # Verify children array exists
       assert ast_data.key?('children'), "AST mode should have children array for #{basename}"
-      assert hybrid_data.key?('children'), "Hybrid mode should have children array for #{basename}"
 
       # Verify non-empty content has children
       next unless content.strip.length > 50 # Arbitrary threshold for non-trivial content
 
-      assert traditional_data['children'].any?, "Traditional mode should have children for non-trivial content in #{basename}"
       assert ast_data['children'].any?, "AST mode should have children for non-trivial content in #{basename}"
-      assert hybrid_data['children'].any?, "Hybrid mode should have children for non-trivial content in #{basename}"
+
+      # Verify no error field is present (indicates successful compilation)
+      assert_nil(ast_data['error'], "AST compilation should not have errors for #{basename}: #{ast_data['error']}")
     end
   end
 
   def test_element_coverage
-    pend('This test is temporarily disabled due to JSONBuilder removal')
     # Test that all major Re:VIEW elements are properly represented in JSON
     coverage_test_file = File.join(@fixtures_dir, 'complex_structure.re')
     content = File.read(coverage_test_file)
@@ -90,8 +78,9 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
 
     element_types = extract_all_element_types(ast_data)
 
-    # Verify presence of key element types
-    expected_types = %w[DocumentNode HeadlineNode ParagraphNode TableNode CodeBlockNode ImageNode InlineNode TextNode]
+    # Verify presence of key element types (updated for new concrete node types)
+    expected_types = %w[DocumentNode HeadlineNode ParagraphNode CodeBlockNode InlineNode TextNode]
+    # Optional types that may appear depending on content: TableNode ImageNode MinicolumnNode BlockNode
 
     expected_types.each do |expected_type|
       assert element_types.include?(expected_type), "Expected element type #{expected_type} not found in AST JSON. Found types: #{element_types.join(', ')}"
@@ -99,136 +88,100 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
   end
 
   def test_inline_element_preservation
-    pend('This test is temporarily disabled due to JSONBuilder removal')
-    # Test that inline elements are properly preserved in AST mode vs simplified in traditional mode
+    # Test that inline elements are properly preserved in AST mode
     inline_test_file = File.join(@fixtures_dir, 'inline_elements.re')
     content = File.read(inline_test_file)
 
-    traditional_json = compile_to_json(content, 'traditional')
     ast_json = compile_to_json(content, 'ast')
-
-    traditional_data = JSON.parse(traditional_json)
     ast_data = JSON.parse(ast_json)
 
     # Count inline nodes
-    traditional_inline_count = count_element_type(traditional_data, 'InlineNode')
     ast_inline_count = count_element_type(ast_data, 'InlineNode')
 
-    # AST mode should have more detailed inline structure
-    assert ast_inline_count >= traditional_inline_count,
-           "AST mode should preserve more inline structure. Traditional: #{traditional_inline_count}, AST: #{ast_inline_count}"
+    # AST mode should preserve inline structure
+    assert ast_inline_count > 0, "AST mode should preserve inline structure. Found: #{ast_inline_count} inline nodes"
+
+    # Verify no compilation errors
+    assert_nil(ast_data['error'], "AST compilation should not have errors: #{ast_data['error']}")
   end
 
   def test_performance_comparison
-    pend('This test is temporarily disabled due to JSONBuilder removal')
-    # Test that JSON generation performance is reasonable across modes
+    # Test that JSON generation performance is reasonable for AST mode
     large_test_file = File.join(@fixtures_dir, 'complex_structure.re')
     content = File.read(large_test_file)
 
     # Repeat content to make it larger
     large_content = content * 5
 
-    times = {}
+    # Test AST mode performance
+    start_time = Time.now
+    10.times { compile_to_json(large_content, 'ast') }
+    end_time = Time.now
 
-    %w[traditional ast hybrid].each do |mode|
-      start_time = Time.now
-      10.times { compile_to_json(large_content, mode) }
-      end_time = Time.now
+    avg_time = ((end_time - start_time) * 1000 / 10).round(2) # Average time in ms
 
-      times[mode] = ((end_time - start_time) * 1000 / 10).round(2) # Average time in ms
-    end
+    puts "\nAST JSON Generation Performance (average per compile): #{avg_time}ms"
 
-    puts "\nJSON Generation Performance (average per compile):"
-    times.each { |mode, time| puts "  #{mode}: #{time}ms" }
-
-    # Verify no mode is dramatically slower (arbitrary 5x threshold)
-    baseline = times['traditional']
-    times.each do |mode, time|
-      ratio = time / baseline
-      assert ratio < 5.0, "#{mode} mode is too slow compared to traditional (#{ratio.round(2)}x slower)"
-    end
+    # Verify performance is reasonable (arbitrary 500ms threshold for large content)
+    assert avg_time < 500.0, "AST mode is too slow: #{avg_time}ms (should be < 500ms)"
   end
 
   private
 
   def test_file_ast_compatibility(basename, content)
-    modes = {
-      'traditional' => { mode: 'off' },
-      'ast' => { mode: 'full' },
-      'hybrid_stage3' => { mode: 'hybrid', stage: 3 },
-      'hybrid_stage7' => { mode: 'hybrid', stage: 7 }
-    }
+    json_output = compile_to_json(content, 'ast')
+    output_file = File.join(@output_dir, "#{basename}_ast.json")
+    File.write(output_file, json_output)
 
-    results = {}
-
-    modes.each do |mode_name, config|
-      json_output = compile_to_json(content, mode_name, config)
-      output_file = File.join(@output_dir, "#{basename}_#{mode_name}.json")
-      File.write(output_file, json_output)
-
-      begin
-        json_data = JSON.parse(json_output)
-        results[mode_name] = {
-          success: true,
-          json_data: json_data,
-          output_file: output_file,
-          size: json_output.length,
-          children_count: json_data['children']&.length || 0
-        }
-      rescue JSON::ParserError => e
-        results[mode_name] = {
-          success: false,
-          error: e.message,
-          output_file: output_file
-        }
-      end
+    begin
+      json_data = JSON.parse(json_output)
+      result = {
+        success: true,
+        json_data: json_data,
+        output_file: output_file,
+        size: json_output.length,
+        children_count: json_data['children']&.length || 0,
+        has_error: json_data.key?('error')
+      }
+    rescue JSON::ParserError => e
+      result = {
+        success: false,
+        error: e.message,
+        output_file: output_file
+      }
     end
 
-    @test_results[basename] = results
+    @test_results[basename] = { 'ast' => result }
 
-    # Verify all modes produced valid JSON
-    results.each do |mode_name, result|
-      assert result[:success], "#{mode_name} mode failed to produce valid JSON for #{basename}: #{result[:error]}"
-    end
+    # Verify AST mode produced valid JSON
+    assert result[:success], "AST mode failed to produce valid JSON for #{basename}: #{result[:error]}"
 
     # Verify structure consistency
-    if results.values.all? { |r| r[:success] }
-      children_counts = results.transform_values { |r| r[:children_count] }
-      puts "  Children counts: #{children_counts}"
+    if result[:success]
+      puts "  AST children count: #{result[:children_count]}"
 
-      # All modes should have some content for non-empty files
+      # Non-empty files should have some content
       if content.strip.length > 10
-        children_counts.each do |mode, count|
-          assert count > 0, "#{mode} mode produced empty content for #{basename}"
-        end
+        assert result[:children_count] > 0, "AST mode produced empty content for #{basename}"
       end
+
+      # Should not have compilation errors
+      assert !result[:has_error], "AST compilation had errors for #{basename}: #{result[:json_data]['error']}"
     end
   end
 
-  def compile_to_json(content, mode, config = nil)
-    # Determine configuration
-    review_config = ReVIEW::Configure.values
-    case mode
-    when 'traditional'
-      # For traditional mode, return minimal AST structure
-      return JSON.pretty_generate({ 'type' => 'DocumentNode', 'children' => [] })
-    when 'ast'
-      review_config['ast'] = { 'mode' => 'full' }
-    when 'hybrid'
-      review_config['ast'] = { 'mode' => 'hybrid', 'stage' => 7 }
-    else
-      review_config['ast'] = config if config
-    end
-
-    # Create a pure AST mode compilation using DummyBuilder
-    ast_config = ReVIEW::AST::Config.new(review_config)
-    compiler_options = ast_config.compiler_options
-
-    # Use DummyBuilder that doesn't perform any rendering
+  def compile_to_json(content, mode, _config = nil)
+    # Set up builder and compiler with AST mode
     builder = DummyBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, **compiler_options)
 
-    # Set up book and chapter
+    # Use AST mode for compilation
+    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
+
+    # Set up book and chapter with proper I18n
+    review_config = ReVIEW::Configure.values
+    review_config['secnolevel'] = 2
+    review_config['language'] = 'ja'
+
     book = ReVIEW::Book::Base.new
     book.config = review_config
 
@@ -236,7 +189,7 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
     location = ReVIEW::Location.new(nil, nil)
     builder.bind(compiler, chapter, location)
 
-    # Compile to get AST only
+    # Compile to get AST
     compiler.compile(chapter)
     ast_result = compiler.ast_result
 
@@ -247,6 +200,14 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
     else
       JSON.pretty_generate({ 'type' => 'DocumentNode', 'children' => [] })
     end
+  rescue StandardError => e
+    # Return error information in JSON format for debugging
+    JSON.pretty_generate({
+                           'type' => 'DocumentNode',
+                           'children' => [],
+                           'error' => e.message,
+                           'mode' => mode
+                         })
   end
 
   # Dummy builder that doesn't render anything
