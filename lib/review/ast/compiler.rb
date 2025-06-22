@@ -149,47 +149,59 @@ module ReVIEW
           end
           @builder.paragraph(lines)
         when AST::CodeBlockNode
-          # Process inline elements in code lines if builder requires it
-          processed_lines = if @builder && @builder.class.name.include?('IDGXML')
-                              node.lines.map { |line| process_table_line_inline_elements(line) }
-                            else
-                              node.lines
-                            end
+          # Use original_lines for builders that don't need inline processing
+          # Use processed_lines for builders that need inline element processing
+          lines_to_use = if @builder && @builder.class.name.include?('IDGXML')
+                           # IDGXML builder needs inline processing
+                           node.processed_lines.map { |line| process_table_line_inline_elements(line) }
+                         else
+                           # Most builders can use original text
+                           node.original_lines
+                         end
 
           # Handle different code block types based on their requirements
           if node.id && !node.id.empty?
             # For blocks with ID (list, listnum, source)
             if node.line_numbers
-              @builder.listnum(processed_lines, node.id, node.caption_markup_text || '', node.lang)
+              @builder.listnum(lines_to_use, node.id, node.caption_markup_text || '', node.lang)
             else
-              @builder.list(processed_lines, node.id, node.caption_markup_text || '', node.lang)
+              @builder.list(lines_to_use, node.id, node.caption_markup_text || '', node.lang)
             end
           elsif node.line_numbers
             # For blocks without ID (emlist, emlistnum, cmd)
-            @builder.emlistnum(processed_lines, node.caption_markup_text || '', node.lang)
+            @builder.emlistnum(lines_to_use, node.caption_markup_text || '', node.lang)
           else
             # emlist (including cmd which is just emlist with shell lang)
-            @builder.emlist(processed_lines, node.caption_markup_text || '', node.lang)
+            @builder.emlist(lines_to_use, node.caption_markup_text || '', node.lang)
           end
         when AST::TableNode
           # Convert TableNode structure to Builder format
           # Builder expects all lines including headers, separator, and rows
           lines = []
-          if node.headers&.any?
-            # Process inline elements in header lines
-            processed_headers = node.headers.map do |header_line|
-              process_table_line_inline_elements(header_line)
+
+          # Process header rows
+          if node.header_rows&.any?
+            header_lines = node.header_rows.map do |header_row|
+              # Convert TableRowNode to tab-separated string
+              header_row.children.map do |cell|
+                # Render cell content to text with inline processing
+                render_children_to_text(cell)
+              end.join("\t")
             end
-            lines.concat(processed_headers)
+            lines.concat(header_lines)
             lines << '------------' # Add separator line
           end
 
-          if node.rows&.any?
-            # Process inline elements in row lines
-            processed_rows = node.rows.map do |row_line|
-              process_table_line_inline_elements(row_line)
+          # Process body rows
+          if node.body_rows&.any?
+            body_lines = node.body_rows.map do |body_row|
+              # Convert TableRowNode to tab-separated string
+              body_row.children.map do |cell|
+                # Render cell content to text with inline processing
+                render_children_to_text(cell)
+              end.join("\t")
             end
-            lines.concat(processed_rows)
+            lines.concat(body_lines)
           end
 
           if lines.any?
@@ -345,14 +357,15 @@ module ReVIEW
       # AST-specific compilation methods
       def compile_headline_to_ast(line)
         # Parse headline using same logic as compile_headline
-        m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/.match(line)
+        # Handle both new syntax: = Caption{label} and old syntax: ={label} Caption
+        m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*?)(?:\{(.+?)\})?\s*\z/.match(line)
         level = m[1].size
         if level > 6 # MAX_HEADLINE_LEVEL
           raise CompileError, 'Invalid header: max headline level is 6'
         end
 
-        m[2]
-        label = m[3]
+        # m[2] is optional tag parameter
+        label = m[3] || m[5] # Label can be in position 3 (old syntax) or 5 (new syntax)
         caption = m[4].strip
 
         # For AST mode, we only handle simple headlines (no tagged sections for now)

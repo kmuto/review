@@ -92,13 +92,8 @@ module ReVIEW
 
         mode = ast_mode
         options = case mode
-                  when :off
-                    { ast_mode: false }
                   when :full
                     { ast_mode: true }
-                  when :auto
-                    # Auto mode: default to traditional mode
-                    { ast_mode: false }
                   else
                     { ast_mode: false }
                   end
@@ -127,12 +122,8 @@ module ReVIEW
         case mode_str.to_s.downcase
         when 'on', 'full', 'true', '1'
           :full
-        when 'off', 'false', '0'
-          :off
-        when 'auto'
-          :auto
         else
-          :auto
+          :off
         end
       end
     end

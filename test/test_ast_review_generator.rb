@@ -3,10 +3,14 @@
 require_relative 'test_helper'
 require 'review/ast'
 require 'review/ast/review_generator'
+require 'review/ast/code_line_node'
+require 'review/ast/table_row_node'
+require 'review/ast/table_cell_node'
 
 class TestASTReVIEWGenerator < Test::Unit::TestCase
   def setup
     @generator = ReVIEW::AST::ReVIEWGenerator.new
+    @location = ReVIEW::SnapshotLocation.new('test.re', 1)
   end
 
   def test_empty_document
@@ -57,12 +61,26 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
 
   def test_code_block_with_id
     doc = ReVIEW::AST::DocumentNode.new
+
+    # Create caption node
+    caption = ReVIEW::AST::CaptionNode.new(location: @location)
+    caption.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Hello Example'))
+
     code = ReVIEW::AST::CodeBlockNode.new(
+      location: @location,
       id: 'hello',
-      caption: 'Hello Example',
-      lines: ['def hello', '  puts "Hello"', 'end'],
+      caption: caption,
+      original_text: "def hello\n  puts \"Hello\"\nend",
       lang: 'ruby'
     )
+
+    # Add code line nodes
+    ['def hello', '  puts "Hello"', 'end'].each do |line|
+      line_node = ReVIEW::AST::CodeLineNode.new(location: @location)
+      line_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: line))
+      code.add_child(line_node)
+    end
+
     doc.add_child(code)
 
     result = @generator.generate(doc)
@@ -80,9 +98,16 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   def test_code_block_without_id
     doc = ReVIEW::AST::DocumentNode.new
     code = ReVIEW::AST::CodeBlockNode.new(
-      lines: ['echo "Hello"'],
+      location: @location,
+      original_text: 'echo "Hello"',
       lang: 'sh'
     )
+
+    # Add code line node
+    line_node = ReVIEW::AST::CodeLineNode.new(location: @location)
+    line_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'echo "Hello"'))
+    code.add_child(line_node)
+
     doc.add_child(code)
 
     result = @generator.generate(doc)
@@ -120,12 +145,37 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
 
   def test_table
     doc = ReVIEW::AST::DocumentNode.new
+
+    # Create caption node
+    caption = ReVIEW::AST::CaptionNode.new(location: @location)
+    caption.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Sample Table'))
+
     table = ReVIEW::AST::TableNode.new(
+      location: @location,
       id: 'sample',
-      caption: 'Sample Table',
-      headers: ['Name', 'Age'],
-      rows: ['Alice	25', 'Bob	30']
+      caption: caption
     )
+
+    # Add header row
+    header_row = ReVIEW::AST::TableRowNode.new(location: @location)
+    ['Name', 'Age'].each do |cell_content|
+      cell = ReVIEW::AST::TableCellNode.new(location: @location)
+      cell.add_child(ReVIEW::AST::TextNode.new(location: @location, content: cell_content))
+      header_row.add_child(cell)
+    end
+    table.add_header_row(header_row)
+
+    # Add body rows
+    [['Alice', '25'], ['Bob', '30']].each do |row_data|
+      body_row = ReVIEW::AST::TableRowNode.new(location: @location)
+      row_data.each do |cell_content|
+        cell = ReVIEW::AST::TableCellNode.new(location: @location)
+        cell.add_child(ReVIEW::AST::TextNode.new(location: @location, content: cell_content))
+        body_row.add_child(cell)
+      end
+      table.add_body_row(body_row)
+    end
+
     doc.add_child(table)
 
     result = @generator.generate(doc)
@@ -193,9 +243,16 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
 
     # Code block
     code = ReVIEW::AST::CodeBlockNode.new(
+      location: @location,
       id: 'example',
-      lines: ['puts "Hello, Re:VIEW!"']
+      original_text: 'puts "Hello, Re:VIEW!"'
     )
+
+    # Add code line node
+    line_node = ReVIEW::AST::CodeLineNode.new(location: @location)
+    line_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'puts "Hello, Re:VIEW!"'))
+    code.add_child(line_node)
+
     h1.add_child(code)
 
     result = @generator.generate(doc)

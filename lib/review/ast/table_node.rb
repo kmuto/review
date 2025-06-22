@@ -6,15 +6,29 @@ require 'review/ast/caption_node'
 module ReVIEW
   module AST
     class TableNode < Node
-      attr_accessor :caption, :headers, :rows, :table_type, :metric
+      attr_accessor :caption, :table_type, :metric
 
-      def initialize(location: nil, id: nil, caption: nil, headers: [], rows: [], table_type: :table, metric: nil, **kwargs)
+      def initialize(location: nil, id: nil, caption: nil, table_type: :table, metric: nil, **kwargs)
         super(location: location, id: id, **kwargs)
-        @caption = CaptionNode.parse(caption, location: location)
-        @headers = headers || []
-        @rows = rows || []
+        @caption = caption
         @table_type = table_type # :table, :emtable, :imgtable
         @metric = metric
+        @header_rows = []
+        @body_rows = []
+      end
+
+      attr_reader :header_rows, :body_rows
+
+      def add_header_row(row_node)
+        @header_rows << row_node
+      end
+
+      def add_body_row(row_node)
+        @body_rows << row_node
+      end
+
+      def children
+        @header_rows + @body_rows
       end
 
       # Get caption text for legacy Builder compatibility
@@ -25,9 +39,9 @@ module ReVIEW
       def to_h
         result = super.merge(
           caption: caption&.to_h,
-          headers: headers,
-          rows: rows,
-          table_type: table_type
+          table_type: table_type,
+          header_rows: header_rows.map(&:to_h),
+          body_rows: body_rows.map(&:to_h)
         )
         result[:metric] = metric if metric
         result
@@ -38,10 +52,9 @@ module ReVIEW
       def serialize_properties(hash, options)
         hash[:id] = id if id && !id.empty?
         hash[:table_type] = table_type
-        # For backward compatibility, serialize caption as its children array
         hash[:caption] = @caption ? @caption.serialize_to_hash(options) : nil
-        hash[:headers] = headers if headers&.any?
-        hash[:rows] = rows if rows&.any?
+        hash[:header_rows] = header_rows.map { |row| row.serialize_to_hash(options) } if header_rows&.any?
+        hash[:body_rows] = body_rows.map { |row| row.serialize_to_hash(options) } if body_rows&.any?
         hash[:metric] = metric if metric
         hash
       end

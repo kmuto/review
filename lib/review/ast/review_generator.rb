@@ -152,8 +152,29 @@ module ReVIEW
         text += "[#{caption_text}]" if caption_text && !caption_text.empty?
         text += "{\n"
 
-        # Add code lines
-        text += (node.lines || []).join("\n")
+        # Add code lines from original_text or reconstruct from AST
+        if node.original_text && !node.original_text.empty?
+          text += node.original_text
+        elsif node.children&.any?
+          # Reconstruct from AST structure
+          lines = node.children.map do |line_node|
+            if line_node.respond_to?(:children) && line_node.children
+              line_node.children.map do |child|
+                case child
+                when ReVIEW::AST::TextNode
+                  child.content
+                when ReVIEW::AST::InlineNode
+                  "@<#{child.inline_type}>{#{child.args&.first || ''}}"
+                else
+                  child.to_s
+                end
+              end.join
+            else
+              line_node.to_s
+            end
+          end
+          text += lines.join("\n")
+        end
         text += "\n" unless text.end_with?("\n")
 
         text + "//}\n\n"
@@ -192,15 +213,25 @@ module ReVIEW
         text += "[#{caption_text}]" if caption_text && !caption_text.empty?
         text += "{\n"
 
-        # Add headers
-        if node.headers&.any?
-          text += node.headers.join("\t") + "\n"
+        # Add header rows
+        if node.header_rows&.any?
+          node.header_rows.each do |header_row|
+            header_line = header_row.children.map do |cell|
+              render_cell_content(cell)
+            end.join("\t")
+            text += header_line + "\n"
+          end
           text += ('-' * 10) + "\n"
         end
 
-        # Add rows
-        if node.rows
-          node.rows.each { |row| text += row + "\n" }
+        # Add body rows
+        if node.body_rows&.any?
+          node.body_rows.each do |body_row|
+            row_line = body_row.children.map do |cell|
+              render_cell_content(cell)
+            end.join("\t")
+            text += row_line + "\n"
+          end
         end
 
         text + "//}\n\n"
@@ -420,6 +451,22 @@ module ReVIEW
         else
           ''
         end
+      end
+
+      # Helper to render table cell content
+      def render_cell_content(cell)
+        return '' unless cell.respond_to?(:children)
+
+        cell.children.map do |child|
+          case child
+          when ReVIEW::AST::TextNode
+            child.content
+          when ReVIEW::AST::InlineNode
+            "@<#{child.inline_type}>{#{child.args&.first || ''}}"
+          else
+            visit(child)
+          end
+        end.join
       end
     end
   end

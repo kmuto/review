@@ -9,6 +9,7 @@ require 'review/ast/inline_node'
 require 'review/ast/caption_node'
 require 'review/ast/table_node'
 require 'review/ast/image_node'
+require 'review/ast/code_line_node'
 
 class TestBlockProcessorInline < Test::Unit::TestCase
   def setup
@@ -26,60 +27,79 @@ class TestBlockProcessorInline < Test::Unit::TestCase
     assert_equal 'test content', code_block.original_text
   end
 
-  def test_code_block_node_raw_content_method
-    # Test raw_content method behavior
+  def test_code_block_node_original_text_method
+    # Test original_text and original_lines behavior
     code_block1 = ReVIEW::AST::CodeBlockNode.new(
-      original_text: 'original content',
-      lines: ['line1', 'line2']
+      location: @location,
+      original_text: 'original content'
     )
-    assert_equal 'original content', code_block1.raw_content
+    assert_equal 'original content', code_block1.original_text
+    assert_equal ['original content'], code_block1.original_lines
 
     code_block2 = ReVIEW::AST::CodeBlockNode.new(
-      lines: ['line1', 'line2']
+      location: @location,
+      original_text: "line1\nline2"
     )
-    assert_equal "line1\nline2", code_block2.raw_content
+    assert_equal "line1\nline2", code_block2.original_text
+    assert_equal ['line1', 'line2'], code_block2.original_lines
   end
 
-  def test_get_lines_for_builder_method
-    # Test get_lines_for_builder method
-    lines = ['puts @<b>{hello}']
-    processed_lines = [create_test_paragraph]
+  def test_original_and_processed_lines_methods
+    # Test original_lines and processed_lines methods
+    original_text = 'puts @<b>{hello}'
 
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
-      lines: lines,
-      processed_lines: processed_lines
+      original_text: original_text
     )
 
-    # Test for builder that doesn't need inline processing
-    result_no_inline = code_block.get_lines_for_builder(builder_needs_inline: false)
-    assert_equal lines, result_no_inline
+    # Create a code line with inline processing
+    line_node = ReVIEW::AST::CodeLineNode.new(location: @location)
+    text_node1 = ReVIEW::AST::TextNode.new(location: @location, content: 'puts ')
+    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    inline_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'hello'))
+    line_node.add_child(text_node1)
+    line_node.add_child(inline_node)
+    code_block.add_child(line_node)
 
-    # Test for builder that needs inline processing
-    result_inline = code_block.get_lines_for_builder(builder_needs_inline: true)
-    assert_equal processed_lines, result_inline
+    # Test original_lines (for builders that don't need inline processing)
+    assert_equal ['puts @<b>{hello}'], code_block.original_lines
+
+    # Test processed_lines (for builders that need inline processing)
+    processed = code_block.processed_lines
+    assert_equal 1, processed.size
+    assert_equal 'puts @<b>{hello}', processed[0]
   end
 
-  def test_processed_lines_attribute
-    # Test processed_lines attribute
-    processed_lines = [create_test_paragraph]
-
+  def test_processed_lines_method
+    # Test processed_lines method with actual AST structure
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
-      processed_lines: processed_lines
+      original_text: 'puts hello'
     )
+
+    # Create a simple code line
+    line_node = ReVIEW::AST::CodeLineNode.new(location: @location)
+    text_node = ReVIEW::AST::TextNode.new(location: @location, content: 'puts hello')
+    line_node.add_child(text_node)
+    code_block.add_child(line_node)
 
     assert_respond_to(code_block, :processed_lines)
-    assert_equal processed_lines, code_block.processed_lines
+    processed = code_block.processed_lines
+    assert_equal 1, processed.size
+    assert_equal 'puts hello', processed[0]
   end
 
   # Caption tests
   def test_code_block_with_simple_caption
     # Test CodeBlockNode with simple text caption
+    caption = ReVIEW::AST::CaptionNode.new(location: @location)
+    caption.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Simple Caption'))
+
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
-      caption: 'Simple Caption',
-      lines: ['code line']
+      caption: caption,
+      original_text: 'code line'
     )
 
     assert_not_nil(code_block.caption)
@@ -90,10 +110,21 @@ class TestBlockProcessorInline < Test::Unit::TestCase
   def test_code_block_with_inline_caption
     # Test CodeBlockNode with inline markup in caption
     caption_markup_text = 'Code with @<b>{bold} text'
+
+    # Create CaptionNode with inline content
+    caption = ReVIEW::AST::CaptionNode.new(location: @location)
+    text1 = ReVIEW::AST::TextNode.new(location: @location, content: 'Code with ')
+    inline = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    inline.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'bold'))
+    text2 = ReVIEW::AST::TextNode.new(location: @location, content: ' text')
+    caption.add_child(text1)
+    caption.add_child(inline)
+    caption.add_child(text2)
+
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
-      caption: caption_markup_text,
-      lines: ['code line']
+      caption: caption,
+      original_text: 'code line'
     )
 
     assert_not_nil(code_block.caption)
@@ -103,11 +134,12 @@ class TestBlockProcessorInline < Test::Unit::TestCase
 
   def test_table_node_with_caption
     # Test TableNode with caption
+    caption = ReVIEW::AST::CaptionNode.new(location: @location)
+    caption.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Table Caption'))
+
     table = ReVIEW::AST::TableNode.new(
       location: @location,
-      caption: 'Table Caption',
-      headers: [['Header 1', 'Header 2']],
-      rows: [['Data 1', 'Data 2']]
+      caption: caption
     )
 
     assert_not_nil(table.caption)
@@ -172,16 +204,14 @@ class TestBlockProcessorInline < Test::Unit::TestCase
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       caption: nil,
-      lines: ['code']
+      original_text: 'code'
     )
     assert_nil(code_block.caption)
     assert_equal '', code_block.caption_markup_text
 
     table = ReVIEW::AST::TableNode.new(
       location: @location,
-      caption: '',
-      headers: [['H1']],
-      rows: [['D1']]
+      caption: nil
     )
     assert_nil(table.caption)
     assert_equal '', table.caption_markup_text
@@ -191,10 +221,23 @@ class TestBlockProcessorInline < Test::Unit::TestCase
     # Test caption_markup_text method returns plain text
     caption_with_markup = 'Caption with @<b>{bold} and @<i>{italic}'
 
+    # Create CaptionNode with inline content
+    caption = ReVIEW::AST::CaptionNode.new(location: @location)
+    text1 = ReVIEW::AST::TextNode.new(location: @location, content: 'Caption with ')
+    bold = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    bold.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'bold'))
+    text2 = ReVIEW::AST::TextNode.new(location: @location, content: ' and ')
+    italic = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'i')
+    italic.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'italic'))
+    caption.add_child(text1)
+    caption.add_child(bold)
+    caption.add_child(text2)
+    caption.add_child(italic)
+
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
-      caption: caption_with_markup,
-      lines: ['code']
+      caption: caption,
+      original_text: 'code'
     )
 
     # caption_markup_text should return the raw text with markup

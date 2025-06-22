@@ -121,8 +121,8 @@ class TestASTComprehensive < Test::Unit::TestCase
     main_table = table_nodes.find { |n| n.id == 'envvars' }
     assert_not_nil(main_table)
     assert_equal 'Environment Variables', main_table.caption_markup_text
-    assert_equal ['Name	Meaning'], main_table.headers
-    assert_equal 3, main_table.rows.size
+    assert_equal 1, main_table.header_rows.size
+    assert_equal 3, main_table.body_rows.size
 
     # Check emtable (no headers) - currently processes as traditional
     # since emtable not in AST elements list for this test

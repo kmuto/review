@@ -32,76 +32,63 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
       location: @location,
       id: 'sample',
       caption: 'Test Code',
-      lines: lines,
       original_text: original_text
     )
 
     assert_equal original_text, code_block.original_text
-    assert_equal lines, code_block.lines
-    assert_equal original_text, code_block.raw_content
+    assert_equal lines, code_block.original_lines
   end
 
   def test_code_block_node_processed_lines
-    # Create inline AST structure manually for testing
-    text_node = ReVIEW::AST::TextNode.new(location: @location, content: 'hello')
-    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
-    inline_node.add_child(text_node)
-
-    paragraph = ReVIEW::AST::ParagraphNode.new(location: @location)
-    paragraph.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'puts '))
-    paragraph.add_child(inline_node)
-
-    lines = ['puts @<b>{hello}']
-    processed_lines = [paragraph]
-
+    # Create a code block with proper AST structure
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       id: 'sample',
-      caption: 'Test Code',
-      lines: lines,
-      processed_lines: processed_lines,
-      original_text: lines.first
+      original_text: 'puts @<b>{hello}'
     )
 
-    assert_equal processed_lines, code_block.processed_lines
-    assert_equal 1, code_block.processed_lines.size
-    assert_instance_of(ReVIEW::AST::ParagraphNode, code_block.processed_lines.first)
+    # Create a code line with inline processing
+    line_node = ReVIEW::AST::CodeLineNode.new(location: @location)
+
+    # Add text and inline nodes to the line
+    text_node1 = ReVIEW::AST::TextNode.new(location: @location, content: 'puts ')
+    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    inline_node.args = ['hello']
+
+    line_node.add_child(text_node1)
+    line_node.add_child(inline_node)
+    code_block.add_child(line_node)
+
+    # Test processed_lines method (reconstructs from AST)
+    processed = code_block.processed_lines
+    assert_equal 1, processed.size
+    assert_equal 'puts @<b>{hello}', processed[0]
   end
 
-  def test_get_lines_for_builder
-    lines = ['puts @<b>{hello}']
-    processed_lines = [create_test_paragraph]
+  def test_original_lines_and_processed_lines
+    original_text = 'puts @<b>{hello}'
 
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
-      lines: lines,
-      processed_lines: processed_lines
+      original_text: original_text
     )
 
-    # Test for builder that doesn't need inline processing
-    result_no_inline = code_block.get_lines_for_builder(builder_needs_inline: false)
-    assert_equal lines, result_no_inline
+    # Create a code line with inline processing
+    line_node = ReVIEW::AST::CodeLineNode.new(location: @location)
+    text_node1 = ReVIEW::AST::TextNode.new(location: @location, content: 'puts ')
+    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    inline_node.args = ['hello']
+    line_node.add_child(text_node1)
+    line_node.add_child(inline_node)
+    code_block.add_child(line_node)
 
-    # Test for builder that needs inline processing
-    result_inline = code_block.get_lines_for_builder(builder_needs_inline: true)
-    assert_equal processed_lines, result_inline
-  end
+    # Test original_lines (for builders that don't need inline processing)
+    assert_equal ['puts @<b>{hello}'], code_block.original_lines
 
-  def test_get_lines_for_builder_without_processed_lines
-    lines = ['puts @<b>{hello}']
-
-    code_block = ReVIEW::AST::CodeBlockNode.new(
-      location: @location,
-      lines: lines,
-      processed_lines: nil
-    )
-
-    # Both should return lines when processed_lines is nil
-    result_no_inline = code_block.get_lines_for_builder(builder_needs_inline: false)
-    assert_equal lines, result_no_inline
-
-    result_inline = code_block.get_lines_for_builder(builder_needs_inline: true)
-    assert_equal lines, result_inline
+    # Test processed_lines (for builders that need inline processing)
+    processed = code_block.processed_lines
+    assert_equal 1, processed.size
+    assert_equal 'puts @<b>{hello}', processed[0]
   end
 
   def test_builder_interprets_inline_in_code
@@ -184,35 +171,33 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
     assert_equal @location, code_block.location
   end
 
-  def test_original_text_fallback_in_raw_content
+  def test_original_text_preservation
     # Test when original_text is set
     code_block1 = ReVIEW::AST::CodeBlockNode.new(
-      original_text: 'original content',
-      lines: ['line1', 'line2']
+      location: @location,
+      original_text: 'original content'
     )
-    assert_equal 'original content', code_block1.raw_content
+    assert_equal 'original content', code_block1.original_text
+    assert_equal ['original content'], code_block1.original_lines
 
-    # Test when original_text is nil but lines exist
+    # Test when original_text is nil
     code_block2 = ReVIEW::AST::CodeBlockNode.new(
-      original_text: nil,
-      lines: ['line1', 'line2']
+      location: @location,
+      original_text: nil
     )
-    assert_equal "line1\nline2", code_block2.raw_content
-
-    # Test when both are nil/empty
-    code_block3 = ReVIEW::AST::CodeBlockNode.new(
-      original_text: nil,
-      lines: nil
-    )
-    assert_equal '', code_block3.raw_content
+    assert_nil(code_block2.original_text)
+    assert_equal [], code_block2.original_lines
   end
 
   def test_serialize_properties_includes_original_text
+    # Create caption as proper CaptionNode
+    caption = ReVIEW::AST::CaptionNode.new(location: @location)
+    caption.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Test Caption'))
+
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       id: 'test',
-      caption: 'Test Caption',
-      lines: ['puts hello'],
+      caption: caption,
       original_text: 'puts hello'
     )
 
@@ -232,7 +217,6 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
     assert_equal 1, hash[:caption][:children].size
     assert_equal 'TextNode', hash[:caption][:children][0][:type]
     assert_equal 'Test Caption', hash[:caption][:children][0][:content]
-    assert_equal ['puts hello'], hash[:lines]
   end
 
   private

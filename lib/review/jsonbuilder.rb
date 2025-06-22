@@ -433,6 +433,10 @@ module ReVIEW
       %Q({"type": "inline", "element": "fn", "content": #{str.to_json}})
     end
 
+    def inline_bib(str)
+      %Q({"type": "inline", "element": "bib", "content": #{str.to_json}})
+    end
+
     # Text processing (inherited from Builder but customized for JSON)
     def nofunc_text(str)
       str.to_s

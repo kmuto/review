@@ -828,7 +828,6 @@ EOTGNUPLOT
         ast_node.content
       when ReVIEW::AST::InlineNode
         # Convert back to Re:VIEW markup
-        args = ast_node.args || []
         content = ast_node.children.map { |child| render_ast_node_as_plain_text(child) }.join
         "@<#{ast_node.inline_type}>{#{content}}"
       when ReVIEW::AST::ParagraphNode

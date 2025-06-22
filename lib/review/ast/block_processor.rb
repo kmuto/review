@@ -37,42 +37,21 @@ module ReVIEW
       end
 
       def compile_table_to_ast(type, args, lines)
-        # Parse table data
-        headers = []
-        rows = []
-        if lines
-          # Simple table parsing for AST mode
-          separator_index = lines.find_index { |line| line.match?(/^[-=]{12,}$/) }
-          if separator_index
-            headers = lines[0...separator_index]
-            rows = lines[(separator_index + 1)..-1] || []
-          else
-            headers = []
-            rows = lines
-          end
-        end
-
         node = case type
                when :table
                  create_node(AST::TableNode,
                              id: args[0],
                              caption: process_caption(args, 1),
-                             headers: headers,
-                             rows: rows,
                              table_type: :table)
                when :emtable
                  create_node(AST::TableNode,
                              id: nil, # emtable has no ID
                              caption: process_caption(args, 0),
-                             headers: headers,
-                             rows: rows,
                              table_type: :emtable)
                when :imgtable
                  create_node(AST::TableNode,
                              id: args[0],
                              caption: process_caption(args, 1),
-                             headers: headers,
-                             rows: rows,
                              table_type: :imgtable,
                              metric: args[2])
                else
@@ -80,10 +59,34 @@ module ReVIEW
                  create_node(AST::TableNode,
                              id: args[0],
                              caption: process_caption(args, 1),
-                             headers: headers,
-                             rows: rows,
                              table_type: type)
                end
+
+        if lines
+          separator_index = lines.find_index { |line| line.match?(/^[-=]{12,}$/) }
+
+          # Process header rows
+          if separator_index
+            header_lines = lines[0...separator_index]
+            header_lines.each do |line|
+              row_node = create_table_row_from_line(line)
+              node.add_header_row(row_node)
+            end
+
+            # Process body rows
+            body_lines = lines[(separator_index + 1)..-1] || []
+            body_lines.each do |line|
+              row_node = create_table_row_from_line(line)
+              node.add_body_row(row_node)
+            end
+          else
+            # No separator, all lines are body rows
+            lines.each do |line|
+              row_node = create_table_row_from_line(line)
+              node.add_body_row(row_node)
+            end
+          end
+        end
 
         add_node_to_ast(node)
       end
@@ -128,13 +131,8 @@ module ReVIEW
 
         if lines
           lines.each do |line|
-            # For compatibility with existing tests, create TextNode directly
-            # Inline elements will be processed during rendering phase
-            text_node = AST::TextNode.new(
-              location: @ast_compiler.location,
-              content: line
-            )
-            node.add_child(text_node)
+            # Parse inline elements properly in AST mode instead of deferring to rendering
+            @ast_compiler.inline_processor.parse_inline_elements(line, node)
           end
         end
 
@@ -425,28 +423,39 @@ module ReVIEW
         config = CODE_BLOCK_CONFIGS[command_type]
         raise ArgumentError, "Unknown code block type: #{command_type}" unless config
 
-        # Preserve original text
+        # Preserve original text for builders that don't need inline processing
         original_text = lines ? lines.join("\n") : ''
 
-        # Process lines for inline elements if needed
-        processed_lines = nil
-        if builder_needs_inline_processing? && lines
-          processed_lines = lines.map do |line|
-            paragraph_node = AST::ParagraphNode.new(location: @ast_compiler.location)
-            @ast_compiler.inline_processor.parse_inline_elements(line, paragraph_node)
-            paragraph_node
+        node = create_and_add_node(AST::CodeBlockNode,
+                                   id: safe_arg(args, config[:id_index]),
+                                   caption: process_caption(args, config[:caption_index]),
+                                   lang: safe_arg(args, config[:lang_index]) || config[:default_lang],
+                                   line_numbers: config[:line_numbers] || false,
+                                   code_type: command_type,
+                                   original_text: original_text)
+
+        # Process each line and create CodeLineNode
+        if lines
+          lines.each_with_index do |line, index|
+            line_node = create_node(AST::CodeLineNode,
+                                    line_number: config[:line_numbers] ? index + 1 : nil,
+                                    original_text: line)
+
+            # Check if this builder needs inline processing
+            if builder_needs_inline_processing?
+              # Parse inline elements in code line
+              @ast_compiler.inline_processor.parse_inline_elements(line, line_node)
+            else
+              # Create simple TextNode for the entire line
+              text_node = create_node(AST::TextNode, content: line)
+              line_node.add_child(text_node)
+            end
+
+            node.add_child(line_node)
           end
         end
 
-        create_and_add_node(AST::CodeBlockNode,
-                            id: safe_arg(args, config[:id_index]),
-                            caption: process_caption(args, config[:caption_index]),
-                            lang: safe_arg(args, config[:lang_index]) || config[:default_lang],
-                            lines: lines || [],
-                            line_numbers: config[:line_numbers] || false,
-                            code_type: command_type,
-                            original_text: original_text,
-                            processed_lines: processed_lines)
+        node
       end
 
       def process_caption(args, caption_index)
@@ -472,6 +481,24 @@ module ReVIEW
         # Always process inline elements to generate unified AST structure
         # Individual builders will decide how to interpret them
         true
+      end
+
+      # Create a table row node from a line containing tab-separated cells
+      def create_table_row_from_line(line)
+        row_node = create_node(AST::TableRowNode)
+
+        # Split by tab to get cells
+        cells = line.split("\t")
+        cells.each do |cell_content|
+          cell_node = create_node(AST::TableCellNode)
+
+          # Parse inline elements in cell content
+          @ast_compiler.inline_processor.parse_inline_elements(cell_content.strip, cell_node)
+
+          row_node.add_child(cell_node)
+        end
+
+        row_node
       end
 
       # Configuration for different code block types

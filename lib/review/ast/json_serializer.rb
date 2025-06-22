@@ -83,15 +83,22 @@ module ReVIEW
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
         when ReVIEW::AST::CodeBlockNode
           hash['caption'] = extract_text(node.caption)
-          hash['lines'] = node.lines || []
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
           hash['id'] = node.id if node.respond_to?(:id) && node.id
           hash['lang'] = node.lang if node.respond_to?(:lang) && node.lang
           hash['numbered'] = node.respond_to?(:line_numbers) ? node.line_numbers : false
+        when ReVIEW::AST::CodeLineNode
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+          hash['line_number'] = node.line_number if node.line_number
         when ReVIEW::AST::TableNode
           hash['caption'] = extract_text(node.caption)
           hash['id'] = node.id if node.respond_to?(:id) && node.id
-          hash['headers'] = node.headers if node.respond_to?(:headers) && node.headers
-          hash['rows'] = node.rows if node.respond_to?(:rows) && node.rows
+          hash['header_rows'] = node.header_rows.map { |row| serialize_to_hash(row, options) } if node.header_rows&.any?
+          hash['body_rows'] = node.body_rows.map { |row| serialize_to_hash(row, options) } if node.body_rows&.any?
+        when ReVIEW::AST::TableRowNode # rubocop:disable Lint/DuplicateBranch
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+        when ReVIEW::AST::TableCellNode # rubocop:disable Lint/DuplicateBranch
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
         when ReVIEW::AST::ImageNode
           hash['caption'] = extract_text(node.caption)
           hash['id'] = node.id if node.respond_to?(:id) && node.id
@@ -136,7 +143,7 @@ module ReVIEW
           hash['minicolumn_type'] = node.minicolumn_type.to_s if node.respond_to?(:minicolumn_type) && node.minicolumn_type
           hash['caption'] = extract_text(node.caption) if node.respond_to?(:caption) && node.caption
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
-        else
+        else # rubocop:disable Lint/DuplicateBranch
           # Generic handling for unknown node types
           if node.children&.any?
             hash['children'] = node.children.map { |child| serialize_to_hash(child, options) }
@@ -175,6 +182,18 @@ module ReVIEW
       def deserialize(json_string)
         hash = JSON.parse(json_string)
         deserialize_from_hash(hash)
+      end
+
+      # Helper method to create location from hash or use a default
+      def restore_location(hash)
+        if hash['location']
+          # If location is serialized, restore it
+          # For now, use a simple implementation
+          nil # Location restoration can be implemented if needed
+        else
+          # Use a default location for deserialized nodes
+          nil
+        end
       end
 
       # Deserialize hash to AST node
@@ -265,22 +284,51 @@ module ReVIEW
             node
           when 'CodeBlockNode'
             caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
-            ReVIEW::AST::CodeBlockNode.new(
+            node = ReVIEW::AST::CodeBlockNode.new(
               id: hash['id'],
               caption: caption,
-              lines: hash['lines'] || [],
               lang: hash['lang'],
-              line_numbers: hash['numbered'] || false
+              line_numbers: hash['numbered'] || hash['line_numbers'] || false,
+              code_type: hash['code_type'],
+              original_text: hash['original_text']
             )
+            if hash['children']
+              hash['children'].each do |child_hash|
+                child = deserialize_from_hash(child_hash)
+                node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
+              end
+            end
+            node
           when 'TableNode'
             caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
-            ReVIEW::AST::TableNode.new(
+            node = ReVIEW::AST::TableNode.new(
               id: hash['id'],
               caption: caption,
-              headers: hash['headers'] || [],
-              rows: hash['rows'] || [],
-              table_type: hash['table_type'] || :table
+              table_type: hash['table_type'] || :table,
+              metric: hash['metric']
             )
+            # Handle both old and new formats
+            if hash['children']
+              hash['children'].each do |child_hash|
+                child = deserialize_from_hash(child_hash)
+                next unless child.is_a?(ReVIEW::AST::TableRowNode)
+
+                # Determine if this should be header or body row based on position
+                # For now, add all to body_rows - this could be improved
+                node.add_body_row(child)
+              end
+            elsif hash['header_rows'] || hash['body_rows']
+              # New format with explicit header/body rows
+              (hash['header_rows'] || []).each do |row_hash|
+                row = deserialize_from_hash(row_hash)
+                node.add_header_row(row) if row.is_a?(ReVIEW::AST::TableRowNode)
+              end
+              (hash['body_rows'] || []).each do |row_hash|
+                row = deserialize_from_hash(row_hash)
+                node.add_body_row(row) if row.is_a?(ReVIEW::AST::TableRowNode)
+              end
+            end
+            node
           when 'ImageNode'
             caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
             ReVIEW::AST::ImageNode.new(
@@ -338,6 +386,37 @@ module ReVIEW
               arg: hash['arg'],
               lines: hash['lines']
             )
+          when 'CodeLineNode'
+            node = ReVIEW::AST::CodeLineNode.new(
+              location: restore_location(hash),
+              line_number: hash['line_number'],
+              original_text: hash['original_text']
+            )
+            if hash['children']
+              hash['children'].each do |child_hash|
+                child = deserialize_from_hash(child_hash)
+                node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
+              end
+            end
+            node
+          when 'TableRowNode'
+            node = ReVIEW::AST::TableRowNode.new(location: restore_location(hash))
+            if hash['children']
+              hash['children'].each do |child_hash|
+                child = deserialize_from_hash(child_hash)
+                node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
+              end
+            end
+            node
+          when 'TableCellNode'
+            node = ReVIEW::AST::TableCellNode.new(location: restore_location(hash))
+            if hash['children']
+              hash['children'].each do |child_hash|
+                child = deserialize_from_hash(child_hash)
+                node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
+              end
+            end
+            node
           when 'ColumnNode'
             caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
             ReVIEW::AST::ColumnNode.new(
@@ -358,7 +437,7 @@ module ReVIEW
             node
           end
         else
-          hash
+          raise StandardError, "invalid hash: `#{hash}`"
         end
       end
 

@@ -3,6 +3,9 @@
 require_relative 'test_helper'
 require 'review/ast'
 require 'review/ast/json_serializer'
+require 'review/ast/code_line_node'
+require 'review/ast/table_row_node'
+require 'review/ast/table_cell_node'
 require 'json'
 
 class TestASTJSONSerialization < Test::Unit::TestCase
@@ -101,14 +104,25 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   end
 
   def test_code_block_node_serialization
+    lines_text = "def hello\n  puts \"world\"\nend"
     node = AST::CodeBlockNode.new(
       location: @location,
       id: 'example',
       caption: AST::CaptionNode.parse('Example Code', location: @location),
       lang: 'ruby',
-      lines: ['def hello', '  puts "world"', 'end'],
+      original_text: lines_text,
       line_numbers: true
     )
+
+    # Add code line nodes to represent the structure
+    ['def hello', '  puts "world"', 'end'].each_with_index do |line, index|
+      line_node = AST::CodeLineNode.new(
+        location: @location,
+        line_number: index + 1
+      )
+      line_node.add_child(AST::TextNode.new(location: @location, content: line))
+      node.add_child(line_node)
+    end
 
     json = node.to_json
     parsed = JSON.parse(json)
@@ -128,18 +142,37 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     }
     assert_equal expected_caption, parsed['caption']
     assert_equal 'ruby', parsed['lang']
-    assert_equal ['def hello', '  puts "world"', 'end'], parsed['lines']
+    assert_equal lines_text, parsed['original_text']
     assert_equal true, parsed['line_numbers']
+    assert_equal 3, parsed['children'].size # Check we have 3 code line nodes
   end
 
   def test_table_node_serialization
     node = AST::TableNode.new(
       location: @location,
       id: 'data',
-      caption: AST::CaptionNode.parse('Sample Data', location: @location),
-      headers: [['Name', 'Age']],
-      rows: [['Alice', '25'], ['Bob', '30']]
+      caption: AST::CaptionNode.parse('Sample Data', location: @location)
     )
+
+    # Add header row
+    header_row = AST::TableRowNode.new(location: @location)
+    ['Name', 'Age'].each do |cell_content|
+      cell = AST::TableCellNode.new(location: @location)
+      cell.add_child(AST::TextNode.new(location: @location, content: cell_content))
+      header_row.add_child(cell)
+    end
+    node.add_header_row(header_row)
+
+    # Add body rows
+    [['Alice', '25'], ['Bob', '30']].each do |row_data|
+      body_row = AST::TableRowNode.new(location: @location)
+      row_data.each do |cell_content|
+        cell = AST::TableCellNode.new(location: @location)
+        cell.add_child(AST::TextNode.new(location: @location, content: cell_content))
+        body_row.add_child(cell)
+      end
+      node.add_body_row(body_row)
+    end
 
     json = node.to_json
     parsed = JSON.parse(json)
@@ -158,8 +191,8 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       ]
     }
     assert_equal expected_caption, parsed['caption']
-    assert_equal [['Name', 'Age']], parsed['headers']
-    assert_equal [['Alice', '25'], ['Bob', '30']], parsed['rows']
+    assert_equal 1, parsed['header_rows'].size  # Check we have 1 header row
+    assert_equal 2, parsed['body_rows'].size    # Check we have 2 body rows
   end
 
   def test_list_node_serialization
@@ -368,8 +401,13 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       id: 'example',
       caption: AST::CaptionNode.parse('Code Example', location: @location),
       lang: 'ruby',
-      lines: ['puts "Hello, World!"']
+      original_text: 'puts "Hello, World!"'
     )
+
+    # Add code line node
+    line_node = AST::CodeLineNode.new(location: @location)
+    line_node.add_child(AST::TextNode.new(location: @location, content: 'puts "Hello, World!"'))
+    code.add_child(line_node)
     doc.add_child(code)
 
     # Serialize and verify
@@ -418,6 +456,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     }
     assert_equal expected_caption, code_json['caption']
     assert_equal 'ruby', code_json['lang']
-    assert_equal ['puts "Hello, World!"'], code_json['lines']
+    assert_equal 'puts "Hello, World!"', code_json['original_text']
+    assert_equal 1, code_json['children'].size # Check we have 1 code line node
   end
 end

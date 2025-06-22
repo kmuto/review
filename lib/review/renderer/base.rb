@@ -105,33 +105,6 @@ module ReVIEW
         id_parts.join('-')
       end
 
-      # Check if a node has specific attributes.
-      # This is a convenience method for conditional rendering.
-      #
-      # @param node [Object] The node to check
-      # @param attr [Symbol] The attribute name to check
-      # @return [Boolean] True if the node has the attribute and it's not nil/empty
-      def has_attribute?(node, attr)
-        node.respond_to?(attr) &&
-          !node.send(attr).nil? &&
-          (node.send(attr).respond_to?(:empty?) ? !node.send(attr).empty? : true)
-      end
-
-      # Get attribute value with default fallback.
-      #
-      # @param node [Object] The node to get attribute from
-      # @param attr [Symbol] The attribute name
-      # @param default [Object] Default value if attribute is missing
-      # @return [Object] The attribute value or default
-      def get_attribute(node, attr, default = nil)
-        if node.respond_to?(attr)
-          value = node.send(attr)
-          value.nil? ? default : value
-        else
-          default
-        end
-      end
-
       # Default visit methods for common node types.
       # These provide basic fallback behavior that subclasses can override.
 
