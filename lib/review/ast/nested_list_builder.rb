@@ -25,9 +25,8 @@ module ReVIEW
     # - Manage nesting levels and parent-child relationships
     # - Create proper AST hierarchy for complex nested lists
     #
-    # TODO: location_providerとinline_processorは必須にする
     class NestedListBuilder
-      def initialize(location_provider = nil, inline_processor = nil)
+      def initialize(location_provider, inline_processor)
         @location_provider = location_provider
         @inline_processor = inline_processor
       end

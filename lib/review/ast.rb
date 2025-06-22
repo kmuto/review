@@ -34,6 +34,7 @@ require 'review/ast/json_serializer'
 require 'review/ast/list_ast_processor'
 require 'review/ast/list_parser'
 require 'review/ast/nested_list_builder'
+require 'review/ast/analyzer'
 
 module ReVIEW
   module AST

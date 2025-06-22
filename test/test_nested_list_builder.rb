@@ -6,10 +6,29 @@ require 'review/ast/list_parser'
 require 'review/ast/list_node'
 require 'review/ast/text_node'
 require 'review/ast/paragraph_node'
+require 'review/location'
 
 class TestNestedListBuilder < Test::Unit::TestCase
   def setup
-    @builder = ReVIEW::AST::NestedListBuilder.new
+    # Create mock objects for location_provider and inline_processor
+    @mock_location_provider = Object.new
+    @mock_inline_processor = Object.new
+
+    # Define location method for location_provider
+    def @mock_location_provider.location
+      ReVIEW::Location.new('test.re', 1)
+    end
+
+    # Define parse_inline_elements method for inline_processor
+    def @mock_inline_processor.parse_inline_elements(content, parent_node)
+      text_node = ReVIEW::AST::TextNode.new(
+        location: ReVIEW::Location.new('test.re', 1),
+        content: content
+      )
+      parent_node.add_child(text_node)
+    end
+
+    @builder = ReVIEW::AST::NestedListBuilder.new(@mock_location_provider, @mock_inline_processor)
   end
 
   def create_list_item_data(type, level, content, continuation_lines = [], metadata = {})
