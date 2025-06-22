@@ -55,8 +55,7 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     builder = ReVIEW::HTMLBuilder.new
     compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
     compiler.compile(chapter)
     ast_root = compiler.ast_result
@@ -109,8 +108,7 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     builder = ReVIEW::HTMLBuilder.new
     compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
     compiler.compile(chapter)
     ast_root = compiler.ast_result
@@ -144,8 +142,7 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     builder = ReVIEW::HTMLBuilder.new
     compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
     compiler.compile(chapter)
     ast_root = compiler.ast_result
@@ -183,8 +180,7 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     builder = ReVIEW::HTMLBuilder.new
     compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
     compiler.compile(chapter)
     ast_root = compiler.ast_result
@@ -232,7 +228,7 @@ class TestASTComprehensive < Test::Unit::TestCase
        * List item with @<code>{code}
        * Another item
 
-      //list[example][Code Example][ruby]{
+      //list[example][Code Example]{
       puts "Hello"
       //}
 
