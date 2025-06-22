@@ -81,7 +81,11 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
 
        * Item 1
        * Item 2
+       ** Item 2-1
+       ** Item 2-2
        * Item 3
+       ** Item 3-1
+       ** Item 3-2
     EOB
 
     original_ast = compile_to_ast(content)
@@ -89,22 +93,46 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
     regenerated_ast = ReVIEW::AST::JSONSerializer.deserialize(json_string)
     regenerated_content = @generator.generate(regenerated_ast)
 
-    # Check that list structure is preserved (but skip headline check due to caption serialization issue)
+    # Check that list structure is preserved with nested items
     assert_match(/\* Item 1/, regenerated_content)
     assert_match(/\* Item 2/, regenerated_content)
     assert_match(/\* Item 3/, regenerated_content)
 
-    # Verify that list items appear in order
-    lines = regenerated_content.split("\n")
-    item1_line = lines.find_index { |line| line.include?('* Item 1') }
-    item2_line = lines.find_index { |line| line.include?('* Item 2') }
-    item3_line = lines.find_index { |line| line.include?('* Item 3') }
+    # For nested items, they might be rendered differently (e.g., as part of parent item)
+    # So let's check they exist in the content somehow
+    assert_match(/Item 2-1/, regenerated_content)
+    assert_match(/Item 2-2/, regenerated_content)
+    assert_match(/Item 3-1/, regenerated_content)
+    assert_match(/Item 3-2/, regenerated_content)
 
-    assert_not_nil(item1_line, 'Item 1 not found')
-    assert_not_nil(item2_line, 'Item 2 not found')
-    assert_not_nil(item3_line, 'Item 3 not found')
-    assert item1_line < item2_line, 'Items not in correct order'
-    assert item2_line < item3_line, 'Items not in correct order'
+    # Verify that list items appear in order
+    _lines = regenerated_content.split("\n")
+
+    # Find all occurrences of items in the content
+    item1_index = regenerated_content.index('Item 1')
+    item2_index = regenerated_content.index('Item 2')
+    item2_1_index = regenerated_content.index('Item 2-1')
+    item2_2_index = regenerated_content.index('Item 2-2')
+    item3_index = regenerated_content.index('Item 3')
+    item3_1_index = regenerated_content.index('Item 3-1')
+    item3_2_index = regenerated_content.index('Item 3-2')
+
+    # Check all items were found
+    assert_not_nil(item1_index, 'Item 1 not found')
+    assert_not_nil(item2_index, 'Item 2 not found')
+    assert_not_nil(item2_1_index, 'Item 2-1 not found')
+    assert_not_nil(item2_2_index, 'Item 2-2 not found')
+    assert_not_nil(item3_index, 'Item 3 not found')
+    assert_not_nil(item3_1_index, 'Item 3-1 not found')
+    assert_not_nil(item3_2_index, 'Item 3-2 not found')
+
+    # Check correct ordering
+    assert item1_index < item2_index, 'Item 1 should come before Item 2'
+    assert item2_index < item2_1_index, 'Item 2 should come before Item 2-1'
+    assert item2_1_index < item2_2_index, 'Item 2-1 should come before Item 2-2'
+    assert item2_2_index < item3_index, 'Item 2-2 should come before Item 3'
+    assert item3_index < item3_1_index, 'Item 3 should come before Item 3-1'
+    assert item3_1_index < item3_2_index, 'Item 3-1 should come before Item 3-2'
   end
 
   def test_code_block_round_trip

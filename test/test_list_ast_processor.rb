@@ -351,4 +351,84 @@ class TestListASTProcessor < Test::Unit::TestCase
     # Should have processed continuation lines as additional content
     assert_operator(first_item.children.size, :>=, 1)
   end
+
+  def test_process_asymmetric_deep_nesting
+    # Test asymmetric nesting where different branches have different depths
+    input = create_line_input(
+      "   * Branch A (depth 1)\n" +
+      "   ** Branch A level 2\n" +
+      "   *** Branch A level 3\n" +
+      "   **** Branch A level 4\n" +
+      "   ***** Branch A level 5\n" +
+      "   * Branch B (depth 1)\n" +
+      "   ** Branch B level 2 only\n" +
+      "   * Branch C (depth 1)\n" +
+      "   ** Branch C level 2\n" +
+      "   *** Branch C level 3\n"
+    )
+
+    @processor.process_unordered_list(input)
+
+    list_node = @mock_compiler.added_nodes[0]
+    assert_equal 3, list_node.children.size # Three main branches
+
+    # Verify Branch A has deep nesting (5 levels)
+    branch_a = list_node.children[0]
+    current_nested = branch_a
+    depth = 1
+    while depth < 5
+      nested_list = current_nested.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
+      assert_not_nil(nested_list, "Branch A should have nesting at depth #{depth}")
+      current_nested = nested_list.children[0]
+      depth += 1
+    end
+    assert_equal 5, current_nested.level
+
+    # Verify Branch B has shallow nesting (2 levels only)
+    branch_b = list_node.children[1]
+    branch_b_nested = branch_b.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
+    assert_not_nil(branch_b_nested, 'Branch B should have level 2 nesting')
+    assert_equal 1, branch_b_nested.children.size
+    assert_equal 2, branch_b_nested.children[0].level
+
+    # Verify Branch C has medium nesting (3 levels)
+    branch_c = list_node.children[2]
+    branch_c_nested = branch_c.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
+    assert_not_nil(branch_c_nested, 'Branch C should have nesting')
+    branch_c_level3 = branch_c_nested.children[0].children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
+    assert_not_nil(branch_c_level3, 'Branch C should have level 3 nesting')
+    assert_equal 3, branch_c_level3.children[0].level
+  end
+
+  def test_process_mixed_list_with_inline_elements
+    # Test nested lists with inline elements
+    input = create_line_input(
+      "   * Item with @<b>{bold} text\n" +
+      "   ** Nested with @<i>{italic}\n" +
+      "   *** Deep with @<code>{code}\n" +
+      "   * Second @<href>{http://example.com, link}\n" +
+      "   ** More @<b>{bold} @<i>{italic} combination\n"
+    )
+
+    @processor.process_unordered_list(input)
+
+    list_node = @mock_compiler.added_nodes[0]
+    assert_equal 2, list_node.children.size
+
+    # Verify that inline processing was called
+    # (MockInlineProcessor adds TextNode children)
+    first_item = list_node.children[0]
+    assert_operator(first_item.children.size, :>=, 1, 'First item should have content children')
+
+    # Check nested structure is preserved along with inline content
+    nested_list = first_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
+    assert_not_nil(nested_list, 'Should preserve nesting even with inline elements')
+
+    # Navigate to deep nesting
+    level2_item = nested_list.children[0]
+    deeper_nested = level2_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
+    assert_not_nil(deeper_nested, 'Should have 3-level nesting')
+    level3_item = deeper_nested.children[0]
+    assert_equal 3, level3_item.level
+  end
 end

@@ -283,4 +283,70 @@ class TestNestedListBuilder < Test::Unit::TestCase
     node = @builder.send(:create_list_item_node, item_data)
     assert_equal 'Term content', node.content
   end
+
+  def test_build_extremely_deep_nesting
+    # Test 6-level deep nesting to verify robustness
+    items = [
+      create_list_item_data(:ul, 1, 'Level 1'),
+      create_list_item_data(:ul, 2, 'Level 2'),
+      create_list_item_data(:ul, 3, 'Level 3'),
+      create_list_item_data(:ul, 4, 'Level 4'),
+      create_list_item_data(:ul, 5, 'Level 5'),
+      create_list_item_data(:ul, 6, 'Level 6'),
+      create_list_item_data(:ul, 1, 'Back to Level 1')
+    ]
+
+    list_node = @builder.build_unordered_list(items)
+
+    assert_equal :ul, list_node.list_type
+    assert_equal 2, list_node.children.size # Two top-level items
+
+    # Navigate through all nesting levels
+    current_item = list_node.children[0]
+    current_level = 1
+
+    while current_level < 6
+      assert_equal current_level, current_item.level
+      nested_list = current_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
+      next unless current_level < 6
+
+      assert_not_nil(nested_list, "Should have nested list at level #{current_level}")
+      current_item = nested_list.children[0]
+      current_level += 1
+    end
+
+    # Verify the deepest level
+    assert_equal 6, current_item.level
+  end
+
+  def test_build_irregular_nesting_pattern
+    # Test jumping nesting levels (1->3->2->4)
+    items = [
+      create_list_item_data(:ul, 1, 'Level 1'),
+      create_list_item_data(:ul, 3, 'Jump to Level 3'),
+      create_list_item_data(:ul, 2, 'Back to Level 2'),
+      create_list_item_data(:ul, 4, 'Jump to Level 4'),
+      create_list_item_data(:ul, 1, 'Back to Level 1'),
+      create_list_item_data(:ul, 2, 'Level 2 again')
+    ]
+
+    list_node = @builder.build_unordered_list(items)
+
+    assert_equal :ul, list_node.list_type
+    assert_equal 2, list_node.children.size # Two level-1 items
+
+    # Verify first complex nested structure
+    first_item = list_node.children[0]
+    assert_equal 1, first_item.level
+
+    # Should handle irregular nesting gracefully
+    nested_list = first_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
+    assert_not_nil(nested_list, 'Should create nested structure even with irregular levels')
+
+    # Verify second level-1 item also has nesting
+    second_item = list_node.children[1]
+    assert_equal 1, second_item.level
+    second_nested = second_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
+    assert_not_nil(second_nested, 'Second item should also have nested structure')
+  end
 end
