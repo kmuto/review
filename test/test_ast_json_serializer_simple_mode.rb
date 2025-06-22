@@ -71,7 +71,10 @@ class TestASTJSONSerializerSimpleMode < Test::Unit::TestCase
     # Check paragraph
     paragraph = simple_hash['content'].find { |item| item['type'] == 'ParagraphNode' }
     assert_not_nil(paragraph)
-    assert_equal 'This is a test paragraph.', paragraph['content']
+    # Paragraph now uses children structure
+    assert paragraph.key?('children')
+    text_node = paragraph['children'][0]
+    assert_equal 'This is a test paragraph.', text_node
   end
 
   def test_simple_mode_vs_traditional_mode

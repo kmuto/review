@@ -100,7 +100,8 @@ module ReVIEW
         content = visit_children(node)
 
         # Debug: check if we're getting the content properly
-        if content.empty? && node.respond_to?(:args) && node.args&.any?
+        # Only use args as content for specific inline types that don't have special handling
+        if content.empty? && node.respond_to?(:args) && node.args&.any? && !%w[href kw ruby].include?(node.inline_type)
           # Use first arg as content if children are empty
           content = node.args.first.to_s
         end
