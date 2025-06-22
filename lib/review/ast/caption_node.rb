@@ -88,8 +88,7 @@ module ReVIEW
         {
           type: 'CaptionNode',
           location: location&.to_h,
-          children: children.map(&:to_h),
-          text: to_text
+          children: children.map(&:to_h)
         }
       end
 
