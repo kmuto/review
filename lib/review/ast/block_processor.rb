@@ -123,7 +123,7 @@ module ReVIEW
         node = AST::MinicolumnNode.new(
           location: @ast_compiler.location,
           minicolumn_type: type.to_sym,
-          caption: args && args[0] ? args[0] : nil
+          caption: process_caption(args, 0)
         )
 
         if lines
@@ -238,7 +238,7 @@ module ReVIEW
       def build_image_ast(_command_name, args, _lines)
         create_and_add_node(AST::ImageNode,
                             id: safe_arg(args, 0),
-                            caption: processed_caption(args, 1),
+                            caption: process_caption(args, 1),
                             metric: safe_arg(args, 2))
       end
 

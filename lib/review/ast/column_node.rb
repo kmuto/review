@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'review/ast/node'
+require 'review/ast/caption_node'
 
 module ReVIEW
   module AST
@@ -11,7 +12,7 @@ module ReVIEW
         super(location: location, **kwargs)
         @level = level
         @label = label
-        @caption = caption || [] # caption is now an array of nodes
+        @caption = CaptionNode.parse(caption, location: location)
         @column_type = column_type
       end
 
@@ -19,7 +20,7 @@ module ReVIEW
         super.merge(
           level: level,
           label: label,
-          caption: caption.is_a?(Array) ? caption.map(&:to_h) : caption,
+          caption: caption&.to_h,
           column_type: column_type
         )
       end
@@ -30,7 +31,7 @@ module ReVIEW
         hash[:children] = children.map { |child| child.serialize_to_hash(options) }
         hash[:level] = level
         hash[:label] = label
-        hash[:caption] = caption.is_a?(Array) ? caption.map { |child| child.serialize_to_hash(options) } : caption
+        hash[:caption] = caption&.serialize_to_hash(options)
         hash[:column_type] = column_type
         hash
       end
