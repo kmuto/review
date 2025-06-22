@@ -2,111 +2,13 @@
 
 require_relative 'test_helper'
 require 'review/ast'
+require 'review/ast/compiler'
 require 'review/ast/json_serializer'
 require 'review/ast/review_generator'
-require 'review/compiler'
-require 'review/builder'
 require 'review/book'
 require 'review/book/chapter'
 require 'json'
 require 'stringio'
-
-# Dummy builder for AST generation in tests
-class DummyBuilder < ReVIEW::Builder
-  def result
-    ''
-  end
-
-  def headline(_level, _label, _caption)
-    ''
-  end
-
-  def paragraph(_lines)
-    ''
-  end
-
-  def list(_lines, _id, _caption, _lang = nil)
-    ''
-  end
-
-  def nofunc_text(str)
-    str
-  end
-
-  # List methods
-  def ul_begin
-    ''
-  end
-
-  def ul_end
-    ''
-  end
-
-  def ul_item_begin(_lines)
-    ''
-  end
-
-  def ul_item_end
-    ''
-  end
-
-  def ol_begin
-    ''
-  end
-
-  def ol_end
-    ''
-  end
-
-  def ol_item(_lines, _num)
-    ''
-  end
-
-  def dl_begin
-    ''
-  end
-
-  def dl_end
-    ''
-  end
-
-  def dt(_line)
-    ''
-  end
-
-  def dd(_lines)
-    ''
-  end
-
-  # Table methods
-  def table_header(_id, _caption)
-    ''
-  end
-
-  def table_begin(_ncols)
-    ''
-  end
-
-  def table_end
-    ''
-  end
-
-  def tr(_rows)
-    ''
-  end
-
-  def th(_str)
-    ''
-  end
-
-  def td(_str)
-    ''
-  end
-
-  def table(_lines, _id, _caption)
-    ''
-  end
-end
 
 class TestASTBidirectionalConversion < Test::Unit::TestCase
   def setup
@@ -343,12 +245,12 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
   private
 
   def compile_to_ast(content)
-    builder = DummyBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
+    # Use AST::Compiler directly, no builder needed for bidirectional conversion tests
+    compiler = ReVIEW::AST::Compiler.new(nil)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
-    compiler.compile(chapter)
+    compiler.compile_to_ast(chapter)
     compiler.ast_result
   end
 end
