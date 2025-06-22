@@ -174,7 +174,6 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
   end
 
   def test_list_round_trip
-    # Note: This test will still have caption serialization issues but DummyBuilder is now fixed
     content = <<~EOB
       = List Test
 
@@ -192,23 +191,21 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
     assert_match(/\* Item 1/, regenerated_content)
     assert_match(/\* Item 2/, regenerated_content)
     assert_match(/\* Item 3/, regenerated_content)
-    
+
     # Verify that list items appear in order
     lines = regenerated_content.split("\n")
-    item1_line = lines.find_index { |line| line.include?("* Item 1") }
-    item2_line = lines.find_index { |line| line.include?("* Item 2") }
-    item3_line = lines.find_index { |line| line.include?("* Item 3") }
-    
-    assert_not_nil item1_line, "Item 1 not found"
-    assert_not_nil item2_line, "Item 2 not found" 
-    assert_not_nil item3_line, "Item 3 not found"
-    assert item1_line < item2_line, "Items not in correct order"
-    assert item2_line < item3_line, "Items not in correct order"
+    item1_line = lines.find_index { |line| line.include?('* Item 1') }
+    item2_line = lines.find_index { |line| line.include?('* Item 2') }
+    item3_line = lines.find_index { |line| line.include?('* Item 3') }
+
+    assert_not_nil(item1_line, 'Item 1 not found')
+    assert_not_nil(item2_line, 'Item 2 not found')
+    assert_not_nil(item3_line, 'Item 3 not found')
+    assert item1_line < item2_line, 'Items not in correct order'
+    assert item2_line < item3_line, 'Items not in correct order'
   end
 
   def test_code_block_round_trip
-    # Caption serialization is now fixed
-
     content = <<~EOB
       = Code Test
 
@@ -232,7 +229,6 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
   end
 
   def test_table_round_trip
-    # Note: This test will still have caption serialization issues but DummyBuilder is now fixed
     content = <<~EOB
       = Table Test
 
@@ -250,18 +246,17 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
     regenerated_content = @generator.generate(regenerated_ast)
 
     # Check that table structure is preserved (caption will be JSON but table content should work)
-    assert_match(/\/\/table\[table1\]/, regenerated_content)  # ID should be preserved
+    assert_match(%r{//table\[table1\]}, regenerated_content) # ID should be preserved
     assert_match(/Name\s+Age/, regenerated_content)
     assert_match(/Alice\s+25/, regenerated_content)
     assert_match(/Bob\s+30/, regenerated_content)
-    
+
     # Verify table structure
     assert_match(/----------/, regenerated_content)  # Table separator
-    assert_match(/\/\/\}/, regenerated_content)      # Table end
+    assert_match(%r{//\}}, regenerated_content)      # Table end
   end
 
   def test_complex_structure_round_trip
-    # Note: This test will still have caption serialization issues but DummyBuilder is now fixed
     content = <<~EOB
       = Complex Test
 
@@ -297,8 +292,6 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
   end
 
   def test_json_structure_consistency
-    # Caption serialization is now fixed
-
     content = <<~EOB
       = Structure Test
 

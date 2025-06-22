@@ -33,8 +33,6 @@ module ReVIEW
         result
       end
 
-      private
-
       protected
 
       def serialize_properties(hash, options)
