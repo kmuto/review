@@ -19,7 +19,6 @@ require 'optparse'
 
 def main
   config = ReVIEW::Configure.values
-  mode = :ast # Default mode
   output_file = nil
   serializer_options = ReVIEW::AST::JSONSerializer::Options.new
 
@@ -34,10 +33,6 @@ def main
 
   opts.on('-o', '--output=FILE', 'output to FILE instead of stdout') do |file|
     output_file = file
-  end
-
-  opts.on('--mode=MODE', ['ast', 'builder'], 'output mode (ast: AST dump, builder: JSONBuilder output)') do |m|
-    mode = m.to_sym
   end
 
   opts.on('--[no-]pretty', 'pretty print JSON (default: true)') do |v|
@@ -82,7 +77,7 @@ def main
   end
 
   # Create dumper
-  dumper = ReVIEW::Dumper.new(config: config, mode: mode, serializer_options: serializer_options)
+  dumper = ReVIEW::Dumper.new(config: config, serializer_options: serializer_options)
 
   begin
     # Process each input file

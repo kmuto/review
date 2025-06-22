@@ -245,7 +245,7 @@ module ReVIEW
       end
 
       # === Block Node ===
-      def visit_block(node)
+      def visit_block(node) # rubocop:disable Metrics/CyclomaticComplexity
         case node.block_type
         when :quote
           "//quote{\n" + visit_children(node) + "//}\n\n"
@@ -303,6 +303,8 @@ module ReVIEW
           text += "{\n"
           text += visit_children(node)
           text += "//}\n\n"
+
+          text
         else
           visit_children(node)
         end

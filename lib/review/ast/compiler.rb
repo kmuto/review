@@ -37,7 +37,6 @@ module ReVIEW
         # AST related
         @ast_root = nil
         @current_ast_node = nil
-        @ast_renderer = nil
 
         # Processors for specialized AST handling - lazy initialization
         @inline_processor = nil
@@ -50,7 +49,7 @@ module ReVIEW
         @performance_tracker = PerformanceTracker.new(logger: @logger)
       end
 
-      attr_reader :builder, :ast_root, :current_ast_node, :ast_renderer
+      attr_reader :builder, :ast_root, :current_ast_node
 
       # Lazy-loaded processors
       def inline_processor
@@ -130,16 +129,15 @@ module ReVIEW
       end
 
       # Render AST to builder for compatibility with existing tests
-      def render_ast_to_builder(node)
+      def render_ast_to_builder(node) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
         case node
         when AST::DocumentNode
           node.children.each { |child| render_ast_to_builder(child) }
         when AST::HeadlineNode
           @builder.headline(node.level, node.label, node.caption_markup_text)
         when AST::ParagraphNode
-          lines = []
-          node.children.each do |child|
-            lines << render_ast_node_to_text(child)
+          lines = node.children.map do |child|
+            render_ast_node_to_text(child)
           end
           @builder.paragraph(lines)
         when AST::CodeBlockNode

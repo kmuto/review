@@ -155,18 +155,6 @@ module ReVIEW
         # Default implementation just returns the content
         content
       end
-
-      private
-
-      # Ensure we have a valid config object
-      def ensure_config
-        @config ||= {}
-      end
-
-      # Ensure we have a valid options object
-      def ensure_options
-        @options ||= {}
-      end
     end
   end
 end

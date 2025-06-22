@@ -111,7 +111,7 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
     content = <<~EOB
       = Code Test
 
-      //list[sample][Sample Code][ruby]{
+      //list[sample][Sample @<b>{Code}][ruby]{
       puts "Hello"
       def greet
         puts "Hi"
@@ -125,7 +125,7 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
     regenerated_content = @generator.generate(regenerated_ast)
 
     # Check that code block structure is preserved
-    assert_match(%r{//list\[sample\]\[Sample Code\]}, regenerated_content)
+    assert_match(%r{//list\[sample\]\[Sample @<b>\{Code\}\]}, regenerated_content)
     assert_match(/puts "Hello"/, regenerated_content)
     assert_match(/def greet/, regenerated_content)
   end
@@ -156,6 +156,44 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
     # Verify table structure
     assert_match(/----------/, regenerated_content)  # Table separator
     assert_match(%r{//\}}, regenerated_content)      # Table end
+  end
+
+  def test_image_round_trip
+    content = <<~EOB
+      = Image Test
+
+      //image[sample_image][Sample Image @<b>{Caption}]{
+      //}
+    EOB
+
+    original_ast = compile_to_ast(content)
+    json_string = ReVIEW::AST::JSONSerializer.serialize(original_ast)
+    regenerated_ast = ReVIEW::AST::JSONSerializer.deserialize(json_string)
+    regenerated_content = @generator.generate(regenerated_ast)
+
+    # Check that image structure is preserved
+    assert_match(%r{//image\[sample_image\]}, regenerated_content) # ID should be preserved
+    assert_match(/Sample Image/, regenerated_content) # Caption content should be preserved
+    assert_match(/@<b>\{Caption\}/, regenerated_content) # Inline elements in caption should be preserved
+  end
+
+  def test_image_with_options_round_trip
+    content = <<~EOB
+      = Image with Options Test
+
+      //image[scaled_image][Scaled Image][scale=0.5]{
+      //}
+    EOB
+
+    original_ast = compile_to_ast(content)
+    json_string = ReVIEW::AST::JSONSerializer.serialize(original_ast)
+    regenerated_ast = ReVIEW::AST::JSONSerializer.deserialize(json_string)
+    regenerated_content = @generator.generate(regenerated_ast)
+
+    # Check that image with options structure is preserved
+    assert_match(%r{//image\[scaled_image\]}, regenerated_content) # ID should be preserved
+    assert_match(/Scaled Image/, regenerated_content) # Caption should be preserved
+    assert_match(/scale=0\.5/, regenerated_content) # Options should be preserved
   end
 
   def test_complex_structure_round_trip

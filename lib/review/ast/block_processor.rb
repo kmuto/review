@@ -243,7 +243,7 @@ module ReVIEW
       end
 
       # Build quote AST node
-      def build_quote_ast(command_name, _args, lines)
+      def build_quote_ast(_command_name, _args, lines)
         node = create_node(AST::ParagraphNode)
 
         # Parse inline elements in quote content
@@ -252,15 +252,6 @@ module ReVIEW
         end
 
         add_node_to_ast(node)
-
-        # Render immediately in hybrid mode - use quote-specific method
-        if @ast_compiler.ast_renderer
-          if command_name == :blockquote
-            @ast_compiler.builder.blockquote(lines || [])
-          else
-            @ast_compiler.builder.quote(lines || [])
-          end
-        end
       end
 
       # Build minicolumn AST node (note, memo, tip, etc.)
@@ -277,38 +268,20 @@ module ReVIEW
         end
 
         @ast_compiler.add_child_to_current_node(node)
-
-        # Render immediately in hybrid mode - use minicolumn-specific method
-        if @ast_compiler.ast_renderer
-          @ast_compiler.builder.__send__("#{command_name}_begin", args.first)
-          (lines || []).each do |line|
-            # Process inline elements in line for proper rendering
-            # This would need access to the text method from compiler
-            @ast_compiler.builder.paragraph([line])
-          end
-          @ast_compiler.builder.__send__("#{command_name}_end")
-        end
       end
 
       # Build footnote AST node
       def build_footnote_ast(command_name, args, _lines)
         # Footnotes are single-line commands, not block commands
-        # Handle them as inline processing would
-        if @ast_compiler.ast_renderer
-          @ast_compiler.builder.__send__(command_name, *args)
-        end
+        # They are handled by inline processing, not block processing
       end
 
       # Build raw AST node
       def build_raw_ast(args, lines)
-        node = create_and_add_node(AST::EmbedNode,
-                                   embed_type: :raw,
-                                   lines: lines || [],
-                                   arg: safe_arg(args, 0))
-        # Render immediately in hybrid mode
-        if @ast_compiler.ast_renderer && args&.any?
-          @ast_compiler.builder.raw(args.first)
-        end
+        create_and_add_node(AST::EmbedNode,
+                            embed_type: :raw,
+                            lines: lines || [],
+                            arg: safe_arg(args, 0))
       end
 
       # Build unordered list AST node

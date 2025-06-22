@@ -4,7 +4,7 @@ require 'json'
 
 module ReVIEW
   module AST
-    module JSONSerializer
+    module JSONSerializer # rubocop:disable Metrics/ModuleLength
       # Options for JSON serialization
       class Options
         attr_accessor :pretty, :include_location, :include_empty_arrays, :indent, :simple_mode
@@ -61,7 +61,7 @@ module ReVIEW
       end
 
       # Simple serialization for nodes (bypasses node's serialize_to_hash method)
-      def simple_serialize_node(node, options)
+      def simple_serialize_node(node, options) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
         hash = { 'type' => node.class.name.split('::').last }
 
         # Skip location in simple mode unless explicitly requested
@@ -178,7 +178,7 @@ module ReVIEW
       end
 
       # Deserialize hash to AST node
-      def deserialize_from_hash(hash)
+      def deserialize_from_hash(hash) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
         return nil unless hash
 
         case hash

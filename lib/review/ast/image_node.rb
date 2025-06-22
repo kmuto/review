@@ -22,10 +22,8 @@ module ReVIEW
       # Override to_h to exclude children array for ImageNode
       def to_h
         result = super
-        result.merge!(
-          caption: caption&.to_h,
-          metric: metric
-        )
+        result[:caption] = caption&.to_h
+        result[:metric] = metric
         # ImageNode is a leaf node - remove children array if present
         result.delete(:children)
         result

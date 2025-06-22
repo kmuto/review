@@ -33,7 +33,7 @@ class TestDumper < Test::Unit::TestCase
     REVIEW
 
     path = create_review_file(content)
-    dumper = ReVIEW::Dumper.new(mode: :ast)
+    dumper = ReVIEW::Dumper.new
     result = dumper.dump_file(path)
 
     json = JSON.parse(result)
@@ -77,22 +77,6 @@ class TestDumper < Test::Unit::TestCase
     assert_equal expected_caption, json['children'][2]['caption']
   end
 
-  def test_dump_builder_mode
-    content = <<~REVIEW
-      = Test Chapter
-
-      This is a test paragraph.
-    REVIEW
-
-    path = create_review_file(content)
-    dumper = ReVIEW::Dumper.new(mode: :builder)
-    result = dumper.dump_file(path)
-
-    json = JSON.parse(result)
-    assert_equal 'DocumentNode', json['type']
-    assert_equal 2, json['children'].size
-  end
-
   def test_dump_with_compact_options
     content = "= Test\n\nParagraph"
     path = create_review_file(content)
@@ -101,7 +85,7 @@ class TestDumper < Test::Unit::TestCase
     options.pretty = false
     options.include_location = false
 
-    dumper = ReVIEW::Dumper.new(mode: :ast, serializer_options: options)
+    dumper = ReVIEW::Dumper.new(serializer_options: options)
     result = dumper.dump_file(path)
 
     # Should be compact JSON
@@ -119,7 +103,7 @@ class TestDumper < Test::Unit::TestCase
     path1 = create_review_file(content1, 'ch01.re')
     path2 = create_review_file(content2, 'ch02.re')
 
-    dumper = ReVIEW::Dumper.new(mode: :ast)
+    dumper = ReVIEW::Dumper.new
     results = dumper.dump_files([path1, path2])
 
     assert_equal 2, results.size
@@ -138,20 +122,5 @@ class TestDumper < Test::Unit::TestCase
     assert_raise(ReVIEW::FileNotFound) do
       dumper.dump_file('/nonexistent/file.re')
     end
-  end
-
-  def test_dump_with_custom_config
-    content = "= Test\n\nParagraph"
-    path = create_review_file(content)
-
-    config = ReVIEW::Configure.values
-    config['language'] = 'ja'
-
-    dumper = ReVIEW::Dumper.new(config: config, mode: :builder)
-    result = dumper.dump_file(path)
-
-    # Should work with custom config
-    json = JSON.parse(result)
-    assert_equal 'DocumentNode', json['type']
   end
 end
