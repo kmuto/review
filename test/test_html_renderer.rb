@@ -142,7 +142,7 @@ class TestHTMLRenderer < Test::Unit::TestCase
     html_output = @renderer.render(ast_root)
 
     # HTMLRenderer now uses fixed anchor IDs like HTMLBuilder
-    assert_match(/<h1><a id="h1"><\/a>/, html_output)
+    assert_match(%r{<h1><a id="h1"></a>}, html_output)
     # Chapter title should be present
     assert_match(/Test Chapter/, html_output)
   end

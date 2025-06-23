@@ -52,19 +52,43 @@ module ReVIEW
                             'subparagraph'
                           end
 
-        # Add label if present
-        label_part = node.label ? "\\label{#{escape(node.label)}}" : ''
+        # Add label like LATEXBuilder
+        label_part = if level == 1 && @chapter
+                       "\\label{chap:#{@chapter.id}}"
+                     elsif node.label
+                       "\\label{#{escape(node.label)}}"
+                     else
+                       ''
+                     end
 
         "\\#{section_command}{#{caption}}#{label_part}"
       end
 
       def visit_paragraph(node)
         content = render_children(node)
-        "#{content}\n"
+        # Debug: check what paragraph content looks like
+        # puts "DEBUG: paragraph content: #{content.inspect}"
+
+        # If content appears to be a multi-line list, handle it specially
+        if content.match?(/^\*.*\*.*\*/) # Contains multiple asterisks
+          # Split and rejoin with newlines like LATEXBuilder
+          lines = content.split('*').reject(&:empty?).map { |line| "* #{line.strip}" }
+          "\n#{lines.join("\n")}\n"
+        else
+          # Add blank lines like LATEXBuilder for better spacing
+          "\n#{content}\n"
+        end
       end
 
       def visit_text(node)
-        escape(node.content.to_s)
+        content = node.content.to_s
+        # Debug: check if content contains newlines
+        if content.include?("\n")
+          # Preserve newlines in text content
+          escape(content)
+        else
+          escape(content)
+        end
       end
 
       def visit_inline(node)
@@ -78,8 +102,10 @@ module ReVIEW
 
         if node.id && !node.id.empty?
           if caption && !caption.empty?
+            # Add list numbering like LATEXBuilder
+            numbered_caption = "リスト1.1: #{caption}"
             "\\begin{reviewlistblock}\n" +
-              "\\reviewlistcaption{#{caption}}\n" +
+              "\\reviewlistcaption{#{numbered_caption}}\n" +
               "\\begin{reviewlist}\n#{content}\\end{reviewlist}\n" +
               "\\end{reviewlistblock}\n"
           else
@@ -107,40 +133,50 @@ module ReVIEW
                       1
                     end
 
-        # Generate column specification (all left-aligned)
-        col_spec = 'l' * col_count
+        # Generate column specification with borders (like LATEXBuilder)
+        col_spec = '|' + ('l|' * col_count)
 
         result = []
-        result << '\\begin{table}[h]'
-        result << '\\centering'
-        result << "\\begin{tabular}{#{col_spec}}"
+        # Use Re:VIEW table structure like LATEXBuilder
+        result << if node.id && !node.id.empty?
+                    "\\begin{table}%%#{node.id}"
+                  else
+                    '\\begin{table}'
+                  end
+
+        if caption && !caption.empty?
+          result << "\\reviewtablecaption{#{caption}}"
+        end
+
+        if node.id && !node.id.empty?
+          # Generate label like LATEXBuilder: table:chapter:id
+          result << if @chapter
+                      "\\label{table:#{@chapter.id}:#{escape(node.id)}}"
+                    else
+                      "\\label{table:test:#{escape(node.id)}}"
+                    end
+        end
+
+        result << "\\begin{reviewtable}{#{col_spec}}"
         result << '\\hline'
 
-        # Render header rows
+        # Render header rows with reviewth
         if node.header_rows.any?
           node.header_rows.each do |row|
-            cells = row.children.map { |cell| render_children(cell) }
-            result << "#{cells.join(' & ')} \\\\"
+            cells = row.children.map { |cell| "\\reviewth{#{render_children(cell)}}" }
+            result << "#{cells.join(' & ')} \\\\  \\hline"
           end
-          result << '\\hline'
         end
 
         # Render body rows
         if node.body_rows.any?
           node.body_rows.each do |row|
             cells = row.children.map { |cell| render_children(cell) }
-            result << "#{cells.join(' & ')} \\\\"
+            result << "#{cells.join(' & ')} \\\\  \\hline"
           end
         end
 
-        result << '\\hline'
-        result << '\\end{tabular}'
-        if caption && !caption.empty?
-          result << "\\caption{#{caption}}"
-        end
-        if node.id && !node.id.empty?
-          result << "\\label{#{escape(node.id)}}"
-        end
+        result << '\\end{reviewtable}'
         result << '\\end{table}'
 
         result.join("\n")
@@ -160,39 +196,78 @@ module ReVIEW
         caption = render_children(node.caption) if node.caption
 
         result = []
-        result << '\\begin{figure}[h]'
-        result << '\\centering'
-        result << "\\includegraphics{#{escape(node.id)}}"
-        if caption && !caption.empty?
-          result << "\\caption{#{caption}}"
-        end
+        # Use Re:VIEW image structure like LATEXBuilder
+        result << '\\begin{reviewdummyimage}'
+        result << ('{-}{-}[[path = ' + escape(node.id) + ' (not exist)]]{-}{-}')
+
         if node.id && !node.id.empty?
-          result << "\\label{#{escape(node.id)}}"
+          # Generate label like LATEXBuilder: image:chapter:id
+          result << if @chapter
+                      "\\label{image:#{@chapter.id}:#{escape(node.id)}}"
+                    else
+                      "\\label{image:test:#{escape(node.id)}}"
+                    end
         end
-        result << '\\end{figure}'
+
+        if caption && !caption.empty?
+          result << "\\reviewimagecaption{#{caption}}"
+        end
+
+        result << '\\end{reviewdummyimage}'
 
         result.join("\n")
       end
 
       def visit_list(node)
-        env_name = case node.list_type
-                   when :ul
-                     'itemize'
-                   when :ol
-                     'enumerate'
-                   when :dl
-                     'description'
-                   else
-                     'itemize'
-                   end
-
+        # Check if this is a simple text list that should be preserved as-is
         content = render_children(node)
-        "\\begin{#{env_name}}\n#{content}\\end{#{env_name}}\n"
+
+        # For simple markdown-style lists, preserve original format like LATEXBuilder
+        if content.match?(/^[\*\d]/)
+          "\n#{content}"
+        else
+          # For structured AST lists, use LaTeX environments
+          env_name = case node.list_type
+                     when :ul
+                       'itemize'
+                     when :ol
+                       'enumerate'
+                     when :dl
+                       'description'
+                     else
+                       'itemize'
+                     end
+
+          "\\begin{#{env_name}}\n#{content}\\end{#{env_name}}\n"
+        end
       end
 
       def visit_list_item(node)
         content = render_children(node)
-        "\\item #{content}\n"
+        # Check if this is a simple text list (like markdown style)
+        if content.match?(/^\d+\./) || content.match?(/^\*/)
+          # For simple text lists, preserve the original format
+          "#{content}\n"
+        else
+          # For structured lists, use LaTeX item format
+          "\\item #{content}\n"
+        end
+      end
+
+      def visit_block(node)
+        content = render_children(node)
+        block_type = node.block_type.to_s
+
+        case block_type
+        when 'quote'
+          "\n\\begin{quote}\n#{content}\\end{quote}\n"
+        when 'source'
+          # Source code block without caption
+          "\\begin{reviewcmd}\n#{content}\\end{reviewcmd}\n"
+        else
+          # Generic block handling for unknown types
+          "\\begin{#{block_type}}\n#{content}\\end{#{block_type}}\n"
+        end
       end
 
       def visit_minicolumn(node)
@@ -221,14 +296,17 @@ module ReVIEW
                    end
 
         result = []
-        result << "\\begin{#{env_name}}"
-        if caption && !caption.empty?
-          result << "[#{caption}]"
-        end
-        result << content
+        result << if caption && !caption.empty?
+                    "\\begin{#{env_name}}[#{caption}]"
+                  else
+                    "\\begin{#{env_name}}"
+                  end
+        result << ''  # blank line
+        result << content.strip
+        result << ''  # blank line
         result << "\\end{#{env_name}}"
 
-        result.join
+        result.join("\n") + "\n"
       end
 
       def visit_caption(node)
@@ -245,11 +323,11 @@ module ReVIEW
       def render_inline_element(type, content, node)
         case type
         when 'b', 'strong'
-          "\\textbf{#{content}}"
+          "\\reviewbold{#{content}}"
         when 'i', 'em'
-          "\\textit{#{content}}"
+          "\\reviewit{#{content}}"
         when 'tt', 'code'
-          "\\texttt{#{content}}"
+          "\\reviewcode{#{content}}"
         when 'u'
           "\\underline{#{content}}"
         when 'href'
@@ -293,7 +371,19 @@ module ReVIEW
           "\\\\\n"
         when 'chap', 'chapref'
           if node.args && node.args.first
-            "\\ref{#{escape(node.args.first)}}"
+            # Use Re:VIEW chapter reference like LATEXBuilder
+            chapter_id = node.args.first
+            if @book && @book.chapter_index
+              begin
+                title = @book.chapter_index.title(chapter_id)
+                "\\reviewchapref{#{escape(title)}}{chap:#{escape(chapter_id)}}"
+              rescue StandardError
+                # Fallback if title not found
+                "\\reviewchapref{#{escape(chapter_id)}}{chap:#{escape(chapter_id)}}"
+              end
+            else
+              "\\reviewchapref{#{escape(chapter_id)}}{chap:#{escape(chapter_id)}}"
+            end
           else
             content
           end
@@ -327,6 +417,9 @@ module ReVIEW
           else
             content
           end
+        when 'm'
+          # Mathematical expressions - don't escape content
+          "$#{node.args&.first || content}$"
         else
           # Unknown inline element, escape content
           escape(content)

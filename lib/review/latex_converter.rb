@@ -7,8 +7,8 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/compiler'
-require 'review/htmlbuilder'
-require 'review/renderer/html_renderer'
+require 'review/latexbuilder'
+require 'review/renderer/latex_renderer'
 require 'review/ast'
 require 'review/book'
 require 'review/configure'
@@ -16,18 +16,18 @@ require 'review/i18n'
 require 'stringio'
 
 module ReVIEW
-  # HTMLConverter converts *.re files to HTML using both HTMLBuilder and HTMLRenderer
+  # LATEXConverter converts *.re files to LaTeX using both LATEXBuilder and LATEXRenderer
   # for comparison purposes.
-  class HTMLConverter
+  class LATEXConverter
     def initialize(config: {})
       @config = config
     end
 
-    # Convert a Re:VIEW source string to HTML using HTMLBuilder
+    # Convert a Re:VIEW source string to LaTeX using LATEXBuilder
     #
     # @param source [String] Re:VIEW source content
     # @param chapter [ReVIEW::Book::Chapter, nil] Chapter context (optional)
-    # @return [String] Generated HTML
+    # @return [String] Generated LaTeX
     def convert_with_builder(source, chapter: nil)
       # Create a temporary book/chapter if not provided
       unless chapter
@@ -35,12 +35,12 @@ module ReVIEW
         chapter = create_temporary_chapter(book, source)
       end
 
-      # Create HTMLBuilder
-      builder = HTMLBuilder.new
+      # Create LATEXBuilder and compiler
+      builder = LATEXBuilder.new
       compiler = Compiler.new(builder)
-      builder.bind(compiler, chapter, Location.new('test', nil))
 
-      # Compiler already created above
+      # Bind builder to context
+      builder.bind(compiler, chapter, Location.new('test', nil))
 
       # Compile the chapter
       compiler.compile(chapter)
@@ -48,11 +48,11 @@ module ReVIEW
       builder.raw_result
     end
 
-    # Convert a Re:VIEW source string to HTML using HTMLRenderer
+    # Convert a Re:VIEW source string to LaTeX using LATEXRenderer
     #
     # @param source [String] Re:VIEW source content
     # @param chapter [ReVIEW::Book::Chapter, nil] Chapter context (optional)
-    # @return [String] Generated HTML
+    # @return [String] Generated LaTeX
     def convert_with_renderer(source, chapter: nil)
       # Create a temporary book/chapter if not provided
       unless chapter
@@ -65,8 +65,8 @@ module ReVIEW
       ast_compiler = ReVIEW::AST::Compiler.new(nil)
       ast = ast_compiler.compile_to_ast(chapter)
 
-      # Render with HTMLRenderer
-      renderer = Renderer::HTMLRenderer.new(
+      # Render with LATEXRenderer
+      renderer = Renderer::LATEXRenderer.new(
         config: @config,
         options: { chapter: chapter, book: chapter.book }
       )
@@ -74,19 +74,19 @@ module ReVIEW
       renderer.visit(ast)
     end
 
-    # Convert a *.re file to HTML using HTMLBuilder
+    # Convert a *.re file to LaTeX using LATEXBuilder
     #
     # @param file_path [String] Path to .re file
-    # @return [String] Generated HTML
+    # @return [String] Generated LaTeX
     def convert_file_with_builder(file_path)
       source = File.read(file_path)
       convert_with_builder(source)
     end
 
-    # Convert a *.re file to HTML using HTMLRenderer
+    # Convert a *.re file to LaTeX using LATEXRenderer
     #
     # @param file_path [String] Path to .re file
-    # @return [String] Generated HTML
+    # @return [String] Generated LaTeX
     def convert_file_with_renderer(file_path)
       source = File.read(file_path)
       convert_with_renderer(source)
@@ -99,9 +99,9 @@ module ReVIEW
       book_config = Configure.values
       book_config.merge!(@config)
 
-      # Set default HTML configuration
-      book_config['htmlext'] = 'html'
-      book_config['stylesheet'] = []
+      # Set default LaTeX configuration
+      book_config['texstyle'] = 'reviewmacro'
+      book_config['texdocumentclass'] = ['jsbook', 'oneside']
       book_config['language'] = 'ja'
 
       # Initialize I18n

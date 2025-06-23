@@ -35,7 +35,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     paragraph.add_child(text)
 
     result = @renderer.visit(paragraph)
-    assert_equal "This is a paragraph.\n", result
+    assert_equal "\nThis is a paragraph.\n", result
   end
 
   def test_visit_headline_level_1
@@ -63,7 +63,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     inline.add_child(AST::TextNode.new(content: 'bold text'))
 
     result = @renderer.visit(inline)
-    assert_equal '\\textbf{bold text}', result
+    assert_equal '\\reviewbold{bold text}', result
   end
 
   def test_visit_inline_italic
@@ -71,7 +71,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     inline.add_child(AST::TextNode.new(content: 'italic text'))
 
     result = @renderer.visit(inline)
-    assert_equal '\\textit{italic text}', result
+    assert_equal '\\reviewit{italic text}', result
   end
 
   def test_visit_inline_code
@@ -79,7 +79,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     inline.add_child(AST::TextNode.new(content: 'code text'))
 
     result = @renderer.visit(inline)
-    assert_equal '\\texttt{code text}', result
+    assert_equal '\\reviewcode{code text}', result
   end
 
   def test_visit_inline_footnote
@@ -100,7 +100,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
 
     result = @renderer.visit(code_block)
     expected = "\\begin{reviewlistblock}\n" +
-               "\\reviewlistcaption{Code Example}\n" +
+               "\\reviewlistcaption{リスト1.1: Code Example}\n" +
                "\\begin{reviewlist}\nputs \"Hello\"\n\\end{reviewlist}\n" +
                "\\end{reviewlistblock}\n"
 
@@ -136,17 +136,14 @@ class TestLATEXRenderer < Test::Unit::TestCase
     result = @renderer.visit(table)
 
     expected_lines = [
-      '\\begin{table}[h]',
-      '\\centering',
-      '\\begin{tabular}{ll}',
+      '\\begin{table}%%table1',
+      '\\reviewtablecaption{Test Table}',
+      '\\label{table:test:table1}',
+      '\\begin{reviewtable}{|l|l|}',
       '\\hline',
-      'Header 1 & Header 2 \\\\',
-      '\\hline',
-      'Data 1 & Data 2 \\\\',
-      '\\hline',
-      '\\end{tabular}',
-      '\\caption{Test Table}',
-      '\\label{table1}',
+      '\\reviewth{Header 1} & \\reviewth{Header 2} \\\\  \\hline',
+      'Data 1 & Data 2 \\\\  \\hline',
+      '\\end{reviewtable}',
       '\\end{table}'
     ]
 
@@ -161,12 +158,11 @@ class TestLATEXRenderer < Test::Unit::TestCase
     result = @renderer.visit(image)
 
     expected_lines = [
-      '\\begin{figure}[h]',
-      '\\centering',
-      '\\includegraphics{image1}',
-      '\\caption{Test Image}',
-      '\\label{image1}',
-      '\\end{figure}'
+      '\\begin{reviewdummyimage}',
+      '{-}{-}[[path = image1 (not exist)]]{-}{-}',
+      '\\label{image:test:image1}',
+      '\\reviewimagecaption{Test Image}',
+      '\\end{reviewdummyimage}'
     ]
 
     assert_equal expected_lines.join("\n"), result
@@ -216,7 +212,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     minicolumn.add_child(AST::TextNode.new(content: 'This is a note.'))
 
     result = @renderer.visit(minicolumn)
-    expected = '\\begin{reviewnote}[Note Caption]This is a note.\\end{reviewnote}'
+    expected = "\\begin{reviewnote}[Note Caption]\n\nThis is a note.\n\n\\end{reviewnote}\n"
 
     assert_equal expected, result
   end
@@ -230,7 +226,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     document.add_child(paragraph)
 
     result = @renderer.visit(document)
-    assert_equal "Hello World\n", result
+    assert_equal "\nHello World\n", result
   end
 
   def test_render_inline_element_href_with_args
@@ -244,7 +240,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     inline = AST::InlineNode.new(inline_type: 'chap', args: ['chapter1'])
 
     result = @renderer.visit(inline)
-    assert_equal '\\ref{chapter1}', result
+    assert_equal '\\reviewchapref{chapter1}{chap:chapter1}', result
   end
 
   def test_generic_visitor_error

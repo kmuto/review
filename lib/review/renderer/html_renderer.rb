@@ -8,6 +8,7 @@
 
 require 'review/renderer/base'
 require 'review/htmlutils'
+require 'review/sec_counter'
 
 module ReVIEW
   module Renderer
@@ -20,6 +21,9 @@ module ReVIEW
         super
         @chapter = options[:chapter]
         @book = options[:book] || @chapter&.book
+
+        # Initialize section counter like HTMLBuilder
+        @sec_counter = SecCounter.new(5, @chapter)
       end
 
       def visit_document(node)
@@ -31,28 +35,14 @@ module ReVIEW
         level = node.level
         caption = render_children(node.caption) if node.caption
 
+        # Use HTMLBuilder's headline_prefix method
+        prefix, anchor = headline_prefix(level)
+
         # Generate anchor ID like HTMLBuilder
-        if level == 1
-          anchor_id = "h1"
-        elsif level == 2
-          anchor_id = "h1-1"  # HTMLBuilder uses parent numbering for h2
-        else
-          anchor_id = "h#{level}"
-        end
-        anchor_html = %Q(<a id="#{anchor_id}"></a>)
+        anchor_html = anchor ? %Q(<a id="h#{anchor}"></a>) : ''
 
         # Generate section number like HTMLBuilder
-        secno_html = ''
-        if @chapter
-          chapter_number = @chapter.number
-          if chapter_number && chapter_number > 0
-            if level == 1
-              secno_html = %Q(<span class="secno">第#{chapter_number}章　</span>)
-            elsif level == 2
-              secno_html = %Q(<span class="secno">#{chapter_number}.1　</span>)
-            end
-          end
-        end
+        secno_html = prefix ? %Q(<span class="secno">#{prefix}</span>) : ''
 
         "<h#{level}>#{anchor_html}#{secno_html}#{caption}</h#{level}>"
       end
@@ -402,6 +392,23 @@ module ReVIEW
 
       def escape(str)
         super(str.to_s)
+      end
+
+      # Generate headline prefix and anchor like HTMLBuilder
+      def headline_prefix(level)
+        @sec_counter.inc(level)
+        anchor = @sec_counter.anchor(level)
+        prefix = @sec_counter.prefix(level, @book&.config&.[]('secnolevel'))
+        [prefix, anchor]
+      end
+
+      def normalize_id(id)
+        # Remove # prefix if present (common in Re:VIEW syntax)
+        id = id.gsub(/^#/, '') if id.start_with?('#')
+
+        # HTML-safe ID normalization
+        # Replace non-alphanumeric characters with dashes
+        id.gsub(/[^a-zA-Z0-9_-]/, '-')
       end
     end
   end

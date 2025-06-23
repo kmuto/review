@@ -182,7 +182,7 @@ class TestHTMLRendererBuilderComparison < Test::Unit::TestCase
 
       //table[data][Data Table]{
       Name	Value
-      -----------
+      ----------------------
       A	1
       B	2
       //}
