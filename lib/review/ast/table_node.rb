@@ -29,7 +29,7 @@ module ReVIEW
       end
 
       def children
-        raise NotImplementedError, 'TableNode no longer supports #children. Use #header_rows and #body_rows instead.'
+        @header_rows + @body_rows
       end
 
       # Get caption text for legacy Builder compatibility
@@ -38,20 +38,17 @@ module ReVIEW
       end
 
       def to_h
-        result = {
-          type: self.class.name.split('::').last,
-          location: location&.to_h,
+        result = super.merge(
           caption: caption&.to_h,
           table_type: table_type,
           header_rows: header_rows.map(&:to_h),
           body_rows: body_rows.map(&:to_h)
-        }
-        result[:id] = id if id && !id.empty?
+        )
         result[:metric] = metric if metric
         result
       end
 
-      # Override serialize_to_hash to avoid calling children
+      # Override serialize_to_hash to use header_rows/body_rows instead of children
       def serialize_to_hash(options = nil)
         options ||= JSONSerializer::Options.new
         hash = {
@@ -63,7 +60,7 @@ module ReVIEW
           hash[:location] = location&.to_h
         end
 
-        # Add TableNode-specific properties
+        # Add TableNode-specific properties (no children field)
         hash[:id] = id if id && !id.empty?
         hash[:table_type] = table_type
         hash[:caption] = @caption ? @caption.serialize_to_hash(options) : nil

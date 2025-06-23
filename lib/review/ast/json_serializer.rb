@@ -317,11 +317,6 @@ module ReVIEW
               node.add_body_row(row) if row.is_a?(ReVIEW::AST::TableRowNode)
             end
 
-            # Reject old 'children' format
-            if hash['children']
-              raise StandardError, "TableNode deserialization no longer supports 'children' format. Use 'header_rows' and 'body_rows'."
-            end
-
             node
           when 'ImageNode'
             caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil

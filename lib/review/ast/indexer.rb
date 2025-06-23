@@ -112,14 +112,9 @@ module ReVIEW
       end
 
       def visit_children(node)
-        # Special handling for TableNode which no longer supports children
-        if node.is_a?(AST::TableNode)
-          # Visit header and body rows separately
-          node.header_rows.each { |row| visit_node(row) } if node.header_rows
-          node.body_rows.each { |row| visit_node(row) } if node.body_rows
-        elsif node.respond_to?(:children) && node.children
-          node.children.each { |child| visit_node(child) }
-        end
+        return unless node.children
+
+        node.children.each { |child| visit_node(child) }
       end
 
       # Process headline nodes
