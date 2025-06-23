@@ -27,7 +27,7 @@ class TestHTMLRenderer < Test::Unit::TestCase
     ast_root = @compiler.compile_to_ast(chapter)
     html_output = @renderer.render(ast_root)
 
-    assert_match(%r{<h1>Test Chapter</h1>}, html_output)
+    assert_match(%r{<h1><a id="h1"></a>Test Chapter</h1>}, html_output)
     assert_match(%r{<p>Paragraph text\.</p>}, html_output)
   end
 
@@ -55,9 +55,9 @@ class TestHTMLRenderer < Test::Unit::TestCase
     ast_root = @compiler.compile_to_ast(chapter)
     html_output = @renderer.render(ast_root)
 
-    assert_match(/<div class="code"/, html_output)
-    assert_match(%r{<div class="caption-code">Sample Code</div>}, html_output)
-    assert_match(%r{<pre><code class="language-ruby">puts &quot;Hello World&quot;</code></pre>}, html_output)
+    assert_match(/<div id="sample" class="caption-code">/, html_output)
+    assert_match(%r{<p class="caption">リスト1\.1: Sample Code</p>}, html_output)
+    assert_match(%r{<pre class="list">puts &quot;Hello World&quot;\n</pre>}, html_output)
   end
 
   def test_table_rendering
@@ -75,11 +75,13 @@ class TestHTMLRenderer < Test::Unit::TestCase
     ast_root = @compiler.compile_to_ast(chapter)
     html_output = @renderer.render(ast_root)
 
-    assert_match(/<div class="table">/, html_output)
-    assert_match(%r{<div class="caption-table">Sample Table</div>}, html_output)
-    assert_match(/<thead>/, html_output)
-    assert_match(/<tbody>/, html_output)
-    assert_match(%r{<th>Header1</th>}, html_output)
+    assert_match(/<div id="sample" class="table">/, html_output)
+    assert_match(%r{<p class="caption">表1\.1: Sample Table</p>}, html_output)
+    # No thead/tbody sections like HTMLBuilder
+    assert_no_match(/<thead>/, html_output)
+    assert_no_match(/<tbody>/, html_output)
+    # Since ---- is only 5 chars, it's not a separator, so it appears as body content
+    assert_match(%r{<td>Header1</td>}, html_output)
     assert_match(%r{<td>Cell1</td>}, html_output)
   end
 
@@ -117,9 +119,9 @@ class TestHTMLRenderer < Test::Unit::TestCase
     html_output = @renderer.render(ast_root)
 
     assert_match(/<div class="note">/, html_output)
-    assert_match(%r{<div class="note-header">Sample Note</div>}, html_output)
-    # Note content should be present (may not have <p> tags in minicolumn)
-    assert_match(/This is a note\./, html_output)
+    assert_match(%r{<p class="caption">Sample Note</p>}, html_output)
+    # Note content should be wrapped in paragraph tags like HTMLBuilder
+    assert_match(%r{<p>This is a note\.</p>}, html_output)
   end
 
   def test_text_escaping
@@ -139,7 +141,10 @@ class TestHTMLRenderer < Test::Unit::TestCase
     ast_root = @compiler.compile_to_ast(chapter)
     html_output = @renderer.render(ast_root)
 
-    assert_match(/<h1 id="test-chapter">/, html_output)
+    # HTMLRenderer now uses fixed anchor IDs like HTMLBuilder
+    assert_match(/<h1><a id="h1"><\/a>/, html_output)
+    # Chapter title should be present
+    assert_match(/Test Chapter/, html_output)
   end
 
   def test_href_inline

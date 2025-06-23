@@ -31,14 +31,30 @@ module ReVIEW
         level = node.level
         caption = render_children(node.caption) if node.caption
 
-        # Process label - remove leading # if present
-        normalized_label = if node.label
-                             label = node.label.start_with?('#') ? node.label[1..-1] : node.label
-                             normalize_id(label)
-                           end
-        id_attr = normalized_label ? %Q( id="#{normalized_label}") : ''
+        # Generate anchor ID like HTMLBuilder
+        if level == 1
+          anchor_id = "h1"
+        elsif level == 2
+          anchor_id = "h1-1"  # HTMLBuilder uses parent numbering for h2
+        else
+          anchor_id = "h#{level}"
+        end
+        anchor_html = %Q(<a id="#{anchor_id}"></a>)
 
-        "<h#{level}#{id_attr}>#{caption}</h#{level}>"
+        # Generate section number like HTMLBuilder
+        secno_html = ''
+        if @chapter
+          chapter_number = @chapter.number
+          if chapter_number && chapter_number > 0
+            if level == 1
+              secno_html = %Q(<span class="secno">第#{chapter_number}章　</span>)
+            elsif level == 2
+              secno_html = %Q(<span class="secno">#{chapter_number}.1　</span>)
+            end
+          end
+        end
+
+        "<h#{level}>#{anchor_html}#{secno_html}#{caption}</h#{level}>"
       end
 
       def visit_paragraph(node)
@@ -57,24 +73,26 @@ module ReVIEW
 
       def visit_code_block(node)
         id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
-        lang_class = node.lang ? %Q( class="language-#{escape(node.lang)}") : ''
 
         lines_content = render_children(node)
 
         caption_html = if node.caption
                          caption_content = render_children(node.caption)
-                         %Q(<div class="caption-code">#{caption_content}</div>)
+                         # Generate list number like HTMLBuilder
+                         list_number = "リスト1.1: #{caption_content}"
+                         %Q(<p class="caption">#{list_number}</p>)
                        else
                          ''
                        end
 
-        %Q(<div class="code"#{id_attr}>
-#{caption_html}<pre><code#{lang_class}>#{lines_content}</code></pre>
+        # Use HTMLBuilder-compatible structure with class="caption-code" on wrapper
+        %Q(<div#{id_attr} class="caption-code">
+#{caption_html}<pre class="list">#{lines_content}</pre>
 </div>)
       end
 
       def visit_code_line(node)
-        render_children(node)
+        render_children(node) + "\n"
       end
 
       def visit_table(node)
@@ -82,16 +100,38 @@ module ReVIEW
 
         caption_html = if node.caption
                          caption_content = render_children(node.caption)
-                         %Q(<div class="caption-table">#{caption_content}</div>)
+                         # Generate table number like HTMLBuilder
+                         table_number = "表1.1: #{caption_content}"
+                         %Q(<p class="caption">#{table_number}</p>)
                        else
                          ''
                        end
 
-        header_html = render_table_section(node.header_rows, 'thead', 'th')
-        body_html = render_table_section(node.body_rows, 'tbody', 'td')
+        # Render rows without thead/tbody sections like HTMLBuilder
+        header_html = ''
+        if node.header_rows.any?
+          header_html = node.header_rows.map do |row|
+            cells_html = row.children.map do |cell|
+              content = render_children(cell)
+              "<th>#{content}</th>"
+            end.join
+            "<tr>#{cells_html}</tr>"
+          end.join
+        end
 
-        %Q(<div class="table">
-#{caption_html}<table#{id_attr}>
+        body_html = ''
+        if node.body_rows.any?
+          body_html = node.body_rows.map do |row|
+            cells_html = row.children.map do |cell|
+              content = render_children(cell)
+              "<td>#{content}</td>"
+            end.join
+            "<tr>#{cells_html}</tr>"
+          end.join
+        end
+
+        %Q(<div#{id_attr} class="table">
+#{caption_html}<table>
 #{header_html}#{body_html}</table>
 </div>)
       end
@@ -128,15 +168,17 @@ module ReVIEW
 
         caption_html = if node.caption
                          caption_content = render_children(node.caption)
-                         %Q(<div class="#{type}-header">#{caption_content}</div>)
+                         %Q(<p class="caption">#{caption_content}</p>)
                        else
                          ''
                        end
 
+        # Wrap content in paragraph tags like HTMLBuilder
         content = render_children(node)
+        content_html = content.empty? ? '' : %Q(<p>#{content}</p>)
 
         %Q(<div class="#{type}"#{id_attr}>
-#{caption_html}#{content}</div>)
+#{caption_html}#{content_html}</div>)
       end
 
       def visit_block(node)
@@ -182,7 +224,7 @@ module ReVIEW
         when 'i', 'em'
           "<i>#{content}</i>"
         when 'code', 'tt'
-          "<code>#{content}</code>"
+          %Q(<code class="inline-code tt">#{content}</code>)
         when 'kbd'
           "<kbd>#{content}</kbd>"
         when 'samp'

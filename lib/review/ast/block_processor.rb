@@ -63,7 +63,7 @@ module ReVIEW
                end
 
         if lines
-          separator_index = lines.find_index { |line| line.match?(/^[-=]{3,}$/) }
+          separator_index = lines.find_index { |line| line.match?(/\A[=-]{12}/) || line.match?(/\A[={}-]{12}/) }
 
           # Process header rows
           if separator_index
@@ -236,7 +236,7 @@ module ReVIEW
 
         # Parse table content and add rows
         if lines&.any?
-          separator_index = lines.find_index { |line| line.match?(/^[-=]{3,}$/) }
+          separator_index = lines.find_index { |line| line.match?(/\A[=-]{12}/) || line.match?(/\A[={}-]{12}/) }
 
           if separator_index
             # Process header rows
