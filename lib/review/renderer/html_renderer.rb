@@ -171,11 +171,8 @@ module ReVIEW
       end
 
       def visit_generic(node)
-        if node.respond_to?(:children) && node.children
-          render_children(node)
-        else
-          node.to_s
-        end
+        method_name = derive_visit_method_name_string(node)
+        raise NotImplementedError, "HTMLRenderer does not support generic visitor. Implement #{method_name} for #{node.class.name}"
       end
 
       def render_inline_element(type, content, node)
