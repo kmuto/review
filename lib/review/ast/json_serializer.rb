@@ -307,27 +307,21 @@ module ReVIEW
               table_type: hash['table_type'] || :table,
               metric: hash['metric']
             )
-            # Handle both old and new formats
-            if hash['children']
-              hash['children'].each do |child_hash|
-                child = deserialize_from_hash(child_hash)
-                next unless child.is_a?(ReVIEW::AST::TableRowNode)
-
-                # Determine if this should be header or body row based on position
-                # For now, add all to body_rows - this could be improved
-                node.add_body_row(child)
-              end
-            elsif hash['header_rows'] || hash['body_rows']
-              # New format with explicit header/body rows
-              (hash['header_rows'] || []).each do |row_hash|
-                row = deserialize_from_hash(row_hash)
-                node.add_header_row(row) if row.is_a?(ReVIEW::AST::TableRowNode)
-              end
-              (hash['body_rows'] || []).each do |row_hash|
-                row = deserialize_from_hash(row_hash)
-                node.add_body_row(row) if row.is_a?(ReVIEW::AST::TableRowNode)
-              end
+            # Process header and body rows
+            (hash['header_rows'] || []).each do |row_hash|
+              row = deserialize_from_hash(row_hash)
+              node.add_header_row(row) if row.is_a?(ReVIEW::AST::TableRowNode)
             end
+            (hash['body_rows'] || []).each do |row_hash|
+              row = deserialize_from_hash(row_hash)
+              node.add_body_row(row) if row.is_a?(ReVIEW::AST::TableRowNode)
+            end
+
+            # Reject old 'children' format
+            if hash['children']
+              raise StandardError, "TableNode deserialization no longer supports 'children' format. Use 'header_rows' and 'body_rows'."
+            end
+
             node
           when 'ImageNode'
             caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil

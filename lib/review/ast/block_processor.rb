@@ -63,7 +63,7 @@ module ReVIEW
                end
 
         if lines
-          separator_index = lines.find_index { |line| line.match?(/^[-=]{12,}$/) }
+          separator_index = lines.find_index { |line| line.match?(/^[-=]{3,}$/) }
 
           # Process header rows
           if separator_index
@@ -228,24 +228,40 @@ module ReVIEW
 
       # Build table AST node
       def build_table_ast(_command_name, args, lines)
-        # Parse table content
-        headers = []
-        rows = []
+        # Create table node
+        node = create_node(AST::TableNode,
+                           id: safe_arg(args, 0),
+                           caption: process_caption(args, 1),
+                           table_type: :table)
+
+        # Parse table content and add rows
         if lines&.any?
-          separator_index = lines.find_index { |line| line.match?(/^[-=]{12,}$/) }
+          separator_index = lines.find_index { |line| line.match?(/^[-=]{3,}$/) }
+
           if separator_index
-            headers = lines[0...separator_index]
-            rows = lines[(separator_index + 1)..-1] || []
+            # Process header rows
+            header_lines = lines[0...separator_index]
+            header_lines.each do |line|
+              row_node = create_table_row_from_line(line)
+              node.add_header_row(row_node)
+            end
+
+            # Process body rows
+            body_lines = lines[(separator_index + 1)..-1] || []
+            body_lines.each do |line|
+              row_node = create_table_row_from_line(line)
+              node.add_body_row(row_node)
+            end
           else
-            rows = lines
+            # No separator, all lines are body rows
+            lines.each do |line|
+              row_node = create_table_row_from_line(line)
+              node.add_body_row(row_node)
+            end
           end
         end
 
-        create_and_add_node(AST::TableNode,
-                            id: safe_arg(args, 0),
-                            caption: process_caption(args, 1),
-                            headers: headers,
-                            rows: rows)
+        add_node_to_ast(node)
       end
 
       # Build image AST node

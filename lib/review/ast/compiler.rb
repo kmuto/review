@@ -491,8 +491,9 @@ module ReVIEW
           )
           @current_ast_node.add_child(node)
         when :texequation
-          # Math equations - treat as specialized block
-          # ??? should use CodeBlockNode?
+          # Math equations - use specialized block handling
+          # Note: texequation is intentionally using BlockNode rather than CodeBlockNode
+          # because math content doesn't need line numbers, syntax highlighting, or inline processing
           node = AST::BlockNode.new(
             location: location,
             block_type: :texequation,

@@ -15,18 +15,17 @@
 # - Format-specific rendering (handled by Renderer subclasses)
 #
 # Usage:
-#   # JSON output
-#   json_renderer = ReVIEW::Renderer::JSONRenderer.new
-#   json_output = json_renderer.render(ast_root)
-#
 #   # HTML output
 #   html_renderer = ReVIEW::Renderer::HTMLRenderer.new
 #   html_output = html_renderer.render(ast_root)
+#
+#   # JSON output is handled by ReVIEW::AST::JSONSerializer
 
 module ReVIEW
   module Renderer
     # Load renderer classes
     autoload :Base, 'review/renderer/base'
-    autoload :JSONRenderer, 'review/renderer/json_renderer'
+    autoload :HTMLRenderer, 'review/renderer/html_renderer'
+    # NOTE: JSONRenderer removed - use ReVIEW::AST::JSONSerializer instead
   end
 end
