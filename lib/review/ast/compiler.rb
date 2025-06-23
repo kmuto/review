@@ -270,7 +270,7 @@ module ReVIEW
       end
 
       def render_children_to_text(node)
-        return '' unless node.respond_to?(:children) && node.children
+        return '' unless node.children
 
         node.children.map { |child| render_ast_node_to_text(child) }.join
       end
