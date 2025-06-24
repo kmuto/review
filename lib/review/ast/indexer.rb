@@ -236,7 +236,10 @@ module ReVIEW
             item = ReVIEW::Book::Index::Item.new(eq_id, @equation_index.size + 1)
             @equation_index.add_item(item)
           end
-        when 'list', 'table', 'img'
+        when 'img'
+          # Image references are handled when the actual image blocks are processed
+          # No special processing needed for inline image references
+        when 'list', 'table'
           # These are references, already processed in their respective nodes
         end
       end
@@ -290,6 +293,7 @@ module ReVIEW
           end
         end
       end
+
 
       # Warning output
       def warn(message)

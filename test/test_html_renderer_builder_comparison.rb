@@ -8,6 +8,7 @@
 
 require File.expand_path('test_helper', __dir__)
 require 'review/html_converter'
+
 require 'review/html_comparator'
 
 class TestHTMLRendererBuilderComparison < Test::Unit::TestCase

@@ -8,6 +8,7 @@
 
 require 'review/renderer/base'
 require 'review/latexutils'
+require 'review/sec_counter'
 
 module ReVIEW
   module Renderer
@@ -23,6 +24,9 @@ module ReVIEW
 
         # Initialize LaTeX character escaping
         initialize_metachars('')
+        
+        # Initialize section counter like LATEXBuilder
+        @sec_counter = SecCounter.new(5, @chapter) if @chapter
       end
 
       def visit_document(node)
@@ -33,6 +37,11 @@ module ReVIEW
       def visit_headline(node)
         level = node.level
         caption = render_children(node.caption) if node.caption
+
+        # Update section counter like LATEXBuilder
+        if @sec_counter
+          @sec_counter.inc(level)
+        end
 
         # LaTeX section commands
         section_command = case level
@@ -52,43 +61,37 @@ module ReVIEW
                             'subparagraph'
                           end
 
-        # Add label like LATEXBuilder
+        # Generate labels like LATEXBuilder
         label_part = if level == 1 && @chapter
                        "\\label{chap:#{@chapter.id}}"
+                     elsif @sec_counter && level >= 2
+                       # Generate section labels like LATEXBuilder (sec:x-y format)
+                       anchor = @sec_counter.anchor(level)
+                       "\\label{sec:#{anchor}}"
                      elsif node.label
                        "\\label{#{escape(node.label)}}"
                      else
                        ''
                      end
 
-        "\\#{section_command}{#{caption}}#{label_part}"
+        # Format without newlines to match expected test format
+        if label_part.empty?
+          "\\#{section_command}{#{caption}}"
+        else
+          "\\#{section_command}{#{caption}}#{label_part}"
+        end
       end
 
       def visit_paragraph(node)
-        content = render_children(node)
-        # Debug: check what paragraph content looks like
-        # puts "DEBUG: paragraph content: #{content.inspect}"
-
-        # If content appears to be a multi-line list, handle it specially
-        if content.match?(/^\*.*\*.*\*/) # Contains multiple asterisks
-          # Split and rejoin with newlines like LATEXBuilder
-          lines = content.split('*').reject(&:empty?).map { |line| "* #{line.strip}" }
-          "\n#{lines.join("\n")}\n"
-        else
-          # Add blank lines like LATEXBuilder for better spacing
-          "\n#{content}\n"
-        end
+        content = render_children_with_newlines(node)
+        # Add proper spacing like LATEXBuilder
+        "\n#{content}\n"
       end
 
       def visit_text(node)
         content = node.content.to_s
-        # Debug: check if content contains newlines
-        if content.include?("\n")
-          # Preserve newlines in text content
-          escape(content)
-        else
-          escape(content)
-        end
+        # Preserve newlines and escape content properly
+        escape(content)
       end
 
       def visit_inline(node)
@@ -219,39 +222,38 @@ module ReVIEW
       end
 
       def visit_list(node)
-        # Check if this is a simple text list that should be preserved as-is
-        content = render_children(node)
-
-        # For simple markdown-style lists, preserve original format like LATEXBuilder
-        if content.match?(/^[\*\d]/)
-          "\n#{content}"
+        case node.list_type
+        when :ul
+          # Unordered list - generate LaTeX itemize environment
+          items = node.children.map { |item| "\\item #{render_children(item)}" }.join("\n")
+          "\n\\begin{itemize}\n#{items}\n\\end{itemize}\n"
+        when :ol
+          # Ordered list - generate LaTeX enumerate environment  
+          items = node.children.map { |item| "\\item #{render_children(item)}" }.join("\n")
+          "\n\\begin{enumerate}\n#{items}\n\\end{enumerate}\n"
+        when :dl
+          # Definition list - generate LaTeX description environment
+          items = node.children.map do |item|
+            if item.children && item.children.length >= 2
+              term = render_children(item.children[0])
+              definition = item.children[1..-1].map { |child| render_children(child) }.join(' ')
+              "\\item[#{term}] #{definition}"
+            else
+              "\\item[#{render_children(item)}] "
+            end
+          end.join("\n")
+          "\n\\begin{description}\n#{items}\n\\end{description}\n"
         else
-          # For structured AST lists, use LaTeX environments
-          env_name = case node.list_type
-                     when :ul
-                       'itemize'
-                     when :ol
-                       'enumerate'
-                     when :dl
-                       'description'
-                     else
-                       'itemize'
-                     end
-
-          "\\begin{#{env_name}}\n#{content}\\end{#{env_name}}\n"
+          # Fallback for simple markdown-style lists that weren't converted to proper list structures
+          content = render_children(node)
+          "\n#{content}"
         end
       end
 
       def visit_list_item(node)
+        # This method is used for fallback cases where lists are preserved as text
         content = render_children(node)
-        # Check if this is a simple text list (like markdown style)
-        if content.match?(/^\d+\./) || content.match?(/^\*/)
-          # For simple text lists, preserve the original format
-          "#{content}\n"
-        else
-          # For structured lists, use LaTeX item format
-          "\\item #{content}\n"
-        end
+        "#{content}\n"
       end
 
       def visit_block(node)
@@ -432,6 +434,36 @@ module ReVIEW
         node.children.map { |child| visit(child) }.join
       end
 
+      def render_children_with_newlines(node)
+        return '' unless node.children
+
+        # In LaTeX Builder, paragraphs preserve newlines to maintain line structure
+        # This preserves the original source formatting within paragraph content
+        if node.children.length > 1
+          result = []
+          node.children.each_with_index do |child, i|
+            result << visit(child)
+            
+            # Check if we should add a newline after this child
+            # Add newlines to preserve line structure as the original LATEXBuilder does
+            if i < node.children.length - 1
+              next_child = node.children[i + 1]
+              
+              # Add newline if the next child starts a new line
+              # This is detected by checking if the next element is a TextNode that
+              # starts with content that would be on a new line
+              if should_add_newline_before?(next_child)
+                result << "\n"
+              end
+            end
+          end
+          return result.join
+        end
+
+        # Single child - use default behavior
+        render_children(node)
+      end
+
       def post_process_document(content)
         content
       end
@@ -439,6 +471,34 @@ module ReVIEW
       def normalize_id(id)
         # LaTeX-safe ID normalization
         id.gsub(/[^a-zA-Z0-9_-]/, '_')
+      end
+
+      # Check if content looks like list item content
+      # @param content [String] Text content to check
+      # @return [Boolean] True if content appears to be a list item
+      def list_item_content?(content)
+        content = content.strip
+        # Check for unordered list (starts with *)
+        # Check for ordered list (starts with number followed by .)  
+        # Check for definition list (starts with word followed by :)
+        content.match?(/\A\*\s/) || content.match?(/\A\d+\.\s/) || content.match?(/\A\w.*:\s/)
+      end
+
+      # Check if a newline should be added before this child element
+      # @param child [AST::Node] Child node to check
+      # @return [Boolean] True if newline should be added
+      def should_add_newline_before?(child)
+        # For TextNodes, check if content indicates a new line
+        if child.class.name.include?('TextNode')
+          content = child.content.to_s
+          # Add newline before content that starts a new logical line
+          # This includes list items and standalone text that would be on its own line
+          return list_item_content?(content) || 
+                 content.match?(/\A[A-Z]/) || # Starts with capital letter (new sentence)
+                 content.match?(/\A\w+:/) # Starts with word followed by colon
+        end
+        
+        false
       end
     end
   end

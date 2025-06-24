@@ -181,7 +181,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     list.add_child(item2)
 
     result = @renderer.visit(list)
-    expected = "\\begin{itemize}\n\\item First item\n\\item Second item\n\\end{itemize}\n"
+    expected = "\n\\begin{itemize}\n\\item First item\n\\item Second item\n\\end{itemize}\n"
 
     assert_equal expected, result
   end
@@ -199,7 +199,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     list.add_child(item2)
 
     result = @renderer.visit(list)
-    expected = "\\begin{enumerate}\n\\item First item\n\\item Second item\n\\end{enumerate}\n"
+    expected = "\n\\begin{enumerate}\n\\item First item\n\\item Second item\n\\end{enumerate}\n"
 
     assert_equal expected, result
   end

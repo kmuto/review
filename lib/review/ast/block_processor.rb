@@ -130,9 +130,39 @@ module ReVIEW
         )
 
         if lines
+          # Parse minicolumn content as paragraphs (same logic as regular paragraphs)
+          # Group lines by empty lines to create separate paragraphs
+          paragraph_groups = []
+          current_paragraph = []
+
           lines.each do |line|
-            # Parse inline elements properly in AST mode instead of deferring to rendering
-            @ast_compiler.inline_processor.parse_inline_elements(line, node)
+            if line.strip.empty?
+              # Empty line - finish current paragraph if it has content
+              if current_paragraph.any?
+                paragraph_groups << current_paragraph
+                current_paragraph = []
+              end
+            else
+              # Non-empty line - add to current paragraph
+              current_paragraph << line
+            end
+          end
+
+          # Add final paragraph if it has content
+          if current_paragraph.any?
+            paragraph_groups << current_paragraph
+          end
+
+          # Create ParagraphNode for each paragraph group
+          paragraph_groups.each do |paragraph_lines|
+            paragraph_node = AST::ParagraphNode.new(location: @ast_compiler.location)
+
+            # Process inline elements within each paragraph
+            paragraph_lines.each do |line|
+              @ast_compiler.inline_processor.parse_inline_elements(line, paragraph_node)
+            end
+
+            node.add_child(paragraph_node)
           end
         end
 
@@ -286,18 +316,8 @@ module ReVIEW
 
       # Build minicolumn AST node (note, memo, tip, etc.)
       def build_minicolumn_ast(command_name, args, lines)
-        node = AST::ParagraphNode.new(
-          location: @ast_compiler.location
-        )
-        # NOTE: content is set separately as ParagraphNode doesn't accept content in constructor
-        node.content = "#{command_name}: #{args.first || ''}"
-
-        # Parse inline elements in minicolumn content
-        (lines || []).each do |line|
-          @ast_compiler.inline_processor.parse_inline_elements(line, node)
-        end
-
-        @ast_compiler.add_child_to_current_node(node)
+        # Use the same logic as compile_minicolumn_to_ast for consistency
+        compile_minicolumn_to_ast(command_name.to_sym, args, lines)
       end
 
       # Build footnote AST node

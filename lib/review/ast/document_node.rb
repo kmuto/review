@@ -5,11 +5,12 @@ require 'review/ast/node'
 module ReVIEW
   module AST
     class DocumentNode < Node
-      attr_accessor :title
+      attr_accessor :title, :chapter
 
-      def initialize(location: nil, title: nil, **kwargs)
+      def initialize(location: nil, title: nil, chapter: nil, **kwargs)
         super(location: location, **kwargs)
         @title = title
+        @chapter = chapter
       end
 
       def to_h

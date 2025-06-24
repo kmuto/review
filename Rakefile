@@ -13,6 +13,29 @@ require 'rake/clean'
 
 task default: %i[test rubocop]
 
+# Compatibility check tasks
+namespace :compat do
+  desc 'Run compatibility checks for all formats'
+  task :run do
+    sh 'bin/check-compat --verbose'
+  end
+
+  desc 'Run compatibility checks for HTML only'
+  task :html do
+    sh 'bin/check-compat --format html --verbose'
+  end
+
+  desc 'Run compatibility checks for LaTeX only'
+  task :latex do
+    sh 'bin/check-compat --format latex --verbose'
+  end
+
+  desc 'Run compatibility checks with detailed diff output'
+  task :diff do
+    sh 'bin/check-compat --show-diff --verbose'
+  end
+end
+
 desc 'Check with rubocop'
 task :rubocop do
   begin

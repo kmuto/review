@@ -82,7 +82,8 @@ module ReVIEW
         title = @chapter.respond_to?(:title) ? @chapter.title : ''
         @ast_root = AST::DocumentNode.new(
           location: SnapshotLocation.new(@chapter.basename, f.lineno + 1),
-          title: title
+          title: title,
+          chapter: @chapter
         )
         @current_ast_node = @ast_root
 
