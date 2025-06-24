@@ -43,15 +43,9 @@ class TestASTStructureDebug < Test::Unit::TestCase
     json_str = ReVIEW::AST::JSONSerializer.serialize(ast_root)
     ast = JSON.parse(json_str)
 
-    puts '=== Minicolumn AST Structure ==='
-    puts JSON.pretty_generate(ast)
-
     # Find minicolumn node
     minicolumn = ast['children'].find { |node| node['type'] == 'MinicolumnNode' }
     assert_not_nil(minicolumn)
-
-    puts "\n=== Minicolumn Children ==="
-    puts JSON.pretty_generate(minicolumn['children'])
 
     # Check if inline elements are properly parsed
     has_inline_node = minicolumn['children'].any? do |child|
@@ -59,7 +53,7 @@ class TestASTStructureDebug < Test::Unit::TestCase
         (child['children'] && child['children'].any? { |grandchild| grandchild['type'] == 'InlineNode' })
     end
 
-    puts "\nHas inline node: #{has_inline_node}"
+    assert_true(has_inline_node, 'Minicolumn should contain inline elements')
   end
 
   def test_table_ast_structure
@@ -83,17 +77,32 @@ class TestASTStructureDebug < Test::Unit::TestCase
     json_str = ReVIEW::AST::JSONSerializer.serialize(ast_root)
     ast = JSON.parse(json_str)
 
-    puts "\n=== Table AST Structure ==="
-    puts JSON.pretty_generate(ast)
-
     # Find table node
     table = ast['children'].find { |node| node['type'] == 'TableNode' }
     assert_not_nil(table)
 
-    puts "\n=== Table Headers ==="
-    puts JSON.pretty_generate(table['headers'])
-    puts "\n=== Table Rows ==="
-    puts JSON.pretty_generate(table['rows'])
+    # Check actual table structure (header_rows vs headers)
+    table_structure_keys = table.keys.grep(/header|row/)
+
+    # Verify table structure has header_rows and body_rows (correct AST structure)
+    assert_not_nil(table['header_rows'] || table['headers'])
+    assert_not_nil(table['body_rows'] || table['rows'])
+
+    # Check for inline elements in table cells using correct structure
+    headers = table['header_rows'] || table['headers'] || []
+    rows = table['body_rows'] || table['rows'] || []
+
+    has_inline_in_headers = headers.any? do |header|
+      header.dig('children')&.any? { |cell| cell['type'] == 'InlineNode' }
+    end
+
+    has_inline_in_rows = rows.any? do |row|
+      row.dig('children')&.any? { |cell| cell['type'] == 'InlineNode' }
+    end
+
+    # Table should have structure and may contain inline elements
+    assert_true(headers.any? || rows.any?, 'Table should have headers or rows')
+    # NOTE: Inline element check is optional as it depends on content
   end
 
   def test_paragraph_ast_structure
@@ -113,14 +122,17 @@ class TestASTStructureDebug < Test::Unit::TestCase
     json_str = ReVIEW::AST::JSONSerializer.serialize(ast_root)
     ast = JSON.parse(json_str)
 
-    puts "\n=== Paragraph AST Structure ==="
-    puts JSON.pretty_generate(ast)
-
     # Find paragraph node
     paragraph = ast['children'].find { |node| node['type'] == 'ParagraphNode' }
     assert_not_nil(paragraph)
 
-    puts "\n=== Paragraph Children ==="
-    puts JSON.pretty_generate(paragraph['children'])
+    # Verify paragraph contains inline elements
+    has_inline_elements = paragraph['children'].any? { |child| child['type'] == 'InlineNode' }
+    assert_true(has_inline_elements, 'Paragraph should contain inline elements')
+
+    # Verify specific inline elements exist
+    inline_types = paragraph['children'].select { |child| child['type'] == 'InlineNode' }.map { |node| node['inline_type'] }
+    assert_includes(inline_types, 'fn', 'Should contain footnote inline element')
+    assert_includes(inline_types, 'b', 'Should contain bold inline element')
   end
 end

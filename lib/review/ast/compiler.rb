@@ -127,8 +127,8 @@ module ReVIEW
             f.gets # skip preprocessor directives
           when /\A=+[\[\s\{]/
             compile_headline_to_ast(f.gets)
-          when /\A\s*\z/ # rubocop:disable Lint/DuplicateBranch
-            f.gets # skip blank lines
+          when /\A\s*\z/ # rubocop:disable Lint/DuplicateBranch # blank lines separate elements
+            f.gets # consume blank line but don't create node
           when %r{\A//}
             compile_block_command_to_ast(f)
           when /\A\s+\*\s/ # unordered list (must start with space)
@@ -436,11 +436,13 @@ module ReVIEW
 
         return if raw_lines.empty?
 
-        node = AST::ParagraphNode.new(location: location)
-        # Process inline elements within paragraph
-        raw_lines.each { |line| inline_processor.parse_inline_elements(line, node) }
-
-        @current_ast_node.add_child(node)
+        # Create separate paragraph nodes for each line to preserve line boundaries
+        # This matches the behavior of LATEXBuilder which outputs each line separately
+        raw_lines.each do |line|
+          node = AST::ParagraphNode.new(location: location)
+          inline_processor.parse_inline_elements(line, node)
+          @current_ast_node.add_child(node)
+        end
       end
 
       def compile_block_command_to_ast(f)

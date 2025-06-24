@@ -27,6 +27,14 @@ module ReVIEW
         @chapter = options[:chapter]
         @book = options[:book] || @chapter&.book
 
+        # Generate indexes like HTMLBuilder does
+        if @chapter
+          @chapter.generate_indexes
+        end
+        if @book
+          @book.generate_indexes
+        end
+
         # Initialize logger like HTMLBuilder for error handling
         @logger = ReVIEW.logger
 
@@ -551,7 +559,7 @@ module ReVIEW
                  end
 
           %Q(<span class="listref"><a href="#{href}">#{list_number}</a></span>)
-        rescue KeyError => e
+        rescue KeyError => _e
           # Fallback for missing list references
           %Q(<span class="listref">#{I18n.t('list')}#{list_id}</span>)
         end
@@ -631,14 +639,14 @@ module ReVIEW
         if node.args && node.args.length >= 2
           # First argument is the keyword, second is the reading/definition
           word = escape(node.args[0])
-          reading = escape(node.args[1])
-          # Add index comment like HTMLBuilder
-          %Q(<b class="kw">#{word}</b><!-- IDX:#{word} -->)
+          _reading = escape(node.args[1])
         else
           # Single argument or fallback
           word = content
-          %Q(<b class="kw">#{word}</b><!-- IDX:#{word} -->)
         end
+
+        # Add index comment like HTMLBuilder
+        %Q(<b class="kw">#{word}</b><!-- IDX:#{word} -->)
       end
 
       def render_bou(content, _node)
@@ -859,23 +867,17 @@ module ReVIEW
 
       # Generate list header like HTMLBuilder's list_header method
       def generate_list_header(id, caption)
-        return '' unless @chapter
+        list_item = @chapter.list(id)
+        list_num = list_item.number
+        chapter_num = @chapter.number
 
-        begin
-          list_item = @chapter.list(id)
-          unless list_item && list_item.number
-            raise KeyError, "list '#{id}' not found"
-          end
-
-          if get_chap
-            "#{I18n.t('list')}#{I18n.t('format_number_header', [get_chap, list_item.number])}#{I18n.t('caption_prefix')}#{caption}"
-          else
-            "#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [list_item.number])}#{I18n.t('caption_prefix')}#{caption}"
-          end
-        rescue KeyError => e
-          # Fallback to simple numbering if chapter list index is not available
-          "#{I18n.t('list')}#{id}: #{caption}"
+        if chapter_num
+          "#{I18n.t('list')}#{I18n.t('format_number_header', [chapter_num, list_num])}#{I18n.t('caption_prefix')}#{caption}"
+        else
+          "#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [list_num])}#{I18n.t('caption_prefix')}#{caption}"
         end
+      rescue KeyError
+        raise NotImplementedError, "no such list: #{id}"
       end
     end
   end

@@ -71,7 +71,7 @@ module ReVIEW
         options: { chapter: chapter, book: chapter.book }
       )
 
-      renderer.visit(ast)
+      renderer.render(ast)
     end
 
     # Convert a *.re file to LaTeX using LATEXBuilder

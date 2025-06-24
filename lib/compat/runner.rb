@@ -64,11 +64,18 @@ module ReVIEW
         puts 'Running checks in parallel...' if @verbose
 
         results = Parallel.map(test_files, in_processes: 4) do |file|
-          check_single_file(file)
+          check_single_file(file, skip_reporter: true)
         end
 
         # 結果をフラット化してマージ
         @results = results.flatten.compact
+
+        # 並列実行の結果をreporterに追加
+        @results.each do |result|
+          if result[:comparison_result]
+            @reporter.add_result(result[:file], result[:format], result[:comparison_result])
+          end
+        end
       end
 
       def run_sequential_checks(test_files)
@@ -80,18 +87,18 @@ module ReVIEW
         end
       end
 
-      def check_single_file(re_file)
+      def check_single_file(re_file, skip_reporter: false)
         puts "Checking: #{re_file}" if @verbose
         results = []
 
         begin
           if @format == 'html' || @format == 'all'
-            result = compare_format(re_file, 'html')
+            result = compare_format(re_file, 'html', skip_reporter: skip_reporter)
             results << result if result
           end
 
           if @format == 'latex' || @format == 'all'
-            result = compare_format(re_file, 'latex')
+            result = compare_format(re_file, 'latex', skip_reporter: skip_reporter)
             results << result if result
           end
         rescue StandardError => e
@@ -102,7 +109,7 @@ module ReVIEW
         results
       end
 
-      def compare_format(re_file, format)
+      def compare_format(re_file, format, skip_reporter: false)
         puts "  - #{format.upcase} comparison" if @verbose
 
         begin
@@ -114,8 +121,10 @@ module ReVIEW
 
           save_outputs(re_file, format, builder_output, renderer_output)
 
-          # レポーターに結果を追加
-          @reporter.add_result(re_file, format, comparison_result)
+          # レポーターに結果を追加（並列実行時はスキップ）
+          unless skip_reporter
+            @reporter.add_result(re_file, format, comparison_result)
+          end
 
           {
             file: re_file,

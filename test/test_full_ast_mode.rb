@@ -153,12 +153,20 @@ class TestFullASTMode < Test::Unit::TestCase
     caption_text = note_block['caption']['children'].first['content']
     assert_equal 'Note Caption', caption_text, 'Note block should have correct caption'
 
-    assert_equal 3, note_block['children'].size, 'Note block should have 3 text children'
+    # Note block should have 1 paragraph node containing the content
+    assert_equal 1, note_block['children'].size, 'Note block should have 1 paragraph child'
+    paragraph = note_block['children'].first
+    assert_equal 'ParagraphNode', paragraph['type'], 'Note block child should be ParagraphNode'
 
-    # Check that note block contains expected text content
-    note_texts = note_block['children'].map { |child| child['content'] }
-    assert_include(note_texts, 'This is a note block.', 'Note should contain expected text')
-    assert_include(note_texts, 'It can have multiple lines.', 'Note should contain multiple lines')
+    # Check that paragraph contains expected text nodes
+    text_nodes = paragraph['children'].select { |child| child['type'] == 'TextNode' }
+    text_contents = text_nodes.map { |node| node['content'] }
+    assert_include(text_contents, 'This is a note block.', 'Note should contain expected text')
+    assert_include(text_contents, 'It can have multiple lines.', 'Note should contain multiple lines')
+
+    # Check for inline bold node in paragraph
+    inline_node = paragraph['children'].find { |child| child['type'] == 'InlineNode' && child['inline_type'] == 'b' }
+    assert_not_nil(inline_node, 'Note paragraph should contain bold inline node')
 
     # Check read block
     block_nodes = ast['children'].select { |node| node['type'] == 'BlockNode' }

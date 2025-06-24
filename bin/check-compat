@@ -2,11 +2,8 @@
 # frozen_string_literal: true
 
 require 'optparse'
-require 'pathname'
 
-# Add lib directory to load path
-lib_path = Pathname.new(__FILE__).parent.parent + 'lib'
-$LOAD_PATH.unshift(lib_path.to_s) unless $LOAD_PATH.include?(lib_path.to_s)
+$LOAD_PATH.unshift(File.realpath('../lib', __dir__))
 
 require 'compat/runner'
 

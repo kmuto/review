@@ -125,17 +125,16 @@ class TestListASTProcessor < Test::Unit::TestCase
     @processor.process_ordered_list(input)
 
     list_node = @mock_compiler.added_nodes[0]
-    assert_equal 2, list_node.children.size # Two top-level items
+    # Re:VIEW ordered lists don't support nesting - all items are at level 1
+    assert_equal 3, list_node.children.size # Three items at the same level
 
-    # Check nested structure
-    first_item = list_node.children[0]
-    nested_list = first_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
-    assert_not_nil(nested_list)
-    assert_equal :ol, nested_list.list_type
-
-    nested_item = nested_list.children[0]
-    assert_equal 2, nested_item.level
-    assert_equal 11, nested_item.number
+    # Check that all items are at level 1
+    assert_equal 1, list_node.children[0].level
+    assert_equal 1, list_node.children[0].number
+    assert_equal 1, list_node.children[1].level
+    assert_equal 11, list_node.children[1].number
+    assert_equal 1, list_node.children[2].level
+    assert_equal 2, list_node.children[2].number
   end
 
   # Test definition list processing

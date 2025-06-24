@@ -104,17 +104,17 @@ class TestListParser < Test::Unit::TestCase
   def test_parse_ordered_list_nested_levels
     input = create_line_input(
       "   1. First level\n" +
-      "   11. Second level\n" +
-      "   111. Third level\n" +
-      "   2. Back to first level\n"
+      "   11. First level\n" +
+      "   111. First level\n" +
+      "   2. First level\n"
     )
 
     items = @parser.parse_ordered_list(input)
 
     assert_equal 4, items.size
     assert_equal 1, items[0].level
-    assert_equal 2, items[1].level
-    assert_equal 3, items[2].level
+    assert_equal 1, items[1].level
+    assert_equal 1, items[2].level
     assert_equal 1, items[3].level
     assert_equal 11, items[1].metadata[:number]
     assert_equal 111, items[2].metadata[:number]

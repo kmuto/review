@@ -23,6 +23,14 @@ module ReVIEW
         @chapter = options[:chapter]
         @book = options[:book] || @chapter&.book
 
+        # Generate indexes like LATEXBuilder does
+        if @chapter
+          @chapter.generate_indexes
+        end
+        if @book
+          @book.generate_indexes
+        end
+
         # Initialize LaTeX character escaping
         initialize_metachars('')
 
@@ -67,7 +75,7 @@ module ReVIEW
                           when 6
                             'subparagraph'
                           else
-                            'subparagraph'
+                            raise NotImplementedError, "Unsupported headline level: #{level}. LaTeX only supports levels 1-6"
                           end
 
         # Generate labels like LATEXBuilder
@@ -101,7 +109,8 @@ module ReVIEW
       end
 
       def visit_paragraph(node)
-        content = render_children_with_newlines(node)
+        content = render_children(node)
+
         # Add proper spacing like LATEXBuilder - paragraphs are separated by empty lines
         "#{content}\n"
       end
@@ -109,6 +118,7 @@ module ReVIEW
       def visit_text(node)
         content = node.content.to_s
         # Preserve newlines and escape content properly
+        # Don't escape newlines so they are preserved in the output
         escape(content)
       end
 
@@ -123,41 +133,29 @@ module ReVIEW
         caption = render_children(node.caption) if node.caption
         @doc_status[:caption] = false
 
+        # Process children to get properly escaped content while preserving structure
         content = render_children(node)
         code_type = node.code_type.to_s if node.respond_to?(:code_type)
 
-        case code_type
-        when 'list'
-          visit_list_block(node, content, caption)
-        when 'listnum'
-          # listnum uses same environment as list but with line numbers in content
-          visit_list_block(node, add_line_numbers(content), caption)
-        when 'emlist'
-          visit_emlist_block(node, content, caption)
-        when 'emlistnum'
-          # emlistnum uses same environment as emlist but with line numbers in content
-          visit_emlist_block(node, add_line_numbers(content), caption)
-        when 'cmd'
-          visit_cmd_block(node, content, caption)
-        when 'source'
-          visit_source_block(node, content, caption)
-        else
-          # Fallback for generic code blocks
-          if node.id && !node.id.empty?
-            if caption && !caption.empty?
-              # Add list numbering like LATEXBuilder
-              numbered_caption = "リスト1.1: #{caption}"
-              result = "\\begin{reviewlistblock}\n" +
-                       "\\reviewlistcaption{#{numbered_caption}}\n" +
-                       "\\begin{reviewlist}\n#{content}\\end{reviewlist}\n" +
-                       "\\end{reviewlistblock}\n"
-            else
-              result = "\\begin{reviewlist}\n#{content}\\end{reviewlist}\n"
-            end
-          else
-            result = "\\begin{reviewcmd}\n#{content}\\end{reviewcmd}\n"
-          end
-        end
+        result = case code_type
+                 when 'list'
+                   visit_list_block(node, content, caption)
+                 when 'listnum'
+                   # listnum uses same environment as list but with line numbers in content
+                   visit_list_block(node, add_line_numbers(content), caption)
+                 when 'emlist'
+                   visit_emlist_block(node, content, caption)
+                 when 'emlistnum'
+                   # emlistnum uses same environment as emlist but with line numbers in content
+                   visit_emlist_block(node, add_line_numbers(content), caption)
+                 when 'cmd'
+                   visit_cmd_block(node, content, caption)
+                 when 'source'
+                   visit_source_block(node, content, caption)
+                 else
+                   # Default to emlist for unknown or nil code types
+                   visit_emlist_block(node, content, caption)
+                 end
 
         # Add footnotetext commands for footnotes used in caption
         @foottext.each do |footnote_id, footnote_number|
@@ -166,8 +164,8 @@ module ReVIEW
           begin
             footnote_content = @chapter.footnote_index.fetch(footnote_id).content
             result += "\\footnotetext[#{footnote_number}]{#{escape(footnote_content)}}\n"
-          rescue StandardError
-            # Skip if footnote not found
+          rescue StandardError => e
+            raise NotImplementedError, "Footnote not found in index: #{footnote_id} (#{e.message})"
           end
         end
         @foottext.clear
@@ -235,34 +233,24 @@ module ReVIEW
         result << "\\begin{reviewtable}{#{col_spec}}"
         result << '\\hline'
 
-        # Process table rows - first row as header, skip separator row, rest as body
-        if node.body_rows.any?
-          processed_rows = 0
+        # Process header rows first (if any)
+        if node.header_rows.any?
+          node.header_rows.each do |row|
+            cells = row.children.map { |cell| "\\reviewth{#{render_children(cell)}}" }
+            result << "#{cells.join(' & ')} \\\\  \\hline"
+          end
+        end
 
-          node.body_rows.each_with_index do |row, _i|
+        # Process body rows
+        if node.body_rows.any?
+          node.body_rows.each do |row|
             # Skip separator row (contains only ----)
             if row.children.length == 1 && row.children.first.respond_to?(:children) &&
                row.children.first.children.any? { |child| child.respond_to?(:content) && child.content.strip == '----' }
               next
             end
 
-            if processed_rows == 0
-              # First non-separator row is header
-              cells = row.children.map { |cell| "\\reviewth{#{render_children(cell)}}" }
-              result << "#{cells.join(' & ')} \\\\  \\hline"
-            else
-              # Rest are body rows
-              cells = row.children.map { |cell| render_children(cell) }
-              result << "#{cells.join(' & ')} \\\\  \\hline"
-            end
-            processed_rows += 1
-          end
-        end
-
-        # Render explicit header rows if any
-        if node.header_rows.any?
-          node.header_rows.each do |row|
-            cells = row.children.map { |cell| "\\reviewth{#{render_children(cell)}}" }
+            cells = row.children.map { |cell| render_children(cell) }
             result << "#{cells.join(' & ')} \\\\  \\hline"
           end
         end
@@ -281,8 +269,8 @@ module ReVIEW
           begin
             footnote_content = @chapter.footnote_index.fetch(footnote_id).content
             table_result += "\\footnotetext[#{footnote_number}]{#{escape(footnote_content)}}\n"
-          rescue StandardError
-            # Skip if footnote not found
+          rescue StandardError => e
+            raise NotImplementedError, "Footnote not found in index: #{footnote_id} (#{e.message})"
           end
         end
         @foottext.clear
@@ -294,7 +282,7 @@ module ReVIEW
         # imgtable should be rendered as an image, not as a table (like LATEXBuilder)
         result = []
         result << '\\begin{reviewdummyimage}'
-        result << ('{-}{-}[[path = ' + escape(node.id) + ' (not exist)]]{-}{-}')
+        raise NotImplementedError, "Image rendering not fully implemented for image ID: #{node.id}"
 
         if node.id && !node.id.empty?
           # Generate label like LATEXBuilder: image:chapter:id
@@ -344,8 +332,11 @@ module ReVIEW
       def visit_regular_image(node, caption)
         result = []
         # Use Re:VIEW image structure like LATEXBuilder
-        result << '\\begin{reviewdummyimage}'
-        result << ('{-}{-}[[path = ' + escape(node.id) + ' (not exist)]]{-}{-}')
+        result << '\\begin{reviewimage}'
+
+        if caption && !caption.empty?
+          result << "\\reviewimagecaption{#{caption}}"
+        end
 
         if node.id && !node.id.empty?
           # Generate label like LATEXBuilder: image:chapter:id
@@ -357,11 +348,7 @@ module ReVIEW
                     end
         end
 
-        if caption && !caption.empty?
-          result << "\\reviewimagecaption{#{caption}}"
-        end
-
-        result << '\\end{reviewdummyimage}'
+        result << '\\end{reviewimage}'
 
         image_result = result.join("\n") + "\n"
 
@@ -372,8 +359,8 @@ module ReVIEW
           begin
             footnote_content = @chapter.footnote_index.fetch(footnote_id).content
             image_result += "\\footnotetext[#{footnote_number}]{#{escape(footnote_content)}}\n"
-          rescue StandardError
-            # Skip if footnote not found
+          rescue StandardError => e
+            raise NotImplementedError, "Footnote not found in index: #{footnote_id} (#{e.message})"
           end
         end
         @foottext.clear
@@ -385,7 +372,7 @@ module ReVIEW
         result = []
         # indepimage/numberlessimage uses different structure (no label, different caption)
         result << '\\begin{reviewdummyimage}'
-        result << ('{-}{-}[[path = ' + escape(node.id) + ' (not exist)]]{-}{-}')
+        raise NotImplementedError, "Image rendering not fully implemented for image ID: #{node.id}"
 
         # No label for indepimage/numberlessimage
 
@@ -447,16 +434,12 @@ module ReVIEW
           end.join("\n")
           "\n\\begin{description}\n#{items}\n\\end{description}\n"
         else
-          # Fallback for simple markdown-style lists that weren't converted to proper list structures
-          content = render_children(node)
-          "\n#{content}"
+          raise NotImplementedError, "Unsupported list type: #{node.list_type}"
         end
       end
 
       def visit_list_item(node)
-        # This method is used for fallback cases where lists are preserved as text
-        content = render_children(node)
-        "#{content}\n"
+        raise NotImplementedError, 'List item processing should be handled by visit_list, not as standalone items'
       end
 
       def visit_block(node)
@@ -492,17 +475,14 @@ module ReVIEW
               begin
                 footnote_number = @chapter.footnote_index.number(footnote_id)
                 "\\footnotetext[#{footnote_number}]{#{footnote_content}}\n"
-              rescue StandardError
-                # Fallback if footnote not found in index
-                "\\footnotetext{#{footnote_content}}\n"
+              rescue StandardError => e
+                raise NotImplementedError, "Footnote block processing failed for #{footnote_id}: #{e.message}"
               end
             else
-              # Fallback without chapter context
-              "\\footnotetext{#{footnote_content}}\n"
+              raise NotImplementedError, 'Footnote processing requires chapter context but none provided'
             end
           else
-            # Malformed footnote block - skip generation
-            ''
+            raise NotImplementedError, 'Malformed footnote block: insufficient arguments'
           end
         when 'firstlinenum'
           # firstlinenum sets the starting line number for subsequent listnum blocks
@@ -526,8 +506,7 @@ module ReVIEW
           # Control commands that should not generate LaTeX environment blocks
           ''
         else
-          # Generic block handling for unknown types
-          "\\begin{#{block_type}}\n#{content}\\end{#{block_type}}\n"
+          raise NotImplementedError, "Unsupported block type: #{block_type}"
         end
       end
 
@@ -596,8 +575,7 @@ module ReVIEW
           # Single line embed
           "#{node.arg}\n"
         else
-          # Fallback for unknown embed structure
-          "\n"
+          raise NotImplementedError, 'Unknown embed structure or missing argument'
         end
       end
 
@@ -612,9 +590,26 @@ module ReVIEW
         result << '\\begin{reviewlistblock}'
 
         if caption && !caption.empty?
-          # Generate list number like LATEXBuilder
-          list_number = generate_list_number(node)
-          result << "\\reviewlistcaption{#{list_number}: #{caption}}"
+          # Use LATEXBuilder logic for list caption with proper numbering
+          if node.id && !node.id.empty?
+            # For list blocks with ID, generate numbered caption like LATEXBuilder
+            begin
+              list_item = @chapter.list(node.id)
+              list_num = list_item.number
+              chapter_num = @chapter.number
+              captionstr = if chapter_num
+                             "\\reviewlistcaption{#{I18n.t('list')}#{I18n.t('format_number_header', [chapter_num, list_num])}#{I18n.t('caption_prefix')}#{caption}}"
+                           else
+                             "\\reviewlistcaption{#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [list_num])}#{I18n.t('caption_prefix')}#{caption}}"
+                           end
+              result << captionstr
+            rescue KeyError
+              raise NotImplementedError, "no such list: #{node.id}"
+            end
+          else
+            # For list blocks without ID, use simple caption
+            result << "\\reviewlistcaption{#{caption}}"
+          end
         end
 
         result << '\\begin{reviewlist}'
@@ -638,7 +633,7 @@ module ReVIEW
         result << '\\end{reviewemlist}'
 
         result << '\\end{reviewlistblock}'
-        result.join("\n")
+        result.join("\n") + "\n"
       end
 
       def visit_cmd_block(_node, content, caption)
@@ -671,23 +666,6 @@ module ReVIEW
         result << '\\end{reviewlistblock}'
 
         result.join("\n") + "\n"
-      end
-
-      # Generate list number like LATEXBuilder
-      def generate_list_number(node)
-        # Use proper list numbering using list_index.number
-        if @chapter && @chapter.list_index && node.id && !node.id.empty?
-          begin
-            list_number = @chapter.list_index.number(node.id)
-            "リスト#{@chapter.number}.#{list_number}"
-          rescue StandardError
-            # Fallback if list not found
-            "リスト#{@chapter.number}.1"
-          end
-        else
-          # Default for lists without ID
-          "リスト#{@chapter.number}.1"
-        end
       end
 
       # Add line numbers to content like LATEXBuilder does
@@ -746,8 +724,8 @@ module ReVIEW
                   footnote_number = @chapter.footnote_index.number(footnote_id)
                   @foottext[footnote_id] = footnote_number
                   '\\protect\\footnotemark'
-                rescue StandardError
-                  "\\footnote{#{footnote_id}}"
+                rescue StandardError => e
+                  raise NotImplementedError, "Footnote inline processing failed for #{footnote_id}: #{e.message}"
                 end
               else
                 '\\protect\\footnotemark'
@@ -796,9 +774,8 @@ module ReVIEW
               begin
                 chapter_number = @book.chapter_index.number(chapter_id)
                 "\\reviewchapref{#{chapter_number}}{chap:#{chapter_id}}"
-              rescue StandardError
-                # Fallback if chapter not found
-                "\\reviewchapref{#{escape(chapter_id)}}{chap:#{escape(chapter_id)}}"
+              rescue StandardError => e
+                raise NotImplementedError, "Chapter reference failed for #{chapter_id}: #{e.message}"
               end
             else
               "\\reviewchapref{#{escape(chapter_id)}}{chap:#{escape(chapter_id)}}"
@@ -814,9 +791,8 @@ module ReVIEW
               begin
                 title = @book.chapter_index.display_string(chapter_id)
                 "\\reviewchapref{#{escape(title)}}{chap:#{chapter_id}}"
-              rescue StandardError
-                # Fallback if title not found
-                "\\reviewchapref{#{escape(chapter_id)}}{chap:#{escape(chapter_id)}}"
+              rescue StandardError => e
+                raise NotImplementedError, "Chapter title reference failed for #{chapter_id}: #{e.message}"
               end
             else
               "\\reviewchapref{#{escape(chapter_id)}}{chap:#{escape(chapter_id)}}"
@@ -836,9 +812,8 @@ module ReVIEW
                 else
                   "\\reviewlistref{#{list_item}}"
                 end
-              rescue StandardError
-                # Fallback if list not found
-                "\\ref{#{escape(list_id)}}"
+              rescue StandardError => e
+                raise NotImplementedError, "List reference failed for #{list_id}: #{e.message}"
               end
             else
               "\\ref{#{escape(list_id)}}"
@@ -859,9 +834,8 @@ module ReVIEW
                 else
                   "\\reviewtableref{#{table_item}}{#{table_label}}"
                 end
-              rescue StandardError
-                # Fallback if table not found
-                "\\ref{#{escape(table_id)}}"
+              rescue StandardError => e
+                raise NotImplementedError, "Table reference failed for #{table_id}: #{e.message}"
               end
             else
               "\\ref{#{escape(table_id)}}"
@@ -877,9 +851,8 @@ module ReVIEW
               begin
                 image_item = @chapter.image_index.number(image_id)
                 "\\reviewimageref{#{@chapter.number}.#{image_item}}{image:#{@chapter.id}:#{image_id}}"
-              rescue StandardError
-                # Fallback if image not found - don't escape underscores in ref labels
-                "\\ref{#{image_id}}"
+              rescue StandardError => e
+                raise NotImplementedError, "Image reference failed for #{image_id}: #{e.message}"
               end
             else
               # Don't escape underscores in ref labels
@@ -914,8 +887,7 @@ module ReVIEW
         when 'ins', 'insert'
           "\\reviewinsert{#{content}}"
         else
-          # Unknown inline element, escape content
-          escape(content)
+          raise NotImplementedError, "Unsupported inline element type: #{inline_type}"
         end
       end
 
@@ -929,30 +901,29 @@ module ReVIEW
         return '' unless node.children
 
         # In LaTeX Builder, paragraphs preserve newlines to maintain line structure
-        # This preserves the original source formatting within paragraph content
-        if node.children.length > 1
-          result = []
-          node.children.each_with_index do |child, i|
-            result << visit(child)
+        # For each child, check if it marks the start of a new line
+        result = []
 
-            # Check if we should add a newline after this child
-            # Add newlines to preserve line structure as the original LATEXBuilder does
-            next unless i < node.children.length - 1
+        node.children.each_with_index do |child, i|
+          child_content = visit(child)
 
-            next_child = node.children[i + 1]
-
-            # Add newline if the next child starts a new line
-            # This is detected by checking if the next element is a TextNode that
-            # starts with content that would be on a new line
-            if should_add_newline_before?(next_child)
-              result << "\n"
-            end
-          end
-          return result.join
+          # For the first child, just add content
+          result << if i == 0
+                      child_content
+                    elsif child.class.name.include?('TextNode') &&
+                          child.respond_to?(:content) &&
+                          child.content.to_s.match?(/^\S/)
+                      # For subsequent children, check if this should start a new line
+                      # In Re:VIEW source, each line typically starts with text content
+                      "\n#{child_content}" # Content starts with non-whitespace
+                    # This looks like the start of a new line
+                    else
+                      # This is continuation content (like inline elements)
+                      child_content
+                    end
         end
 
-        # Single child - use default behavior
-        render_children(node)
+        result.join
       end
 
       def post_process_document(content)
@@ -967,28 +938,43 @@ module ReVIEW
           result << line
 
           # Track if we're inside a code block environment, table environment, image environment, or description
-          if line.match?(/\\begin\{review(list|emlist|cmd|source|table|dummyimage)|description\}/)
+          # Use block-level environments to determine code block boundaries
+          if line.match?(/\\begin\{review(listblock|table|dummyimage)\}|\\begin\{description\}/)
             in_code_block = true
-          elsif line.match?(/\\end\{review(list|emlist|cmd|source|table|dummyimage)|description\}/)
+          elsif line.match?(/\\end\{review(listblock|table|dummyimage)\}|\\end\{description\}/)
             in_code_block = false
           end
 
           # Skip empty line processing if we're inside a code block
           unless in_code_block
-            # Add empty line after labels and before paragraphs
+            # Add empty line after labels (like LATEXBuilder)
             if line.match?(/\\label\{/) && i + 1 < lines.length
               next_line = lines[i + 1].chomp
-              # If next line is not empty and not a LaTeX command, add empty line
-              if !next_line.empty? && !next_line.start_with?('\\')
+              # Add empty line based on what follows the label
+              # Chapter labels: always add empty line if next line is not empty
+              # Section labels: add empty line if next line is not empty
+              if line.match?(/\\label\{chap:/) && !next_line.empty? && !next_line.match?(/\\begin\{review/)
+                result << ''
+              elsif line.match?(/\\label\{sec:/) && !next_line.empty? && !next_line.match?(/\\begin\{review/)
                 result << ''
               end
             end
 
-            # Add empty line after paragraphs
+            # Add empty line after block environments (like LATEXBuilder)
+            # Only for outer environments, not inner ones like reviewlist/reviewemlist
+            if line.match?(/\\end\{(review(listblock|table|dummyimage)|itemize|enumerate|description)\}/) && i + 1 < lines.length
+              next_line = lines[i + 1].chomp
+              # Add empty line if next line is not already empty and not a label
+              unless next_line.empty? || next_line.match?(/\\label\{/)
+                result << ''
+              end
+            end
+
+            # Add empty line after paragraphs when followed by sections
             if !line.empty? && !line.start_with?('\\') && i + 1 < lines.length
               next_line = lines[i + 1].chomp
-              # If next line is also a paragraph or a LaTeX command, add empty line
-              unless next_line.empty?
+              # Add empty line if next line is a section command
+              if next_line.match?(/\\section|\\subsection|\\subsubsection/)
                 result << ''
               end
             end

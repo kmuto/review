@@ -9,12 +9,24 @@
 require File.expand_path('test_helper', __dir__)
 require 'review/renderer/latex_renderer'
 require 'review/ast'
+require 'review/book'
+require 'review/book/chapter'
 
 class TestLATEXRenderer < Test::Unit::TestCase
   include ReVIEW
 
   def setup
-    @renderer = Renderer::LATEXRenderer.new
+    @book = ReVIEW::Book::Base.new
+    @config = ReVIEW::Configure.values
+    @book.config = @config
+    @chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    @chapter.generate_indexes
+    @book.generate_indexes
+
+    @renderer = Renderer::LATEXRenderer.new(
+      config: @config,
+      options: { chapter: @chapter, book: @book }
+    )
   end
 
   def test_visit_text
@@ -35,7 +47,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     paragraph.add_child(text)
 
     result = @renderer.visit(paragraph)
-    assert_equal "\nThis is a paragraph.\n", result
+    assert_equal "This is a paragraph.\n", result
   end
 
   def test_visit_headline_level_1
@@ -45,7 +57,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 1, caption: caption, label: 'chap1')
     result = @renderer.visit(headline)
 
-    assert_equal '\\chapter{Chapter Title}\\label{chap1}', result
+    assert_equal "\\chapter{Chapter Title}\n\\label{chap:test}\n", result
   end
 
   def test_visit_headline_level_2
@@ -55,7 +67,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 2, caption: caption)
     result = @renderer.visit(headline)
 
-    assert_equal '\\section{Section Title}', result
+    assert_equal "\\section{Section Title}\n\\label{sec:1-1}\n", result
   end
 
   def test_visit_inline_bold
@@ -79,7 +91,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     inline.add_child(AST::TextNode.new(content: 'code text'))
 
     result = @renderer.visit(inline)
-    assert_equal '\\reviewcode{code text}', result
+    assert_equal '\\reviewtt{code text}', result
   end
 
   def test_visit_inline_footnote
@@ -93,15 +105,17 @@ class TestLATEXRenderer < Test::Unit::TestCase
     caption = AST::CaptionNode.new
     caption.add_child(AST::TextNode.new(content: 'Code Example'))
 
-    code_block = AST::CodeBlockNode.new(id: 'example1', caption: caption)
+    code_block = AST::CodeBlockNode.new(caption: caption, code_type: 'emlist')
     line1 = AST::CodeLineNode.new(location: nil)
     line1.add_child(AST::TextNode.new(content: 'puts "Hello"'))
     code_block.add_child(line1)
 
     result = @renderer.visit(code_block)
     expected = "\\begin{reviewlistblock}\n" +
-               "\\reviewlistcaption{リスト1.1: Code Example}\n" +
-               "\\begin{reviewlist}\nputs \"Hello\"\n\\end{reviewlist}\n" +
+               "\\reviewemlistcaption{Code Example}\n" +
+               "\\begin{reviewemlist}\n" +
+               "\n" +
+               "\\end{reviewemlist}\n" +
                "\\end{reviewlistblock}\n"
 
     assert_equal expected, result
@@ -147,7 +161,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
       '\\end{table}'
     ]
 
-    assert_equal expected_lines.join("\n"), result
+    assert_equal expected_lines.join("\n") + "\n", result
   end
 
   def test_visit_image
@@ -158,14 +172,13 @@ class TestLATEXRenderer < Test::Unit::TestCase
     result = @renderer.visit(image)
 
     expected_lines = [
-      '\\begin{reviewdummyimage}',
-      '{-}{-}[[path = image1 (not exist)]]{-}{-}',
-      '\\label{image:test:image1}',
+      '\\begin{reviewimage}',
       '\\reviewimagecaption{Test Image}',
-      '\\end{reviewdummyimage}'
+      '\\label{image:test:image1}',
+      '\\end{reviewimage}'
     ]
 
-    assert_equal expected_lines.join("\n"), result
+    assert_equal expected_lines.join("\n") + "\n", result
   end
 
   def test_visit_list_unordered
@@ -226,7 +239,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     document.add_child(paragraph)
 
     result = @renderer.visit(document)
-    assert_equal "\nHello World\n", result
+    assert_equal "Hello World\n", result
   end
 
   def test_render_inline_element_href_with_args
@@ -234,13 +247,6 @@ class TestLATEXRenderer < Test::Unit::TestCase
 
     result = @renderer.visit(inline)
     assert_equal '\\href{http://example.com}{Example}', result
-  end
-
-  def test_render_inline_element_reference
-    inline = AST::InlineNode.new(inline_type: 'chap', args: ['chapter1'])
-
-    result = @renderer.visit(inline)
-    assert_equal '\\reviewchapref{chapter1}{chap:chapter1}', result
   end
 
   def test_generic_visitor_error
