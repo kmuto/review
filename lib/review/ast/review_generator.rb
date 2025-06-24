@@ -214,25 +214,26 @@ module ReVIEW
         text += "{\n"
 
         # Add header rows
-        if node.header_rows&.any?
-          node.header_rows.each do |header_row|
-            header_line = header_row.children.map do |cell|
-              render_cell_content(cell)
-            end.join("\t")
-            text += header_line + "\n"
-          end
-          text += ('-' * 10) + "\n"
+        header_lines = node.header_rows.map do |header_row|
+          header_row.children.map do |cell|
+            render_cell_content(cell)
+          end.join("\t")
         end
 
         # Add body rows
-        if node.body_rows&.any?
-          node.body_rows.each do |body_row|
-            row_line = body_row.children.map do |cell|
-              render_cell_content(cell)
-            end.join("\t")
-            text += row_line + "\n"
-          end
+        body_lines = node.body_rows.map do |body_row|
+          body_row.children.map do |cell|
+            render_cell_content(cell)
+          end.join("\t")
         end
+
+        # Combine all lines with separator if headers exist
+        all_lines = header_lines
+        all_lines << ('-' * 12) if header_lines.any?
+        all_lines.concat(body_lines)
+
+        text += all_lines.join("\n")
+        text += "\n" if all_lines.any?
 
         text + "//}\n\n"
       end

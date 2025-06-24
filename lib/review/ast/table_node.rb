@@ -64,8 +64,8 @@ module ReVIEW
         hash[:id] = id if id && !id.empty?
         hash[:table_type] = table_type
         hash[:caption] = @caption ? @caption.serialize_to_hash(options) : nil
-        hash[:header_rows] = header_rows.map { |row| row.serialize_to_hash(options) } if header_rows&.any?
-        hash[:body_rows] = body_rows.map { |row| row.serialize_to_hash(options) } if body_rows&.any?
+        hash[:header_rows] = header_rows.map { |row| row.serialize_to_hash(options) }
+        hash[:body_rows] = body_rows.map { |row| row.serialize_to_hash(options) }
         hash[:metric] = metric if metric
 
         hash

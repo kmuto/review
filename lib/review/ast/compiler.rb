@@ -194,29 +194,29 @@ module ReVIEW
           lines = []
 
           # Process header rows
-          if node.header_rows&.any?
-            header_lines = node.header_rows.map do |header_row|
-              # Convert TableRowNode to tab-separated string
-              header_row.children.map do |cell|
-                # Render cell content to text with inline processing
-                render_children_to_text(cell)
-              end.join("\t")
-            end
-            lines.concat(header_lines)
-            lines << '------------' # Add separator line
+          header_lines = node.header_rows.map do |header_row|
+            # Convert TableRowNode to tab-separated string
+            header_row.children.map do |cell|
+              # Render cell content to text with inline processing
+              render_children_to_text(cell)
+            end.join("\t")
           end
 
           # Process body rows
-          if node.body_rows&.any?
-            body_lines = node.body_rows.map do |body_row|
-              # Convert TableRowNode to tab-separated string
-              body_row.children.map do |cell|
-                # Render cell content to text with inline processing
-                render_children_to_text(cell)
-              end.join("\t")
-            end
-            lines.concat(body_lines)
+          body_lines = node.body_rows.map do |body_row|
+            # Convert TableRowNode to tab-separated string
+            body_row.children.map do |cell|
+              # Render cell content to text with inline processing
+              render_children_to_text(cell)
+            end.join("\t")
           end
+
+          # Build lines array with headers, separator if needed, and body
+          if header_lines.any?
+            lines.concat(header_lines)
+            lines << '------------' # Add separator line
+          end
+          lines.concat(body_lines)
 
           if lines.any?
             # Handle different table types

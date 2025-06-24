@@ -195,13 +195,8 @@ module ReVIEW
         @doc_status[:table] = true
 
         # Calculate column count from first row
-        col_count = if node.header_rows.any?
-                      node.header_rows.first.children.length
-                    elsif node.body_rows.any?
-                      node.body_rows.first.children.length
-                    else
-                      1
-                    end
+        all_rows = node.header_rows + node.body_rows
+        col_count = all_rows.first ? all_rows.first.children.length : 1
 
         # Generate column specification with borders (like LATEXBuilder)
         col_spec = '|' + ('l|' * col_count)
@@ -233,26 +228,22 @@ module ReVIEW
         result << "\\begin{reviewtable}{#{col_spec}}"
         result << '\\hline'
 
-        # Process header rows first (if any)
-        if node.header_rows.any?
-          node.header_rows.each do |row|
-            cells = row.children.map { |cell| "\\reviewth{#{render_children(cell)}}" }
-            result << "#{cells.join(' & ')} \\\\  \\hline"
-          end
+        # Process header rows first
+        node.header_rows.each do |row|
+          cells = row.children.map { |cell| "\\reviewth{#{render_children(cell)}}" }
+          result << "#{cells.join(' & ')} \\\\  \\hline"
         end
 
         # Process body rows
-        if node.body_rows.any?
-          node.body_rows.each do |row|
-            # Skip separator row (contains only ----)
-            if row.children.length == 1 && row.children.first.respond_to?(:children) &&
-               row.children.first.children.any? { |child| child.respond_to?(:content) && child.content.strip == '----' }
-              next
-            end
-
-            cells = row.children.map { |cell| render_children(cell) }
-            result << "#{cells.join(' & ')} \\\\  \\hline"
+        node.body_rows.each do |row|
+          # Skip separator row (contains only ----)
+          if row.children.length == 1 && row.children.first.respond_to?(:children) &&
+             row.children.first.children.any? { |child| child.respond_to?(:content) && child.content.strip == '----' }
+            next
           end
+
+          cells = row.children.map { |cell| render_children(cell) }
+          result << "#{cells.join(' & ')} \\\\  \\hline"
         end
 
         result << '\\end{reviewtable}'

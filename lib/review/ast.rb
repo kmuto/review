@@ -25,7 +25,6 @@ require 'review/ast/block_node'
 require 'review/ast/column_node'
 require 'review/ast/minicolumn_node'
 require 'review/ast/caption_node'
-require 'review/ast/blank_line_node'
 
 # AST Processing classes
 require 'review/ast/compiler'

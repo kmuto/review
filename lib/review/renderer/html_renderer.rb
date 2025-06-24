@@ -232,31 +232,30 @@ module ReVIEW
                        end
 
         # Render rows without thead/tbody sections like HTMLBuilder with proper formatting
-        header_html = ''
-        if node.header_rows.any?
-          header_html = node.header_rows.map do |row|
-            cells_html = row.children.map do |cell|
-              content = render_children(cell)
-              "<th>#{content}</th>"
-            end.join
-            "<tr>#{cells_html}</tr>"
-          end.join("\n") + "\n"
+        header_rows = node.header_rows.map do |row|
+          cells_html = row.children.map do |cell|
+            content = render_children(cell)
+            "<th>#{content}</th>"
+          end.join
+          "<tr>#{cells_html}</tr>"
         end
 
-        body_html = ''
-        if node.body_rows.any?
-          body_html = node.body_rows.map do |row|
-            cells_html = row.children.map do |cell|
-              content = render_children(cell)
-              "<td>#{content}</td>"
-            end.join
-            "<tr>#{cells_html}</tr>"
-          end.join("\n") + "\n"
+        body_rows = node.body_rows.map do |row|
+          cells_html = row.children.map do |cell|
+            content = render_children(cell)
+            "<td>#{content}</td>"
+          end.join
+          "<tr>#{cells_html}</tr>"
         end
+
+        # Combine all rows
+        all_rows = header_rows + body_rows
+        rows_html = all_rows.join("\n")
+        rows_html += "\n" unless rows_html.empty?
 
         %Q(<div#{id_attr} class="table">
 #{caption_html}<table>
-#{header_html}#{body_html}</table>
+#{rows_html}</table>
 </div>
 )
       end
