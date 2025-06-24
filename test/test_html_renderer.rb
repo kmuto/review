@@ -9,17 +9,16 @@ require 'review/book/chapter'
 require 'review/configure'
 require 'review/i18n'
 
-
 class TestHTMLRenderer < Test::Unit::TestCase
   def setup
     @config = ReVIEW::Configure.values
     @config['language'] = 'ja'
     @book = ReVIEW::Book::Base.new('.')
     @book.config = @config
-    
+
     # Initialize I18n for proper list numbering
     ReVIEW::I18n.setup('ja')
-    
+
     @compiler = ReVIEW::AST::Compiler.new(nil)
     @renderer = ReVIEW::Renderer::HTMLRenderer.new(
       config: @config,

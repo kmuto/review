@@ -137,16 +137,28 @@ module ReVIEW
       # @param line [String] Input line
       # @return [ListItemData, nil] Parsed item data or nil if invalid
       def parse_ordered_line(line)
-        # Extract number and content
-        match = line.match(/\A\s+(\d+)\.\s*(.*)$/)
+        # Extract indentation, number and content
+        match = line.match(/\A(\s+)(\d+)\.\s*(.*)$/)
         return nil unless match
 
-        num = match[1]
-        content = match[2].strip
+        indent = match[1]
+        num = match[2]
+        content = match[3].strip
 
-        # Determine nesting level based on number format
-        # 1. = level 1, 11. = level 2, 111. = level 3, etc.
-        level = num.to_s.size
+        # Determine nesting level based on indentation (like unordered lists)
+        # Each level typically adds 2 spaces, but we should be flexible
+        # Level 1: 1-2 spaces, Level 2: 3-4 spaces, etc.
+        level = case indent.length
+                when 1..2
+                  1
+                when 3..4
+                  2
+                when 5..6
+                  3
+                else
+                  # For very deep nesting, calculate level
+                  [((indent.length - 1) / 2) + 1, 1].max
+                end
 
         ListItemData.new(
           type: :ol,

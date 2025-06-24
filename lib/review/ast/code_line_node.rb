@@ -15,13 +15,14 @@ module ReVIEW
     # A code line can contain text nodes and inline elements.
     # Line numbers are tracked for numbered code blocks (listnum, emlistnum).
     class CodeLineNode < Node
-      def initialize(location:, line_number: nil, **kwargs)
+      def initialize(location:, line_number: nil, original_text: '', **kwargs)
         super(location: location, **kwargs)
         @line_number = line_number
+        @original_text = original_text
         @children = []
       end
 
-      attr_accessor :line_number
+      attr_accessor :line_number, :original_text
       attr_reader :children
 
       def add_child(node)
@@ -30,6 +31,22 @@ module ReVIEW
 
       def accept(visitor)
         visitor.visit_code_line_node(self)
+      end
+
+      # Override to_h to include original_text
+      def to_h
+        result = super
+        result[:line_number] = line_number
+        result[:original_text] = original_text
+        result
+      end
+
+      # Override serialize_to_hash to include original_text
+      def serialize_to_hash(options = nil)
+        hash = super
+        hash[:line_number] = line_number if line_number
+        hash[:original_text] = original_text
+        hash
       end
     end
   end

@@ -29,11 +29,12 @@ module ReVIEW
         create_code_block_node(type, args, lines)
       end
 
-      def compile_image_to_ast(_type, args)
+      def compile_image_to_ast(type, args)
         create_and_add_node(AST::ImageNode,
                             id: args[0],
                             caption: process_caption(args, 1),
-                            metric: args[2])
+                            metric: args[2],
+                            image_type: type)
       end
 
       def compile_table_to_ast(type, args, lines)

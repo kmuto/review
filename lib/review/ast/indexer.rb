@@ -294,7 +294,6 @@ module ReVIEW
         end
       end
 
-
       # Warning output
       def warn(message)
         # For now, just output to stderr

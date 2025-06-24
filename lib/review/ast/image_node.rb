@@ -6,12 +6,13 @@ require 'review/ast/caption_node'
 module ReVIEW
   module AST
     class ImageNode < Node
-      attr_accessor :caption, :metric
+      attr_accessor :caption, :metric, :image_type
 
-      def initialize(location: nil, id: nil, caption: nil, metric: nil, **kwargs)
+      def initialize(location: nil, id: nil, caption: nil, metric: nil, image_type: :image, **kwargs)
         super(location: location, id: id, **kwargs)
         @caption = CaptionNode.parse(caption, location: location)
         @metric = metric
+        @image_type = image_type
       end
 
       # Get caption text for legacy Builder compatibility
@@ -24,6 +25,7 @@ module ReVIEW
         result = super
         result[:caption] = caption&.to_h
         result[:metric] = metric
+        result[:image_type] = image_type
         # ImageNode is a leaf node - remove children array if present
         result.delete(:children)
         result
@@ -57,6 +59,7 @@ module ReVIEW
         # For backward compatibility, serialize caption as its children array
         hash[:caption] = @caption ? @caption.serialize_to_hash(options) : nil
         hash[:metric] = metric
+        hash[:image_type] = image_type
         hash
       end
     end
