@@ -159,7 +159,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
     # Add header row
     header_row = ReVIEW::AST::TableRowNode.new(location: @location)
     ['Name', 'Age'].each do |cell_content|
-      cell = ReVIEW::AST::TableCellNode.new(location: @location)
+      cell = ReVIEW::AST::TableCellNode.new(location: @location, cell_type: :th)
       cell.add_child(ReVIEW::AST::TextNode.new(location: @location, content: cell_content))
       header_row.add_child(cell)
     end
@@ -168,8 +168,10 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
     # Add body rows
     [['Alice', '25'], ['Bob', '30']].each do |row_data|
       body_row = ReVIEW::AST::TableRowNode.new(location: @location)
-      row_data.each do |cell_content|
-        cell = ReVIEW::AST::TableCellNode.new(location: @location)
+      row_data.each_with_index do |cell_content, index|
+        # First cell in body rows is typically a header (row header)
+        cell_type = index == 0 ? :th : :td
+        cell = ReVIEW::AST::TableCellNode.new(location: @location, cell_type: cell_type)
         cell.add_child(ReVIEW::AST::TextNode.new(location: @location, content: cell_content))
         body_row.add_child(cell)
       end

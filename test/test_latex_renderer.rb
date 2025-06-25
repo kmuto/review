@@ -129,9 +129,9 @@ class TestLATEXRenderer < Test::Unit::TestCase
 
     # Header row
     header_row = AST::TableRowNode.new(location: nil)
-    header_cell1 = AST::TableCellNode.new(location: nil)
+    header_cell1 = AST::TableCellNode.new(location: nil, cell_type: :th)
     header_cell1.add_child(AST::TextNode.new(content: 'Header 1'))
-    header_cell2 = AST::TableCellNode.new(location: nil)
+    header_cell2 = AST::TableCellNode.new(location: nil, cell_type: :th)
     header_cell2.add_child(AST::TextNode.new(content: 'Header 2'))
     header_row.add_child(header_cell1)
     header_row.add_child(header_cell2)

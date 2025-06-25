@@ -62,8 +62,10 @@ module ReVIEW
           @sec_counter = SecCounter.new(5, @chapter) if @chapter
         end
 
-        content = render_children(node)
-        post_process_document(content)
+        # Generate body content only, like HTMLBuilder
+        # The complete HTML document structure (html, head, body tags)
+        # is handled by templates/html/layout-html5.html.erb
+        render_children(node)
       end
 
       def visit_headline(node)
@@ -246,66 +248,10 @@ module ReVIEW
                          ''
                        end
 
-        # Process table rows like HTMLBuilder - first row as header if no explicit header_rows
-        all_table_rows = node.header_rows + node.body_rows
-
-        if node.header_rows.empty? && !all_table_rows.empty?
-          # No explicit header separation - treat first row as header like HTMLBuilder
-          first_row = all_table_rows[0]
-          remaining_rows = all_table_rows[1..-1] || []
-
-          # First row as header
-          header_html = if first_row
-                          cells_html = first_row.children.map.with_index do |cell, index|
-                            content = render_children(cell)
-                            if index == 0
-                              "<th>#{content}</th>"
-                            else
-                              "<td>#{content}</td>"
-                            end
-                          end.join
-                          "<tr>#{cells_html}</tr>"
-                        else
-                          ''
-                        end
-
-          # Remaining rows as data
-          body_html = remaining_rows.map do |row|
-            cells_html = row.children.map.with_index do |cell, index|
-              content = render_children(cell)
-              if index == 0
-                "<th>#{content}</th>"
-              else
-                "<td>#{content}</td>"
-              end
-            end.join
-            "<tr>#{cells_html}</tr>"
-          end.join("\n")
-
-          rows_html = [header_html, body_html].reject(&:empty?).join("\n")
-        else
-          # Explicit header separation exists
-          header_rows = node.header_rows.map do |row|
-            cells_html = row.children.map do |cell|
-              content = render_children(cell)
-              "<th>#{content}</th>"
-            end.join
-            "<tr>#{cells_html}</tr>"
-          end
-
-          body_rows = node.body_rows.map do |row|
-            cells_html = row.children.map do |cell|
-              content = render_children(cell)
-              "<td>#{content}</td>"
-            end.join
-            "<tr>#{cells_html}</tr>"
-          end
-
-          # Combine all rows
-          all_rows = header_rows + body_rows
-          rows_html = all_rows.join("\n")
-        end
-
+        # Process all table rows using visitor pattern
+        # AST generation has already determined cell types, so we just visit each row
+        all_rows = node.header_rows + node.body_rows
+        rows_html = all_rows.map { |row| visit(row) }.join("\n")
         rows_html += "\n" unless rows_html.empty?
 
         %Q(<div#{id_attr} class="table">
@@ -322,7 +268,8 @@ module ReVIEW
 
       def visit_table_cell(node)
         content = render_children(node)
-        "<td>#{content}</td>"
+        tag = node.cell_type == :th ? 'th' : 'td'
+        "<#{tag}>#{content}</#{tag}>"
       end
 
       def visit_column(node)
@@ -778,18 +725,6 @@ module ReVIEW
 
       def render_url(content, _node)
         %Q(<a href="#{escape(content)}">#{content}</a>)
-      end
-
-      def post_process_document(content)
-        # HTMLBuilder uses puts for specific spacing patterns
-        # HTMLBuilder adds blank line after h2-h6 when level > 1
-        content = content.gsub(%r{(<h[2-6].*?</h[2-6]>)(?!\n\n)}, "\\1\n")
-
-        # Ensure proper spacing around code blocks like HTMLBuilder
-        content = content.gsub(%r{</div>\n<h3>}, "</div>\n\n<h3>")
-
-        # Remove extra newlines but preserve necessary spacing
-        content.gsub(/\n\n\n+/, "\n\n")
       end
 
       def escape(str)

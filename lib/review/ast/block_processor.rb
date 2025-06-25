@@ -7,6 +7,8 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/ast'
+require 'review/lineinput'
+require 'stringio'
 
 module ReVIEW
   module AST
@@ -70,20 +72,20 @@ module ReVIEW
           if separator_index
             header_lines = lines[0...separator_index]
             header_lines.each do |line|
-              row_node = create_table_row_from_line(line)
+              row_node = create_table_row_from_line(line, is_header: true)
               node.add_header_row(row_node)
             end
 
             # Process body rows
             body_lines = lines[(separator_index + 1)..-1] || []
             body_lines.each do |line|
-              row_node = create_table_row_from_line(line)
+              row_node = create_table_row_from_line(line, first_cell_header: false)
               node.add_body_row(row_node)
             end
           else
-            # No separator, all lines are body rows
+            # No separator, all lines are body rows with first cell as header
             lines.each do |line|
-              row_node = create_table_row_from_line(line)
+              row_node = create_table_row_from_line(line, first_cell_header: true)
               node.add_body_row(row_node)
             end
           end
@@ -109,14 +111,22 @@ module ReVIEW
       end
 
       def compile_block_to_ast(lines, block_type)
-        # Create a BlockNode for quote blocks
+        # Create a BlockNode for quote blocks and other block types
         node = AST::BlockNode.new(
           location: @ast_compiler.location,
           block_type: block_type
         )
 
-        if lines
-          lines.each { |line| @ast_compiler.inline_processor.parse_inline_elements(line, node) }
+        if lines && lines.any?
+          # Use the universal block processing method for structured content like lists and paragraphs
+          case block_type
+          when :quote, :lead, :blockquote, :read, :centering, :flushright, :address, :talk
+            # These block types can contain structured content (paragraphs, lists)
+            @ast_compiler.process_structured_content(node, lines)
+          else
+            # For other block types, use simple inline processing
+            lines.each { |line| @ast_compiler.inline_processor.parse_inline_elements(line, node) }
+          end
         end
 
         @ast_compiler.add_child_to_current_node(node)
@@ -130,41 +140,10 @@ module ReVIEW
           caption: process_caption(args, 0)
         )
 
-        if lines
-          # Parse minicolumn content as paragraphs (same logic as regular paragraphs)
-          # Group lines by empty lines to create separate paragraphs
-          paragraph_groups = []
-          current_paragraph = []
-
-          lines.each do |line|
-            if line.strip.empty?
-              # Empty line - finish current paragraph if it has content
-              if current_paragraph.any?
-                paragraph_groups << current_paragraph
-                current_paragraph = []
-              end
-            else
-              # Non-empty line - add to current paragraph
-              current_paragraph << line
-            end
-          end
-
-          # Add final paragraph if it has content
-          if current_paragraph.any?
-            paragraph_groups << current_paragraph
-          end
-
-          # Create ParagraphNode for each paragraph group
-          paragraph_groups.each do |paragraph_lines|
-            paragraph_node = AST::ParagraphNode.new(location: @ast_compiler.location)
-
-            # Process inline elements within each paragraph
-            paragraph_lines.each do |line|
-              @ast_compiler.inline_processor.parse_inline_elements(line, paragraph_node)
-            end
-
-            node.add_child(paragraph_node)
-          end
+        if lines && lines.any?
+          # Use the universal block processing method from Compiler for HTML Builder compatibility
+          # This processes content using the same logic as regular document processing
+          @ast_compiler.process_structured_content(node, lines)
         end
 
         @ast_compiler.add_child_to_current_node(node)
@@ -273,20 +252,20 @@ module ReVIEW
             # Process header rows
             header_lines = lines[0...separator_index]
             header_lines.each do |line|
-              row_node = create_table_row_from_line(line)
+              row_node = create_table_row_from_line(line, is_header: true)
               node.add_header_row(row_node)
             end
 
             # Process body rows
             body_lines = lines[(separator_index + 1)..-1] || []
             body_lines.each do |line|
-              row_node = create_table_row_from_line(line)
+              row_node = create_table_row_from_line(line, first_cell_header: false)
               node.add_body_row(row_node)
             end
           else
-            # No separator, all lines are body rows
+            # No separator, all lines are body rows with first cell as header
             lines.each do |line|
-              row_node = create_table_row_from_line(line)
+              row_node = create_table_row_from_line(line, first_cell_header: true)
               node.add_body_row(row_node)
             end
           end
@@ -535,13 +514,24 @@ module ReVIEW
       end
 
       # Create a table row node from a line containing tab-separated cells
-      def create_table_row_from_line(line)
+      # The is_header parameter determines if all cells should be header cells
+      # The first_cell_header parameter determines if only the first cell should be a header
+      def create_table_row_from_line(line, is_header: false, first_cell_header: false)
         row_node = create_node(AST::TableRowNode)
 
         # Split by tab to get cells
         cells = line.split("\t")
-        cells.each do |cell_content|
-          cell_node = create_node(AST::TableCellNode)
+        cells.each_with_index do |cell_content, index|
+          # Determine cell type based on row context and position
+          cell_type = if is_header
+                        :th  # All cells in header rows are <th>
+                      elsif first_cell_header && index == 0
+                        :th  # First cell in non-header rows is <th> (row header)
+                      else
+                        :td  # Regular data cells
+                      end
+
+          cell_node = create_node(AST::TableCellNode, cell_type: cell_type)
 
           # Parse inline elements in cell content
           @ast_compiler.inline_processor.parse_inline_elements(cell_content.strip, cell_node)

@@ -46,9 +46,11 @@ module ReVIEW
       end
 
       def visit_document(node)
+        # Generate content and post-process to match LATEXBuilder spacing
         content = render_children(node)
-        # Post-process to add proper spacing like LATEXBuilder
-        post_process_document(content)
+
+        # Post-process to ensure proper spacing like LATEXBuilder
+        post_process_latex_spacing(content)
       end
 
       def visit_headline(node)
@@ -102,17 +104,16 @@ module ReVIEW
 
         unless label_part.empty?
           result << label_part
-          result << ''
         end
 
-        result.join("\n")
+        result.join("\n") + "\n"
       end
 
       def visit_paragraph(node)
         content = render_children(node)
 
         # Add proper spacing like LATEXBuilder - paragraphs are separated by empty lines
-        "#{content}\n"
+        "#{content}\n\n"
       end
 
       def visit_text(node)
@@ -228,22 +229,17 @@ module ReVIEW
         result << "\\begin{reviewtable}{#{col_spec}}"
         result << '\\hline'
 
-        # Process header rows first
-        node.header_rows.each do |row|
-          cells = row.children.map { |cell| "\\reviewth{#{render_children(cell)}}" }
-          result << "#{cells.join(' & ')} \\\\  \\hline"
-        end
-
-        # Process body rows
-        node.body_rows.each do |row|
+        # Process all rows using visitor pattern
+        all_rows = node.header_rows + node.body_rows
+        all_rows.each do |row|
           # Skip separator row (contains only ----)
           if row.children.length == 1 && row.children.first.respond_to?(:children) &&
              row.children.first.children.any? { |child| child.respond_to?(:content) && child.content.strip == '----' }
             next
           end
 
-          cells = row.children.map { |cell| render_children(cell) }
-          result << "#{cells.join(' & ')} \\\\  \\hline"
+          row_content = visit(row)
+          result << "#{row_content} \\\\  \\hline"
         end
 
         result << '\\end{reviewtable}'
@@ -295,13 +291,19 @@ module ReVIEW
       end
 
       def visit_table_row(node)
-        # This method should not be called directly as tables handle rows internally
-        render_children(node)
+        # Process all cells in the row using visitor pattern
+        cells = node.children.map { |cell| visit(cell) }
+        cells.join(' & ')
       end
 
       def visit_table_cell(node)
-        # This method should not be called directly as tables handle cells internally
-        render_children(node)
+        content = render_children(node)
+        # Use cell_type to determine LaTeX formatting
+        if node.cell_type == :th
+          "\\reviewth{#{content}}"
+        else
+          content
+        end
       end
 
       def visit_image(node)
@@ -382,7 +384,7 @@ module ReVIEW
         when :ul
           # Unordered list - generate LaTeX itemize environment
           items = node.children.map { |item| "\\item #{render_children(item)}" }.join("\n")
-          "\n\\begin{itemize}\n#{items}\n\\end{itemize}\n"
+          "\n\\begin{itemize}\n#{items}\n\\end{itemize}\n\n"
         when :ol
           # Ordered list - generate LaTeX enumerate environment
           items = node.children.map { |item| "\\item #{render_children(item)}" }.join("\n")
@@ -391,9 +393,9 @@ module ReVIEW
           if node.respond_to?(:olnum_start) && node.olnum_start
             # Generate enumerate with setcounter for olnum
             start_num = node.olnum_start - 1 # LaTeX counter is 0-based
-            "\n\\begin{enumerate}\n\\setcounter{enumi}{#{start_num}}\n#{items}\n\\end{enumerate}\n"
+            "\n\\begin{enumerate}\n\\setcounter{enumi}{#{start_num}}\n#{items}\n\\end{enumerate}\n\n"
           else
-            "\n\\begin{enumerate}\n#{items}\n\\end{enumerate}\n"
+            "\n\\begin{enumerate}\n#{items}\n\\end{enumerate}\n\n"
           end
         when :dl
           # Definition list - generate LaTeX description environment like LATEXBuilder
@@ -423,7 +425,7 @@ module ReVIEW
               "\\item[#{render_children(item)}] "
             end
           end.join("\n")
-          "\n\\begin{description}\n#{items}\n\\end{description}\n"
+          "\n\\begin{description}\n#{items}\n\\end{description}\n\n"
         else
           raise NotImplementedError, "Unsupported list type: #{node.list_type}"
         end
@@ -533,7 +535,7 @@ module ReVIEW
                     "\\begin{#{env_name}}"
                   end
         result << ''  # blank line
-        result << content.strip
+        result << content.chomp
         result << ''  # blank line
         result << "\\end{#{env_name}}"
 
@@ -551,7 +553,7 @@ module ReVIEW
         result = []
         result << '\\begin{reviewcolumn}'
         result << ''  # blank line
-        result << content.strip
+        result << content.chomp
         result << ''  # blank line
         result << '\\end{reviewcolumn}'
 
@@ -608,7 +610,7 @@ module ReVIEW
         result << '\\end{reviewlist}'
         result << '\\end{reviewlistblock}'
 
-        result.join("\n") + "\n"
+        result.join("\n") + "\n\n"
       end
 
       def visit_emlist_block(_node, content, caption)
@@ -624,7 +626,7 @@ module ReVIEW
         result << '\\end{reviewemlist}'
 
         result << '\\end{reviewlistblock}'
-        result.join("\n") + "\n"
+        result.join("\n") + "\n\n"
       end
 
       def visit_cmd_block(_node, content, caption)
@@ -640,7 +642,7 @@ module ReVIEW
         result << '\\end{reviewcmd}'
         result << '\\end{reviewlistblock}'
 
-        result.join("\n") + "\n"
+        result.join("\n") + "\n\n"
       end
 
       def visit_source_block(_node, content, caption)
@@ -656,7 +658,7 @@ module ReVIEW
         result << '\\end{reviewsource}'
         result << '\\end{reviewlistblock}'
 
-        result.join("\n") + "\n"
+        result.join("\n") + "\n\n"
       end
 
       # Add line numbers to content like LATEXBuilder does
@@ -917,66 +919,6 @@ module ReVIEW
         result.join
       end
 
-      def post_process_document(content)
-        # Add proper paragraph spacing like LATEXBuilder, but avoid adding empty lines inside code blocks
-        lines = content.lines
-        result = []
-        in_code_block = false
-
-        i = 0
-        while i < lines.length
-          line = lines[i].chomp
-          result << line
-
-          # Track if we're inside a code block environment, table environment, image environment, or description
-          # Use block-level environments to determine code block boundaries
-          if line.match?(/\\begin\{review(listblock|table|dummyimage)\}|\\begin\{description\}/)
-            in_code_block = true
-          elsif line.match?(/\\end\{review(listblock|table|dummyimage)\}|\\end\{description\}/)
-            in_code_block = false
-          end
-
-          # Skip empty line processing if we're inside a code block
-          unless in_code_block
-            # Add empty line after labels (like LATEXBuilder)
-            if line.match?(/\\label\{/) && i + 1 < lines.length
-              next_line = lines[i + 1].chomp
-              # Add empty line based on what follows the label
-              # Chapter labels: always add empty line if next line is not empty
-              # Section labels: add empty line if next line is not empty
-              if line.match?(/\\label\{chap:/) && !next_line.empty? && !next_line.match?(/\\begin\{review/)
-                result << ''
-              elsif line.match?(/\\label\{sec:/) && !next_line.empty? && !next_line.match?(/\\begin\{review/)
-                result << ''
-              end
-            end
-
-            # Add empty line after block environments (like LATEXBuilder)
-            # Only for outer environments, not inner ones like reviewlist/reviewemlist
-            if line.match?(/\\end\{(review(listblock|table|dummyimage)|itemize|enumerate|description)\}/) && i + 1 < lines.length
-              next_line = lines[i + 1].chomp
-              # Add empty line if next line is not already empty and not a label
-              unless next_line.empty? || next_line.match?(/\\label\{/)
-                result << ''
-              end
-            end
-
-            # Add empty line after paragraphs when followed by sections
-            if !line.empty? && !line.start_with?('\\') && i + 1 < lines.length
-              next_line = lines[i + 1].chomp
-              # Add empty line if next line is a section command
-              if next_line.match?(/\\section|\\subsection|\\subsubsection/)
-                result << ''
-              end
-            end
-          end
-
-          i += 1
-        end
-
-        result.join("\n") + "\n"
-      end
-
       def normalize_id(id)
         # LaTeX-safe ID normalization
         id.gsub(/[^a-zA-Z0-9_-]/, '_')
@@ -1008,6 +950,57 @@ module ReVIEW
         end
 
         false
+      end
+
+      def post_process_latex_spacing(content)
+        # Simplified spacing fix to match LATEXBuilder output
+        # Only add blank lines after headers, avoid interfering with other content
+        lines = content.split("\n")
+        result = []
+        in_code_block = false
+        in_minicolumn = false
+
+        i = 0
+        while i < lines.length
+          line = lines[i]
+
+          # Track code block boundaries - don't modify spacing inside
+          if line.match?(/\\begin\{(reviewlist|reviewemlist|reviewcmd|reviewsource)\}/)
+            in_code_block = true
+          elsif line.match?(/\\end\{(reviewlist|reviewemlist|reviewcmd|reviewsource)\}/)
+            in_code_block = false
+          end
+
+          # Track minicolumn boundaries - don't modify spacing inside
+          if line.match?(/\\begin\{(reviewnote|reviewmemo|reviewtip|reviewinfo|reviewwarning|reviewimportant|reviewcaution|reviewnotice|reviewcolumn)\}/)
+            in_minicolumn = true
+          elsif line.match?(/\\end\{(reviewnote|reviewmemo|reviewtip|reviewinfo|reviewwarning|reviewimportant|reviewcaution|reviewnotice|reviewcolumn)\}/)
+            in_minicolumn = false
+          end
+
+          # Only process header spacing if not inside code blocks or minicolumns
+          if !in_code_block && !in_minicolumn && line.match?(/\\(chapter|section|subsection\*?|subsubsection\*?|paragraph\*?)\{/)
+            result << line
+            # Look ahead for labels
+            j = i + 1
+            while j < lines.length && lines[j].match?(/\\(label|addcontentsline)\{/)
+              result << lines[j]
+              j += 1
+            end
+
+            # Add blank line after headers and their labels
+            if j < lines.length && !lines[j].strip.empty?
+              result << ''
+            end
+            i = j - 1
+          else
+            result << line
+          end
+
+          i += 1
+        end
+
+        result.join("\n")
       end
     end
   end

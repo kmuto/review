@@ -666,6 +666,52 @@ module ReVIEW
         @pending_olnum = nil
       end
 
+      # Universal block content processing method for HTML Builder compatibility
+      # This method processes structured content within block elements using the same
+      # parsing logic as regular document processing, ensuring consistent behavior
+      def process_structured_content(parent_node, lines)
+        return unless lines && lines.any?
+
+        # Create StringIO from lines to simulate file input for line processing
+        content = lines.join("\n") + "\n"
+        f = StringIO.new(content)
+        line_input = ReVIEW::LineInput.new(f)
+
+        # Save current node context
+        saved_current_node = @current_ast_node
+        saved_location = @current_location
+
+        # Set parent as current node for child processing
+        @current_ast_node = parent_node
+
+        # Process lines using the same logic as main document processing
+        lineno = 0
+        while line_input.next?
+          lineno += 1
+          # Create location that reflects position within the block
+          @current_location = SnapshotLocation.new(@chapter&.basename || 'block', lineno)
+          line_content = line_input.peek
+
+          case line_content
+          when /\A\s*\z/ # blank line
+            line_input.gets # consume blank line but don't create node
+          when /\A\s+\*\s/ # unordered list (must start with space)
+            compile_ul_to_ast(line_input)
+          when /\A\s+\d+\.\s/ # ordered list (must start with space)
+            compile_ol_to_ast(line_input)
+          when /\A\s+:\s/ # definition list (must start with space)
+            compile_dl_to_ast(line_input)
+          else
+            # Regular paragraph content
+            compile_paragraph_to_ast(line_input)
+          end
+        end
+
+        # Restore context
+        @current_ast_node = saved_current_node
+        @current_location = saved_location
+      end
+
       # Helper method to create and add block nodes with inline processing
       def create_and_add_block_node(block_type:, args: nil, lines: nil, caption: nil, **options)
         lines ||= []

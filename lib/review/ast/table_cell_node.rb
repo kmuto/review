@@ -14,20 +14,30 @@ module ReVIEW
     #
     # A table cell can contain text nodes and inline elements.
     # Cells are separated by tabs in the original Re:VIEW syntax.
+    #
+    # The cell_type attribute determines whether this cell should be
+    # rendered as a header cell (<th>) or data cell (<td>).
     class TableCellNode < Node
-      def initialize(location:, **kwargs)
+      attr_reader :children, :cell_type
+
+      def initialize(location:, cell_type: :td, **kwargs)
         super
         @children = []
+        @cell_type = cell_type # :th or :td
       end
-
-      attr_reader :children
 
       def add_child(node)
         @children << node
       end
 
       def accept(visitor)
-        visitor.visit_table_cell_node(self)
+        visitor.visit_table_cell(self)
+      end
+
+      def serialize_properties(hash, options)
+        super
+        hash[:cell_type] = @cell_type if @cell_type != :td
+        hash
       end
     end
   end

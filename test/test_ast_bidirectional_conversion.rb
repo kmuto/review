@@ -164,7 +164,7 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
 
       //table[table1][Sample Table]{
       Name	Age
-      ----------
+      ------------
       Alice	25
       Bob	30
       //}
@@ -182,8 +182,8 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
     assert_match(/Bob\s+30/, regenerated_content)
 
     # Verify table structure
-    assert_match(/----------/, regenerated_content)  # Table separator
-    assert_match(%r{//\}}, regenerated_content)      # Table end
+    assert_match(/------------/, regenerated_content) # Table separator
+    assert_match(%r{//\}}, regenerated_content) # Table end
   end
 
   def test_image_round_trip
