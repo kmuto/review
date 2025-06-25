@@ -182,7 +182,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
     expected = <<~EOB
       //table[sample][Sample Table]{
       Name	Age
-      ----------
+      ------------
       Alice	25
       Bob	30
       //}
