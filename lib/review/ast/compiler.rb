@@ -439,7 +439,7 @@ module ReVIEW
         # Create single paragraph node with multiple lines joined by \n
         # This matches Re:VIEW specification where only empty lines separate paragraphs
         node = AST::ParagraphNode.new(location: location)
-        combined_text = raw_lines.join("\n")  # Join lines with newline characters
+        combined_text = raw_lines.join("\n") # Join lines with newline characters
         inline_processor.parse_inline_elements(combined_text, node)
         @current_ast_node.add_child(node)
       end

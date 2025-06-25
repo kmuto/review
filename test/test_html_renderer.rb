@@ -78,7 +78,7 @@ class TestHTMLRenderer < Test::Unit::TestCase
 
       //table[sample][Sample Table]{
       Header1	Header2
-      -----
+      --------------------
       Cell1	Cell2
       //}
     REVIEW
@@ -95,7 +95,7 @@ class TestHTMLRenderer < Test::Unit::TestCase
     assert_no_match(/<thead>/, html_output)
     assert_no_match(/<tbody>/, html_output)
     # Since ---- is only 5 chars, it's not a separator, so it appears as body content
-    assert_match(%r{<td>Header1</td>}, html_output)
+    assert_match(%r{<th>Header1</th>}, html_output)
     assert_match(%r{<td>Cell1</td>}, html_output)
   end
 
