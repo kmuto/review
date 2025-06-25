@@ -82,8 +82,8 @@ module ReVIEW
 
       def visit_paragraph(node)
         content = render_children(node)
-        # Convert newlines to spaces for HTMLBuilder compatibility
-        content = content.gsub(/\n+/, ' ').strip
+        # Remove newlines for HTMLBuilder compatibility
+        content = content.gsub(/\n+/, '').strip
         "<p>#{content}</p>\n"
       end
 
