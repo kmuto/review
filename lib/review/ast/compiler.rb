@@ -436,13 +436,12 @@ module ReVIEW
 
         return if raw_lines.empty?
 
-        # Create separate paragraph nodes for each line to preserve line boundaries
-        # This matches the behavior of LATEXBuilder which outputs each line separately
-        raw_lines.each do |line|
-          node = AST::ParagraphNode.new(location: location)
-          inline_processor.parse_inline_elements(line, node)
-          @current_ast_node.add_child(node)
-        end
+        # Create single paragraph node with multiple lines joined by \n
+        # This matches Re:VIEW specification where only empty lines separate paragraphs
+        node = AST::ParagraphNode.new(location: location)
+        combined_text = raw_lines.join("\n")  # Join lines with newline characters
+        inline_processor.parse_inline_elements(combined_text, node)
+        @current_ast_node.add_child(node)
       end
 
       def compile_block_command_to_ast(f)
