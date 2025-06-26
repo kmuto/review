@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+$LOAD_PATH.unshift(File.realpath('../lib', __dir__))
+
+require 'review/command/compile'
+
+exit ReVIEW::Command::Compile.new.run(ARGV)

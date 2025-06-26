@@ -16,6 +16,7 @@ require 'review/i18n'
 require 'review/loggable'
 require 'review/ast/indexer'
 require 'review/ast/compiler'
+require 'review/template'
 
 module ReVIEW
   module Renderer
@@ -31,6 +32,7 @@ module ReVIEW
         super
         @chapter = options[:chapter]
         @book = options[:book] || @chapter&.book
+        @config = config
 
         # Initialize logger like HTMLBuilder for error handling
         @logger = ReVIEW.logger
@@ -46,6 +48,10 @@ module ReVIEW
 
         # Flag to track if indexes have been generated using AST::Indexer
         @ast_indexes_generated = false
+
+        # Initialize template variables like HTMLBuilder
+        @javascripts = []
+        @body_ext = ''
       end
 
       def visit_document(node)
@@ -376,7 +382,8 @@ module ReVIEW
       end
 
       def visit_block(node)
-        case node.command
+        block_type = node.block_type.to_s
+        case block_type
         when 'note'
           render_note_block(node)
         when 'memo'
@@ -553,7 +560,7 @@ module ReVIEW
         id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
         content = render_children(node)
 
-        %Q(<div class="#{escape(node.command)}"#{id_attr}>#{content}</div>)
+        %Q(<div class="#{escape(node.block_type)}"#{id_attr}>#{content}</div>)
       end
 
       def render_inline_b(content, _node)
@@ -1030,17 +1037,78 @@ module ReVIEW
         raise NotImplementedError, "no such list: #{id}"
       end
 
-      # Line numbering for code blocks like HTMLBuilder
-      def firstlinenum(num)
-        @first_line_num = num.to_i
+      # Template generation methods like HTMLBuilder
+      def result
+        # Generate complete HTML document using ERB template
+        @title = strip_html(compile_inline(@chapter&.title || ''))
+        @body = render(@ast_root) if @ast_root
+        @language = @config['language'] || 'ja'
+        @stylesheets = @config['stylesheet'] || []
+        @next = @chapter&.next_chapter
+        @prev = @chapter&.prev_chapter
+        @next_title = @next ? compile_inline(@next.title) : ''
+        @prev_title = @prev ? compile_inline(@prev.title) : ''
+
+        # Handle MathJax configuration like HTMLBuilder
+        if @config['math_format'] == 'mathjax'
+          @javascripts.push(%Q(<script>MathJax = { tex: { inlineMath: [['\\\\(', '\\\\)']] }, svg: { fontCache: 'global' } };</script>))
+          @javascripts.push(%Q(<script type="text/javascript" id="MathJax-script" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>))
+        end
+
+        # Render template
+        ReVIEW::Template.load(layoutfile).result(binding)
       end
 
-      def line_num
-        return 1 unless @first_line_num
+      def layoutfile
+        # Determine layout file like HTMLBuilder
+        if @config.maker == 'webmaker'
+          htmldir = 'web/html'
+          localfilename = 'layout-web.html.erb'
+        else
+          htmldir = 'html'
+          localfilename = 'layout.html.erb'
+        end
 
-        line_n = @first_line_num
-        @first_line_num = nil
-        line_n
+        htmlfilename = if @config['htmlversion'] == 5 || @config['htmlversion'].nil?
+                         File.join(htmldir, 'layout-html5.html.erb')
+                       else
+                         File.join(htmldir, 'layout-xhtml1.html.erb')
+                       end
+
+        layout_file = File.join(@book&.basedir || '.', 'layouts', localfilename)
+
+        # Check for custom layout file
+        if File.exist?(layout_file)
+          # Respect safe mode like HTMLBuilder
+          if ENV['REVIEW_SAFE_MODE'].to_i & 4 > 0
+            warn 'user\'s layout is prohibited in safe mode. ignored.'
+            layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
+          end
+        else
+          # Use default template
+          layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
+        end
+
+        layout_file
+      end
+
+      # Store AST root for template rendering
+      def store_ast_root(ast_root)
+        @ast_root = ast_root
+      end
+
+      private
+
+      # Helper methods for template variables
+      def strip_html(content)
+        content.to_s.gsub(/<[^>]*>/, '')
+      end
+
+      def compile_inline(content)
+        # Simple inline compilation for template use
+        return '' if content.nil? || content.empty?
+
+        content.to_s
       end
     end
   end

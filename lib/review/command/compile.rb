@@ -1,0 +1,290 @@
+# frozen_string_literal: true
+
+# Copyright (c) 2024 Minero Aoki, Kenshi Muto
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+
+require 'optparse'
+require 'stringio'
+require 'review/book'
+require 'review/ast/compiler'
+require 'review/version'
+
+module ReVIEW
+  module Command
+    # Compile - AST-based compilation command
+    #
+    # This command compiles Re:VIEW source files using AST and Renderer directly,
+    # without using traditional Builder classes.
+    class Compile
+      class CompileError < StandardError; end
+      class FileNotFoundError < CompileError; end
+      class UnsupportedFormatError < CompileError; end
+      class MissingTargetError < CompileError; end
+
+      # Exit status codes
+      EXIT_SUCCESS = 0
+      EXIT_COMPILE_ERROR = 1
+      EXIT_UNEXPECTED_ERROR = 2
+
+      attr_reader :options
+
+      def initialize
+        @options = {
+          target: nil,
+          check_only: false,
+          verbose: false,
+          output_file: nil
+        }
+        @version_requested = false
+        @help_requested = false
+      end
+
+      def run(args)
+        parse_arguments(args)
+
+        # --version or --help already handled
+        return EXIT_SUCCESS if @version_requested || @help_requested
+
+        validate_options
+        compile
+        EXIT_SUCCESS
+      rescue CompileError => e
+        error_handler.handle(e)
+        EXIT_COMPILE_ERROR
+      rescue StandardError => e
+        error_handler.handle_unexpected(e)
+        EXIT_UNEXPECTED_ERROR
+      end
+
+      private
+
+      def parse_arguments(args)
+        parser = create_option_parser
+        parser.parse!(args)
+
+        if args.empty? && !@help_requested && !@version_requested && !@options[:check_only]
+          raise CompileError, 'No input file specified. Use -h for help.'
+        end
+
+        @input_file = args[0] unless args.empty?
+      end
+
+      def create_option_parser
+        OptionParser.new do |opts|
+          opts.banner = 'Usage: review-ast-compile --target FORMAT <file>'
+          opts.version = ReVIEW::VERSION
+
+          opts.on('-t', '--target FORMAT', 'Output format (html, latex) [required unless --check]') do |fmt|
+            @options[:target] = fmt
+          end
+
+          opts.on('-o', '--output-file FILE', 'Output file (default: stdout)') do |file|
+            @options[:output_file] = file
+          end
+
+          opts.on('-c', '--check', 'Check only, no output') do
+            @options[:check_only] = true
+          end
+
+          opts.on('-v', '--verbose', 'Verbose output') do
+            @options[:verbose] = true
+          end
+
+          opts.on_tail('--version', 'Show version') do
+            puts opts.version
+            @version_requested = true
+          end
+
+          opts.on_tail('-h', '--help', 'Show this help') do
+            puts opts
+            @help_requested = true
+          end
+        end
+      end
+
+      def validate_options
+        # --check mode doesn't require --target
+        return if @options[:check_only]
+
+        # --target is required for output generation
+        if @options[:target].nil?
+          raise MissingTargetError, '--target option is required (use --target html or --target latex)'
+        end
+      end
+
+      def compile
+        validate_input_file
+
+        content = load_file(@input_file)
+        chapter = create_chapter(content)
+        ast = generate_ast(chapter)
+
+        if @options[:check_only]
+          log("Syntax check passed: #{@input_file}")
+        else
+          output = render(ast, chapter)
+          output_content(output)
+        end
+      end
+
+      def validate_input_file
+        unless @input_file
+          raise CompileError, 'No input file specified'
+        end
+
+        unless File.exist?(@input_file)
+          raise FileNotFoundError, "Input file not found: #{@input_file}"
+        end
+
+        unless File.readable?(@input_file)
+          raise CompileError, "Cannot read file: #{@input_file}"
+        end
+      end
+
+      def load_file(path)
+        log("Loading: #{path}")
+        File.read(path)
+      rescue StandardError => e
+        raise CompileError, "Failed to read file: #{e.message}"
+      end
+
+      def create_chapter(content)
+        # Setup I18n
+        require 'review/i18n'
+        I18n.setup('ja')
+
+        book = ReVIEW::Book::Base.new('.')
+        basename = File.basename(@input_file, '.*')
+
+        ReVIEW::Book::Chapter.new(
+          book,
+          1,
+          basename,
+          @input_file,
+          StringIO.new(content)
+        )
+      end
+
+      def generate_ast(chapter)
+        log('Generating AST...')
+        compiler = ReVIEW::AST::Compiler.new(nil)
+        compiler.compile_to_ast(chapter)
+      rescue StandardError => e
+        raise CompileError, "AST generation failed: #{e.message}"
+      end
+
+      def render(ast, chapter)
+        log("Rendering to #{@options[:target]}...")
+
+        renderer_class = load_renderer(@options[:target])
+        renderer = renderer_class.new(
+          config: chapter.book&.config || {},
+          options: { chapter: chapter, book: chapter.book }
+        )
+
+        # For HTML, use result method to get complete HTML document
+        # For other formats, use render method directly
+        if @options[:target] == 'html'
+          renderer.store_ast_root(ast)
+          renderer.result
+        else
+          renderer.render(ast)
+        end
+      rescue StandardError => e
+        raise CompileError, "Rendering failed: #{e.message}"
+      end
+
+      def load_renderer(format)
+        case format
+        when 'html'
+          require 'review/renderer/html_renderer'
+          ReVIEW::Renderer::HTMLRenderer
+        when 'latex'
+          require 'review/renderer/latex_renderer'
+          ReVIEW::Renderer::LATEXRenderer
+        else
+          raise UnsupportedFormatError, "Unsupported format: #{format}"
+        end
+      end
+
+      def output_content(content)
+        if @options[:output_file]
+          # Output to file
+          log("Writing to: #{@options[:output_file]}")
+          File.write(@options[:output_file], content)
+          puts "Successfully generated: #{@options[:output_file]}"
+        else
+          # Output to stdout
+          log('Writing to: stdout')
+          print content
+        end
+      rescue StandardError => e
+        raise CompileError, "Failed to write output: #{e.message}"
+      end
+
+      def generate_output_filename
+        basename = File.basename(@input_file, '.*')
+        ext = output_extension(@options[:target])
+        "#{basename}#{ext}"
+      end
+
+      def output_extension(format)
+        case format
+        when 'html' then '.html'
+        when 'latex' then '.tex'
+        end
+      end
+
+      def log(message)
+        puts message if @options[:verbose]
+      end
+
+      def error_handler
+        @error_handler ||= ErrorHandler.new(@options[:verbose])
+      end
+
+      # Internal class for error handling
+      class ErrorHandler
+        def initialize(verbose)
+          @verbose = verbose
+        end
+
+        def handle(error)
+          case error
+          when FileNotFoundError
+            $stderr.puts "Error: #{error.message}"
+            $stderr.puts 'Please check the file path and try again.'
+          when UnsupportedFormatError
+            $stderr.puts "Error: #{error.message}"
+            $stderr.puts 'Supported formats: html, latex'
+          when MissingTargetError
+            $stderr.puts "Error: #{error.message}"
+            $stderr.puts 'Example: review-ast-compile --target html chapter1.re'
+          else
+            $stderr.puts "Error: #{error.message}"
+          end
+
+          if @verbose && error.backtrace
+            $stderr.puts "\nBacktrace:"
+            $stderr.puts error.backtrace.take(10).join("\n")
+          end
+        end
+
+        def handle_unexpected(error)
+          $stderr.puts "Unexpected error occurred: #{error.class}"
+          $stderr.puts error.message
+
+          if @verbose && error.backtrace
+            $stderr.puts "\nBacktrace:"
+            $stderr.puts error.backtrace.join("\n")
+          else
+            $stderr.puts "\nUse --verbose for more details."
+          end
+        end
+      end
+    end
+  end
+end
