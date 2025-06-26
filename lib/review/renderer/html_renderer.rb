@@ -349,7 +349,7 @@ module ReVIEW
         return '' unless node&.children
 
         # Special handling for CodeBlockNode - preserve line breaks
-        if node.class.name == 'ReVIEW::AST::CodeBlockNode'
+        if node.instance_of?(::ReVIEW::AST::CodeBlockNode)
           node.children.map { |child| visit(child) }.join("\n")
         else
           node.children.map { |child| visit(child) }.join
