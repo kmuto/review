@@ -60,12 +60,6 @@ module ReVIEW
         chapter = create_temporary_chapter(book, source)
       end
 
-      # First, compile with a dummy builder to build indexes like HTMLBuilder does
-      dummy_builder = HTMLBuilder.new
-      dummy_compiler = Compiler.new(dummy_builder)
-      dummy_builder.bind(dummy_compiler, chapter, Location.new('test', nil))
-      dummy_compiler.compile(chapter)
-
       # Parse to AST
       # Create AST compiler without builder (builder is optional for pure AST generation)
       ast_compiler = ReVIEW::AST::Compiler.new(nil)
