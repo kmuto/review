@@ -47,10 +47,7 @@ class TestASTBasic < Test::Unit::TestCase
     assert_equal 'This is a test paragraph.', hash[:content]
   end
 
-  def test_pure_ast_mode_basic
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
-
+  def test_ast_compilation_basic
     chapter_content = <<~EOB
       = Test Chapter
 
@@ -64,13 +61,9 @@ class TestASTBasic < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = chapter_content
 
-    # Execute compilation (returns HTML, but AST is also built)
-    html_result = compiler.compile(chapter)
-    ast_result = compiler.ast_result
-
-    # Verify that HTML result is obtained
-    assert html_result.is_a?(String)
-    assert html_result.include?('<h1>')
+    # Test direct AST compilation using AST classes
+    compiler = ReVIEW::AST::Compiler.new
+    ast_result = compiler.compile(chapter_content)
 
     # Verify that AST result is obtained
     assert_not_nil(ast_result)

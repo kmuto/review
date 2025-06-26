@@ -42,7 +42,7 @@ class TestASTInlineStructure < Test::Unit::TestCase
 
     # Use IndexBuilder to avoid validation issues during rendering
     builder = ReVIEW::IndexBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
+    compiler = ReVIEW::Compiler.new(builder)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -134,7 +134,7 @@ class TestASTInlineStructure < Test::Unit::TestCase
 
     # Use IndexBuilder to avoid validation issues
     builder = ReVIEW::IndexBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
+    compiler = ReVIEW::Compiler.new(builder)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
@@ -183,7 +183,7 @@ class TestASTInlineStructure < Test::Unit::TestCase
 
     # Use IndexBuilder to avoid validation issues
     builder = ReVIEW::IndexBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
+    compiler = ReVIEW::Compiler.new(builder)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 

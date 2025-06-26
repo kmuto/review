@@ -88,7 +88,7 @@ class TestASTAnalyzer < Test::Unit::TestCase
 
   def compile_content(content)
     builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
+    compiler = ReVIEW::Compiler.new(builder)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 

@@ -33,59 +33,29 @@ class ProjectTestHelper
     end
   end
 
-  def self.compile_with_mode(target_format, ast_mode: 'auto', ast_stage: 7, debug: true)
+  def self.compile_traditional(target_format, debug: false)
     setup_test_environment
 
     old_dir = Dir.pwd
     begin
       Dir.chdir(project_dir)
 
-      # Create temporary config for specific AST mode
-      config_content = File.read('config.yml')
-
-      # Update AST configuration based on parameters
-      temp_config = if config_content.include?('ast:')
-                      config_content.gsub(/^ast:.*?(?=^\S|\z)/m) do |_ast_section|
-                        <<~AST_CONFIG
-            ast:
-              mode: #{ast_mode}
-              stage: #{ast_stage}
-              debug: #{debug}
-              performance: #{debug}
-          AST_CONFIG
-                      end
-                    else
-                      # Add AST configuration if not present
-                      config_content + <<~AST_CONFIG
-
-          ast:
-            mode: #{ast_mode}
-            stage: #{ast_stage}
-            debug: #{debug}
-            performance: #{debug}
-        AST_CONFIG
-                    end
-
-      # Write temporary config
-      temp_config_file = "temp_config_#{target_format}.yml"
-      File.write(temp_config_file, temp_config)
-
-      # Run compilation with absolute paths
+      # Run traditional review-compile
       review_root = File.expand_path('..', File.dirname(__FILE__))
-      cmd = "bundle exec #{File.join(review_root, 'bin', 'review-compile')} --yaml=#{temp_config_file} --target=#{target_format}"
+      cmd = "bundle exec #{File.join(review_root, 'bin', 'review-compile')} --target=#{target_format}"
 
-      puts "DEBUG: Running command: #{cmd}" if debug
+      puts "DEBUG: Running traditional command: #{cmd}" if debug
       result = case target_format
-               when 'html', 'latex', 'json'
+               when 'html', 'latex'
                  `#{cmd} basic_elements.re 2>&1`
                else
                  `#{cmd} comprehensive_test.re 2>&1`
                end
-      unless $CHILD_STATUS.success?
-        puts "DEBUG: Command failed with exit code: #{$CHILD_STATUS.exitstatus}"
+
+      if debug && !$CHILD_STATUS.success?
+        puts "DEBUG: Traditional command failed with exit code: #{$CHILD_STATUS.exitstatus}"
         puts "DEBUG: Command output: #{result}"
         puts "DEBUG: Working directory: #{Dir.pwd}"
-        puts "DEBUG: Config file exists: #{File.exist?(temp_config_file)}"
         puts "DEBUG: Basic elements file exists: #{File.exist?('basic_elements.re')}"
       end
 
@@ -96,48 +66,80 @@ class ProjectTestHelper
       }
     ensure
       Dir.chdir(old_dir)
-      # Clean up temporary config file
-      temp_config_file = File.join(project_dir, "temp_config_#{target_format}.yml")
-      FileUtils.rm_f(temp_config_file)
     end
   end
 
-  def self.test_all_formats
+  def self.compile_ast_renderer(target_format, debug: false)
+    setup_test_environment
+
+    old_dir = Dir.pwd
+    begin
+      Dir.chdir(project_dir)
+
+      # Run AST/Renderer review-ast-compile
+      review_root = File.expand_path('..', File.dirname(__FILE__))
+      cmd = "bundle exec #{File.join(review_root, 'bin', 'review-ast-compile')} --target=#{target_format}"
+
+      puts "DEBUG: Running AST/Renderer command: #{cmd}" if debug
+      result = case target_format
+               when 'html'
+                 `#{cmd} basic_elements.re 2>&1`
+               else
+                 `#{cmd} comprehensive_test.re 2>&1`
+               end
+
+      if debug && !$CHILD_STATUS.success?
+        puts "DEBUG: AST/Renderer command failed with exit code: #{$CHILD_STATUS.exitstatus}"
+        puts "DEBUG: Command output: #{result}"
+        puts "DEBUG: Working directory: #{Dir.pwd}"
+        puts "DEBUG: Basic elements file exists: #{File.exist?('basic_elements.re')}"
+      end
+
+      {
+        success: $CHILD_STATUS.success?,
+        output: result,
+        exit_code: $CHILD_STATUS.exitstatus
+      }
+    ensure
+      Dir.chdir(old_dir)
+    end
+  end
+  def self.test_all_formats_traditional
     results = {}
-    %w[html latex json].each do |format|
-      results[format] = compile_with_mode(format)
+    %w[html latex].each do |format|
+      results[format] = compile_traditional(format)
     end
     results
   end
 
-  def self.test_cross_references
-    compile_with_mode('html', ast_mode: 'full', debug: true)
+  def self.test_all_formats_ast_renderer
+    results = {}
+    %w[html].each do |format| # Start with HTML, add LaTeX when ready
+      results[format] = compile_ast_renderer(format)
+    end
+    results
+  end
+
+  def self.test_cross_references_traditional
+    compile_traditional('html')
+  end
+
+  def self.test_cross_references_ast_renderer
+    compile_ast_renderer('html')
+  end
+
+  def self.verify_project_structure
+    {
+      config_exists: File.exist?(config_file),
+      catalog_exists: File.exist?(catalog_file),
+      images_dir: Dir.exist?(File.join(project_dir, 'images')),
+      sty_dir: Dir.exist?(File.join(project_dir, 'sty')),
+      re_files: Dir.glob(File.join(project_dir, '*.re')).map { |f| File.basename(f) }
+    }
   end
 
   def self.available_re_files
     Dir.glob(File.join(project_dir, '*.re')).map { |f| File.basename(f) }.sort
   end
 
-  def self.verify_project_structure
-    setup_test_environment
-
-    structure = {
-      config_exists: File.exist?(config_file),
-      catalog_exists: File.exist?(catalog_file),
-      re_files: available_re_files,
-      images_dir: Dir.exist?(File.join(project_dir, 'images')),
-      sty_dir: Dir.exist?(File.join(project_dir, 'sty'))
-    }
-
-    puts '=== Test Project Structure ==='
-    puts "Config file: #{structure[:config_exists] ? '✅' : '❌'}"
-    puts "Catalog file: #{structure[:catalog_exists] ? '✅' : '❌'}"
-    puts "Images directory: #{structure[:images_dir] ? '✅' : '❌'}"
-    puts "Style directory: #{structure[:sty_dir] ? '✅' : '❌'}"
-    puts "Re:VIEW files: #{structure[:re_files].size}"
-    structure[:re_files].each { |f| puts "  - #{f}" }
-    puts '============================'
-
-    structure
-  end
 end

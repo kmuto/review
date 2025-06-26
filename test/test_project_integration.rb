@@ -19,45 +19,65 @@ class ProjectIntegrationTest < Test::Unit::TestCase
   end
 
   def test_compilation_traditional_mode
-    result = ProjectTestHelper.compile_with_mode('html', ast_mode: 'off', debug: false)
+    result = ProjectTestHelper.compile_traditional('html', debug: false)
 
-    assert_true(result[:success], 'Compilation should succeed in traditional mode')
+    assert_true(result[:success], 'Traditional compilation should succeed')
     assert_operator(result[:output].length, :>, 0, 'Should produce output')
+    assert_match(/<h1>/, result[:output], 'Should contain HTML headline tags')
   end
 
-  def test_compilation_ast_auto_mode
-    result = ProjectTestHelper.compile_with_mode('html', ast_mode: 'auto', debug: true)
+  def test_compilation_ast_renderer_mode
+    result = ProjectTestHelper.compile_ast_renderer('html', debug: false)
 
-    assert_true(result[:success], 'Compilation should succeed in auto mode')
+    assert_true(result[:success], 'AST/Renderer compilation should succeed')
     assert_operator(result[:output].length, :>, 0, 'Should produce output')
+    assert_match(/<h1>/, result[:output], 'Should contain HTML headline tags')
+  end
 
-    # Check for AST debug output
-    if result[:output].include?('DEBUG: ASTCompiler')
-      assert_match(/AST mode/, result[:output], 'Should show AST mode information')
+  def test_compilation_all_formats_traditional
+    results = ProjectTestHelper.test_all_formats_traditional
+
+    %w[html latex].each do |format|
+      assert_true(results[format][:success], "Traditional #{format.upcase} compilation should succeed")
     end
   end
 
-  def test_compilation_ast_full_mode
-    result = ProjectTestHelper.compile_with_mode('html', ast_mode: 'full', debug: true)
+  def test_compilation_all_formats_ast_renderer
+    results = ProjectTestHelper.test_all_formats_ast_renderer
 
-    assert_true(result[:success], 'Compilation should succeed in full AST mode')
-    assert_operator(result[:output].length, :>, 0, 'Should produce output')
-  end
-
-  def test_compilation_all_formats
-    results = ProjectTestHelper.test_all_formats
-
-    %w[html latex json].each do |format|
-      assert_true(results[format][:success], "#{format.upcase} compilation should succeed")
+    %w[html].each do |format| # Start with HTML, add LaTeX later
+      assert_true(results[format][:success], "AST/Renderer #{format.upcase} compilation should succeed")
     end
   end
 
-  def test_cross_references
-    result = ProjectTestHelper.test_cross_references
+  def test_cross_references_traditional
+    result = ProjectTestHelper.test_cross_references_traditional
 
-    assert_true(result[:success], 'Cross-reference compilation should succeed')
-    # Cross-references should work in AST mode
+    assert_true(result[:success], 'Traditional cross-reference compilation should succeed')
     assert_not_match(/undefined reference/, result[:output], 'Should not have undefined references')
+  end
+
+  def test_cross_references_ast_renderer
+    result = ProjectTestHelper.test_cross_references_ast_renderer
+
+    assert_true(result[:success], 'AST/Renderer cross-reference compilation should succeed')
+    assert_not_match(/undefined reference/, result[:output], 'Should not have undefined references')
+  end
+
+  def test_output_comparison
+    # Compare output between traditional and AST/Renderer modes
+    traditional_result = ProjectTestHelper.compile_traditional('html', debug: false)
+    ast_result = ProjectTestHelper.compile_ast_renderer('html', debug: false)
+
+    assert_true(traditional_result[:success], 'Traditional compilation should succeed')
+    assert_true(ast_result[:success], 'AST/Renderer compilation should succeed')
+
+    # Both should produce valid HTML
+    [traditional_result[:output], ast_result[:output]].each do |output|
+      assert_match(/<html/, output, 'Should contain HTML document structure')
+      assert_match(/<h1>/, output, 'Should contain headline tags')
+      assert_match(/<p>/, output, 'Should contain paragraph tags')
+    end
   end
 
   def test_available_files

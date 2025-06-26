@@ -3,7 +3,6 @@
 
 require_relative 'test_helper'
 require 'review'
-require 'review/ast/config'
 require 'review/ast/json_serializer'
 require 'review/compiler'
 require 'review/htmlbuilder'
@@ -171,27 +170,9 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
   end
 
   def compile_to_json(content, mode, _config = nil)
-    # Set up builder and compiler with AST mode
-    builder = DummyBuilder.new
-
-    # Use AST mode for compilation
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
-
-    # Set up book and chapter with proper I18n
-    review_config = ReVIEW::Configure.values
-    review_config['secnolevel'] = 2
-    review_config['language'] = 'ja'
-
-    book = ReVIEW::Book::Base.new
-    book.config = review_config
-
-    chapter = ReVIEW::Book::Chapter.new(book, 1, 'test', nil, StringIO.new(content))
-    location = ReVIEW::Location.new(nil, nil)
-    builder.bind(compiler, chapter, location)
-
-    # Compile to get AST
-    compiler.compile(chapter)
-    ast_result = compiler.ast_result
+    # Use direct AST compilation
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_result = ast_compiler.compile(content)
 
     # Convert AST to JSON
     if ast_result
@@ -208,32 +189,6 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
                            'error' => e.message,
                            'mode' => mode
                          })
-  end
-
-  # Dummy builder that doesn't render anything
-  class DummyBuilder
-    def initialize(_strict = false, *_args, **_kwargs)
-      @output = StringIO.new
-    end
-
-    def bind(compiler, chapter, location)
-      @compiler = compiler
-      @chapter = chapter
-      @location = location
-    end
-
-    def result
-      ''
-    end
-
-    # Implement all necessary builder methods as no-ops
-    def method_missing(method_name, *args, &block)
-      # No-op for all builder methods
-    end
-
-    def respond_to_missing?(_method_name, _include_private = false)
-      true
-    end
   end
 
   def extract_all_element_types(data, types = Set.new)

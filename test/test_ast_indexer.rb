@@ -6,7 +6,7 @@ require 'review/index_builder'
 require 'review/book'
 require 'review/book/chapter'
 require 'review/compiler'
-require 'review/jsonbuilder'
+require 'review/htmlbuilder'
 
 class TestASTIndexer < Test::Unit::TestCase
   def setup
@@ -46,9 +46,9 @@ class TestASTIndexer < Test::Unit::TestCase
 
     @chapter.content = source
 
-    # Build AST using AST mode with JSONBuilder to avoid footnote validation
-    builder = ReVIEW::JSONBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
+    # Build AST using AST mode with HTMLBuilder to avoid footnote validation
+    builder = ReVIEW::HTMLBuilder.new
+    compiler = ReVIEW::Compiler.new(builder)
     location = ReVIEW::Location.new(nil, nil)
     builder.bind(compiler, @chapter, location)
 
@@ -116,9 +116,9 @@ class TestASTIndexer < Test::Unit::TestCase
 
     @chapter.content = source
 
-    # Build AST using AST mode with JSONBuilder to avoid footnote validation
-    builder = ReVIEW::JSONBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
+    # Build AST using AST mode with HTMLBuilder to avoid footnote validation
+    builder = ReVIEW::HTMLBuilder.new
+    compiler = ReVIEW::Compiler.new(builder)
     location = ReVIEW::Location.new(nil, nil)
     builder.bind(compiler, @chapter, location)
 
@@ -166,9 +166,9 @@ class TestASTIndexer < Test::Unit::TestCase
 
     @chapter.content = source
 
-    # Build AST using AST mode with JSONBuilder to avoid footnote validation
-    builder = ReVIEW::JSONBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
+    # Build AST using AST mode with HTMLBuilder to avoid footnote validation
+    builder = ReVIEW::HTMLBuilder.new
+    compiler = ReVIEW::Compiler.new(builder)
     location = ReVIEW::Location.new(nil, nil)
     builder.bind(compiler, @chapter, location)
 
@@ -204,9 +204,9 @@ class TestASTIndexer < Test::Unit::TestCase
 
     @chapter.content = source
 
-    # Build AST using AST mode with JSONBuilder to avoid footnote validation
-    builder = ReVIEW::JSONBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
+    # Build AST using AST mode with HTMLBuilder to avoid footnote validation
+    builder = ReVIEW::HTMLBuilder.new
+    compiler = ReVIEW::Compiler.new(builder)
     location = ReVIEW::Location.new(nil, nil)
     builder.bind(compiler, @chapter, location)
 
@@ -246,9 +246,9 @@ class TestASTIndexer < Test::Unit::TestCase
 
     @chapter.content = source
 
-    # Build AST using AST mode with JSONBuilder to avoid footnote validation
-    builder = ReVIEW::JSONBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
+    # Build AST using AST mode with HTMLBuilder to avoid footnote validation
+    builder = ReVIEW::HTMLBuilder.new
+    compiler = ReVIEW::Compiler.new(builder)
     location = ReVIEW::Location.new(nil, nil)
     builder.bind(compiler, @chapter, location)
 
@@ -297,9 +297,9 @@ class TestASTIndexer < Test::Unit::TestCase
 
     @chapter.content = source
 
-    # Build AST using AST mode with JSONBuilder to avoid footnote validation
-    builder = ReVIEW::JSONBuilder.new
-    compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
+    # Build AST using AST mode with HTMLBuilder to avoid footnote validation
+    builder = ReVIEW::HTMLBuilder.new
+    compiler = ReVIEW::Compiler.new(builder)
     location = ReVIEW::Location.new(nil, nil)
     builder.bind(compiler, @chapter, location)
 
@@ -353,8 +353,8 @@ class TestASTIndexer < Test::Unit::TestCase
 
     begin
       # Build AST using AST mode
-      builder = ReVIEW::JSONBuilder.new
-      compiler = ReVIEW::Compiler.new(builder, ast_mode: true)
+      builder = ReVIEW::HTMLBuilder.new
+      compiler = ReVIEW::Compiler.new(builder)
       location = ReVIEW::Location.new(nil, nil)
       builder.bind(compiler, @chapter, location)
 

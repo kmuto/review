@@ -31,9 +31,7 @@ module ReVIEW
     class Compiler
       include Loggable
 
-      def initialize(builder)
-        @builder = builder
-
+      def initialize
         # AST related
         @ast_root = nil
         @current_ast_node = nil
@@ -49,7 +47,7 @@ module ReVIEW
         @logger = ReVIEW.logger
 
         # Get config for debug output
-        @config = builder&.instance_variable_get(:@config) || {}
+        @config = {}
 
         # Performance measurement - check if enabled via environment or config
         performance_enabled = ENV['REVIEW_AST_PERFORMANCE'] == 'true' ||
@@ -63,7 +61,14 @@ module ReVIEW
         end
       end
 
-      attr_reader :builder, :ast_root, :current_ast_node
+      attr_reader :ast_root, :current_ast_node
+
+      # Compile content string directly to AST
+      def compile(content)
+        # Create a temporary chapter-like object
+        temp_chapter = Struct.new(:content, :basename, :title).new(content, 'temp', '')
+        compile_to_ast(temp_chapter)
+      end
 
       # Lazy-loaded processors
       def inline_processor
@@ -97,11 +102,6 @@ module ReVIEW
 
         # Full AST mode: build complete AST
         do_compile_with_ast_building
-
-        # If builder is provided, render AST to builder for compatibility
-        if @builder
-          render_ast_to_builder(@ast_root)
-        end
 
         # Record performance statistics
         @performance_tracker.end_timing(:total_compilation_time)
@@ -146,229 +146,6 @@ module ReVIEW
         flush_pending_olnum_if_needed
       end
 
-      # Render AST to builder for compatibility with existing tests
-      def render_ast_to_builder(node) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-        case node
-        when AST::DocumentNode
-          node.children.each { |child| render_ast_to_builder(child) }
-        when AST::HeadlineNode
-          @builder.headline(node.level, node.label, node.caption_markup_text)
-        when AST::ColumnNode
-          @builder.column_begin(node.level, node.label, node.caption.to_text)
-          node.children.each { |child| render_ast_to_builder(child) }
-          @builder.column_end(node.level)
-        when AST::ParagraphNode
-          lines = node.children.map do |child|
-            render_ast_node_to_text(child)
-          end
-          @builder.paragraph(lines)
-        when AST::CodeBlockNode
-          # Use original_lines for builders that don't need inline processing
-          # Use processed_lines for builders that need inline element processing
-          lines_to_use = if @builder && @builder.class.name.include?('IDGXML')
-                           # IDGXML builder needs inline processing
-                           node.processed_lines.map { |line| process_table_line_inline_elements(line) }
-                         else
-                           # Most builders can use original text
-                           node.original_lines
-                         end
-
-          # Handle different code block types based on their requirements
-          if node.id && !node.id.empty?
-            # For blocks with ID (list, listnum, source)
-            if node.line_numbers
-              @builder.listnum(lines_to_use, node.id, node.caption_markup_text || '', node.lang)
-            else
-              @builder.list(lines_to_use, node.id, node.caption_markup_text || '', node.lang)
-            end
-          elsif node.line_numbers
-            # For blocks without ID (emlist, emlistnum, cmd)
-            @builder.emlistnum(lines_to_use, node.caption_markup_text || '', node.lang)
-          else
-            # emlist (including cmd which is just emlist with shell lang)
-            @builder.emlist(lines_to_use, node.caption_markup_text || '', node.lang)
-          end
-        when AST::TableNode
-          # Convert TableNode structure to Builder format
-          # Builder expects all lines including headers, separator, and rows
-          lines = []
-
-          # Process header rows
-          header_lines = node.header_rows.map do |header_row|
-            # Convert TableRowNode to tab-separated string
-            header_row.children.map do |cell|
-              # Render cell content to text with inline processing
-              render_children_to_text(cell)
-            end.join("\t")
-          end
-
-          # Process body rows
-          body_lines = node.body_rows.map do |body_row|
-            # Convert TableRowNode to tab-separated string
-            body_row.children.map do |cell|
-              # Render cell content to text with inline processing
-              render_children_to_text(cell)
-            end.join("\t")
-          end
-
-          # Build lines array with headers, separator if needed, and body
-          if header_lines.any?
-            lines.concat(header_lines)
-            lines << '------------' # Add separator line
-          end
-          lines.concat(body_lines)
-
-          if lines.any?
-            # Handle different table types
-            case node.table_type
-            when :emtable
-              @builder.emtable(lines, node.caption_markup_text || '')
-            when :imgtable
-              @builder.imgtable(lines, node.id || '', node.caption_markup_text || '', node.metric)
-            else
-              # Regular table with ID
-              @builder.table(lines, node.id || '', node.caption_markup_text || '')
-            end
-          end
-        when AST::ImageNode
-          @builder.image([], node.id || '', node.caption_markup_text || '')
-        when AST::ListNode
-          render_list_to_builder(node)
-        when AST::EmbedNode
-          render_embed_to_builder(node)
-        when AST::BlockNode
-          render_block_to_builder(node)
-        when AST::MinicolumnNode
-          render_minicolumn_to_builder(node)
-        end
-      end
-
-      def render_ast_node_to_text(node)
-        case node
-        when AST::TextNode
-          # Process inline elements in text content
-          process_table_line_inline_elements(node.content)
-        when AST::InlineNode
-          content = render_children_to_text(node)
-          case node.inline_type
-          when 'fn'
-            arg = node.respond_to?(:args) && node.args ? node.args.first : content
-            @builder.inline_fn(arg)
-          when 'kw'
-            # For kw, reconstruct the argument format that builder expects
-            kw_arg = if node.respond_to?(:args) && node.args && node.args.length >= 2
-                       "#{node.args[0]}, #{node.args[1]}"
-                     else
-                       content
-                     end
-            @builder.inline_kw(kw_arg)
-          when 'href'
-            arg = node.respond_to?(:args) && node.args ? node.args.first : ''
-            @builder.inline_href(arg)
-          else
-            @builder.__send__("inline_#{node.inline_type}", content)
-          end
-        when AST::EmbedNode
-          if node.embed_type == :inline
-            node.arg || ''
-          else
-            ''
-          end
-        else
-          render_children_to_text(node)
-        end
-      end
-
-      def render_children_to_text(node)
-        return '' unless node.children
-
-        node.children.map { |child| render_ast_node_to_text(child) }.join
-      end
-
-      def render_list_to_builder(node)
-        case node.list_type
-        when :ul
-          @builder.ul_begin
-          node.children.each do |item|
-            @builder.ul_item_begin([render_children_to_text(item)])
-            @builder.ul_item_end
-          end
-          @builder.ul_end
-        when :ol
-          @builder.ol_begin
-          node.children.each_with_index do |item, index|
-            @builder.ol_item([render_children_to_text(item)], index + 1)
-          end
-          @builder.ol_end
-        when :dl
-          @builder.dl_begin
-          node.children.each do |item|
-            next unless item.respond_to?(:children) && item.children.any?
-
-            @builder.dt(render_ast_node_to_text(item.children[0]))
-            if item.children.size > 1
-              @builder.dd([item.children[1..-1].map { |child| render_ast_node_to_text(child) }.join])
-            end
-          end
-          @builder.dl_end
-        end
-      end
-
-      def render_embed_to_builder(node)
-        case node.embed_type
-        when :inline
-          # Inline embeds are handled in render_ast_node_to_text
-        when :block
-          if node.lines && node.lines.any?
-            # Use the embed method with arg filter
-            @builder.embed(node.lines, node.arg)
-          end
-        when :raw
-          if node.lines && node.lines.any?
-            # For raw blocks, use the raw method
-            @builder.raw(node.arg, node.lines)
-          end
-        end
-      end
-
-      def render_block_to_builder(node)
-        case node.block_type
-        when :quote
-          quote_lines = node.children.map { |child| render_ast_node_to_text(child) }
-          @builder.quote(quote_lines)
-        when :read
-          # For read blocks, output the content directly
-          read_lines = node.children.map { |child| render_ast_node_to_text(child) }
-          @builder.nofunc_text(read_lines.join("\n")) if read_lines.any?
-        end
-      end
-
-      def render_minicolumn_to_builder(node)
-        # Extract text content from children
-        lines = node.children.map { |child| render_ast_node_to_text(child) }
-
-        # Call appropriate builder method based on minicolumn type
-        case node.minicolumn_type
-        when :note
-          @builder.note(lines, node.caption_markup_text)
-        when :memo
-          @builder.memo(lines, node.caption_markup_text)
-        when :tip
-          @builder.tip(lines, node.caption_markup_text)
-        when :info
-          @builder.info(lines, node.caption_markup_text)
-        when :warning
-          @builder.warning(lines, node.caption_markup_text)
-        when :important
-          @builder.important(lines, node.caption_markup_text)
-        when :caution
-          @builder.caution(lines, node.caption_markup_text)
-        when :notice
-          @builder.notice(lines, node.caption_markup_text)
-        end
-      end
-
-      # AST-specific compilation methods
       def compile_headline_to_ast(line)
         # Parse headline using same logic as compile_headline
         # Handle both new syntax: = Caption{label} and old syntax: ={label} Caption
@@ -625,7 +402,7 @@ module ReVIEW
 
       # Helper methods that need to be accessible from processors
       def location
-        @current_location || @builder.location
+        @current_location
       end
 
       def add_child_to_current_node(node)

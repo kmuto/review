@@ -13,8 +13,6 @@ require 'review/preprocessor'
 require 'review/exception'
 require 'review/location'
 require 'review/loggable'
-require 'review/ast'
-require 'review/ast/compiler'
 require 'strscan'
 
 module ReVIEW
@@ -23,9 +21,8 @@ module ReVIEW
 
     MAX_HEADLINE_LEVEL = 6
 
-    def initialize(builder, ast_mode: false)
+    def initialize(builder)
       @builder = builder
-      @ast_mode = ast_mode
 
       ## commands which do not parse block lines in compiler
       @non_parsed_commands = %i[embed texequation graph]
@@ -38,10 +35,6 @@ module ReVIEW
       @ignore_errors = builder.is_a?(ReVIEW::IndexBuilder)
 
       @compile_errors = nil
-
-      ## AST related - delegate to AST::Compiler when in AST mode
-      # Initialize lazily to reduce startup overhead
-      @ast_compiler = nil
     end
 
     attr_reader :builder, :previous_list_type
@@ -61,36 +54,13 @@ module ReVIEW
 
     def compile(chap)
       @chapter = chap
-
-      if @ast_mode
-        # Ensure builder is bound even in AST mode
-        f = LineInput.from_string(@chapter.content)
-        @builder.bind(self, @chapter, Location.new(@chapter.basename, f))
-
-        ast_compiler.compile_to_ast(chap)
-      else
-        do_compile
-      end
+      do_compile
 
       if @compile_errors
         raise ApplicationError, "#{location.filename} cannot be compiled."
       end
 
       @builder.result
-    end
-
-    # Public AST interface - delegate to ASTCompiler when in AST mode
-    def ast_result
-      if @ast_mode && ast_compiler
-        ast_compiler.ast_result
-      end
-    end
-
-    # Lazy-loaded AST compiler
-    def ast_compiler
-      return nil unless @ast_mode
-
-      @ast_compiler ||= AST::Compiler.new(@builder)
     end
 
     class SyntaxElement
@@ -504,9 +474,6 @@ module ReVIEW
     end
 
     def compile_ulist(f)
-      if @ast_mode
-        ast_compiler.compile_ul_to_ast(f)
-      else
         level = 0
         f.while_match(/\A\s+\*|\A\#@/) do |line|
           next if /\A\#@/.match?(line)
@@ -547,51 +514,42 @@ module ReVIEW
           @builder.ul_item_end
           @builder.ul_end { i }
         end
-      end
     end
 
     def compile_olist(f)
-      if @ast_mode
-        ast_compiler.compile_ol_to_ast(f)
-      else
-        @builder.ol_begin
-        f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
-          next if /\A\#@/.match?(line)
+      @builder.ol_begin
+      f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
+        next if /\A\#@/.match?(line)
 
-          num = line.match(/(\d+)\./)[1]
-          buf = [text(line.sub(/\d+\./, '').strip)]
-          f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
-            buf.push(text(cont.strip))
-          end
-          @builder.ol_item(buf, num)
+        num = line.match(/(\d+)\./)[1]
+        buf = [text(line.sub(/\d+\./, '').strip)]
+        f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
+          buf.push(text(cont.strip))
         end
-        @builder.ol_end
+        @builder.ol_item(buf, num)
       end
+      @builder.ol_end
     end
 
     def compile_dlist(f)
-      if @ast_mode
-        ast_compiler.compile_dl_to_ast(f)
-      else
-        @builder.dl_begin
-        while /\A\s*:/ =~ f.peek
-          # defer compile_inline to handle footnotes
-          @builder.doc_status[:dt] = true
-          @builder.dt(text(f.gets.sub(/\A\s*:/, '').strip))
-          @builder.doc_status[:dt] = nil
-          desc = []
-          f.until_match(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/) do |line|
-            desc << text(line.strip)
-          end
-          # Only output dd if there's actual content, or if beginchild follows
-          desc_content = desc.reject(&:empty?)
-          has_beginchild = f.next? && f.peek.start_with?('//beginchild')
-          @builder.dd(desc_content) if desc_content.any? || has_beginchild
-          f.skip_blank_lines
-          f.skip_comment_lines
+      @builder.dl_begin
+      while /\A\s*:/ =~ f.peek
+        # defer compile_inline to handle footnotes
+        @builder.doc_status[:dt] = true
+        @builder.dt(text(f.gets.sub(/\A\s*:/, '').strip))
+        @builder.doc_status[:dt] = nil
+        desc = []
+        f.until_match(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/) do |line|
+          desc << text(line.strip)
         end
-        @builder.dl_end
+        # Only output dd if there's actual content, or if beginchild follows
+        desc_content = desc.reject(&:empty?)
+        has_beginchild = f.next? && f.peek.start_with?('//beginchild')
+        @builder.dd(desc_content) if desc_content.any? || has_beginchild
+        f.skip_blank_lines
+        f.skip_comment_lines
       end
+      @builder.dl_end
     end
 
     def compile_paragraph(f)
@@ -717,17 +675,12 @@ module ReVIEW
     end
 
     def text(str, block_mode = false)
-      # Handle CaptionNode objects in AST mode
+      # Handle CaptionNode objects
       if str.respond_to?(:to_text)
         str = str.to_text
       end
 
       return '' if str.empty?
-
-      # For AST mode, use safe text processing without fence replacement
-      if @ast_mode
-        return text_for_ast(str, block_mode)
-      end
 
       words = replace_fence(str).split(/(@<\w+>\{(?:[^}\\]|\\.)*?\})/, -1)
       words.each do |w|
@@ -751,55 +704,7 @@ module ReVIEW
       error e.message, location: location
     end
 
-    def text_for_ast(str, block_mode = false)
-      # Handle CaptionNode objects
-      if str.respond_to?(:to_text)
-        str = str.to_text
-      end
 
-      return '' if str.empty?
-
-      # Use simple regex for inline elements in AST mode without fence replacement
-      words = str.split(/(@<\w+>\{(?:[^}\\]|\\.)*?\})/, -1)
-      words.each do |w|
-        if w.scan(/@<\w+>/).size > 1 && !/\A@<raw>/.match(w)
-          error "`@<xxx>' seen but is not valid inline op: #{w}", location: location
-        end
-      end
-
-      result = +''
-      until words.empty?
-        result << if in_non_escaped_command? && block_mode
-                    words.shift
-                  else
-                    @builder.nofunc_text(words.shift)
-                  end
-        break if words.empty?
-
-        result << compile_inline_for_ast(words.shift.gsub('\\}', '}').gsub('\\\\', '\\'))
-      end
-      result
-    rescue StandardError => e
-      error e.message, location: location
-    end
-
-    def compile_inline_for_ast(str)
-      # AST mode inline compilation without fence replacement
-      op, arg = /\A@<(\w+)>\{(.*?)\}\z/.match(str).captures
-      unless inline_defined?(op)
-        raise CompileError, "no such inline op: #{op}"
-      end
-
-      @builder.__send__("inline_#{op}", arg)
-    rescue NoMethodError => e
-      if e.message =~ /undefined method `(\w+)'/
-        raise CompileError, "builder does not support inline op: #{$1}"
-      else
-        raise
-      end
-    rescue ArgumentError => e
-      raise CompileError, e.message
-    end
     public :text # called from builder
 
     def compile_inline(str)

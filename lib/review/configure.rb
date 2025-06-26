@@ -153,14 +153,6 @@ module ReVIEW
         },
         'textmaker' => {
           'th_bold' => nil
-        },
-        # AST mode configuration
-        'ast' => {
-          'mode' => 'hybrid', # 'auto', 'full', 'hybrid', 'off'
-          'elements' => [], # Array of element symbols for hybrid mode
-          'stage' => 3, # Migration stage (1-7) - Default to Stage 3 for gradual adoption
-          'debug' => false, # Debug logging
-          'performance' => false # Performance measurement
         }
       ]
       conf.maker = nil
