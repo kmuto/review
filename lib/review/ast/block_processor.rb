@@ -98,13 +98,11 @@ module ReVIEW
         # Create list node and add items as children
         list_node = create_and_add_node(AST::ListNode, list_type: type)
 
-        if lines
-          lines.each do |line|
-            item_node = create_node(AST::ListItemNode,
-                                    content: line,
-                                    level: 1)
-            list_node.add_child(item_node)
-          end
+        lines.each do |line|
+          item_node = create_node(AST::ListItemNode,
+                                  content: line,
+                                  level: 1)
+          list_node.add_child(item_node)
         end
 
         list_node
@@ -140,11 +138,9 @@ module ReVIEW
           caption: process_caption(args, 0)
         )
 
-        if lines && lines.any?
-          # Use the universal block processing method from Compiler for HTML Builder compatibility
-          # This processes content using the same logic as regular document processing
-          @ast_compiler.process_structured_content(node, lines)
-        end
+        # Use the universal block processing method from Compiler for HTML Builder compatibility
+        # This processes content using the same logic as regular document processing
+        @ast_compiler.process_structured_content(node, lines)
 
         @ast_compiler.add_child_to_current_node(node)
       end

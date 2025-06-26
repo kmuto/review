@@ -46,11 +46,15 @@ module ReVIEW
       end
 
       def visit_document(node)
-        # Generate content and post-process to match LATEXBuilder spacing
+        # Generate content directly without complex post-processing
         content = render_children(node)
 
-        # Post-process to ensure proper spacing like LATEXBuilder
-        post_process_latex_spacing(content)
+        # Ensure content ends with single newline if it contains content
+        if content && !content.empty?
+          content.chomp + "\n"
+        else
+          content || ''
+        end
       end
 
       def visit_headline(node)
@@ -112,8 +116,8 @@ module ReVIEW
       def visit_paragraph(node)
         content = render_children(node)
 
-        # Add proper spacing like LATEXBuilder - paragraphs are separated by empty lines
-        "#{content}\n\n"
+        # Add single newline for paragraph end
+        "#{content}\n"
       end
 
       def visit_text(node)
@@ -384,7 +388,7 @@ module ReVIEW
         when :ul
           # Unordered list - generate LaTeX itemize environment
           items = node.children.map { |item| "\\item #{render_children(item)}" }.join("\n")
-          "\n\\begin{itemize}\n#{items}\n\\end{itemize}\n\n"
+          "\n\\begin{itemize}\n#{items}\n\\end{itemize}\n"
         when :ol
           # Ordered list - generate LaTeX enumerate environment
           items = node.children.map { |item| "\\item #{render_children(item)}" }.join("\n")
@@ -393,9 +397,9 @@ module ReVIEW
           if node.respond_to?(:olnum_start) && node.olnum_start
             # Generate enumerate with setcounter for olnum
             start_num = node.olnum_start - 1 # LaTeX counter is 0-based
-            "\n\\begin{enumerate}\n\\setcounter{enumi}{#{start_num}}\n#{items}\n\\end{enumerate}\n\n"
+            "\n\\begin{enumerate}\n\\setcounter{enumi}{#{start_num}}\n#{items}\n\\end{enumerate}\n"
           else
-            "\n\\begin{enumerate}\n#{items}\n\\end{enumerate}\n\n"
+            "\n\\begin{enumerate}\n#{items}\n\\end{enumerate}\n"
           end
         when :dl
           # Definition list - generate LaTeX description environment like LATEXBuilder
@@ -425,7 +429,7 @@ module ReVIEW
               "\\item[#{render_children(item)}] "
             end
           end.join("\n")
-          "\n\\begin{description}\n#{items}\n\\end{description}\n\n"
+          "\n\\begin{description}\n#{items}\n\\end{description}\n"
         else
           raise NotImplementedError, "Unsupported list type: #{node.list_type}"
         end
@@ -610,7 +614,7 @@ module ReVIEW
         result << '\\end{reviewlist}'
         result << '\\end{reviewlistblock}'
 
-        result.join("\n") + "\n\n"
+        result.join("\n") + "\n"
       end
 
       def visit_emlist_block(_node, content, caption)
@@ -626,7 +630,7 @@ module ReVIEW
         result << '\\end{reviewemlist}'
 
         result << '\\end{reviewlistblock}'
-        result.join("\n") + "\n\n"
+        result.join("\n") + "\n"
       end
 
       def visit_cmd_block(_node, content, caption)
@@ -642,7 +646,7 @@ module ReVIEW
         result << '\\end{reviewcmd}'
         result << '\\end{reviewlistblock}'
 
-        result.join("\n") + "\n\n"
+        result.join("\n") + "\n"
       end
 
       def visit_source_block(_node, content, caption)
@@ -658,7 +662,7 @@ module ReVIEW
         result << '\\end{reviewsource}'
         result << '\\end{reviewlistblock}'
 
-        result.join("\n") + "\n\n"
+        result.join("\n") + "\n"
       end
 
       # Add line numbers to content like LATEXBuilder does
@@ -950,57 +954,6 @@ module ReVIEW
         end
 
         false
-      end
-
-      def post_process_latex_spacing(content)
-        # Simplified spacing fix to match LATEXBuilder output
-        # Only add blank lines after headers, avoid interfering with other content
-        lines = content.split("\n")
-        result = []
-        in_code_block = false
-        in_minicolumn = false
-
-        i = 0
-        while i < lines.length
-          line = lines[i]
-
-          # Track code block boundaries - don't modify spacing inside
-          if line.match?(/\\begin\{(reviewlist|reviewemlist|reviewcmd|reviewsource)\}/)
-            in_code_block = true
-          elsif line.match?(/\\end\{(reviewlist|reviewemlist|reviewcmd|reviewsource)\}/)
-            in_code_block = false
-          end
-
-          # Track minicolumn boundaries - don't modify spacing inside
-          if line.match?(/\\begin\{(reviewnote|reviewmemo|reviewtip|reviewinfo|reviewwarning|reviewimportant|reviewcaution|reviewnotice|reviewcolumn)\}/)
-            in_minicolumn = true
-          elsif line.match?(/\\end\{(reviewnote|reviewmemo|reviewtip|reviewinfo|reviewwarning|reviewimportant|reviewcaution|reviewnotice|reviewcolumn)\}/)
-            in_minicolumn = false
-          end
-
-          # Only process header spacing if not inside code blocks or minicolumns
-          if !in_code_block && !in_minicolumn && line.match?(/\\(chapter|section|subsection\*?|subsubsection\*?|paragraph\*?)\{/)
-            result << line
-            # Look ahead for labels
-            j = i + 1
-            while j < lines.length && lines[j].match?(/\\(label|addcontentsline)\{/)
-              result << lines[j]
-              j += 1
-            end
-
-            # Add blank line after headers and their labels
-            if j < lines.length && !lines[j].strip.empty?
-              result << ''
-            end
-            i = j - 1
-          else
-            result << line
-          end
-
-          i += 1
-        end
-
-        result.join("\n")
       end
     end
   end

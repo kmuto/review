@@ -14,7 +14,6 @@ require 'review/ast/inline_processor'
 require 'review/ast/block_processor'
 require 'review/snapshot_location'
 require 'review/ast/list_ast_processor'
-require 'stringio'
 
 module ReVIEW
   module AST
@@ -674,8 +673,7 @@ module ReVIEW
 
         # Create StringIO from lines to simulate file input for line processing
         content = lines.join("\n") + "\n"
-        f = StringIO.new(content)
-        line_input = ReVIEW::LineInput.new(f)
+        line_input = ReVIEW::LineInput.from_string(content)
 
         # Save current node context
         saved_current_node = @current_ast_node
@@ -685,11 +683,9 @@ module ReVIEW
         @current_ast_node = parent_node
 
         # Process lines using the same logic as main document processing
-        lineno = 0
         while line_input.next?
-          lineno += 1
           # Create location that reflects position within the block
-          @current_location = SnapshotLocation.new(@chapter&.basename || 'block', lineno)
+          @current_location = SnapshotLocation.new(@chapter&.basename || 'block', line_input.lineno)
           line_content = line_input.peek
 
           case line_content
