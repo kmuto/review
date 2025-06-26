@@ -530,7 +530,10 @@ module ReVIEW
           cell_node = create_node(AST::TableCellNode, cell_type: cell_type)
 
           # Parse inline elements in cell content
-          @ast_compiler.inline_processor.parse_inline_elements(cell_content.strip, cell_node)
+          # Convert prefix "." to empty content for separator disambiguation
+          # Preserve all other content including spaces
+          processed_content = cell_content.sub(/\A\./, '')
+          @ast_compiler.inline_processor.parse_inline_elements(processed_content, cell_node)
 
           row_node.add_child(cell_node)
         end

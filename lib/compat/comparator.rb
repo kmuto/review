@@ -84,22 +84,6 @@ module ReVIEW
           normalized = normalized_lines.join('')
         end
 
-        # HTMLパースによる正規化は行番号の不一致を招くため無効化
-        # begin
-        #   if normalized.include?('<html') || normalized.include?('<!DOCTYPE')
-        #     # 完全なHTMLドキュメント
-        #     doc = Nokogiri::HTML(normalized)
-        #     normalized = doc.to_html
-        #   elsif normalized.include?('<')
-        #     # HTMLフラグメント
-        #     doc = Nokogiri::HTML::DocumentFragment.parse(normalized)
-        #     normalized = doc.to_html
-        #   end
-        # rescue StandardError => e
-        #   # HTMLパースに失敗した場合はそのまま使用
-        #   warn "HTML parse failed: #{e.message}" if @show_diff
-        # end
-
         normalized
       end
 
