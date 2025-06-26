@@ -24,51 +24,21 @@ module ReVIEW
 
       private
 
-      # Override the build_epub method to use appropriate processor
+      # Override the build_epub method to use AST/Renderer
       def build_epub
-        determine_processor_type
+        @processor_type = 'AST/Renderer'
 
         # Log processor selection for user feedback
-        if @config['ast'] && @config['ast']['debug']
+        if @config['debug']
           puts "AST::EPUBMaker: Using #{@processor_type} processor"
         end
 
         super
       end
 
-      # Determine which processor type to use based on configuration
-      def determine_processor_type
-        @processor_type = if should_use_renderer?
-                            'Renderer'
-                          else
-                            'Builder'
-                          end
-      end
-
-      # Check if Renderer should be used based on configuration
-      def should_use_renderer?
-        # Check ast.mode configuration
-        return true if @config['ast'] && @config['ast']['mode'] == 'full'
-
-        # Check epubmaker-specific setting
-        return true if @config['epubmaker'] && @config['epubmaker']['use_ast_renderer']
-
-        # Check ast.html_renderer setting
-        return true if @config['ast'] && @config['ast']['html_renderer']
-
-        # Check environment variable override
-        return true if ENV['REVIEW_AST_EPUBMAKER'] == 'true'
-
-        false
-      end
-
-      # Override converter creation to use Renderer when appropriate
+      # Override converter creation to use AST Renderer
       def create_converter(book)
-        if should_use_renderer?
-          create_ast_converter(book)
-        else
-          create_traditional_converter(book)
-        end
+        create_ast_converter(book)
       end
 
       # Create converter with AST Renderer
@@ -87,15 +57,10 @@ module ReVIEW
         HTMLRendererConverterAdapter.new(book, renderer, @config)
       end
 
-      # Create traditional converter with Builder
-      def create_traditional_converter(book)
-        ReVIEW::Converter.new(book, ReVIEW::HTMLBuilder.new(img_math: @img_math, img_graph: @img_graph))
-      end
-
       # Override the converter creation point in build_epub
       # This method replaces the direct Converter.new call in the parent class
-      def build_body(book, basedir, tmpdir)
-        @converter = create_converter(book)
+      def build_body(basetmpdir, yamlfile)
+        @converter = create_converter(@book)
         super
       end
     end

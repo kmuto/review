@@ -421,7 +421,12 @@ module ReVIEW
       end
 
       def visit_embed(node)
-        # Handle embed blocks (//embed[format]{...//})
+        # Handle embed blocks (//embed[format]{...//}) and raw blocks (//raw[format]{...//})
+        # Debug: Check embed_type
+        if defined?(node.embed_type) && node.embed_type == :raw
+          # This is a raw block, processed as EmbedNode
+        end
+
         if node.arg
           # Parse target formats from argument like Builder base class
           builders = node.arg.gsub(/^\s*\|/, '').gsub(/\|\s*$/, '').gsub(/\s/, '').split(',')
@@ -429,13 +434,27 @@ module ReVIEW
 
           # Only output if this renderer's target is in the list
           if builders.include?(target)
-            return node.lines.join("\n") + "\n"
+            content = node.lines.join("\n")
+            # For HTML output, ensure XHTML compliance for self-closing tags
+            if target == 'html'
+              content = content.gsub(/<hr(\s[^>]*)?>/, '<hr\1 />').
+                        gsub(/<br(\s[^>]*)?>/, '<br\1 />').
+                        gsub(%r{<img([^>]*[^/])>}, '<img\1 />').
+                        gsub(%r{<input([^>]*[^/])>}, '<input\1 />')
+            end
+            return content + "\n"
           else
             return ''
           end
         else
           # No format specified, output for all formats
-          return node.lines.join("\n") + "\n"
+          content = node.lines.join("\n")
+          # For HTML output, ensure XHTML compliance for self-closing tags
+          content = content.gsub(/<hr(\s[^>]*)?>/, '<hr\1 />').
+                    gsub(/<br(\s[^>]*)?>/, '<br\1 />').
+                    gsub(%r{<img([^>]*[^/])>}, '<img\1 />').
+                    gsub(%r{<input([^>]*[^/])>}, '<input\1 />')
+          return content + "\n"
         end
       end
 
@@ -476,6 +495,8 @@ module ReVIEW
           "<u>#{escape_content(content)}</u>"
         when 'br'
           '<br />'
+        when 'raw'
+          render_inline_raw(content, node)
         when 'chap'
           render_chap(content, node)
         when 'title'
@@ -1136,6 +1157,32 @@ module ReVIEW
         return '' if content.nil? || content.empty?
 
         content.to_s
+      end
+
+      def render_inline_raw(content, node)
+        # Handle inline raw elements like @<raw>{|html|<hr>}
+        if node.args && node.args.first
+          raw_content = node.args.first
+          # Parse target formats from argument like Builder base class
+          if raw_content.start_with?('|') && raw_content.include?('|')
+            # Format: |html|<content>
+            parts = raw_content.split('|', 3)
+            if parts.size >= 3
+              target_format = parts[1]
+              actual_content = parts[2]
+
+              # Only output if this renderer's target matches
+              if target_format == target_name
+                return actual_content
+              else
+                return ''
+              end
+            end
+          end
+        end
+
+        # Fallback to content if no format specified
+        content
       end
 
       # Builder compatibility - return target name for embed blocks

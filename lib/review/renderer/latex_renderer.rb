@@ -273,7 +273,6 @@ module ReVIEW
         # imgtable should be rendered as an image, not as a table (like LATEXBuilder)
         result = []
         result << '\\begin{reviewdummyimage}'
-        raise NotImplementedError, "Image rendering not fully implemented for image ID: #{node.id}"
 
         if node.id && !node.id.empty?
           # Generate label like LATEXBuilder: image:chapter:id
@@ -699,6 +698,10 @@ module ReVIEW
           "\\reviewem{#{content}}"
         when 'tt'
           "\\reviewtt{#{content}}"
+        when 'ttb'
+          "\\reviewttb{#{content}}"
+        when 'tti'
+          "\\reviewtti{#{content}}"
         when 'code'
           "\\reviewcode{#{content}}"
         when 'u', 'underline'
@@ -883,8 +886,77 @@ module ReVIEW
           "\\reviewstrike{#{content}}"
         when 'ins', 'insert'
           "\\reviewinsert{#{content}}"
+        when 'uchar'
+          # Unicode character handling like LATEXBuilder
+          if node.args && node.args.first
+            char_code = node.args.first
+            "\\UTF{#{escape(char_code)}}"
+          else
+            content
+          end
+        when 'br'
+          "\\\\\n"
+        when 'idx'
+          if node.args && node.args.first
+            # Index entry like LATEXBuilder
+            "\\index{#{escape(node.args.first)}}"
+          else
+            content
+          end
+        when 'hidx'
+          if node.args && node.args.first
+            # Hidden index entry like LATEXBuilder
+            "\\index{#{escape(node.args.first)}}#{content}"
+          else
+            content
+          end
+        when 'ruby'
+          if node.args && node.args.length >= 2
+            base_text = escape(node.args[0])
+            ruby_text = escape(node.args[1])
+            "\\ruby{#{base_text}}{#{ruby_text}}"
+          else
+            content
+          end
+        when 'kw'
+          if node.args && node.args.length >= 2
+            term = escape(node.args[0])
+            desc = escape(node.args[1])
+            "\\reviewkw{#{term}, #{desc}}"
+          elsif node.args && node.args.first
+            "\\reviewkw{#{escape(node.args.first)}}"
+          else
+            content
+          end
+        when 'icon'
+          if node.args && node.args.first
+            icon_id = node.args.first
+            "\\reviewicon{#{icon_id}}"
+          else
+            content
+          end
+        when 'ami', 'amI'
+          '\\reviewami{}'
+        when 'w', 'wb'
+          # Word expansion - pass through content
+          content
+        when 'hd'
+          if node.args && node.args.first
+            # Heading reference
+            ref_id = node.args.first
+            "\\ref{#{escape(ref_id)}}"
+          else
+            content
+          end
+        when 'labelref', 'ref'
+          if node.args && node.args.first
+            ref_id = node.args.first
+            "\\ref{#{escape(ref_id)}}"
+          else
+            content
+          end
         else
-          raise NotImplementedError, "Unsupported inline element type: #{inline_type}"
+          raise NotImplementedError, "Unsupported inline element type: #{type}"
         end
       end
 
@@ -925,6 +997,29 @@ module ReVIEW
         end
 
         false
+      end
+
+      def visit_footnote(node)
+        if @chapter && @chapter.footnote_index
+          begin
+            footnote_item = @chapter.footnote_index.number(node.id)
+            footnote_content = @chapter.footnote_index[node.id].content
+
+            # Handle footnotes differently based on context
+            if @doc_status[:table] || @doc_status[:caption] || @doc_status[:column]
+              # In table/caption/column context, store for later \footnotetext output
+              @foottext[node.id] = footnote_item
+              "\\footnotemark[#{footnote_item}]"
+            else
+              # Normal footnote context
+              "\\footnote{#{escape(footnote_content)}}"
+            end
+          rescue StandardError => e
+            raise NotImplementedError, "Footnote failed for #{node.id}: #{e.message}"
+          end
+        else
+          raise NotImplementedError, "Chapter footnote index not available for footnote: #{node.id}"
+        end
       end
     end
   end
