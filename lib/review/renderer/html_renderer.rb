@@ -81,9 +81,9 @@ module ReVIEW
         # Generate section number like HTMLBuilder
         secno_html = prefix ? %Q(<span class="secno">#{prefix}</span>) : ''
 
-        # Add proper spacing like HTMLBuilder - level > 1 gets blank line before
-        spacing_before = level > 1 ? "\n" : ''
-        spacing_after = level > 1 ? "\n" : ''
+        # Add proper spacing like HTMLBuilder (disabled)
+        spacing_before = ''
+        spacing_after = ''
         "#{spacing_before}<h#{level}>#{anchor_html}#{secno_html}#{caption}</h#{level}>#{spacing_after}\n"
       end
 

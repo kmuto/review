@@ -894,35 +894,6 @@ module ReVIEW
         node.children.map { |child| visit(child) }.join
       end
 
-      def render_children_with_newlines(node)
-        return '' unless node.children
-
-        # In LaTeX Builder, paragraphs preserve newlines to maintain line structure
-        # For each child, check if it marks the start of a new line
-        result = []
-
-        node.children.each_with_index do |child, i|
-          child_content = visit(child)
-
-          # For the first child, just add content
-          result << if i == 0
-                      child_content
-                    elsif child.class.name.include?('TextNode') &&
-                          child.respond_to?(:content) &&
-                          child.content.to_s.match?(/^\S/)
-                      # For subsequent children, check if this should start a new line
-                      # In Re:VIEW source, each line typically starts with text content
-                      "\n#{child_content}" # Content starts with non-whitespace
-                    # This looks like the start of a new line
-                    else
-                      # This is continuation content (like inline elements)
-                      child_content
-                    end
-        end
-
-        result.join
-      end
-
       def normalize_id(id)
         # LaTeX-safe ID normalization
         id.gsub(/[^a-zA-Z0-9_-]/, '_')
