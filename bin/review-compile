@@ -14,7 +14,6 @@
 $LOAD_PATH.unshift(File.realpath('../lib', __dir__))
 
 require 'review'
-require 'review/ast/compiler_adapter'
 require 'fileutils'
 require 'optparse'
 require 'yaml'
@@ -84,10 +83,7 @@ def _main
         error!("file not found: #{item}") unless File.exist?(File.join(book.config['contentdir'], item))
         chap_name = File.basename(item, '.*')
         chap = book.chapter(chap_name)
-        builder = load_builder_class(@target, @check_only)
-        # Create compiler with AST configuration
-        adapter = ReVIEW::AST::CompilerAdapter.new(@config)
-        compiler = adapter.create_compiler(builder, @target)
+        compiler = ReVIEW::Compiler.new(load_builder_class(@target, @check_only))
         result = compiler.compile(chap)
         if @output_filename
           File.write(@output_filename, result)
@@ -97,10 +93,7 @@ def _main
       end
     when :dir
       book = @basedir ? ReVIEW::Book::Base.new(@basedir, config: @config) : ReVIEW::Book::Base.new(config: @config)
-      builder = load_builder_class(@target, @check_only)
-      # Create compiler with AST configuration
-      adapter = ReVIEW::AST::CompilerAdapter.new(@config)
-      compiler = adapter.create_compiler(builder, @target)
+      compiler = ReVIEW::Compiler.new(load_builder_class(@target, @check_only))
       book.chapters.each do |chap|
         str = compiler.compile(chap)
         File.write("#{chap.name}#{compiler.builder.extname}", str) unless @check_only

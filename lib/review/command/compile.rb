@@ -11,6 +11,7 @@ require 'stringio'
 require 'review/book'
 require 'review/ast/compiler'
 require 'review/version'
+require 'review/configure'
 
 module ReVIEW
   module Command
@@ -36,7 +37,8 @@ module ReVIEW
           target: nil,
           check_only: false,
           verbose: false,
-          output_file: nil
+          output_file: nil,
+          config_file: nil
         }
         @version_requested = false
         @help_requested = false
@@ -83,6 +85,10 @@ module ReVIEW
 
           opts.on('-o', '--output-file FILE', 'Output file (default: stdout)') do |file|
             @options[:output_file] = file
+          end
+
+          opts.on('--config FILE', '--yaml FILE', 'Configuration file (config.yml)') do |file|
+            @options[:config_file] = file
           end
 
           opts.on('-c', '--check', 'Check only, no output') do
@@ -152,11 +158,16 @@ module ReVIEW
       end
 
       def create_chapter(content)
-        # Setup I18n
-        require 'review/i18n'
-        I18n.setup('ja')
+        # Load configuration if specified
+        config = load_configuration
 
-        book = ReVIEW::Book::Base.new('.')
+        # Setup I18n with config language
+        require 'review/i18n'
+        I18n.setup(config['language'] || 'ja')
+
+        # Create book with configuration
+        book_basedir = File.dirname(@input_file)
+        book = ReVIEW::Book::Base.new(book_basedir, config: config)
         basename = File.basename(@input_file, '.*')
 
         ReVIEW::Book::Chapter.new(
@@ -195,6 +206,40 @@ module ReVIEW
         end
       rescue StandardError => e
         raise CompileError, "Rendering failed: #{e.message}"
+      end
+
+      def load_configuration
+        # Determine config file to load
+        config_file = @options[:config_file]
+
+        # If no config file specified, try to find default config.yml in the same directory as input file
+        if config_file.nil?
+          default_config = File.join(File.dirname(@input_file), 'config.yml')
+          config_file = default_config if File.exist?(default_config)
+        end
+
+        # Load configuration using ReVIEW::Configure
+        if config_file && File.exist?(config_file)
+          log("Loading configuration: #{config_file}")
+          begin
+            config = ReVIEW::Configure.create(
+              maker: 'ast-compile',
+              yamlfile: config_file
+            )
+          rescue StandardError => e
+            raise CompileError, "Failed to load configuration: #{e.message}"
+          end
+        else
+          if @options[:config_file]
+            raise CompileError, "Configuration file not found: #{@options[:config_file]}"
+          end
+
+          # Use default configuration
+          log('Using default configuration')
+          config = ReVIEW::Configure.values
+        end
+
+        config
       end
 
       def load_renderer(format)
