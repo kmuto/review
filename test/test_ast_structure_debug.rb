@@ -82,7 +82,7 @@ class TestASTStructureDebug < Test::Unit::TestCase
     assert_not_nil(table)
 
     # Check actual table structure (header_rows vs headers)
-    table_structure_keys = table.keys.grep(/header|row/)
+    table.keys.grep(/header|row/)
 
     # Verify table structure has header_rows and body_rows (correct AST structure)
     assert_not_nil(table['header_rows'] || table['headers'])
@@ -92,12 +92,12 @@ class TestASTStructureDebug < Test::Unit::TestCase
     headers = table['header_rows'] || table['headers'] || []
     rows = table['body_rows'] || table['rows'] || []
 
-    has_inline_in_headers = headers.any? do |header|
-      header.dig('children')&.any? { |cell| cell['type'] == 'InlineNode' }
+    headers.any? do |header|
+      header['children']&.any? { |cell| cell['type'] == 'InlineNode' }
     end
 
-    has_inline_in_rows = rows.any? do |row|
-      row.dig('children')&.any? { |cell| cell['type'] == 'InlineNode' }
+    rows.any? do |row|
+      row['children']&.any? { |cell| cell['type'] == 'InlineNode' }
     end
 
     # Table should have structure and may contain inline elements

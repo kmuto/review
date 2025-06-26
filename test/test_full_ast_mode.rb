@@ -160,8 +160,8 @@ class TestFullASTMode < Test::Unit::TestCase
 
     # Get all text content from all paragraphs
     all_text_contents = []
-    paragraphs.each do |paragraph|
-      text_nodes = paragraph['children'].select { |child| child['type'] == 'TextNode' }
+    paragraphs.each do |paragraph2|
+      text_nodes = paragraph2['children'].select { |child| child['type'] == 'TextNode' }
       all_text_contents.concat(text_nodes.map { |node| node['content'] })
     end
 
@@ -171,8 +171,8 @@ class TestFullASTMode < Test::Unit::TestCase
 
     # Check for inline bold node in any paragraph
     inline_node = nil
-    paragraphs.each do |paragraph|
-      inline_node = paragraph['children'].find { |child| child['type'] == 'InlineNode' && child['inline_type'] == 'b' }
+    paragraphs.each do |paragraph2|
+      inline_node = paragraph2['children'].find { |child| child['type'] == 'InlineNode' && child['inline_type'] == 'b' }
       break if inline_node
     end
     assert_not_nil(inline_node, 'Note should contain bold inline node')
