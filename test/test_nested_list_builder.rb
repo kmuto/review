@@ -21,8 +21,7 @@ class TestNestedListBuilder < Test::Unit::TestCase
     book.config = config
     ReVIEW::I18n.setup(config['language'])
 
-    # Create real builder and compiler
-    html_builder = ReVIEW::HTMLBuilder.new
+    # Create real compiler
     compiler = ReVIEW::AST::Compiler.new
 
     # Use real inline processor from compiler
