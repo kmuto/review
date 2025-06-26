@@ -14,6 +14,8 @@ require 'review/highlighter'
 require 'review/sec_counter'
 require 'review/i18n'
 require 'review/loggable'
+require 'review/ast/indexer'
+require 'review/ast/compiler'
 
 module ReVIEW
   module Renderer
@@ -30,14 +32,6 @@ module ReVIEW
         @chapter = options[:chapter]
         @book = options[:book] || @chapter&.book
 
-        # Generate indexes like HTMLBuilder does
-        if @chapter
-          @chapter.generate_indexes
-        end
-        if @book
-          @book.generate_indexes
-        end
-
         # Initialize logger like HTMLBuilder for error handling
         @logger = ReVIEW.logger
 
@@ -49,6 +43,9 @@ module ReVIEW
         @table_counter = 0
         @image_counter = 0
         @first_line_num = nil # For line numbering like HTMLBuilder
+
+        # Flag to track if indexes have been generated using AST::Indexer
+        @ast_indexes_generated = false
       end
 
       def visit_document(node)
@@ -62,11 +59,69 @@ module ReVIEW
           @sec_counter = SecCounter.new(5, @chapter) if @chapter
         end
 
+        # Generate indexes using AST::Indexer (builder-independent approach)
+        generate_ast_indexes(node)
+
         # Generate body content only, like HTMLBuilder
         # The complete HTML document structure (html, head, body tags)
         # is handled by templates/html/layout-html5.html.erb
         render_children(node)
       end
+
+      private
+
+      # Generate indexes using AST::Indexer for Renderer (builder-independent)
+      def generate_ast_indexes(ast_node)
+        return if @ast_indexes_generated
+
+        if @chapter
+          # Use AST::Indexer to generate indexes directly from AST
+          @ast_indexer = ReVIEW::AST::Indexer.new(@chapter)
+          @ast_indexer.build_indexes(ast_node)
+
+          # Set indexes on chapter object for compatibility
+          # (using instance variable access since there are no setter methods)
+          @chapter.instance_variable_set(:@list_index, @ast_indexer.list_index)
+          @chapter.instance_variable_set(:@table_index, @ast_indexer.table_index)
+          @chapter.instance_variable_set(:@equation_index, @ast_indexer.equation_index)
+          @chapter.instance_variable_set(:@footnote_index, @ast_indexer.footnote_index)
+          @chapter.instance_variable_set(:@endnote_index, @ast_indexer.endnote_index)
+          @chapter.instance_variable_set(:@headline_index, @ast_indexer.headline_index)
+          @chapter.instance_variable_set(:@column_index, @ast_indexer.column_index)
+          @chapter.instance_variable_set(:@numberless_image_index, @ast_indexer.numberless_image_index)
+          @chapter.instance_variable_set(:@image_index, @ast_indexer.image_index)
+          @chapter.instance_variable_set(:@icon_index, @ast_indexer.icon_index)
+          @chapter.instance_variable_set(:@indepimage_index, @ast_indexer.indepimage_index)
+          @chapter.instance_variable_set(:@bibpaper_index, @ast_indexer.bibpaper_index)
+        end
+
+        # Generate book-level indexes if book is available
+        # This handles bib files and chapter index creation
+        if @book && @book.respond_to?(:generate_indexes)
+          @book.generate_indexes
+        end
+
+        @ast_indexes_generated = true
+      end
+
+      # Access indexes from AST::Indexer or fallback to chapter
+      def get_list_index
+        @ast_indexer&.list_index || @chapter&.list_index
+      end
+
+      def get_table_index
+        @ast_indexer&.table_index || @chapter&.table_index
+      end
+
+      def get_image_index
+        @ast_indexer&.image_index || @chapter&.image_index
+      end
+
+      def get_headline_index
+        @ast_indexer&.headline_index || @chapter&.headline_index
+      end
+
+      public
 
       def visit_headline(node)
         level = node.level

@@ -9,6 +9,7 @@
 require 'review/book/index'
 require 'review/exception'
 require 'review/sec_counter'
+require 'review/ast/footnote_node'
 
 module ReVIEW
   module AST
@@ -86,6 +87,13 @@ module ReVIEW
 
       def initialize_counters
         @sec_counter = ReVIEW::SecCounter.new(6, @chapter) # 6 is max level
+
+        # Initialize cross-reference tracking like IndexBuilder
+        @headline_stack = []
+        @crossref = {
+          footnote: {},
+          endnote: {}
+        }
       end
 
       # AST node traversal using Visitor pattern
@@ -105,6 +113,8 @@ module ReVIEW
           process_inline(node)
         when AST::EmbedNode
           process_embed(node)
+        when AST::FootnoteNode
+          process_footnote(node)
         end
 
         # Recursively process child nodes
@@ -117,27 +127,26 @@ module ReVIEW
         node.children.each { |child| visit_node(child) }
       end
 
-      # Process headline nodes
+      # Process headline nodes (matches IndexBuilder behavior)
       def process_headline(node)
         check_id(node.label)
         @sec_counter.inc(node.level)
         return if node.level < 2
 
-        # Build item_id similar to IndexBuilder
+        # Build item_id exactly like IndexBuilder
         cursor = node.level - 2
         @headline_stack ||= []
-        @headline_stack[cursor] = (node.label || extract_caption_text(node.caption))
+        caption_text = extract_caption_text(node.caption)
+        @headline_stack[cursor] = (node.label || caption_text)
         if @headline_stack.size > cursor + 1
           @headline_stack = @headline_stack.take(cursor + 1)
         end
 
         item_id = @headline_stack.join('|')
-        caption_text = extract_caption_text(node.caption)
 
-        if node.label
-          item = ReVIEW::Book::Index::Item.new(item_id, @sec_counter.number_list, caption_text)
-          @headline_index.add_item(item)
-        end
+        # Always add to headline index like IndexBuilder does
+        item = ReVIEW::Book::Index::Item.new(item_id, @sec_counter.number_list, caption_text)
+        @headline_index.add_item(item)
 
         # Process caption inline elements
         process_caption_inline_elements(node.caption) if node.caption
@@ -205,22 +214,48 @@ module ReVIEW
         end
       end
 
-      # Process inline nodes
+      # Process footnote nodes (matches IndexBuilder behavior)
+      def process_footnote(node)
+        check_id(node.id)
+
+        # Initialize crossref entry
+        if node.footnote_type == :footnote
+          @crossref[:footnote][node.id] ||= 0
+          item = ReVIEW::Book::Index::Item.new(node.id, @footnote_index.size + 1, node.content)
+          @footnote_index.add_item(item)
+        elsif node.footnote_type == :endnote
+          @crossref[:endnote][node.id] ||= 0
+          item = ReVIEW::Book::Index::Item.new(node.id, @endnote_index.size + 1, node.content)
+          @endnote_index.add_item(item)
+        end
+      end
+
+      # Process inline nodes (matches IndexBuilder behavior)
       def process_inline(node)
         case node.inline_type
         when 'fn'
           if node.args && node.args.first
             footnote_id = node.args.first
             check_id(footnote_id)
-            item = ReVIEW::Book::Index::Item.new(footnote_id, @footnote_index.size + 1)
-            @footnote_index.add_item(item)
+            # Track cross-reference like IndexBuilder
+            @crossref[:footnote][footnote_id] = @crossref[:footnote][footnote_id] ? @crossref[:footnote][footnote_id] + 1 : 1
+            # Also add to index if not already present (for compatibility with tests)
+            unless @footnote_index.has_key?(footnote_id)
+              item = ReVIEW::Book::Index::Item.new(footnote_id, @footnote_index.size + 1)
+              @footnote_index.add_item(item)
+            end
           end
         when 'endnote'
           if node.args && node.args.first
             endnote_id = node.args.first
             check_id(endnote_id)
-            item = ReVIEW::Book::Index::Item.new(endnote_id, @endnote_index.size + 1)
-            @endnote_index.add_item(item)
+            # Track cross-reference like IndexBuilder
+            @crossref[:endnote][endnote_id] = @crossref[:endnote][endnote_id] ? @crossref[:endnote][endnote_id] + 1 : 1
+            # Also add to index if not already present (for compatibility with tests)
+            unless @endnote_index.has_key?(endnote_id)
+              item = ReVIEW::Book::Index::Item.new(endnote_id, @endnote_index.size + 1)
+              @endnote_index.add_item(item)
+            end
           end
         when 'bib'
           if node.args && node.args.first

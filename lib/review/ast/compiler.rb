@@ -14,6 +14,7 @@ require 'review/ast/inline_processor'
 require 'review/ast/block_processor'
 require 'review/snapshot_location'
 require 'review/ast/list_ast_processor'
+require 'review/ast/footnote_node'
 
 module ReVIEW
   module AST
@@ -495,7 +496,22 @@ module ReVIEW
             lines: lines
           }
           # Don't add olnum as a standalone node - it will be applied to the next ordered list
-        when :blankline, :noindent, :pagebreak, :firstlinenum, :tsize, :footnote, :endnote, :label, :printendnotes, :hr, :bpo, :parasep
+        when :footnote, :endnote
+          # Footnote and endnote commands
+          node = AST::FootnoteNode.new(
+            location: location,
+            id: args[0],
+            content: lines&.join("\n"),
+            footnote_type: name
+          )
+          # Parse inline elements in footnote content
+          if lines && lines.any?
+            lines.each do |line|
+              inline_processor.parse_inline_elements(line, node)
+            end
+          end
+          @current_ast_node.add_child(node)
+        when :blankline, :noindent, :pagebreak, :firstlinenum, :tsize, :label, :printendnotes, :hr, :bpo, :parasep
           # Control commands without content or with special handling
           node = AST::BlockNode.new(
             location: location,
