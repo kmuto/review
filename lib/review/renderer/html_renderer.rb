@@ -925,13 +925,14 @@ module ReVIEW
       end
 
       # Highlight code using the new Highlighter class
-      def highlight(body:, lexer: nil, format: 'html', linenum: false, options: {})
+      def highlight(body:, lexer: nil, format: 'html', linenum: false, options: {}, location: nil)
         highlighter.highlight(
           body: body,
           lexer: lexer,
           format: format,
           linenum: linenum,
-          options: options
+          options: options,
+          location: location
         )
       end
 
