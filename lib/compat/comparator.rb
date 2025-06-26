@@ -16,22 +16,22 @@ module ReVIEW
       end
 
       def compare(builder_output, renderer_output)
-        # 正規化処理
-        builder_normalized = normalize(builder_output)
-        renderer_normalized = normalize(renderer_output)
-
-        if builder_normalized == renderer_normalized
-          { status: :pass, differences: [] }
+        # 正規化処理を無効化し、直接比較を行う
+        if builder_output == renderer_output
+          {
+            status: :pass,
+            differences: [],
+            builder_output: builder_output,
+            renderer_output: renderer_output
+          }
         else
-          differences = analyze_differences(builder_normalized, renderer_normalized)
+          differences = analyze_differences(builder_output, renderer_output)
           status = determine_status(differences)
           {
             status: status,
             differences: differences,
             builder_output: builder_output,
-            renderer_output: renderer_output,
-            builder_normalized: builder_normalized,
-            renderer_normalized: renderer_normalized
+            renderer_output: renderer_output
           }
         end
       end
@@ -67,33 +67,38 @@ module ReVIEW
         # 基本的な正規化
         normalized = html.dup
 
-        if @ignore_whitespace
-          # 連続する空白を単一スペースに
-          normalized = normalized.gsub(/\s+/, ' ')
-          # タグ間の空白を削除
-          normalized = normalized.gsub(/>\s+</, '><')
-          # 行頭・行末の空白を削除
-          normalized = normalized.strip
-        end
-
         # 改行の統一
         normalized = normalized.gsub("\r\n", "\n")
 
-        # HTMLパースによる正規化（オプション）
-        begin
-          if normalized.include?('<html') || normalized.include?('<!DOCTYPE')
-            # 完全なHTMLドキュメント
-            doc = Nokogiri::HTML(normalized)
-            normalized = doc.to_html
-          elsif normalized.include?('<')
-            # HTMLフラグメント
-            doc = Nokogiri::HTML::DocumentFragment.parse(normalized)
-            normalized = doc.to_html
+        if @ignore_whitespace
+          # 行単位で処理して行構造を保持
+          lines = normalized.lines
+          normalized_lines = lines.map do |line|
+            # 行内の連続する空白を単一スペースに
+            line_normalized = line.gsub(/[[:blank:]]+/, ' ')
+            # タグ間の空白を削除（ただし改行は保持）
+            line_normalized = line_normalized.gsub(/>\s*([^\n])</, '>\\1<')
+            # 行頭・行末の空白を削除（改行文字は保持）
+            line_normalized.strip + (line.end_with?("\n") ? "\n" : '')
           end
-        rescue StandardError => e
-          # HTMLパースに失敗した場合はそのまま使用
-          warn "HTML parse failed: #{e.message}" if @show_diff
+          normalized = normalized_lines.join('')
         end
+
+        # HTMLパースによる正規化は行番号の不一致を招くため無効化
+        # begin
+        #   if normalized.include?('<html') || normalized.include?('<!DOCTYPE')
+        #     # 完全なHTMLドキュメント
+        #     doc = Nokogiri::HTML(normalized)
+        #     normalized = doc.to_html
+        #   elsif normalized.include?('<')
+        #     # HTMLフラグメント
+        #     doc = Nokogiri::HTML::DocumentFragment.parse(normalized)
+        #     normalized = doc.to_html
+        #   end
+        # rescue StandardError => e
+        #   # HTMLパースに失敗した場合はそのまま使用
+        #   warn "HTML parse failed: #{e.message}" if @show_diff
+        # end
 
         normalized
       end
@@ -124,6 +129,7 @@ module ReVIEW
       end
 
       def analyze_differences(content1, content2)
+        # 正規化せずに直接差分を計算
         diffs = Diff::LCS.diff(content1.lines, content2.lines)
 
         differences = []
