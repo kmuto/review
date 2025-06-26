@@ -400,6 +400,8 @@ module ReVIEW
           render_caution_block(node)
         when 'notice'
           render_notice_block(node)
+        when 'quote', 'blockquote'
+          render_quote_block(node)
         else
           render_generic_block(node)
         end
@@ -415,6 +417,25 @@ module ReVIEW
           node.children.map { |child| visit(child) }.join("\n")
         else
           node.children.map { |child| visit(child) }.join
+        end
+      end
+
+      def visit_embed(node)
+        # Handle embed blocks (//embed[format]{...//})
+        if node.arg
+          # Parse target formats from argument like Builder base class
+          builders = node.arg.gsub(/^\s*\|/, '').gsub(/\|\s*$/, '').gsub(/\s/, '').split(',')
+          target = target_name
+
+          # Only output if this renderer's target is in the list
+          if builders.include?(target)
+            return node.lines.join("\n") + "\n"
+          else
+            return ''
+          end
+        else
+          # No format specified, output for all formats
+          return node.lines.join("\n") + "\n"
         end
       end
 
@@ -538,6 +559,12 @@ module ReVIEW
 
       def render_notice_block(node)
         render_callout_block(node, 'notice')
+      end
+
+      def render_quote_block(node)
+        id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
+        content = render_children(node)
+        %Q(<blockquote#{id_attr}>#{content}</blockquote>)
       end
 
       def render_callout_block(node, type)
@@ -1109,6 +1136,11 @@ module ReVIEW
         return '' if content.nil? || content.empty?
 
         content.to_s
+      end
+
+      # Builder compatibility - return target name for embed blocks
+      def target_name
+        'html'
       end
     end
   end

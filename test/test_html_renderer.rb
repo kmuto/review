@@ -19,7 +19,7 @@ class TestHTMLRenderer < Test::Unit::TestCase
     # Initialize I18n for proper list numbering
     ReVIEW::I18n.setup('ja')
 
-    @compiler = ReVIEW::AST::Compiler.new(nil)
+    @compiler = ReVIEW::AST::Compiler.new
     @renderer = ReVIEW::Renderer::HTMLRenderer.new(
       config: @config,
       options: { book: @book }

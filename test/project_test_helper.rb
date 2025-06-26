@@ -104,6 +104,7 @@ class ProjectTestHelper
       Dir.chdir(old_dir)
     end
   end
+
   def self.test_all_formats_traditional
     results = {}
     %w[html latex].each do |format|
@@ -141,5 +142,4 @@ class ProjectTestHelper
   def self.available_re_files
     Dir.glob(File.join(project_dir, '*.re')).map { |f| File.basename(f) }.sort
   end
-
 end

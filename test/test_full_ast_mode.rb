@@ -23,7 +23,7 @@ class TestFullASTMode < Test::Unit::TestCase
     @log_io = StringIO.new
     ReVIEW.logger = ReVIEW::Logger.new(@log_io)
     # Use new AST::Compiler for proper AST processing
-    @compiler = ReVIEW::AST::Compiler.new(@builder)
+    @compiler = ReVIEW::AST::Compiler.new
     @chapter = ReVIEW::Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     location = ReVIEW::Location.new(nil, nil)
     @builder.bind(ReVIEW::Compiler.new(@builder), @chapter, location)

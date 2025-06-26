@@ -474,46 +474,46 @@ module ReVIEW
     end
 
     def compile_ulist(f)
-        level = 0
-        f.while_match(/\A\s+\*|\A\#@/) do |line|
-          next if /\A\#@/.match?(line)
+      level = 0
+      f.while_match(/\A\s+\*|\A\#@/) do |line|
+        next if /\A\#@/.match?(line)
 
-          buf = [text(line.sub(/\*+/, '').strip)]
-          f.while_match(/\A\s+(?!\*)\S/) do |cont|
-            buf.push(text(cont.strip))
-          end
-
-          line =~ /\A\s+(\*+)/
-          current_level = $1.size
-          if level == current_level
-            @builder.ul_item_end
-            # body
-            @builder.ul_item_begin(buf)
-          elsif level < current_level # down
-            level_diff = current_level - level
-            if level_diff != 1
-              error 'too many *.', location: location
-            end
-            level = current_level
-            @builder.ul_begin { level }
-            @builder.ul_item_begin(buf)
-          elsif level > current_level # up
-            level_diff = level - current_level
-            level = current_level
-            (1..level_diff).to_a.reverse_each do |i|
-              @builder.ul_item_end
-              @builder.ul_end { level + i }
-            end
-            @builder.ul_item_end
-            # body
-            @builder.ul_item_begin(buf)
-          end
+        buf = [text(line.sub(/\*+/, '').strip)]
+        f.while_match(/\A\s+(?!\*)\S/) do |cont|
+          buf.push(text(cont.strip))
         end
 
-        (1..level).to_a.reverse_each do |i|
+        line =~ /\A\s+(\*+)/
+        current_level = $1.size
+        if level == current_level
           @builder.ul_item_end
-          @builder.ul_end { i }
+          # body
+          @builder.ul_item_begin(buf)
+        elsif level < current_level # down
+          level_diff = current_level - level
+          if level_diff != 1
+            error 'too many *.', location: location
+          end
+          level = current_level
+          @builder.ul_begin { level }
+          @builder.ul_item_begin(buf)
+        elsif level > current_level # up
+          level_diff = level - current_level
+          level = current_level
+          (1..level_diff).to_a.reverse_each do |i|
+            @builder.ul_item_end
+            @builder.ul_end { level + i }
+          end
+          @builder.ul_item_end
+          # body
+          @builder.ul_item_begin(buf)
         end
+      end
+
+      (1..level).to_a.reverse_each do |i|
+        @builder.ul_item_end
+        @builder.ul_end { i }
+      end
     end
 
     def compile_olist(f)
@@ -703,7 +703,6 @@ module ReVIEW
     rescue StandardError => e
       error e.message, location: location
     end
-
 
     public :text # called from builder
 

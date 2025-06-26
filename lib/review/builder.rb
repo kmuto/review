@@ -814,6 +814,5 @@ EOTGNUPLOT
       end
       @book.config['caption_position'][type] != 'bottom'
     end
-
   end
 end # module ReVIEW

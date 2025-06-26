@@ -42,7 +42,7 @@ module ReVIEW
 
     def dump_ast(path, book)
       content = File.read(path)
-      compiler = ReVIEW::AST::Compiler.new(nil)
+      compiler = ReVIEW::AST::Compiler.new
 
       basename = File.basename(path)
       chap = ReVIEW::Book::Chapter.new(book, nil, basename, path)

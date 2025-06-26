@@ -2,8 +2,9 @@
 
 require_relative 'test_helper'
 require 'review/ast'
-require 'review/compiler'
-require 'review/htmlbuilder'
+require 'review/ast/compiler'
+require 'review/renderer/html_renderer'
+require 'review/configure'
 require 'review/book'
 require 'review/book/chapter'
 
@@ -53,12 +54,11 @@ class TestASTComprehensive < Test::Unit::TestCase
       //}
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
+    # Use AST::Compiler directly
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_root = ast_compiler.compile_to_ast(chapter)
 
     # Check code block nodes
     code_blocks = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::CodeBlockNode) }
@@ -106,12 +106,11 @@ class TestASTComprehensive < Test::Unit::TestCase
       //}
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
+    # Use AST::Compiler directly
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_root = ast_compiler.compile_to_ast(chapter)
 
     # Check table nodes
     table_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::TableNode) }
@@ -140,12 +139,11 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
+    # Use AST::Compiler directly
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_root = ast_compiler.compile_to_ast(chapter)
 
     # Check image nodes
     image_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ImageNode) }
@@ -178,12 +176,11 @@ class TestASTComprehensive < Test::Unit::TestCase
       Unicode character: @<uchar>{2603} (snowman).
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
+    # Use AST::Compiler directly
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_root = ast_compiler.compile_to_ast(chapter)
 
     paragraph_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
 
@@ -251,30 +248,48 @@ class TestASTComprehensive < Test::Unit::TestCase
       Final paragraph.
     EOB
 
-    # Test with AST mode
-    builder_ast = ReVIEW::HTMLBuilder.new
-    compiler_ast = ReVIEW::Compiler.new(builder_ast)
+    # Test with AST/Renderer system
     chapter_ast = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter_ast.content = content
-    result_ast = compiler_ast.compile(chapter_ast)
 
-    # Test with traditional mode
-    builder_trad = ReVIEW::HTMLBuilder.new
-    compiler_trad = ReVIEW::Compiler.new(builder_trad)
-    chapter_trad = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter_trad.content = content
-    result_trad = compiler_trad.compile(chapter_trad)
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_root = ast_compiler.compile_to_ast(chapter_ast)
 
-    # Both should produce comprehensive HTML
+    # Render to HTML using HTMLRenderer
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(
+      config: @config,
+      options: { chapter: chapter_ast, book: @book }
+    )
+    result_ast = renderer.render(ast_root)
+
+    # Verify AST/Renderer system produces comprehensive HTML
     ['<h1>', '<ul>', '<ol>', '<table>', '<blockquote>'].each do |tag|
-      assert(result_ast.include?(tag), "AST mode should produce #{tag}")
-      assert(result_trad.include?(tag), "Traditional mode should produce #{tag}")
+      assert(result_ast.include?(tag), "AST/Renderer system should produce #{tag}")
     end
 
     # Check inline elements
     ['<b>', '<code', '<i>'].each do |tag|
-      assert(result_ast.include?(tag), "AST mode should produce #{tag}")
-      assert(result_trad.include?(tag), "Traditional mode should produce #{tag}")
+      assert(result_ast.include?(tag), "AST/Renderer system should produce #{tag}")
     end
+
+    # Verify AST structure is correct
+    assert_not_nil(ast_root, 'Should have AST root')
+    assert_equal(ReVIEW::AST::DocumentNode, ast_root.class)
+
+    # Check that we have various node types
+    headline_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::HeadlineNode) }
+    assert_equal(1, headline_nodes.size, 'Should have one headline')
+
+    paragraph_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
+    assert(paragraph_nodes.size >= 3, 'Should have multiple paragraphs')
+
+    list_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ListNode) }
+    assert_equal(2, list_nodes.size, 'Should have unordered and ordered lists')
+
+    code_block_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::CodeBlockNode) }
+    assert_equal(1, code_block_nodes.size, 'Should have one code block')
+
+    table_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::TableNode) }
+    assert_equal(1, table_nodes.size, 'Should have one table')
   end
 end

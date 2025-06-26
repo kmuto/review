@@ -23,7 +23,7 @@ class TestNestedListBuilder < Test::Unit::TestCase
 
     # Create real builder and compiler
     html_builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::AST::Compiler.new(html_builder)
+    compiler = ReVIEW::AST::Compiler.new
 
     # Use real inline processor from compiler
     inline_processor = compiler.inline_processor

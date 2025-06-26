@@ -12,10 +12,11 @@ require 'tempfile'
 class TestOriginalTextIntegration < Test::Unit::TestCase
   def setup
     @location = ReVIEW::SnapshotLocation.new('test.re', 1)
+    ReVIEW::I18n.setup('ja')
   end
 
-  def test_builder_interprets_inline_in_code_interface
-    # Test that builders respond to the interface
+  def test_builder_basic_functionality
+    # Test basic builder functionality after AST mode removal
     builders = [
       ReVIEW::Builder,
       ReVIEW::HTMLBuilder,
@@ -35,38 +36,47 @@ class TestOriginalTextIntegration < Test::Unit::TestCase
         end
       end
 
-      assert_respond_to(builder, :interprets_inline_in_code?)
-      assert [true, false].include?(builder.interprets_inline_in_code?)
+      # Test basic builder methods exist
+      assert_respond_to(builder, :target_name)
+      assert_respond_to(builder, :result)
     end
   end
 
-  def test_idgxml_builder_interprets_inline_in_code
-    # Test that IDGXMLBuilder returns true for interprets_inline_in_code?
+  def test_idgxml_builder_instantiation
+    # Test that IDGXMLBuilder can be instantiated
     begin
       builder = ReVIEW::IDGXMLBuilder.new({}, StringIO.new)
-      assert_equal true, builder.interprets_inline_in_code?
+      assert_equal 'idgxml', builder.target_name
     rescue StandardError => e
       # Skip if can't instantiate due to dependencies
       skip("IDGXMLBuilder dependencies not available: #{e.message}")
     end
   end
 
-  def test_render_ast_node_as_plain_text_with_base_builder
-    # Test the plain text rendering with base builder
-    builder = ReVIEW::Builder.new
+  def test_traditional_compilation_works
+    # Test that traditional compilation still works after AST mode removal
+    builder = ReVIEW::HTMLBuilder.new
+    compiler = ReVIEW::Compiler.new(builder)
 
-    # Create: "Hello @<b>{world} text"
-    paragraph = ReVIEW::AST::ParagraphNode.new(location: @location)
-    paragraph.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Hello '))
+    # Basic Re:VIEW content
+    content = "= Test Chapter\n\nThis is a test paragraph.\n"
 
-    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
-    inline_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'world'))
-    paragraph.add_child(inline_node)
+    # Create a mock chapter
+    config = ReVIEW::Configure.values
+    book = ReVIEW::Book::Base.new
+    book.config = config
+    chapter = ReVIEW::Book::Chapter.new(book, 1, 'test', 'test.re', StringIO.new)
+    chapter.content = content
 
-    paragraph.add_child(ReVIEW::AST::TextNode.new(location: @location, content: ' text'))
+    location = ReVIEW::Location.new('test.re', nil)
+    builder.bind(compiler, chapter, location)
 
-    # Test rendering back to plain text
-    result = builder.render_ast_node_as_plain_text(paragraph)
-    assert_equal 'Hello @<b>{world} text', result
+    result = compiler.compile(chapter)
+
+    # Verify HTML output contains expected elements
+    assert result.include?('<h1>')
+    assert result.include?('<p>')
+    assert result.include?('Test Chapter')
+    assert result.include?('test paragraph')
   end
 end

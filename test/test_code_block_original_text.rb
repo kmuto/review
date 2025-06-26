@@ -34,7 +34,7 @@ class TestCodeBlockOriginalText < Test::Unit::TestCase
     @chapter.content = source
 
     # Build AST without builder rendering
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Find code block node

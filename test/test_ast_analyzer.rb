@@ -5,6 +5,10 @@ require_relative 'test_helper'
 require 'review'
 require 'review/ast'
 require 'review/ast/analyzer'
+require 'review/ast/compiler'
+require 'review/configure'
+require 'review/book'
+require 'review/i18n'
 require 'stringio'
 
 class TestASTAnalyzer < Test::Unit::TestCase
@@ -87,18 +91,14 @@ class TestASTAnalyzer < Test::Unit::TestCase
   private
 
   def compile_content(content)
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
     @book.generate_indexes
     chapter.generate_indexes
 
-    location = ReVIEW::Location.new(nil, nil)
-    builder.bind(compiler, chapter, location)
-
-    compiler.compile(chapter)
-    compiler.ast_result
+    # Use AST::Compiler directly
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_compiler.compile_to_ast(chapter)
   end
 end

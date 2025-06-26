@@ -116,7 +116,7 @@ module ReVIEW
 
         begin
           # Compile chapter to AST
-          compiler = ReVIEW::AST::Compiler.new(nil)
+          compiler = ReVIEW::AST::Compiler.new
           ast_root = compiler.compile_to_ast(chapter)
 
           # Update renderer options with current chapter

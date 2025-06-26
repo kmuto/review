@@ -2,8 +2,8 @@
 
 require_relative 'test_helper'
 require 'review/ast'
-require 'review/compiler'
-require 'review/htmlbuilder'
+require 'review/ast/compiler'
+require 'review/configure'
 require 'review/book'
 require 'review/book/chapter'
 
@@ -44,14 +44,8 @@ class TestASTInline < Test::Unit::TestCase
       This is @<b>{bold text} in a paragraph.
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
-
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
     # Check that paragraph node exists and has children
     paragraph_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
     assert_not_nil(paragraph_node)
@@ -75,14 +69,8 @@ class TestASTInline < Test::Unit::TestCase
       Text with @<b>{bold} and @<i>{italic} elements.
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
-
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
     paragraph_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
     assert_not_nil(paragraph_node)
 
@@ -104,25 +92,23 @@ class TestASTInline < Test::Unit::TestCase
       This is @<b>{bold} and @<code>{inline code} text.
     EOB
 
-    # Test with AST mode
-    builder_ast = ReVIEW::HTMLBuilder.new
-    compiler_ast = ReVIEW::Compiler.new(builder_ast)
-    chapter_ast = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter_ast.content = content
-    result_ast = compiler_ast.compile(chapter_ast)
+    # Test AST structure with inline elements
+    ast_root = compile_to_ast(content)
 
-    # Test with traditional mode
-    builder_trad = ReVIEW::HTMLBuilder.new
-    compiler_trad = ReVIEW::Compiler.new(builder_trad)
-    chapter_trad = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter_trad.content = content
-    result_trad = compiler_trad.compile(chapter_trad)
+    paragraph_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
+    assert_not_nil(paragraph_node, 'Should have paragraph node')
 
-    # Both should produce HTML output with inline elements
-    assert(result_ast.include?('<b>'), 'AST mode should produce bold HTML')
-    assert(result_ast.include?('<code'), 'AST mode should produce code HTML')
-    assert(result_trad.include?('<b>'), 'Traditional mode should produce bold HTML')
-    assert(result_trad.include?('<code'), 'Traditional mode should produce code HTML')
+    # Check inline elements in AST
+    inline_nodes = paragraph_node.children.select { |n| n.is_a?(ReVIEW::AST::InlineNode) }
+    assert_equal(2, inline_nodes.size, 'Should have two inline elements')
+
+    bold_node = inline_nodes.find { |n| n.inline_type == 'b' }
+    code_node = inline_nodes.find { |n| n.inline_type == 'code' }
+
+    assert_not_nil(bold_node, 'Should have bold inline node')
+    assert_not_nil(code_node, 'Should have code inline node')
+    assert_equal(['bold'], bold_node.args)
+    assert_equal(['inline code'], code_node.args)
   end
 
   def test_mixed_content_parsing
@@ -134,14 +120,8 @@ class TestASTInline < Test::Unit::TestCase
       Another paragraph with @<code>{code} and @<i>{italic}.
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
-
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
     # Check headline
     headline_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::HeadlineNode) }
     assert_not_nil(headline_node)
@@ -162,5 +142,17 @@ class TestASTInline < Test::Unit::TestCase
     italic_node = second_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'i' }
     assert_not_nil(code_node)
     assert_not_nil(italic_node)
+  end
+
+  private
+
+  # Helper method to compile content to AST using AST::Compiler
+  def compile_to_ast(content)
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    chapter.content = content
+
+    # Use AST::Compiler directly
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_compiler.compile_to_ast(chapter)
   end
 end

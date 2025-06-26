@@ -25,7 +25,7 @@ class TestNewBlockCommands < Test::Unit::TestCase
     EOS
 
     @chapter.content = source
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Find doorquote node
@@ -52,7 +52,7 @@ class TestNewBlockCommands < Test::Unit::TestCase
     EOS
 
     @chapter.content = source
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Find bibpaper node
@@ -80,7 +80,7 @@ class TestNewBlockCommands < Test::Unit::TestCase
     EOS
 
     @chapter.content = source
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Find talk node
@@ -110,7 +110,7 @@ class TestNewBlockCommands < Test::Unit::TestCase
     EOS
 
     @chapter.content = source
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Find graph node
@@ -138,7 +138,7 @@ class TestNewBlockCommands < Test::Unit::TestCase
     EOS
 
     @chapter.content = source
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Find address node
@@ -164,7 +164,7 @@ class TestNewBlockCommands < Test::Unit::TestCase
     EOS
 
     @chapter.content = source
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Find box node
@@ -196,7 +196,7 @@ class TestNewBlockCommands < Test::Unit::TestCase
     EOS
 
     @chapter.content = source
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Find line command nodes
@@ -235,7 +235,7 @@ class TestNewBlockCommands < Test::Unit::TestCase
     EOS
 
     @chapter.content = source
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Both should be processed (quote was already implemented, blockquote is new)

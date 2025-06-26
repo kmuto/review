@@ -62,7 +62,7 @@ module ReVIEW
 
       # Parse to AST
       # Create AST compiler without builder (builder is optional for pure AST generation)
-      ast_compiler = ReVIEW::AST::Compiler.new(nil)
+      ast_compiler = ReVIEW::AST::Compiler.new
       ast = ast_compiler.compile_to_ast(chapter)
 
       # Render with HTMLRenderer

@@ -33,7 +33,7 @@ class TestColumnSections < Test::Unit::TestCase
     EOS
 
     @chapter.content = source
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Find column node
@@ -67,7 +67,7 @@ class TestColumnSections < Test::Unit::TestCase
     EOS
 
     @chapter.content = source
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Find column node
@@ -96,7 +96,7 @@ class TestColumnSections < Test::Unit::TestCase
     EOS
 
     @chapter.content = source
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Find column nodes
@@ -131,7 +131,7 @@ class TestColumnSections < Test::Unit::TestCase
     EOS
 
     @chapter.content = source
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Find different node types
@@ -162,7 +162,7 @@ class TestColumnSections < Test::Unit::TestCase
     EOS
 
     @chapter.content = source
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Find column node

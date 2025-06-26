@@ -207,10 +207,9 @@ module ReVIEW
       def process_embed(node)
         case node.embed_type
         when :block
-          # Process embedded content
-          if node.lines
-            node.lines.each { |line| process_text_inline_elements(line) }
-          end
+          # Embed blocks contain raw content that shouldn't be processed for inline elements
+          # since it's meant to be output as-is for specific formats
+          # No inline processing needed
         end
       end
 

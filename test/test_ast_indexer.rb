@@ -5,8 +5,8 @@ require 'review/ast/indexer'
 require 'review/index_builder'
 require 'review/book'
 require 'review/book/chapter'
-require 'review/compiler'
-require 'review/htmlbuilder'
+require 'review/ast/compiler'
+require 'review/configure'
 
 class TestASTIndexer < Test::Unit::TestCase
   def setup
@@ -44,16 +44,8 @@ class TestASTIndexer < Test::Unit::TestCase
       Text with @<fn>{footnote1} and @<eq>{equation1}.
     EOS
 
-    @chapter.content = source
-
-    # Build AST using AST mode with HTMLBuilder to avoid footnote validation
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    location = ReVIEW::Location.new(nil, nil)
-    builder.bind(compiler, @chapter, location)
-
-    compiler.compile(@chapter)
-    ast_root = compiler.ast_result
+    # Build AST using AST::Compiler directly
+    ast_root = compile_to_ast(source)
 
     # Build indexes using AST::Indexer (without builder rendering to avoid missing methods)
     indexer = ReVIEW::AST::Indexer.new(@chapter)
@@ -114,16 +106,8 @@ class TestASTIndexer < Test::Unit::TestCase
       Subsection content.
     EOS
 
-    @chapter.content = source
-
-    # Build AST using AST mode with HTMLBuilder to avoid footnote validation
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    location = ReVIEW::Location.new(nil, nil)
-    builder.bind(compiler, @chapter, location)
-
-    compiler.compile(@chapter)
-    ast_root = compiler.ast_result
+    # Build AST using AST::Compiler directly
+    ast_root = compile_to_ast(source)
 
     # Build indexes using AST::Indexer (without builder rendering to avoid missing methods)
     indexer = ReVIEW::AST::Indexer.new(@chapter)
@@ -164,16 +148,8 @@ class TestASTIndexer < Test::Unit::TestCase
       //}
     EOS
 
-    @chapter.content = source
-
-    # Build AST using AST mode with HTMLBuilder to avoid footnote validation
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    location = ReVIEW::Location.new(nil, nil)
-    builder.bind(compiler, @chapter, location)
-
-    compiler.compile(@chapter)
-    ast_root = compiler.ast_result
+    # Build AST using AST::Compiler directly
+    ast_root = compile_to_ast(source)
 
     # Build indexes using AST::Indexer (without builder rendering to avoid missing methods)
     indexer = ReVIEW::AST::Indexer.new(@chapter)
@@ -202,16 +178,8 @@ class TestASTIndexer < Test::Unit::TestCase
       //}
     EOS
 
-    @chapter.content = source
-
-    # Build AST using AST mode with HTMLBuilder to avoid footnote validation
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    location = ReVIEW::Location.new(nil, nil)
-    builder.bind(compiler, @chapter, location)
-
-    compiler.compile(@chapter)
-    ast_root = compiler.ast_result
+    # Build AST using AST::Compiler directly
+    ast_root = compile_to_ast(source)
 
     # Build indexes using AST::Indexer (without builder rendering to avoid missing methods)
     indexer = ReVIEW::AST::Indexer.new(@chapter)
@@ -244,16 +212,8 @@ class TestASTIndexer < Test::Unit::TestCase
       //}
     EOS
 
-    @chapter.content = source
-
-    # Build AST using AST mode with HTMLBuilder to avoid footnote validation
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    location = ReVIEW::Location.new(nil, nil)
-    builder.bind(compiler, @chapter, location)
-
-    compiler.compile(@chapter)
-    ast_root = compiler.ast_result
+    # Build AST using AST::Compiler directly
+    ast_root = compile_to_ast(source)
 
     # Build indexes using AST::Indexer (without builder rendering to avoid missing methods)
     indexer = ReVIEW::AST::Indexer.new(@chapter)
@@ -295,16 +255,8 @@ class TestASTIndexer < Test::Unit::TestCase
       //}
     EOS
 
-    @chapter.content = source
-
-    # Build AST using AST mode with HTMLBuilder to avoid footnote validation
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    location = ReVIEW::Location.new(nil, nil)
-    builder.bind(compiler, @chapter, location)
-
-    compiler.compile(@chapter)
-    ast_root = compiler.ast_result
+    # Build AST using AST::Compiler directly
+    ast_root = compile_to_ast(source)
 
     # Build indexes using AST::Indexer (without builder rendering to avoid missing methods)
     indexer = ReVIEW::AST::Indexer.new(@chapter)
@@ -344,22 +296,14 @@ class TestASTIndexer < Test::Unit::TestCase
       Text with @<fn>{space id} and @<eq>{id with$pecial}.
     EOS
 
-    @chapter.content = source
-
     # Capture stderr to check warnings
     original_stderr = $stderr
     captured_stderr = StringIO.new
     $stderr = captured_stderr
 
     begin
-      # Build AST using AST mode
-      builder = ReVIEW::HTMLBuilder.new
-      compiler = ReVIEW::Compiler.new(builder)
-      location = ReVIEW::Location.new(nil, nil)
-      builder.bind(compiler, @chapter, location)
-
-      compiler.compile(@chapter)
-      ast_root = compiler.ast_result
+      # Build AST using AST::Compiler directly
+      ast_root = compile_to_ast(source)
 
       # Build indexes using AST::Indexer
       indexer = ReVIEW::AST::Indexer.new(@chapter)
@@ -374,5 +318,20 @@ class TestASTIndexer < Test::Unit::TestCase
     ensure
       $stderr = original_stderr
     end
+  end
+
+  private
+
+  # Helper method to compile content to AST using AST::Compiler
+  def compile_to_ast(content)
+    @chapter.content = content
+
+    # Generate indexes for the chapter
+    @book.generate_indexes
+    @chapter.generate_indexes
+
+    # Use AST::Compiler directly
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_compiler.compile_to_ast(@chapter)
   end
 end

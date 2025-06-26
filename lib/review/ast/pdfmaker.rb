@@ -125,7 +125,7 @@ module ReVIEW
           chapter.generate_indexes
 
           # Compile chapter to AST with config
-          compiler = ReVIEW::AST::Compiler.new(nil)
+          compiler = ReVIEW::AST::Compiler.new
           compiler.instance_variable_set(:@config, @config)
           ast_root = compiler.compile_to_ast(chapter)
 

@@ -45,7 +45,7 @@ class TestASTIndexerPure < Test::Unit::TestCase
     @chapter.content = source
 
     # Build AST without builder rendering
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Build indexes using AST::Indexer
@@ -110,7 +110,7 @@ class TestASTIndexerPure < Test::Unit::TestCase
     @chapter.content = source
 
     # Build AST without builder rendering
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Build indexes using AST::Indexer
@@ -155,7 +155,7 @@ class TestASTIndexerPure < Test::Unit::TestCase
     @chapter.content = source
 
     # Build AST without builder rendering
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Build indexes using AST::Indexer
@@ -188,7 +188,7 @@ class TestASTIndexerPure < Test::Unit::TestCase
     @chapter.content = source
 
     # Build AST without builder rendering
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Build indexes using AST::Indexer
@@ -225,7 +225,7 @@ class TestASTIndexerPure < Test::Unit::TestCase
     @chapter.content = source
 
     # Build AST without builder rendering
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Build indexes using AST::Indexer
@@ -270,7 +270,7 @@ class TestASTIndexerPure < Test::Unit::TestCase
     @chapter.content = source
 
     # Build AST without builder rendering
-    ast_compiler = ReVIEW::AST::Compiler.new(nil)
+    ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
     # Build indexes using AST::Indexer
@@ -320,7 +320,7 @@ class TestASTIndexerPure < Test::Unit::TestCase
 
     begin
       # Build AST without builder rendering
-      ast_compiler = ReVIEW::AST::Compiler.new(nil)
+      ast_compiler = ReVIEW::AST::Compiler.new
       ast_root = ast_compiler.compile_to_ast(@chapter)
 
       # Build indexes using AST::Indexer

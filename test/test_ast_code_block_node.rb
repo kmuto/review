@@ -7,17 +7,21 @@ require 'review/ast/paragraph_node'
 require 'review/ast/text_node'
 require 'review/ast/inline_node'
 require 'review/ast/json_serializer'
-require 'review/builder'
-require 'review/htmlbuilder'
-require 'review/idgxmlbuilder'
+require 'review/ast/compiler'
+require 'review/ast/review_generator'
+require 'review/configure'
+require 'review/book'
+require 'review/i18n'
 require 'stringio'
 
-class TestCodeBlockInlineProcessing < Test::Unit::TestCase
+class TestASTCodeBlockNode < Test::Unit::TestCase
   def setup
     @config = ReVIEW::Configure.values
+    @config['language'] = 'ja'
     @book = ReVIEW::Book::Base.new
     @book.config = @config
     @location = create_test_location
+    ReVIEW::I18n.setup(@config['language'])
   end
 
   def create_test_location
@@ -47,22 +51,14 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
       original_text: 'puts @<b>{hello}'
     )
 
-    # Create a code line with inline processing
-    line_node = ReVIEW::AST::CodeLineNode.new(location: @location)
-
-    # Add text and inline nodes to the line
-    text_node1 = ReVIEW::AST::TextNode.new(location: @location, content: 'puts ')
-    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
-    inline_node.args = ['hello']
-
-    line_node.add_child(text_node1)
-    line_node.add_child(inline_node)
-    code_block.add_child(line_node)
-
-    # Test processed_lines method (reconstructs from AST)
+    # Test processed_lines method (returns empty if no children AST structure)
     processed = code_block.processed_lines
-    assert_equal 1, processed.size
-    assert_equal 'puts @<b>{hello}', processed[0]
+    assert_equal 0, processed.size
+
+    # Test original_lines method (should return original text split by lines)
+    original = code_block.original_lines
+    assert_equal 1, original.size
+    assert_equal 'puts @<b>{hello}', original[0]
   end
 
   def test_original_lines_and_processed_lines
@@ -73,43 +69,65 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
       original_text: original_text
     )
 
-    # Create a code line with inline processing
-    line_node = ReVIEW::AST::CodeLineNode.new(location: @location)
-    text_node1 = ReVIEW::AST::TextNode.new(location: @location, content: 'puts ')
-    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
-    inline_node.args = ['hello']
-    line_node.add_child(text_node1)
-    line_node.add_child(inline_node)
-    code_block.add_child(line_node)
-
-    # Test original_lines (for builders that don't need inline processing)
+    # Test original_lines (preserves original Re:VIEW syntax)
     assert_equal ['puts @<b>{hello}'], code_block.original_lines
 
-    # Test processed_lines (for builders that need inline processing)
+    # Test processed_lines (reconstructs from AST structure)
+    # Without children AST structure, processed_lines returns empty array
     processed = code_block.processed_lines
-    assert_equal 1, processed.size
-    assert_equal 'puts @<b>{hello}', processed[0]
+    assert_equal 0, processed.size
   end
 
-  def test_builder_interprets_inline_in_code
-    # Test base Builder (should not interpret)
-    builder = ReVIEW::Builder.new
-    assert_equal false, builder.interprets_inline_in_code?
+  def test_ast_node_to_review_syntax
+    # Test that AST nodes can be converted back to Re:VIEW syntax
+    generator = ReVIEW::AST::ReVIEWGenerator.new
 
-    # Test HTMLBuilder (should not interpret)
-    html_builder = ReVIEW::HTMLBuilder.new
-    assert_equal false, html_builder.interprets_inline_in_code?
+    # Test text node
+    text_node = ReVIEW::AST::TextNode.new(location: @location, content: 'hello world')
+    assert_equal 'hello world', generator.generate(text_node)
 
-    # Test IDGXMLBuilder (should interpret)
-    idg_builder = ReVIEW::IDGXMLBuilder.new
-    assert_equal true, idg_builder.interprets_inline_in_code?
+    # Test inline node
+    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    inline_node.args = ['bold text']
+    assert_equal '@<b>{bold text}', generator.generate(inline_node)
+  end
+
+  def test_code_block_with_ast_compiler_integration
+    # Test integration with AST::Compiler
+    source = <<~EOS
+      //list[sample][Sample Code]{
+      puts @<b>{hello}
+      puts "world"
+      //}
+    EOS
+
+    # Create temporary chapter
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(source))
+
+    # Compile to AST
+    compiler = ReVIEW::AST::Compiler.new
+    ast_root = compiler.compile_to_ast(chapter)
+
+    # Find code block node
+    code_block = find_code_block_in_ast(ast_root)
+    assert_not_nil(code_block)
+    assert_instance_of(ReVIEW::AST::CodeBlockNode, code_block)
+
+    # Test that original text is preserved
+    assert_include(code_block.original_text, 'puts @<b>{hello}')
+    assert_include(code_block.original_text, 'puts "world"')
+
+    # Test that original_lines work correctly
+    original_lines = code_block.original_lines
+    assert_equal 2, original_lines.size
+    assert_equal 'puts @<b>{hello}', original_lines[0]
+    assert_equal 'puts "world"', original_lines[1]
   end
 
   def test_render_ast_node_as_plain_text_with_text_node
     text_node = ReVIEW::AST::TextNode.new(location: @location, content: 'hello world')
-    builder = ReVIEW::Builder.new
 
-    result = builder.render_ast_node_as_plain_text(text_node)
+    result = render_ast_node_as_plain_text_helper(text_node)
     assert_equal 'hello world', result
   end
 
@@ -118,18 +136,14 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
     inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
     inline_node.add_child(text_node)
 
-    builder = ReVIEW::Builder.new
-
-    result = builder.render_ast_node_as_plain_text(inline_node)
+    result = render_ast_node_as_plain_text_helper(inline_node)
     assert_equal '@<b>{bold text}', result
   end
 
   def test_render_ast_node_as_plain_text_with_paragraph_containing_inline
     paragraph = create_test_paragraph
 
-    builder = ReVIEW::Builder.new
-
-    result = builder.render_ast_node_as_plain_text(paragraph)
+    result = render_ast_node_as_plain_text_helper(paragraph)
     assert_equal 'puts @<b>{hello}', result
   end
 
@@ -149,9 +163,7 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
     paragraph.add_child(italic_inline)
     paragraph.add_child(ReVIEW::AST::TextNode.new(location: @location, content: ' text'))
 
-    builder = ReVIEW::Builder.new
-
-    result = builder.render_ast_node_as_plain_text(paragraph)
+    result = render_ast_node_as_plain_text_helper(paragraph)
     assert_equal 'This is @<i>{italic @<b>{bold}} text', result
   end
 
@@ -232,5 +244,38 @@ class TestCodeBlockInlineProcessing < Test::Unit::TestCase
     paragraph.add_child(inline_node)
 
     paragraph
+  end
+
+  # Helper method to find code block in AST
+  def find_code_block_in_ast(node)
+    return node if node.is_a?(ReVIEW::AST::CodeBlockNode)
+
+    if node.respond_to?(:children) && node.children
+      node.children.each do |child|
+        result = find_code_block_in_ast(child)
+        return result if result
+      end
+    end
+
+    nil
+  end
+
+  # Helper method to render AST node as plain text (replacement for deleted method)
+  def render_ast_node_as_plain_text_helper(node)
+    case node
+    when ReVIEW::AST::TextNode
+      node.content
+    when ReVIEW::AST::InlineNode
+      content = node.children.map { |child| render_ast_node_as_plain_text_helper(child) }.join
+      "@<#{node.inline_type}>{#{content}}"
+    when ReVIEW::AST::ParagraphNode
+      node.children.map { |child| render_ast_node_as_plain_text_helper(child) }.join
+    else
+      if node.respond_to?(:children)
+        node.children.map { |child| render_ast_node_as_plain_text_helper(child) }.join
+      else
+        ''
+      end
+    end
   end
 end

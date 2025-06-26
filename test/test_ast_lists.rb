@@ -2,8 +2,8 @@
 
 require_relative 'test_helper'
 require 'review/ast'
-require 'review/compiler'
-require 'review/htmlbuilder'
+require 'review/ast/compiler'
+require 'review/configure'
 require 'review/book'
 require 'review/book/chapter'
 
@@ -33,14 +33,8 @@ class TestASTLists < Test::Unit::TestCase
       After list.
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
-
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
     # Check that list node exists
     list_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ListNode) }
     assert_not_nil(list_node, 'Should have list node')
@@ -82,14 +76,8 @@ class TestASTLists < Test::Unit::TestCase
       End of list.
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
-
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
     list_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ListNode) }
     assert_not_nil(list_node)
     assert_equal :ol, list_node.list_type
@@ -120,14 +108,8 @@ class TestASTLists < Test::Unit::TestCase
       After definitions.
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
-
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
     list_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ListNode) }
     assert_not_nil(list_node)
     assert_equal :dl, list_node.list_type
@@ -150,7 +132,7 @@ class TestASTLists < Test::Unit::TestCase
       Lists test:
 
        * Unordered item 1
-       * Unordered item 2
+       * Unordered item with @<b>{bold} text
 
        1. Ordered item 1
        2. Ordered item 2
@@ -162,67 +144,13 @@ class TestASTLists < Test::Unit::TestCase
     EOB
 
     # Test with AST mode
-    builder_ast = ReVIEW::HTMLBuilder.new
-    compiler_ast = ReVIEW::Compiler.new(builder_ast)
-    chapter_ast = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter_ast.content = content
-    result_ast = compiler_ast.compile(chapter_ast)
-
-    # Test with traditional mode
-    builder_trad = ReVIEW::HTMLBuilder.new
-    compiler_trad = ReVIEW::Compiler.new(builder_trad)
-    chapter_trad = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter_trad.content = content
-    result_trad = compiler_trad.compile(chapter_trad)
-
-    # Both should produce similar list HTML
-    assert(result_ast.include?('<ul>'), 'AST mode should produce unordered list')
-    assert(result_ast.include?('<ol>'), 'AST mode should produce ordered list')
-    assert(result_ast.include?('<dl>'), 'AST mode should produce definition list')
-
-    assert(result_trad.include?('<ul>'), 'Traditional mode should produce unordered list')
-    assert(result_trad.include?('<ol>'), 'Traditional mode should produce ordered list')
-    assert(result_trad.include?('<dl>'), 'Traditional mode should produce definition list')
-  end
-
-  def test_mixed_content_with_lists
-    content = <<~EOB
-      = Chapter with Lists
-
-      Introduction paragraph.
-
-       * First bullet point
-       * Second bullet with @<b>{emphasis}
-       ** Nested point
-
-      Middle paragraph.
-
-       1. First numbered item
-       2. Second numbered item
-
-       : Term 1
-          Definition 1
-       : Term 2
-          Definition 2
-
-      Conclusion paragraph.
-    EOB
-
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
-
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
     # Check all components exist
-    headline_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::HeadlineNode) }
     paragraph_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
     list_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ListNode) }
 
-    assert_not_nil(headline_node)
-    assert_equal 3, paragraph_nodes.size  # intro, middle, conclusion
+    assert_equal 2, paragraph_nodes.size  # intro, conclusion
     assert_equal 3, list_nodes.size       # ul, ol, dl
 
     # Check list types
@@ -260,14 +188,8 @@ class TestASTLists < Test::Unit::TestCase
        * Level 1 Item C
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
-
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
     # Find the main list
     main_list = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ListNode) }
     assert_not_nil(main_list, 'Should have main list node')
@@ -330,14 +252,8 @@ class TestASTLists < Test::Unit::TestCase
        ** Another nested
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
-
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
     # Should have separate lists for different types
     list_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ListNode) }
     assert_operator(list_nodes.size, :>=, 2, 'Should have multiple lists for different types')
@@ -367,5 +283,21 @@ class TestASTLists < Test::Unit::TestCase
     deep_nested = nested_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
     assert_not_nil(deep_nested, 'Should have 3-level nesting')
     assert_equal(3, deep_nested.children[0].level)
+  end
+
+  private
+
+  # Helper method to compile content to AST using AST::Compiler
+  def compile_to_ast(content)
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    chapter.content = content
+
+    # Generate indexes for the chapter
+    @book.generate_indexes
+    chapter.generate_indexes
+
+    # Use AST::Compiler directly
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_compiler.compile_to_ast(chapter)
   end
 end

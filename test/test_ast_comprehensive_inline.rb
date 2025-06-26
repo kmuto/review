@@ -2,9 +2,9 @@
 
 require_relative 'test_helper'
 require 'review/ast'
-require 'review/compiler'
-require 'review/htmlbuilder'
-require 'review/index_builder'
+require 'review/ast/compiler'
+require 'review/renderer/html_renderer'
+require 'review/configure'
 require 'review/book'
 require 'review/book/chapter'
 
@@ -35,14 +35,19 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
       Simple inline elements without references.
     EOB
 
-    # Use HTMLBuilder with AST mode to focus on AST structure verification
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
+    # Use AST::Compiler to generate AST, then render with HTMLRenderer
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
-    html_result = compiler.compile(chapter)
-    ast_root = compiler.ast_result
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_root = ast_compiler.compile_to_ast(chapter)
+
+    # Render to HTML using HTMLRenderer
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(
+      config: @config,
+      options: { chapter: chapter, book: @book }
+    )
+    html_result = renderer.render(ast_root)
 
     # Verify HTML output contains the expected content (since we're using HTMLBuilder)
     assert(html_result.include?('bold'), 'HTML should include bold content')
@@ -85,7 +90,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     assert_equal ['http://example.com', 'example'], href_node.args
   end
 
-  def test_inline_elements_in_paragraphs_with_jsonbuilder
+  def test_inline_elements_in_paragraphs_with_ast_renderer
     content = <<~EOB
       = Inline Elements Test
 
@@ -100,13 +105,18 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
       Final paragraph with normal text.
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
-    html_result = compiler.compile(chapter)
-    ast_root = compiler.ast_result
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_root = ast_compiler.compile_to_ast(chapter)
+
+    # Render to HTML using HTMLRenderer
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(
+      config: @config,
+      options: { chapter: chapter, book: @book }
+    )
+    html_result = renderer.render(ast_root)
 
     # Verify HTML output contains inline element content
     assert(html_result.include?('bold'), 'HTML should include bold content')
@@ -143,9 +153,9 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     end
   end
 
-  def test_json_output_structure_verification
+  def test_ast_output_structure_verification
     content = <<~EOB
-      = JSON Structure Test
+      = AST Structure Test
 
       This paragraph contains @<b>{bold} text and @<code>{code} elements.
 
@@ -154,18 +164,23 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
       Final paragraph with normal text only.
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
-    html_result = compiler.compile(chapter)
-    ast_root = compiler.ast_result
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_root = ast_compiler.compile_to_ast(chapter)
+
+    # Render to HTML using HTMLRenderer
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(
+      config: @config,
+      options: { chapter: chapter, book: @book }
+    )
+    html_result = renderer.render(ast_root)
 
     # Verify HTML output structure and content (since we're using HTMLBuilder)
     assert(html_result.include?('<h1>'), 'HTML should contain h1 tag for headlines')
     assert(html_result.include?('<p>'), 'HTML should contain p tag for paragraphs')
-    assert(html_result.include?('JSON Structure Test'), 'HTML should include headline caption')
+    assert(html_result.include?('AST Structure Test'), 'HTML should include headline caption')
     assert(html_result.include?('bold'), 'HTML should include inline content')
     assert(html_result.include?('code'), 'HTML should include inline content')
     assert(html_result.include?('example.com'), 'HTML should include href content')
@@ -176,7 +191,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
 
     headline_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::HeadlineNode) }
     assert_equal(1, headline_nodes.size, 'Should have one headline')
-    assert_equal('JSON Structure Test', headline_nodes.first.caption_markup_text)
+    assert_equal('AST Structure Test', headline_nodes.first.caption_markup_text)
 
     paragraph_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
     assert_equal(3, paragraph_nodes.size, 'Should have three paragraphs')
@@ -208,13 +223,18 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
       After embed blocks.
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
-    html_result = compiler.compile(chapter)
-    ast_root = compiler.ast_result
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_root = ast_compiler.compile_to_ast(chapter)
+
+    # Render to HTML using HTMLRenderer
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(
+      config: @config,
+      options: { chapter: chapter, book: @book }
+    )
+    html_result = renderer.render(ast_root)
 
     # Verify HTML output contains basic content (embed blocks may be processed differently)
     assert(html_result.include?('Raw Content Test'), 'HTML should include headline')
@@ -269,13 +289,18 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
       After raw commands.
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
-    html_result = compiler.compile(chapter)
-    ast_root = compiler.ast_result
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_root = ast_compiler.compile_to_ast(chapter)
+
+    # Render to HTML using HTMLRenderer
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(
+      config: @config,
+      options: { chapter: chapter, book: @book }
+    )
+    html_result = renderer.render(ast_root)
 
     # Raw commands are processed traditionally, so they won't appear in HTML structure
     # but the surrounding content should be properly processed
@@ -322,13 +347,19 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
       Words: @<w>{glossary} and @<wb>{abbreviations}.
     EOB
 
-    # Test AST structure with JsonBuilder
-    builder_ast = ReVIEW::HTMLBuilder.new
-    compiler_ast = ReVIEW::Compiler.new(builder_ast)
+    # Test AST structure with AST::Compiler and HTMLRenderer
     chapter_ast = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter_ast.content = content
 
-    html_result_ast = compiler_ast.compile(chapter_ast)
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_root = ast_compiler.compile_to_ast(chapter_ast)
+
+    # Render to HTML using HTMLRenderer
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(
+      config: @config,
+      options: { chapter: chapter_ast, book: @book }
+    )
+    html_result_ast = renderer.render(ast_root)
 
     # Verify HTML contains expected inline element content
     assert(html_result_ast.include?('bold'), 'HTML should include bold content')
@@ -336,7 +367,6 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     assert(html_result_ast.include?('code'), 'HTML should include code content')
     assert(html_result_ast.include?('glossary'), 'HTML should include word expansion content')
 
-    ast_root = compiler_ast.ast_result
     paragraph_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
 
     # Verify AST structure includes all inline types
@@ -354,22 +384,26 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
       assert(inline_types.include?(type), "Should have inline type: #{type}")
     end
 
-    # Test traditional mode with simpler content to verify compatibility
+    # Test AST/Renderer system with simpler content
     simple_content = <<~EOB
       = Simple Test
 
       Text with @<b>{bold} and @<i>{italic}.
     EOB
 
-    builder_trad = ReVIEW::HTMLBuilder.new
-    compiler_trad = ReVIEW::Compiler.new(builder_trad)
-    chapter_trad = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter_trad.content = simple_content
-    result_trad = compiler_trad.compile(chapter_trad)
+    chapter_simple = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    chapter_simple.content = simple_content
 
-    # Should process basic inline elements
+    simple_ast = ast_compiler.compile_to_ast(chapter_simple)
+    simple_renderer = ReVIEW::Renderer::HTMLRenderer.new(
+      config: @config,
+      options: { chapter: chapter_simple, book: @book }
+    )
+    result_simple = simple_renderer.render(simple_ast)
+
+    # Should process basic inline elements in AST/Renderer system
     ['<b>', '<i>'].each do |tag|
-      assert(result_trad.include?(tag), "Traditional mode should produce #{tag}")
+      assert(result_simple.include?(tag), "AST/Renderer system should produce #{tag}")
     end
   end
 end

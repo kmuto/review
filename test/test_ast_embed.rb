@@ -2,8 +2,8 @@
 
 require_relative 'test_helper'
 require 'review/ast'
-require 'review/compiler'
-require 'review/htmlbuilder'
+require 'review/ast/compiler'
+require 'review/configure'
 require 'review/book'
 require 'review/book/chapter'
 
@@ -47,13 +47,8 @@ class TestASTEmbed < Test::Unit::TestCase
       Paragraph after embed.
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
 
     # Check that embed node exists
     embed_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) }
@@ -71,13 +66,8 @@ class TestASTEmbed < Test::Unit::TestCase
       //}
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
 
     embed_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) }
     assert_not_nil(embed_node)
@@ -91,13 +81,8 @@ class TestASTEmbed < Test::Unit::TestCase
       This paragraph has @<embed>{inline content} in it.
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
 
     paragraph_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
     assert_not_nil(paragraph_node)
@@ -115,13 +100,8 @@ class TestASTEmbed < Test::Unit::TestCase
       Text with @<embed>{|html|<strong>HTML only</strong>} content.
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
 
     paragraph_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
     embed_node = paragraph_node.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) }
@@ -140,25 +120,24 @@ class TestASTEmbed < Test::Unit::TestCase
       //}
     EOB
 
-    # Test with AST mode
-    builder_ast = ReVIEW::HTMLBuilder.new
-    compiler_ast = ReVIEW::Compiler.new(builder_ast)
-    chapter_ast = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter_ast.content = content
-    result_ast = compiler_ast.compile(chapter_ast)
+    # Test with AST/Renderer system
+    ast_root = compile_to_ast(content)
 
-    # Test with traditional mode
-    builder_trad = ReVIEW::HTMLBuilder.new
-    compiler_trad = ReVIEW::Compiler.new(builder_trad)
-    chapter_trad = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter_trad.content = content
-    result_trad = compiler_trad.compile(chapter_trad)
+    # Check that AST contains embed nodes
+    paragraph_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
+    block_embed_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) && n.embed_type == :block }
 
-    # Both should produce similar output
-    assert(result_ast.include?('inline embed'), 'AST mode should process inline embed')
-    assert(result_ast.include?('<div>Block embed content</div>'), 'AST mode should process block embed')
-    assert(result_trad.include?('inline embed'), 'Traditional mode should process inline embed')
-    assert(result_trad.include?('<div>Block embed content</div>'), 'Traditional mode should process block embed')
+    assert_not_nil(paragraph_node, 'Should have paragraph with inline embed')
+    assert_not_nil(block_embed_node, 'Should have block embed node')
+
+    # Check inline embed in paragraph
+    inline_embed = paragraph_node.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) && n.embed_type == :inline }
+    assert_not_nil(inline_embed, 'Should have inline embed in paragraph')
+    assert_equal 'inline embed', inline_embed.arg
+
+    # Check block embed
+    assert_equal 'html', block_embed_node.arg
+    assert_equal ['<div>Block embed content</div>'], block_embed_node.lines
   end
 
   def test_mixed_content_with_embed
@@ -176,13 +155,8 @@ class TestASTEmbed < Test::Unit::TestCase
       Another paragraph after the embed block.
     EOB
 
-    builder = ReVIEW::HTMLBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
 
     # Check all components exist
     headline_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::HeadlineNode) }
@@ -201,5 +175,17 @@ class TestASTEmbed < Test::Unit::TestCase
 
     assert_not_nil(bold_node)
     assert_not_nil(inline_embed_node)
+  end
+
+  private
+
+  # Helper method to compile content to AST using AST::Compiler
+  def compile_to_ast(content)
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    chapter.content = content
+
+    # Use AST::Compiler directly
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_compiler.compile_to_ast(chapter)
   end
 end

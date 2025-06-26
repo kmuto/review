@@ -177,7 +177,6 @@ EOS
         content.gsub!(/^#\s*texdocumentclass:.*$/, %Q(texdocumentclass: ["#{@template}", "#{@tex_documentclass_opts[@template]}"]))
       end
 
-
       if @without_config_comment
         content = content.split("\n").delete_if { |l| l.strip.start_with?('#') || l.strip.empty? }.join("\n")
       end

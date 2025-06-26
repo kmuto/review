@@ -2,8 +2,8 @@
 
 require_relative 'test_helper'
 require 'review/ast'
-require 'review/compiler'
-require 'review/index_builder'
+require 'review/ast/compiler'
+require 'review/configure'
 require 'review/book'
 require 'review/book/chapter'
 
@@ -40,14 +40,8 @@ class TestASTInlineStructure < Test::Unit::TestCase
       Complex ref: @<img>{figure1} and @<table>{data1}.
     EOB
 
-    # Use IndexBuilder to avoid validation issues during rendering
-    builder = ReVIEW::IndexBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
 
     assert_not_nil(ast_root)
     assert_equal(ReVIEW::AST::DocumentNode, ast_root.class)
@@ -133,14 +127,8 @@ class TestASTInlineStructure < Test::Unit::TestCase
     EOB
 
     # Use IndexBuilder to avoid validation issues
-    builder = ReVIEW::IndexBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
-
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
     paragraph_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
 
     # Test hd with chapter|heading format
@@ -182,14 +170,8 @@ class TestASTInlineStructure < Test::Unit::TestCase
     EOB
 
     # Use IndexBuilder to avoid validation issues
-    builder = ReVIEW::IndexBuilder.new
-    compiler = ReVIEW::Compiler.new(builder)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-
-    compiler.compile(chapter)
-    ast_root = compiler.ast_result
-
+    # Use AST::Compiler directly
+    ast_root = compile_to_ast(content)
     paragraph_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
 
     # Test newly added label reference commands
@@ -208,5 +190,15 @@ class TestASTInlineStructure < Test::Unit::TestCase
     paragraph.children.find do |child|
       child.is_a?(ReVIEW::AST::InlineNode) && child.inline_type == inline_type
     end
+  end
+
+  # Helper method to compile content to AST using AST::Compiler
+  def compile_to_ast(content)
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    chapter.content = content
+
+    # Use AST::Compiler directly
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_compiler.compile_to_ast(chapter)
   end
 end
