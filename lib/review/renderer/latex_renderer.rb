@@ -357,7 +357,18 @@ module ReVIEW
       def visit_regular_image(node, caption)
         result = []
         # Use Re:VIEW image structure like LATEXBuilder
-        result << '\\begin{reviewimage}'
+        result << if node.id && !node.id.empty?
+                    "\\begin{reviewimage}%%#{node.id}"
+                  else
+                    '\\begin{reviewimage}'
+                  end
+
+        # Add includegraphics command like LATEXBuilder
+        if node.id && !node.id.empty? && @chapter
+          image_path = @chapter.image(node.id).path
+          # Use reviewincludegraphics with default width like LATEXBuilder
+          result << "\\reviewincludegraphics[width=\\maxwidth]{#{image_path}}"
+        end
 
         if caption && !caption.empty?
           result << "\\reviewimagecaption{#{caption}}"
