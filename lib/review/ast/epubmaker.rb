@@ -53,8 +53,8 @@ module ReVIEW
         return false unless chapter
 
         begin
-          # Compile chapter to AST
-          compiler = ReVIEW::AST::Compiler.new
+          # Compile chapter to AST using auto-detection for file format
+          compiler = ReVIEW::AST::Compiler.for_chapter(chapter)
           ast_root = compiler.compile_to_ast(chapter)
 
           # Create renderer with current chapter

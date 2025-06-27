@@ -5,23 +5,40 @@ require 'review/ast/node'
 module ReVIEW
   module AST
     class ListNode < Node
-      attr_accessor :list_type
+      attr_accessor :list_type, :start_number
 
-      def initialize(location: nil, list_type: nil, **kwargs)
+      def initialize(location: nil, list_type: nil, start_number: nil, **kwargs)
         super(location: location, **kwargs)
         @list_type = list_type # :ul, :ol, :dl
+        @start_number = start_number
+      end
+
+      # Convenience methods for type checking
+      def ordered?
+        list_type == :ol
+      end
+
+      def unordered?
+        list_type == :ul
+      end
+
+      def definition?
+        list_type == :dl
       end
 
       def to_h
-        super.merge(
+        result = super.merge(
           list_type: list_type
         )
+        result[:start_number] = start_number if start_number && start_number != 1
+        result
       end
 
       protected
 
       def serialize_properties(hash, options)
         hash[:list_type] = list_type
+        hash[:start_number] = start_number if start_number && start_number != 1
         if options.include_empty_arrays || children.any?
           hash[:children] = children.map { |child| child.serialize_to_hash(options) }
         end

@@ -29,6 +29,19 @@ module ReVIEW
     # - AST mode management and rendering coordination
     # - Document structure management
     class Compiler
+      # Factory method to create appropriate compiler based on file format
+      def self.for_chapter(chapter)
+        filename = chapter.respond_to?(:filename) ? chapter.filename : chapter.basename
+
+        # Check file extension for format detection
+        if filename&.end_with?('.md', '.markdown')
+          require 'review/ast/markdown_compiler'
+          MarkdownCompiler.new
+        else
+          # Default to Re:VIEW format
+          new
+        end
+      end
       include Loggable
 
       def initialize

@@ -15,12 +15,13 @@ module ReVIEW
     # A table row contains multiple table cells (TableCellNode).
     # Each cell can contain text and inline elements.
     class TableRowNode < Node
-      def initialize(location:, **kwargs)
+      def initialize(location:, row_type: :body, **kwargs)
         super
         @children = []
+        @row_type = row_type
       end
 
-      attr_reader :children
+      attr_reader :children, :row_type
 
       def add_child(node)
         @children << node

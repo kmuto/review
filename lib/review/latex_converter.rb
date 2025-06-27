@@ -61,8 +61,8 @@ module ReVIEW
       end
 
       # Parse to AST
-      # Create AST compiler without builder (builder is optional for pure AST generation)
-      ast_compiler = ReVIEW::AST::Compiler.new
+      # Create AST compiler using auto-detection for file format
+      ast_compiler = ReVIEW::AST::Compiler.for_chapter(chapter)
       ast = ast_compiler.compile_to_ast(chapter)
 
       # Render with LATEXRenderer

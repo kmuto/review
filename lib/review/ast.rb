@@ -28,6 +28,7 @@ require 'review/ast/caption_node'
 
 # AST Processing classes
 require 'review/ast/compiler'
+require 'review/ast/markdown_compiler'
 require 'review/ast/performance_tracker'
 require 'review/ast/block_processor'
 require 'review/ast/inline_processor'

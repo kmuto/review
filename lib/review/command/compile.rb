@@ -181,7 +181,7 @@ module ReVIEW
 
       def generate_ast(chapter)
         log('Generating AST...')
-        compiler = ReVIEW::AST::Compiler.new
+        compiler = ReVIEW::AST::Compiler.for_chapter(chapter)
         compiler.compile_to_ast(chapter)
       rescue StandardError => e
         raise CompileError, "AST generation failed: #{e.message}"
