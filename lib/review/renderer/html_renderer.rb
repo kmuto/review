@@ -149,7 +149,13 @@ module ReVIEW
         content = render_children(node)
         # Remove newlines for HTMLBuilder compatibility
         content = content.gsub(/\n+/, '').strip
-        "<p>#{content}</p>\n"
+
+        # Check for noindent attribute
+        if node.attribute?(:noindent)
+          %Q(<p class="noindent">#{content}</p>\n)
+        else
+          "<p>#{content}</p>\n"
+        end
       end
 
       def visit_list(node)

@@ -22,6 +22,7 @@ module ReVIEW
         @id = id
         @content = content
         @original_text = original_text
+        @attributes = {}
       end
 
       def accept(visitor)
@@ -41,6 +42,23 @@ module ReVIEW
       # Check if node has a non-empty id
       def id?
         @id && !@id.empty?
+      end
+
+      # Attribute management methods
+      def add_attribute(key, value)
+        @attributes[key] = value
+      end
+
+      def attribute?(key)
+        @attributes.key?(key)
+      end
+
+      def fetch_attribute(key, default = nil)
+        @attributes.fetch(key, default)
+      end
+
+      def attributes
+        @attributes.dup
       end
 
       # Basic JSON serialization for compatibility

@@ -118,6 +118,10 @@ module ReVIEW
 
         # Record performance statistics
         @performance_tracker.end_timing(:total_compilation_time)
+
+        # Post-process AST for noindent commands
+        process_noindent_commands
+
         @performance_tracker.log_statistics
 
         # Return the compiled AST
@@ -588,6 +592,15 @@ module ReVIEW
 
         # Convert back to text with processed inline elements
         render_children_to_text(temp_paragraph)
+      end
+
+      # Process noindent commands in the AST
+      def process_noindent_commands
+        return unless @ast_root
+
+        require_relative('noindent_processor')
+        processor = NoIndentProcessor.new
+        processor.process(@ast_root)
       end
     end
   end

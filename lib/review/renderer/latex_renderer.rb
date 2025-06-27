@@ -140,8 +140,14 @@ module ReVIEW
       def visit_paragraph(node)
         content = render_children(node)
 
-        # Add single newline for paragraph end
-        "#{content}\n"
+        # Check for noindent attribute
+        if node.attribute?(:noindent)
+          # Add \noindent command like LATEXBuilder
+          "\\noindent\n#{content}\n"
+        else
+          # Add single newline for paragraph end
+          "#{content}\n"
+        end
       end
 
       def visit_text(node)
@@ -518,13 +524,15 @@ module ReVIEW
 
         case block_type
         when 'quote'
-          "\n\\begin{quote}\n#{content}\\end{quote}\n"
+          result = "\n\\begin{quote}\n#{content}\\end{quote}\n"
+          apply_noindent_if_needed(node, result)
         when 'source'
           # Source code block without caption
           "\\begin{reviewcmd}\n#{content}\\end{reviewcmd}\n"
         when 'lead'
           # Lead paragraph - use standard quotation environment like LATEXBuilder
-          "\\begin{quotation}\n#{content}\\end{quotation}\n"
+          result = "\\begin{quotation}\n#{content}\\end{quotation}\n"
+          apply_noindent_if_needed(node, result)
         when 'olnum'
           # olnum is now handled as metadata in list processing
           # If we encounter it here, it means there was no following ordered list
@@ -1324,6 +1332,15 @@ module ReVIEW
         end
 
         parts.empty? ? nil : parts.join(',')
+      end
+
+      # Apply noindent if the node has the noindent attribute
+      def apply_noindent_if_needed(node, content)
+        if node.attribute?(:noindent)
+          "\\noindent\n#{content}"
+        else
+          content
+        end
       end
     end
   end
