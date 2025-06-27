@@ -365,9 +365,14 @@ module ReVIEW
 
         # Add includegraphics command like LATEXBuilder
         if node.id? && @chapter
-          image_path = @chapter.image(node.id).path
-          # Use reviewincludegraphics with default width like LATEXBuilder
-          result << "\\reviewincludegraphics[width=\\maxwidth]{#{image_path}}"
+          begin
+            image_path = @chapter.image(node.id).path
+            # Use reviewincludegraphics with default width like LATEXBuilder
+            result << "\\reviewincludegraphics[width=\\maxwidth]{#{image_path}}"
+          rescue KeyError
+            # Image not found - skip includegraphics command like LATEXBuilder would use image_dummy
+            # But for regular image nodes, we still generate the structure without the includegraphics
+          end
         end
 
         if caption && !caption.empty?

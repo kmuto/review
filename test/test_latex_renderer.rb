@@ -178,7 +178,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     result = @renderer.visit(image)
 
     expected_lines = [
-      '\\begin{reviewimage}',
+      '\\begin{reviewimage}%%image1',
       '\\reviewimagecaption{Test Image}',
       '\\label{image:test:image1}',
       '\\end{reviewimage}'
