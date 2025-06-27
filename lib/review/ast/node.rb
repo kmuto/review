@@ -38,6 +38,11 @@ module ReVIEW
         @children.delete(child)
       end
 
+      # Check if node has a non-empty id
+      def id?
+        @id && !@id.empty?
+      end
+
       # Basic JSON serialization for compatibility
       def to_h
         result = {

@@ -154,7 +154,7 @@ module ReVIEW
 
       # Process code block nodes (list, listnum, emlist, etc.)
       def process_code_block(node)
-        return unless node.id && !node.id.empty?
+        return unless node.id?
 
         check_id(node.id)
         item = ReVIEW::Book::Index::Item.new(node.id, @list_index.size + 1)
@@ -169,7 +169,7 @@ module ReVIEW
 
       # Process table nodes
       def process_table(node)
-        return unless node.id && !node.id.empty?
+        return unless node.id?
 
         check_id(node.id)
         caption_text = extract_caption_text(node.caption)
@@ -185,7 +185,7 @@ module ReVIEW
 
       # Process image nodes
       def process_image(node)
-        return unless node.id && !node.id.empty?
+        return unless node.id?
 
         check_id(node.id)
         caption_text = extract_caption_text(node.caption)

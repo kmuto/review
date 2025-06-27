@@ -232,7 +232,7 @@ module ReVIEW
 
         result = []
         # Use Re:VIEW table structure like LATEXBuilder
-        result << if node.id && !node.id.empty?
+        result << if node.id?
                     "\\begin{table}%%#{node.id}"
                   else
                     '\\begin{table}%%'
@@ -244,7 +244,7 @@ module ReVIEW
           result << "\\#{caption_command}{#{caption}}"
         end
 
-        if node.id && !node.id.empty?
+        if node.id?
           # Generate label like LATEXBuilder: table:chapter:id
           # Don't escape underscores in labels - they're allowed in LaTeX label names
           result << if @chapter
@@ -303,7 +303,7 @@ module ReVIEW
         result = []
         result << '\\begin{reviewdummyimage}'
 
-        if node.id && !node.id.empty?
+        if node.id?
           # Generate label like LATEXBuilder: image:chapter:id
           # Don't escape underscores in labels - they're allowed in LaTeX label names
           result << if @chapter
@@ -357,14 +357,14 @@ module ReVIEW
       def visit_regular_image(node, caption)
         result = []
         # Use Re:VIEW image structure like LATEXBuilder
-        result << if node.id && !node.id.empty?
+        result << if node.id?
                     "\\begin{reviewimage}%%#{node.id}"
                   else
                     '\\begin{reviewimage}'
                   end
 
         # Add includegraphics command like LATEXBuilder
-        if node.id && !node.id.empty? && @chapter
+        if node.id? && @chapter
           image_path = @chapter.image(node.id).path
           # Use reviewincludegraphics with default width like LATEXBuilder
           result << "\\reviewincludegraphics[width=\\maxwidth]{#{image_path}}"
@@ -374,7 +374,7 @@ module ReVIEW
           result << "\\reviewimagecaption{#{caption}}"
         end
 
-        if node.id && !node.id.empty?
+        if node.id?
           # Generate label like LATEXBuilder: image:chapter:id
           # Don't escape underscores in labels - they're allowed in LaTeX label names
           result << if @chapter
@@ -674,7 +674,7 @@ module ReVIEW
 
         if caption && !caption.empty?
           # Use LATEXBuilder logic for list caption with proper numbering
-          if node.id && !node.id.empty?
+          if node.id?
             # For list blocks with ID, generate numbered caption like LATEXBuilder
             begin
               list_item = @chapter.list(node.id)

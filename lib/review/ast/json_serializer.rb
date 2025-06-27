@@ -84,15 +84,15 @@ module ReVIEW
         when ReVIEW::AST::CodeBlockNode
           hash['caption'] = extract_text(node.caption)
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
-          hash['id'] = node.id if node.respond_to?(:id) && node.id
-          hash['lang'] = node.lang if node.respond_to?(:lang) && node.lang
-          hash['numbered'] = node.respond_to?(:line_numbers) ? node.line_numbers : false
+          hash['id'] = node.id if node.id
+          hash['lang'] = node.lang if node.lang
+          hash['numbered'] = node.line_numbers
         when ReVIEW::AST::CodeLineNode
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
           hash['line_number'] = node.line_number if node.line_number
         when ReVIEW::AST::TableNode
           hash['caption'] = extract_text(node.caption)
-          hash['id'] = node.id if node.respond_to?(:id) && node.id
+          hash['id'] = node.id if node.id
           hash['header_rows'] = node.header_rows.map { |row| serialize_to_hash(row, options) } if node.header_rows&.any?
           hash['body_rows'] = node.body_rows.map { |row| serialize_to_hash(row, options) } if node.body_rows&.any?
         when ReVIEW::AST::TableRowNode # rubocop:disable Lint/DuplicateBranch
@@ -101,8 +101,8 @@ module ReVIEW
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
         when ReVIEW::AST::ImageNode
           hash['caption'] = extract_text(node.caption)
-          hash['id'] = node.id if node.respond_to?(:id) && node.id
-          hash['metric'] = node.metric if node.respond_to?(:metric) && node.metric
+          hash['id'] = node.id if node.id
+          hash['metric'] = node.metric if node.metric
         when ReVIEW::AST::ListNode
           hash['list_type'] = node.list_type
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
@@ -111,7 +111,7 @@ module ReVIEW
         when ReVIEW::AST::InlineNode
           hash['element'] = node.inline_type
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
-          hash['args'] = node.args if node.respond_to?(:args) && node.args
+          hash['args'] = node.args if node.args
         when ReVIEW::AST::CaptionNode
           return extract_text(node)
         when ReVIEW::AST::BlockNode
@@ -131,8 +131,8 @@ module ReVIEW
             hash['content'] = node.arg.to_s
           end
         when ReVIEW::AST::ListItemNode
-          hash['level'] = node.level if node.respond_to?(:level) && node.level
-          hash['number'] = node.number if node.respond_to?(:number) && node.number
+          hash['level'] = node.level if node.level
+          hash['number'] = node.number if node.number
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
         when ReVIEW::AST::ColumnNode
           hash['level'] = node.level
@@ -140,8 +140,8 @@ module ReVIEW
           hash['caption'] = extract_text(node.caption)
           hash['content'] = node.children.map { |child| serialize_to_hash(child, options) }
         when ReVIEW::AST::MinicolumnNode
-          hash['minicolumn_type'] = node.minicolumn_type.to_s if node.respond_to?(:minicolumn_type) && node.minicolumn_type
-          hash['caption'] = extract_text(node.caption) if node.respond_to?(:caption) && node.caption
+          hash['minicolumn_type'] = node.minicolumn_type.to_s if node.minicolumn_type
+          hash['caption'] = extract_text(node.caption) if node.caption
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
         else # rubocop:disable Lint/DuplicateBranch
           # Generic handling for unknown node types
@@ -160,18 +160,16 @@ module ReVIEW
         when nil
           ''
         else
-          if node.respond_to?(:children) && node.children&.any?
+          if node.children&.any?
             node.children.map { |child| extract_text(child) }.join
-          elsif node.respond_to?(:content)
-            node.content.to_s
           else
-            node.to_s
+            node.content.to_s
           end
         end
       end
 
       def process_list_items(node, _list_type, options)
-        return [] unless node.respond_to?(:children) && node.children
+        return [] unless node.children
 
         # For all list types, just serialize the children normally
         # The ListItemNode structure will be preserved

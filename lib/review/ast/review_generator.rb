@@ -138,7 +138,7 @@ module ReVIEW
       # === Code Block Node ===
       def visit_codeblock(node)
         # Determine block type
-        block_type = if node.id && !node.id.empty?
+        block_type = if node.id?
                        node.line_numbers ? 'listnum' : 'list'
                      else
                        node.line_numbers ? 'emlistnum' : 'emlist'
@@ -146,7 +146,7 @@ module ReVIEW
 
         # Build opening tag
         text = '//' + block_type
-        text += "[#{node.id}]" if node.id && !node.id.empty?
+        text += "[#{node.id}]" if node.id?
 
         caption_text = caption_to_text(node.caption)
         text += "[#{caption_text}]" if caption_text && !caption_text.empty?
@@ -207,7 +207,7 @@ module ReVIEW
 
         # Build opening tag
         text = "//#{table_type}"
-        text += "[#{node.id}]" if node.id && !node.id.empty?
+        text += "[#{node.id}]" if node.id?
 
         caption_text = caption_to_text(node.caption)
         text += "[#{caption_text}]" if caption_text && !caption_text.empty?
