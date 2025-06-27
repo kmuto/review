@@ -216,7 +216,7 @@ module ReVIEW
         f.until_match(%r{\A//|\A\#@}) do |line|
           break if line.strip.empty?
 
-          raw_lines.push(line.sub(/^(\t+)\s*/) { |m| '<!ESCAPETAB!>' * m.size }.strip.gsub('<!ESCAPETAB!>', "\t"))
+          raw_lines.push(line.sub(/^(\t*)(.*)$/) { $1 + $2.strip })
         end
 
         return if raw_lines.empty?
