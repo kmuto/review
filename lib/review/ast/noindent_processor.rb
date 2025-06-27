@@ -39,27 +39,23 @@ module ReVIEW
       def process_node(node)
         return unless node.children
 
-        i = 0
-        while i < node.children.length
-          child = node.children[i]
-
+        node.children.each_with_index do |child, idx|
           # Check if this is a noindent block command
           if noindent_block?(child)
             # Find the next target node for noindent attribute
-            target_node = find_next_target_node(node.children, i + 1)
+            target_node = find_next_target_node(node.children, idx + 1)
             if target_node
               target_node.add_attribute(:noindent, true)
             end
 
             # Remove the noindent block node from AST
-            node.children.delete_at(i)
+            node.children.delete_at(idx)
             # Don't increment i since we removed an element
             next
           end
 
           # Recursively process child nodes
           process_node(child) if child.children
-          i += 1
         end
       end
 

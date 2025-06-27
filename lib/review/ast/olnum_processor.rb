@@ -39,14 +39,11 @@ module ReVIEW
       def process_node(node)
         return unless node.children
 
-        i = 0
-        while i < node.children.length
-          child = node.children[i]
-
+        node.children.each_with_index do |child, idx|
           # Check if this is an olnum block command
           if olnum_block?(child)
             # Find the next ordered list for olnum attribute
-            target_list = find_next_ordered_list(node.children, i + 1)
+            target_list = find_next_ordered_list(node.children, idx + 1)
             if target_list
               # Extract olnum value from args
               olnum_value = extract_olnum_value(child)
@@ -54,14 +51,13 @@ module ReVIEW
             end
 
             # Remove the olnum block node from AST
-            node.children.delete_at(i)
+            node.children.delete_at(idx)
             # Don't increment i since we removed an element
             next
           end
 
           # Recursively process child nodes
           process_node(child) if child.children
-          i += 1
         end
       end
 
