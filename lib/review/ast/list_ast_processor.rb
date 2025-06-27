@@ -42,12 +42,11 @@ module ReVIEW
 
       # Process ordered list from file input
       # @param f [LineInput] Input file stream
-      # @param olnum_info [Hash] Optional olnum metadata with :args, :location, :lines
-      def process_ordered_list(f, olnum_info: nil)
+      def process_ordered_list(f)
         items = @parser.parse_ordered_list(f)
         return if items.empty?
 
-        list_node = @builder.build_ordered_list(items, olnum_info: olnum_info)
+        list_node = @builder.build_ordered_list(items)
         add_to_ast_and_render(list_node)
       end
 

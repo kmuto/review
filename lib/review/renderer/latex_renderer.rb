@@ -473,9 +473,9 @@ module ReVIEW
           items = node.children.map { |item| "\\item #{render_children(item)}" }.join("\n")
 
           # Check if this list has olnum start number
-          if node.respond_to?(:olnum_start) && node.olnum_start
+          if node.attribute?(:start_number)
             # Generate enumerate with setcounter for olnum
-            start_num = node.olnum_start - 1 # LaTeX counter is 0-based
+            start_num = node.fetch_attribute(:start_number) - 1 # LaTeX counter is 0-based
             "\n\\begin{enumerate}\n\\setcounter{enumi}{#{start_num}}\n#{items}\n\\end{enumerate}\n"
           else
             "\n\\begin{enumerate}\n#{items}\n\\end{enumerate}\n"

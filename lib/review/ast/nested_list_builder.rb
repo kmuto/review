@@ -61,18 +61,9 @@ module ReVIEW
 
       # Build ordered list with proper nesting
       # @param items [Array<ListParser::ListItemData>] Parsed ordered list items
-      # @param olnum_info [Hash] Optional olnum metadata with :args, :location, :lines
       # @return [ListNode] Root ordered list node
-      def build_ordered_list(items, olnum_info: nil)
+      def build_ordered_list(items)
         root_list = create_list_node(:ol)
-
-        # Apply olnum metadata if provided
-        if olnum_info && olnum_info[:args] && olnum_info[:args].first
-          # Store olnum start number in the list node
-          root_list.instance_variable_set(:@olnum_start, olnum_info[:args].first.to_i)
-          # Define accessor method for the olnum start number
-          root_list.define_singleton_method(:olnum_start) { @olnum_start }
-        end
 
         build_proper_nested_structure(items, root_list, :ol)
         root_list

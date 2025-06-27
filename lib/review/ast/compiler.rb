@@ -49,9 +49,6 @@ module ReVIEW
         @ast_root = nil
         @current_ast_node = nil
 
-        # State for tracking modifier commands like olnum
-        @pending_olnum = nil
-
         # Processors for specialized AST handling - lazy initialization
         @inline_processor = nil
         @block_processor = nil
@@ -119,8 +116,9 @@ module ReVIEW
         # Record performance statistics
         @performance_tracker.end_timing(:total_compilation_time)
 
-        # Post-process AST for noindent commands
+        # Post-process AST for noindent and olnum commands
         process_noindent_commands
+        process_olnum_commands
 
         @performance_tracker.log_statistics
 
@@ -158,9 +156,6 @@ module ReVIEW
             compile_paragraph_to_ast(f)
           end
         end
-
-        # Flush any remaining pending olnum at the end
-        flush_pending_olnum_if_needed
       end
 
       def compile_headline_to_ast(line)
@@ -217,10 +212,6 @@ module ReVIEW
       end
 
       def compile_paragraph_to_ast(f)
-        # If there's a pending olnum and we're processing a paragraph (not a list),
-        # we need to add the olnum as a standalone block first
-        flush_pending_olnum_if_needed
-
         raw_lines = []
         f.until_match(%r{\A//|\A\#@}) do |line|
           break if line.strip.empty?
@@ -240,9 +231,6 @@ module ReVIEW
 
       def compile_block_command_to_ast(f) # rubocop:disable Metrics/CyclomaticComplexity
         name, args, lines = read_command(f)
-
-        # Only flush if this is not an olnum command
-        flush_pending_olnum_if_needed unless name == :olnum
 
         case name
         when :list, :listnum, :emlist, :emlistnum, :cmd, :source
@@ -283,13 +271,18 @@ module ReVIEW
           end
           @current_ast_node.add_child(node)
         when :olnum
-          # Special handling for olnum - store for next ordered list
-          @pending_olnum = {
+          # Simple olnum block node - will be processed by OlnumProcessor
+          node = AST::BlockNode.new(
             location: location,
-            args: args,
-            lines: lines
-          }
-          # Don't add olnum as a standalone node - it will be applied to the next ordered list
+            block_type: :olnum,
+            args: args
+          )
+          # Store lines if any
+          lines.each do |line|
+            text_node = AST::TextNode.new(location: location, content: line)
+            node.add_child(text_node)
+          end
+          @current_ast_node.add_child(node)
         when :footnote, :endnote
           # Footnote and endnote commands
           node = AST::FootnoteNode.new(
@@ -352,24 +345,16 @@ module ReVIEW
 
       # Compile unordered list to AST (delegates to list processor)
       def compile_ul_to_ast(f)
-        # Flush any pending olnum since this is not an ordered list
-        flush_pending_olnum_if_needed
         list_processor.process_unordered_list(f)
       end
 
       # Compile ordered list to AST (delegates to list processor)
       def compile_ol_to_ast(f)
-        # Pass pending olnum information to list processor
-        olnum_info = @pending_olnum
-        @pending_olnum = nil # Clear after use
-
-        list_processor.process_ordered_list(f, olnum_info: olnum_info)
+        list_processor.process_ordered_list(f)
       end
 
       # Compile definition list to AST (delegates to list processor)
       def compile_dl_to_ast(f)
-        # Flush any pending olnum since this is not an ordered list
-        flush_pending_olnum_if_needed
         list_processor.process_definition_list(f)
       end
 
@@ -453,27 +438,6 @@ module ReVIEW
 
       # Expose performance tracker for external access
       attr_reader :performance_tracker
-
-      # Flush pending olnum if needed (when non-list content follows olnum)
-      def flush_pending_olnum_if_needed
-        return unless @pending_olnum
-
-        # Create standalone olnum block node
-        node = AST::BlockNode.new(
-          location: @pending_olnum[:location],
-          block_type: :olnum,
-          args: @pending_olnum[:args]
-        )
-
-        # Store lines if any
-        @pending_olnum[:lines].each do |line|
-          text_node = AST::TextNode.new(location: @pending_olnum[:location], content: line)
-          node.add_child(text_node)
-        end
-
-        @current_ast_node.add_child(node)
-        @pending_olnum = nil
-      end
 
       # Universal block content processing method for HTML Builder compatibility
       # This method processes structured content within block elements using the same
@@ -600,6 +564,15 @@ module ReVIEW
 
         require_relative('noindent_processor')
         processor = NoIndentProcessor.new
+        processor.process(@ast_root)
+      end
+
+      # Process olnum commands in the AST
+      def process_olnum_commands
+        return unless @ast_root
+
+        require_relative('olnum_processor')
+        processor = OlnumProcessor.new
         processor.process(@ast_root)
       end
     end

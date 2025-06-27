@@ -170,12 +170,19 @@ module ReVIEW
                 raise NotImplementedError, "HTMLRenderer does not support list_type #{node.list_type}."
               end
 
+        # Check for start_number attribute for ordered lists
+        start_attr = ''
+        if node.list_type == :ol && node.attribute?(:start_number)
+          start_num = node.fetch_attribute(:start_number)
+          start_attr = %Q( start="#{start_num}")
+        end
+
         content = render_children(node)
         # Format list items with proper line breaks like HTMLBuilder
         formatted_content = content.gsub(%r{</li>(?=<li>)}, "</li>\n")
         formatted_content = formatted_content.gsub(/<li>([^<]*)<ul>/, "<li>\\1<ul>\n")
         formatted_content = formatted_content.gsub('</ul></li>', "</ul>\n</li>")
-        "<#{tag}>\n#{formatted_content}\n</#{tag}>\n"
+        "<#{tag}#{start_attr}>\n#{formatted_content}\n</#{tag}>\n"
       end
 
       def visit_list_item(node)
