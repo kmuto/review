@@ -20,7 +20,7 @@ class TestHTMLRenderer < Test::Unit::TestCase
     ReVIEW::I18n.setup('ja')
 
     @compiler = ReVIEW::AST::Compiler.new
-    # Note: renderer will be created with chapter in each test
+    # NOTE: renderer will be created with chapter in each test
   end
 
   def test_headline_rendering

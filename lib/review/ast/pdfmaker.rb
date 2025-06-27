@@ -46,9 +46,8 @@ module ReVIEW
       def make_input_files(book)
         @converter = create_converter(book)
 
-        # Ensure all chapter indexes are generated before conversion
-        book.chapters.each(&:generate_indexes)
-        book.generate_indexes
+        # AST environment uses AST::Indexer instead of traditional builder-based indexing
+        # No need to call generate_indexes - AST::Indexer handles indexing during rendering
 
         super
       end
@@ -68,8 +67,8 @@ module ReVIEW
         return false unless chapter
 
         begin
-          # Ensure chapter indexes are generated before AST compilation
-          chapter.generate_indexes
+          # AST environment uses AST::Indexer for indexing during rendering
+          # No need to call generate_indexes - AST::Indexer handles it in visit_document
 
           # Compile chapter to AST using auto-detection for file format
           compiler = ReVIEW::AST::Compiler.for_chapter(chapter)
@@ -78,7 +77,7 @@ module ReVIEW
           # Create renderer with current chapter
           renderer = ReVIEW::Renderer::LATEXRenderer.new(chapter)
 
-          # Render to LaTeX
+          # Render to LaTeX (AST::Indexer will handle indexing during this process)
           latex_output = renderer.render(ast_root)
 
           # Write output

@@ -47,6 +47,15 @@ class TestLATEXRenderer < Test::Unit::TestCase
     assert_equal "This is a paragraph.\n", result
   end
 
+  def test_visit_paragraph_dual
+    paragraph = AST::ParagraphNode.new
+    text = AST::TextNode.new(content: "This is a paragraph.\n\nNext paragraph.\n")
+    paragraph.add_child(text)
+
+    result = @renderer.visit(paragraph)
+    assert_equal "This is a paragraph.\n\nNext paragraph.\n\n", result
+  end
+
   def test_visit_headline_level_1
     caption = AST::CaptionNode.new
     caption.add_child(AST::TextNode.new(content: 'Chapter Title'))

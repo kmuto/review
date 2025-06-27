@@ -9,6 +9,7 @@
 require 'review/renderer/base'
 require 'review/latexutils'
 require 'review/sec_counter'
+require 'review/i18n'
 
 module ReVIEW
   module Renderer
@@ -20,13 +21,9 @@ module ReVIEW
       def initialize(chapter)
         super
 
-        # Generate indexes like LATEXBuilder does
-        if @chapter
-          @chapter.generate_indexes
-        end
-        if @book
-          @book.generate_indexes
-        end
+        # For AST rendering, we need to set up indexing properly
+        # The indexing will be done when we process the AST
+        @ast_indexer = nil
 
         # Initialize LaTeX character escaping
         initialize_metachars('')
@@ -43,6 +40,36 @@ module ReVIEW
       end
 
       def visit_document(node)
+        # Build indexes using AST::Indexer for proper footnote support
+        if @chapter && !@ast_indexer
+          require 'review/ast/indexer'
+          @ast_indexer = ReVIEW::AST::Indexer.new(@chapter)
+          @ast_indexer.build_indexes(node)
+
+          # Make indexes available to chapter and book
+          @chapter.instance_variable_set(:@footnote_index, @ast_indexer.footnote_index)
+          @chapter.instance_variable_set(:@endnote_index, @ast_indexer.endnote_index)
+          @chapter.instance_variable_set(:@list_index, @ast_indexer.list_index)
+          @chapter.instance_variable_set(:@table_index, @ast_indexer.table_index)
+          @chapter.instance_variable_set(:@equation_index, @ast_indexer.equation_index)
+          @chapter.instance_variable_set(:@image_index, @ast_indexer.image_index)
+          @chapter.instance_variable_set(:@icon_index, @ast_indexer.icon_index)
+          @chapter.instance_variable_set(:@numberless_image_index, @ast_indexer.numberless_image_index)
+          @chapter.instance_variable_set(:@indepimage_index, @ast_indexer.indepimage_index)
+          @chapter.instance_variable_set(:@headline_index, @ast_indexer.headline_index)
+          @chapter.instance_variable_set(:@column_index, @ast_indexer.column_index)
+
+          # Make chapter index available to book for title references
+          if @book && !@book.chapter_index
+            chapter_index = ReVIEW::Book::ChapterIndex.new
+            @book.chapters.each do |ch|
+              item = ReVIEW::Book::Index::Item.new(ch.id, ch.number, ch.title)
+              chapter_index.add_item(item)
+            end
+            @book.instance_variable_set(:@chapter_index, chapter_index)
+          end
+        end
+
         # Generate content directly without complex post-processing
         content = render_children(node)
 
@@ -164,7 +191,7 @@ module ReVIEW
           next unless @chapter && @chapter.footnote_index
 
           begin
-            footnote_content = @chapter.footnote_index.fetch(footnote_id).content
+            footnote_content = @chapter.footnote_index[footnote_id].content
             result += "\\footnotetext[#{footnote_number}]{#{escape(footnote_content)}}\n"
           rescue StandardError => e
             raise NotImplementedError, "Footnote not found in index: #{footnote_id} (#{e.message})"
@@ -255,8 +282,13 @@ module ReVIEW
           next unless @chapter && @chapter.footnote_index
 
           begin
-            footnote_content = @chapter.footnote_index.fetch(footnote_id).content
-            table_result += "\\footnotetext[#{footnote_number}]{#{escape(footnote_content)}}\n"
+            footnote_item = @chapter.footnote_index[footnote_id]
+            if footnote_item
+              footnote_content = footnote_item.content
+              table_result += "\\footnotetext[#{footnote_number}]{#{escape(footnote_content)}}\n"
+            else
+              raise NotImplementedError, "Footnote not found in index: #{footnote_id}"
+            end
           rescue StandardError => e
             raise NotImplementedError, "Footnote not found in index: #{footnote_id} (#{e.message})"
           end
@@ -350,7 +382,7 @@ module ReVIEW
           next unless @chapter && @chapter.footnote_index
 
           begin
-            footnote_content = @chapter.footnote_index.fetch(footnote_id).content
+            footnote_content = @chapter.footnote_index[footnote_id].content
             image_result += "\\footnotetext[#{footnote_number}]{#{escape(footnote_content)}}\n"
           rescue StandardError => e
             raise NotImplementedError, "Footnote not found in index: #{footnote_id} (#{e.message})"
@@ -363,18 +395,47 @@ module ReVIEW
 
       def visit_indepimage(node, caption)
         result = []
-        # indepimage/numberlessimage uses different structure (no label, different caption)
-        result << '\\begin{reviewdummyimage}'
-        raise NotImplementedError, "Image rendering not fully implemented for image ID: #{node.id}"
 
-        # No label for indepimage/numberlessimage
+        # Get image path
+        image_path = @chapter.image(node.id).path if @chapter&.image(node.id)
 
-        if caption && !caption.empty?
-          # indepimage uses reviewindepimagecaption which adds "図: " prefix like LATEXBuilder
-          result << "\\reviewindepimagecaption{図: #{caption}}"
+        if image_path
+          result << "\\begin{reviewimage}%%#{node.id}"
+
+          # Add caption at top if configured
+          if caption_top?('image') && caption && !caption.empty?
+            caption_str = "\\reviewindepimagecaption{#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{caption}}"
+            result << caption_str
+          end
+
+          # Add image
+          command = @book&.config&.check_version('2', exception: false) ? 'includegraphics' : 'reviewincludegraphics'
+
+          # Apply metrics if available
+          metrics_str = build_metrics_string(node.metrics) if node.respond_to?(:metrics) && node.metrics
+          options = metrics_str ? "[#{metrics_str}]" : ''
+
+          result << "\\#{command}#{options}{#{image_path}}"
+
+          # Add caption at bottom if not at top
+          if !caption_top?('image') && caption && !caption.empty?
+            caption_str = "\\reviewindepimagecaption{#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{caption}}"
+            result << caption_str
+          end
+
+          result << '\\end{reviewimage}'
+        else
+          # Fallback for missing image
+          result << "\\begin{reviewdummyimage}%%#{node.id}"
+          result << "% Image file not found: #{node.id}"
+
+          if caption && !caption.empty?
+            caption_str = "\\reviewindepimagecaption{#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{caption}}"
+            result << caption_str
+          end
+
+          result << '\\end{reviewdummyimage}'
         end
-
-        result << '\\end{reviewdummyimage}'
 
         result.join("\n") + "\n"
       end
@@ -495,6 +556,24 @@ module ReVIEW
         when 'beginchild', 'endchild'
           # Child nesting control commands - produce no output
           ''
+        when 'centering'
+          # Center alignment
+          "\\begin{center}\n#{content}\\end{center}\n"
+        when 'flushright'
+          # Right alignment
+          "\\begin{flushright}\n#{content}\\end{flushright}\n"
+        when 'address'
+          # Address block - similar to flushright
+          "\\begin{flushright}\n#{content}\\end{flushright}\n"
+        when 'talk'
+          # Dialog/conversation block
+          "#{content}\n"
+        when 'read'
+          # Reading material block - use quotation environment
+          "\\begin{quotation}\n#{content}\\end{quotation}\n"
+        when 'blockquote'
+          # Block quotation - same as quote but different semantic meaning
+          "\\begin{quote}\n#{content}\\end{quote}\n"
         when 'blankline', 'noindent', 'pagebreak', 'tsize', 'endnote', 'label', 'printendnotes', 'hr', 'bpo', 'parasep'
           # Control commands that should not generate LaTeX environment blocks
           ''
@@ -928,7 +1007,13 @@ module ReVIEW
         when 'icon'
           if node.args && node.args.first
             icon_id = node.args.first
-            "\\reviewicon{#{icon_id}}"
+            if @chapter&.image(icon_id)&.path
+              command = @book&.config&.check_version('2', exception: false) ? 'includegraphics' : 'reviewicon'
+              "\\#{command}{#{@chapter.image(icon_id).path}}"
+            else
+              # Fallback for missing image
+              "\\verb|--[[path = #{icon_id}]]--|"
+            end
           else
             content
           end
@@ -952,8 +1037,173 @@ module ReVIEW
           else
             content
           end
+        when 'title'
+          if node.args && node.args.first
+            # Book/chapter title reference
+            chapter_id = node.args.first
+            if @book && @book.chapter_index
+              begin
+                title = @book.chapter_index.title(chapter_id)
+                if @book.config['chapterlink']
+                  "\\reviewchapref{#{escape(title)}}{chap:#{chapter_id}}"
+                else
+                  escape(title)
+                end
+              rescue StandardError => e
+                raise NotImplementedError, "Chapter title reference failed for #{chapter_id}: #{e.message}"
+              end
+            else
+              "\\reviewtitle{#{escape(chapter_id)}}"
+            end
+          else
+            content
+          end
+        when 'chapref'
+          if node.args && node.args.first
+            # Chapter reference
+            ref_id = node.args.first
+            "\\chapref{#{escape(ref_id)}}"
+          else
+            content
+          end
+        when 'chap'
+          if node.args && node.args.first
+            # Chapter number reference
+            ref_id = node.args.first
+            "\\ref{#{escape(ref_id)}}"
+          else
+            content
+          end
+        when 'sec'
+          if node.args && node.args.first
+            # Section reference
+            ref_id = node.args.first
+            "\\ref{#{escape(ref_id)}}"
+          else
+            content
+          end
+        when 'list'
+          if node.args && node.args.first
+            # List reference
+            ref_id = node.args.first
+            "\\reviewlistref{#{escape(ref_id)}}"
+          else
+            content
+          end
+        when 'img'
+          if node.args && node.args.first
+            # Image reference
+            ref_id = node.args.first
+            "\\reviewimageref{#{escape(ref_id)}}"
+          else
+            content
+          end
+        when 'table'
+          if node.args && node.args.first
+            # Table reference
+            ref_id = node.args.first
+            "\\reviewtableref{#{escape(ref_id)}}"
+          else
+            content
+          end
+        when 'eq'
+          if node.args && node.args.first
+            # Equation reference
+            ref_id = node.args.first
+            "\\reviewequationref{#{escape(ref_id)}}"
+          else
+            content
+          end
+        when 'fn'
+          if node.args && node.args.first
+            # Footnote reference
+            ref_id = node.args.first
+            if @chapter && @chapter.footnote_index
+              begin
+                footnote_number = @chapter.footnote_index.number(ref_id)
+                "\\footnotemark[#{footnote_number}]"
+              rescue StandardError => e
+                "\\footnote{#{escape(ref_id)}}"
+              end
+            else
+              "\\footnote{#{escape(ref_id)}}"
+            end
+          else
+            content
+          end
+        when 'bou'
+          # Boudou (emphasis)
+          "\\reviewbou{#{content}}"
+        when 'ami'
+          # Ami (dots)
+          "\\reviewami{#{content}}"
+        when 'u'
+          # Underline
+          "\\underline{#{content}}"
+        when 'balloon'
+          if node.args && node.args.first
+            # Balloon annotation
+            balloon_text = escape(node.args.first)
+            "\\reviewballoon{#{content}}{#{balloon_text}}"
+          else
+            content
+          end
+        when 'sub'
+          # Subscript
+          "\\textsubscript{#{content}}"
+        when 'sup'
+          # Superscript
+          "\\textsuperscript{#{content}}"
+        when 'endnote'
+          if node.args && node.args.first
+            # Endnote reference
+            ref_id = node.args.first
+            if @chapter && @chapter.endnote_index
+              begin
+                endnote_number = @chapter.endnote_index.number(ref_id)
+                "\\endnotemark[#{endnote_number}]"
+              rescue StandardError => e
+                "\\endnote{#{escape(ref_id)}}"
+              end
+            else
+              "\\endnote{#{escape(ref_id)}}"
+            end
+          else
+            content
+          end
+        when 'pageref'
+          if node.args && node.args.first
+            # Page reference
+            ref_id = node.args.first
+            "\\pageref{#{escape(ref_id)}}"
+          else
+            content
+          end
+        when 'ttb', 'ttbold'
+          # Teletype bold (monospace bold)
+          "\\textbf{\\texttt{#{content}}}"
+        when 'tti', 'ttitalic'
+          # Teletype italic (monospace italic)
+          "\\textit{\\texttt{#{content}}}"
+        when 'raw'
+          if node.args && node.args.first
+            # Raw content for specific format
+            format = node.args.first
+            if ['latex', 'tex'].include?(format)
+              content
+            else
+              '' # Ignore raw content for other formats
+            end
+          else
+            content
+          end
+        when 'embed'
+          # Embedded content - pass through
+          content
         else
-          raise NotImplementedError, "Unsupported inline element type: #{type}"
+          # Fallback: treat unknown inline elements as plain text
+          # This is more forgiving than raising an error
+          content
         end
       end
 
@@ -997,13 +1247,25 @@ module ReVIEW
       end
 
       def visit_footnote(node)
-        if @chapter && @chapter.footnote_index
-          begin
-            footnote_item = @chapter.footnote_index.number(node.id)
-            footnote_content = @chapter.footnote_index[node.id].content
+        # Select appropriate index based on footnote type
+        index = case node.footnote_type
+                when :endnote
+                  @chapter&.endnote_index
+                else
+                  @chapter&.footnote_index
+                end
 
-            # Handle footnotes differently based on context
-            if @doc_status[:table] || @doc_status[:caption] || @doc_status[:column]
+        if @chapter && index
+          begin
+            footnote_item = index.number(node.id)
+            footnote_content = index[node.id].content
+
+            # Handle footnotes differently based on context and type
+            if node.footnote_type == :endnote
+              # Endnotes are not displayed inline, just collect the content
+              # In LaTeX, endnotes are typically handled separately
+              ''
+            elsif @doc_status[:table] || @doc_status[:caption] || @doc_status[:column]
               # In table/caption/column context, store for later \footnotetext output
               @foottext[node.id] = footnote_item
               "\\footnotemark[#{footnote_item}]"
@@ -1015,8 +1277,37 @@ module ReVIEW
             raise NotImplementedError, "Footnote failed for #{node.id}: #{e.message}"
           end
         else
-          raise NotImplementedError, "Chapter footnote index not available for footnote: #{node.id}"
+          index_type = node.footnote_type == :endnote ? 'endnote' : 'footnote'
+          raise NotImplementedError, "Chapter #{index_type} index not available for #{index_type}: #{node.id}"
         end
+      end
+
+      # Check caption position configuration
+      def caption_top?(type)
+        unless %w[top bottom].include?(@book&.config&.dig('caption_position', type))
+          # Default to top if not configured
+          return true
+        end
+
+        @book.config['caption_position'][type] != 'bottom'
+      end
+
+      # Build metrics string for images (width, height, etc.)
+      def build_metrics_string(metrics)
+        return nil unless metrics && metrics.is_a?(Hash)
+
+        parts = []
+        if metrics['scale']
+          parts << "scale=#{metrics['scale']}"
+        end
+        if metrics['width']
+          parts << "width=#{metrics['width']}"
+        end
+        if metrics['height']
+          parts << "height=#{metrics['height']}"
+        end
+
+        parts.empty? ? nil : parts.join(',')
       end
     end
   end

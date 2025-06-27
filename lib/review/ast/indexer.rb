@@ -238,7 +238,7 @@ module ReVIEW
             check_id(footnote_id)
             # Track cross-reference like IndexBuilder
             @crossref[:footnote][footnote_id] = @crossref[:footnote][footnote_id] ? @crossref[:footnote][footnote_id] + 1 : 1
-            # Also add to index if not already present (for compatibility with tests)
+            # Add to index if not already present (for compatibility with tests and IndexBuilder behavior)
             unless @footnote_index.has_key?(footnote_id)
               item = ReVIEW::Book::Index::Item.new(footnote_id, @footnote_index.size + 1)
               @footnote_index.add_item(item)
@@ -250,7 +250,7 @@ module ReVIEW
             check_id(endnote_id)
             # Track cross-reference like IndexBuilder
             @crossref[:endnote][endnote_id] = @crossref[:endnote][endnote_id] ? @crossref[:endnote][endnote_id] + 1 : 1
-            # Also add to index if not already present (for compatibility with tests)
+            # Add to index if not already present (for compatibility with tests and IndexBuilder behavior)
             unless @endnote_index.has_key?(endnote_id)
               item = ReVIEW::Book::Index::Item.new(endnote_id, @endnote_index.size + 1)
               @endnote_index.add_item(item)
@@ -260,19 +260,35 @@ module ReVIEW
           if node.args && node.args.first
             bib_id = node.args.first
             check_id(bib_id)
-            item = ReVIEW::Book::Index::Item.new(bib_id, @bibpaper_index.size + 1)
-            @bibpaper_index.add_item(item)
+            # Add to index if not already present (for compatibility with tests and IndexBuilder behavior)
+            unless @bibpaper_index.has_key?(bib_id)
+              item = ReVIEW::Book::Index::Item.new(bib_id, @bibpaper_index.size + 1)
+              @bibpaper_index.add_item(item)
+            end
           end
         when 'eq'
           if node.args && node.args.first
             eq_id = node.args.first
             check_id(eq_id)
-            item = ReVIEW::Book::Index::Item.new(eq_id, @equation_index.size + 1)
-            @equation_index.add_item(item)
+            # Add to index if not already present (for compatibility with tests and IndexBuilder behavior)
+            unless @equation_index.has_key?(eq_id)
+              item = ReVIEW::Book::Index::Item.new(eq_id, @equation_index.size + 1)
+              @equation_index.add_item(item)
+            end
           end
         when 'img'
           # Image references are handled when the actual image blocks are processed
           # No special processing needed for inline image references
+        when 'icon'
+          if node.args && node.args.first
+            icon_id = node.args.first
+            check_id(icon_id)
+            # Add icon to index if not already present
+            unless @icon_index.has_key?(icon_id)
+              item = ReVIEW::Book::Index::Item.new(icon_id, @icon_index.size + 1)
+              @icon_index.add_item(item)
+            end
+          end
         when 'list', 'table'
           # These are references, already processed in their respective nodes
         end
