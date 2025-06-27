@@ -19,42 +19,16 @@ module ReVIEW
     class EPUBMaker < ReVIEW::EPUBMaker
       def initialize
         super
-        @processor_type = nil
+        @processor_type = 'AST/Renderer'
       end
 
       private
 
-      # Override the build_epub method to use AST/Renderer
-      def build_epub
-        @processor_type = 'AST/Renderer'
-
-        # Log processor selection for user feedback
-        if @config['debug']
-          puts "AST::EPUBMaker: Using #{@processor_type} processor"
-        end
-
-        super
-      end
-
       # Override converter creation to use AST Renderer
       def create_converter(book)
-        create_ast_converter(book)
-      end
-
-      # Create converter with AST Renderer
-      def create_ast_converter(book)
-        renderer = ReVIEW::Renderer::HTMLRenderer.new(
-          config: @config,
-          options: {
-            chapter: nil, # Will be set per chapter
-            book: book,
-            img_math: @img_math,
-            img_graph: @img_graph
-          }
-        )
-
         # Create a wrapper that makes Renderer compatible with Converter interface
-        HTMLRendererConverterAdapter.new(book, renderer, @config)
+        # Renderer will be created per chapter in the adapter
+        HTMLRendererConverterAdapter.new(book)
       end
 
       # Override the converter creation point in build_epub
@@ -67,10 +41,9 @@ module ReVIEW
 
     # Adapter to make HTML Renderer compatible with Converter interface
     class HTMLRendererConverterAdapter
-      def initialize(book, renderer, config)
+      def initialize(book)
         @book = book
-        @renderer = renderer
-        @config = config
+        @config = book.config
         @compile_errors = []
       end
 
@@ -84,11 +57,11 @@ module ReVIEW
           compiler = ReVIEW::AST::Compiler.new
           ast_root = compiler.compile_to_ast(chapter)
 
-          # Update renderer options with current chapter
-          @renderer.instance_variable_set(:@chapter, chapter)
+          # Create renderer with current chapter
+          renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
 
           # Render to HTML
-          html_output = @renderer.render(ast_root)
+          html_output = renderer.render(ast_root)
 
           # Write output
           File.write(output_path, html_output)

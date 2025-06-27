@@ -20,10 +20,7 @@ class TestHTMLRenderer < Test::Unit::TestCase
     ReVIEW::I18n.setup('ja')
 
     @compiler = ReVIEW::AST::Compiler.new
-    @renderer = ReVIEW::Renderer::HTMLRenderer.new(
-      config: @config,
-      options: { book: @book }
-    )
+    # Note: renderer will be created with chapter in each test
   end
 
   def test_headline_rendering
@@ -33,7 +30,8 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    html_output = @renderer.render(ast_root)
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    html_output = renderer.render(ast_root)
 
     assert_match(%r{<h1>.*Test Chapter</h1>}, html_output)
     assert_match(%r{<p>Paragraph text\.</p>}, html_output)
@@ -46,7 +44,8 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    html_output = @renderer.render(ast_root)
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    html_output = renderer.render(ast_root)
 
     assert_match(%r{<b>bold</b>}, html_output)
     assert_match(%r{<i>italic</i>}, html_output)
@@ -65,7 +64,8 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    html_output = @renderer.render(ast_root)
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    html_output = renderer.render(ast_root)
 
     assert_match(/<div id="sample" class="caption-code">/, html_output)
     assert_match(%r{<p class="caption">リスト1\.1: Sample Code</p>}, html_output)
@@ -87,7 +87,8 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    html_output = @renderer.render(ast_root)
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    html_output = renderer.render(ast_root)
 
     assert_match(/<div id="sample" class="table">/, html_output)
     assert_match(%r{<p class="caption">表1\.1: Sample Table</p>}, html_output)
@@ -114,7 +115,8 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    html_output = @renderer.render(ast_root)
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    html_output = renderer.render(ast_root)
 
     assert_match(/<div class="column">/, html_output)
     assert_match(%r{<div class="column-header">Column Title</div>}, html_output)
@@ -134,7 +136,8 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    html_output = @renderer.render(ast_root)
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    html_output = renderer.render(ast_root)
 
     assert_match(/<div class="note">/, html_output)
     assert_match(%r{<p class="caption">Sample Note</p>}, html_output)
@@ -149,7 +152,8 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    html_output = @renderer.render(ast_root)
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    html_output = renderer.render(ast_root)
 
     assert_match(/&lt;html&gt; &amp; &quot;quotes&quot;/, html_output)
   end
@@ -161,7 +165,8 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    html_output = @renderer.render(ast_root)
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    html_output = renderer.render(ast_root)
 
     # HTMLRenderer now uses fixed anchor IDs like HTMLBuilder
     assert_match(%r{<h1>.*</h1>}, html_output)
@@ -176,7 +181,8 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    html_output = @renderer.render(ast_root)
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    html_output = renderer.render(ast_root)
 
     assert_match(%r{<a href="https://example\.com".*>Example Site</a>}, html_output)
   end

@@ -23,10 +23,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     @chapter.generate_indexes
     @book.generate_indexes
 
-    @renderer = Renderer::LATEXRenderer.new(
-      config: @config,
-      options: { chapter: @chapter, book: @book }
-    )
+    @renderer = Renderer::LATEXRenderer.new(@chapter)
   end
 
   def test_visit_text

@@ -28,11 +28,8 @@ module ReVIEW
 
       attr_reader :chapter, :book
 
-      def initialize(config: {}, options: {})
+      def initialize(chapter)
         super
-        @chapter = options[:chapter]
-        @book = options[:book] || @chapter&.book
-        @config = config
 
         # Initialize logger like HTMLBuilder for error handling
         @logger = ReVIEW.logger

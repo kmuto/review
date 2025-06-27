@@ -66,10 +66,7 @@ module ReVIEW
       ast = ast_compiler.compile_to_ast(chapter)
 
       # Render with HTMLRenderer
-      renderer = Renderer::HTMLRenderer.new(
-        config: @config,
-        options: { chapter: chapter, book: chapter.book }
-      )
+      renderer = Renderer::HTMLRenderer.new(chapter)
 
       renderer.render(ast)
     end

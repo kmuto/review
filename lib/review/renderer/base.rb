@@ -34,15 +34,16 @@ module ReVIEW
     #   renderer = HTMLRenderer.new
     #   html_output = renderer.render(ast_root)
     class Base < ReVIEW::AST::Visitor
-      attr_reader :config, :options
+      attr_reader :chapter, :book, :config
 
-      # Initialize the renderer with configuration and options.
+      # Initialize the renderer with chapter context.
+      # Book and config are automatically derived from the chapter.
       #
-      # @param config [Hash] Configuration hash (optional)
-      # @param options [Hash] Renderer-specific options (optional)
-      def initialize(config: {}, options: {})
-        @config = config || {}
-        @options = options || {}
+      # @param chapter [ReVIEW::Book::Chapter] Chapter context
+      def initialize(chapter)
+        @chapter = chapter
+        @book = chapter&.book
+        @config = @book&.config || {}
         super()
       end
 

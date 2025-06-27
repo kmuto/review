@@ -43,10 +43,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     ast_root = ast_compiler.compile_to_ast(chapter)
 
     # Render to HTML using HTMLRenderer
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(
-      config: @config,
-      options: { chapter: chapter, book: @book }
-    )
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
     html_result = renderer.render(ast_root)
 
     # Verify HTML output contains the expected content (since we're using HTMLBuilder)
@@ -112,10 +109,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     ast_root = ast_compiler.compile_to_ast(chapter)
 
     # Render to HTML using HTMLRenderer
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(
-      config: @config,
-      options: { chapter: chapter, book: @book }
-    )
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
     html_result = renderer.render(ast_root)
 
     # Verify HTML output contains inline element content
@@ -171,10 +165,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     ast_root = ast_compiler.compile_to_ast(chapter)
 
     # Render to HTML using HTMLRenderer
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(
-      config: @config,
-      options: { chapter: chapter, book: @book }
-    )
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
     html_result = renderer.render(ast_root)
 
     # Verify HTML output structure and content (since we're using HTMLBuilder)
@@ -230,10 +221,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     ast_root = ast_compiler.compile_to_ast(chapter)
 
     # Render to HTML using HTMLRenderer
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(
-      config: @config,
-      options: { chapter: chapter, book: @book }
-    )
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
     html_result = renderer.render(ast_root)
 
     # Verify HTML output contains basic content (embed blocks may be processed differently)
@@ -296,10 +284,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     ast_root = ast_compiler.compile_to_ast(chapter)
 
     # Render to HTML using HTMLRenderer
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(
-      config: @config,
-      options: { chapter: chapter, book: @book }
-    )
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
     html_result = renderer.render(ast_root)
 
     # Raw commands are processed traditionally, so they won't appear in HTML structure
@@ -355,10 +340,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     ast_root = ast_compiler.compile_to_ast(chapter_ast)
 
     # Render to HTML using HTMLRenderer
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(
-      config: @config,
-      options: { chapter: chapter_ast, book: @book }
-    )
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter_ast)
     html_result_ast = renderer.render(ast_root)
 
     # Verify HTML contains expected inline element content
@@ -395,10 +377,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     chapter_simple.content = simple_content
 
     simple_ast = ast_compiler.compile_to_ast(chapter_simple)
-    simple_renderer = ReVIEW::Renderer::HTMLRenderer.new(
-      config: @config,
-      options: { chapter: chapter_simple, book: @book }
-    )
+    simple_renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter_simple)
     result_simple = simple_renderer.render(simple_ast)
 
     # Should process basic inline elements in AST/Renderer system

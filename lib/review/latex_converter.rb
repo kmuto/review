@@ -66,10 +66,7 @@ module ReVIEW
       ast = ast_compiler.compile_to_ast(chapter)
 
       # Render with LATEXRenderer
-      renderer = Renderer::LATEXRenderer.new(
-        config: @config,
-        options: { chapter: chapter, book: chapter.book }
-      )
+      renderer = Renderer::LATEXRenderer.new(chapter)
 
       renderer.render(ast)
     end

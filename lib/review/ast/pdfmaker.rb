@@ -26,8 +26,6 @@ module ReVIEW
 
       # Override the build_pdf method to use appropriate processor
       def build_pdf
-        determine_processor_type
-
         # Log processor selection for user feedback
         if @config['ast'] && @config['ast']['debug']
           puts "AST::PDFMaker: Using #{@processor_type} processor"
@@ -36,61 +34,11 @@ module ReVIEW
         super
       end
 
-      # Determine which processor type to use based on configuration
-      def determine_processor_type
-        @processor_type = if should_use_renderer?
-                            'Renderer'
-                          else
-                            'Builder'
-                          end
-      end
-
-      # Check if Renderer should be used based on configuration
-      def should_use_renderer?
-        # Check ast.mode configuration
-        return true if @config['ast'] && @config['ast']['mode'] == 'full'
-
-        # Check pdfmaker-specific setting
-        return true if @config['pdfmaker'] && @config['pdfmaker']['use_ast_renderer']
-
-        # Check ast.latex_renderer setting
-        return true if @config['ast'] && @config['ast']['latex_renderer']
-
-        # Check environment variable override
-        return true if ENV['REVIEW_AST_PDFMAKER'] == 'true'
-
-        # Default to Renderer for AST::PDFMaker (since it's explicitly AST-focused)
-        # If user wants Builder, they should use regular review-pdfmaker
-        true
-      end
-
       # Override converter creation to use Renderer when appropriate
       def create_converter(book)
-        if should_use_renderer?
-          create_ast_converter(book)
-        else
-          create_traditional_converter(book)
-        end
-      end
-
-      # Create converter with AST Renderer
-      def create_ast_converter(book)
-        renderer = ReVIEW::Renderer::LATEXRenderer.new(
-          config: @config,
-          options: {
-            chapter: nil, # Will be set per chapter
-            book: book,
-            img_graph: @img_graph
-          }
-        )
-
         # Create a wrapper that makes Renderer compatible with Converter interface
-        RendererConverterAdapter.new(book, renderer, @config)
-      end
-
-      # Create traditional converter with Builder
-      def create_traditional_converter(book)
-        ReVIEW::Converter.new(book, ReVIEW::LATEXBuilder.new(img_graph: @img_graph))
+        # Renderer will be created per chapter in the adapter
+        RendererConverterAdapter.new(book)
       end
 
       # Override the converter creation point in build_pdf
@@ -108,10 +56,9 @@ module ReVIEW
 
     # Adapter to make Renderer compatible with Converter interface
     class RendererConverterAdapter
-      def initialize(book, renderer, config)
+      def initialize(book)
         @book = book
-        @renderer = renderer
-        @config = config
+        @config = book.config
         @compile_errors = []
       end
 
@@ -126,15 +73,13 @@ module ReVIEW
 
           # Compile chapter to AST with config
           compiler = ReVIEW::AST::Compiler.new
-          compiler.instance_variable_set(:@config, @config)
           ast_root = compiler.compile_to_ast(chapter)
 
-          # Update renderer options with current chapter
-          @renderer.instance_variable_set(:@chapter, chapter)
-          @renderer.instance_variable_set(:@book, @book)
+          # Create renderer with current chapter
+          renderer = ReVIEW::Renderer::LATEXRenderer.new(chapter)
 
           # Render to LaTeX
-          latex_output = @renderer.render(ast_root)
+          latex_output = renderer.render(ast_root)
 
           # Write output
           File.write(output_path, latex_output)

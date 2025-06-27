@@ -191,10 +191,7 @@ module ReVIEW
         log("Rendering to #{@options[:target]}...")
 
         renderer_class = load_renderer(@options[:target])
-        renderer = renderer_class.new(
-          config: chapter.book&.config || {},
-          options: { chapter: chapter, book: chapter.book }
-        )
+        renderer = renderer_class.new(chapter)
 
         # For HTML, use result method to get complete HTML document
         # For other formats, use render method directly

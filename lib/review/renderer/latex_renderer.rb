@@ -17,11 +17,8 @@ module ReVIEW
 
       attr_reader :chapter, :book
 
-      def initialize(config: {}, options: {})
-        @config = config
+      def initialize(chapter)
         super
-        @chapter = options[:chapter]
-        @book = options[:book] || @chapter&.book
 
         # Generate indexes like LATEXBuilder does
         if @chapter

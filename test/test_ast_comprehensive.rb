@@ -256,10 +256,7 @@ class TestASTComprehensive < Test::Unit::TestCase
     ast_root = ast_compiler.compile_to_ast(chapter_ast)
 
     # Render to HTML using HTMLRenderer
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(
-      config: @config,
-      options: { chapter: chapter_ast, book: @book }
-    )
+    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter_ast)
     result_ast = renderer.render(ast_root)
 
     # Verify AST/Renderer system produces comprehensive HTML
