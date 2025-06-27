@@ -12,6 +12,8 @@ require 'review/book'
 require 'review/ast/compiler'
 require 'review/version'
 require 'review/configure'
+require 'review/loggable'
+require 'review/logger'
 
 module ReVIEW
   module Command
@@ -20,6 +22,8 @@ module ReVIEW
     # This command compiles Re:VIEW source files using AST and Renderer directly,
     # without using traditional Builder classes.
     class Compile
+      include ReVIEW::Loggable
+
       class CompileError < StandardError; end
       class FileNotFoundError < CompileError; end
       class UnsupportedFormatError < CompileError; end
@@ -42,6 +46,9 @@ module ReVIEW
         }
         @version_requested = false
         @help_requested = false
+
+        # Initialize logger for Loggable
+        @logger = ReVIEW.logger
       end
 
       def run(args)
@@ -290,40 +297,42 @@ module ReVIEW
 
       # Internal class for error handling
       class ErrorHandler
+        include ReVIEW::Loggable
+
         def initialize(verbose)
           @verbose = verbose
         end
 
-        def handle(error)
-          case error
+        def handle(err)
+          case err
           when FileNotFoundError
-            $stderr.puts "Error: #{error.message}"
-            $stderr.puts 'Please check the file path and try again.'
+            error "#{err.message}"
+            error 'Please check the file path and try again.'
           when UnsupportedFormatError
-            $stderr.puts "Error: #{error.message}"
-            $stderr.puts 'Supported formats: html, latex'
+            error "#{err.message}"
+            error 'Supported formats: html, latex'
           when MissingTargetError
-            $stderr.puts "Error: #{error.message}"
-            $stderr.puts 'Example: review-ast-compile --target html chapter1.re'
+            error "#{err.message}"
+            error 'Example: review-ast-compile --target html chapter1.re'
           else
-            $stderr.puts "Error: #{error.message}"
+            error "#{err.message}"
           end
 
-          if @verbose && error.backtrace
-            $stderr.puts "\nBacktrace:"
-            $stderr.puts error.backtrace.take(10).join("\n")
+          if @verbose && err.backtrace
+            error "\nBacktrace:"
+            error err.backtrace.take(10).join("\n")
           end
         end
 
-        def handle_unexpected(error)
-          $stderr.puts "Unexpected error occurred: #{error.class}"
-          $stderr.puts error.message
+        def handle_unexpected(err)
+          error "Unexpected error occurred: #{err.class}"
+          error err.message
 
-          if @verbose && error.backtrace
-            $stderr.puts "\nBacktrace:"
-            $stderr.puts error.backtrace.join("\n")
+          if @verbose && err.backtrace
+            error "\nBacktrace:"
+            error err.backtrace.join("\n")
           else
-            $stderr.puts "\nUse --verbose for more details."
+            error "\nUse --verbose for more details."
           end
         end
       end

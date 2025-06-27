@@ -27,9 +27,7 @@ module ReVIEW
     # 統一エスケープ判定
     def needs_escape?(context)
       case context
-      when :text, :inline, :attribute
-        true
-      when :url, :comment
+      when :text, :inline, :attribute, :url, :comment
         true
       when :raw, :pre_escaped
         false

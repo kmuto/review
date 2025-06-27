@@ -239,7 +239,7 @@ module ReVIEW
             # Track cross-reference like IndexBuilder
             @crossref[:footnote][footnote_id] = @crossref[:footnote][footnote_id] ? @crossref[:footnote][footnote_id] + 1 : 1
             # Add to index if not already present (for compatibility with tests and IndexBuilder behavior)
-            unless @footnote_index.has_key?(footnote_id)
+            unless @footnote_index.key?(footnote_id)
               item = ReVIEW::Book::Index::Item.new(footnote_id, @footnote_index.size + 1)
               @footnote_index.add_item(item)
             end
@@ -251,7 +251,7 @@ module ReVIEW
             # Track cross-reference like IndexBuilder
             @crossref[:endnote][endnote_id] = @crossref[:endnote][endnote_id] ? @crossref[:endnote][endnote_id] + 1 : 1
             # Add to index if not already present (for compatibility with tests and IndexBuilder behavior)
-            unless @endnote_index.has_key?(endnote_id)
+            unless @endnote_index.key?(endnote_id)
               item = ReVIEW::Book::Index::Item.new(endnote_id, @endnote_index.size + 1)
               @endnote_index.add_item(item)
             end
@@ -261,7 +261,7 @@ module ReVIEW
             bib_id = node.args.first
             check_id(bib_id)
             # Add to index if not already present (for compatibility with tests and IndexBuilder behavior)
-            unless @bibpaper_index.has_key?(bib_id)
+            unless @bibpaper_index.key?(bib_id)
               item = ReVIEW::Book::Index::Item.new(bib_id, @bibpaper_index.size + 1)
               @bibpaper_index.add_item(item)
             end
@@ -271,7 +271,7 @@ module ReVIEW
             eq_id = node.args.first
             check_id(eq_id)
             # Add to index if not already present (for compatibility with tests and IndexBuilder behavior)
-            unless @equation_index.has_key?(eq_id)
+            unless @equation_index.key?(eq_id)
               item = ReVIEW::Book::Index::Item.new(eq_id, @equation_index.size + 1)
               @equation_index.add_item(item)
             end
@@ -284,7 +284,7 @@ module ReVIEW
             icon_id = node.args.first
             check_id(icon_id)
             # Add icon to index if not already present
-            unless @icon_index.has_key?(icon_id)
+            unless @icon_index.key?(icon_id)
               item = ReVIEW::Book::Index::Item.new(icon_id, @icon_index.size + 1)
               @icon_index.add_item(item)
             end
