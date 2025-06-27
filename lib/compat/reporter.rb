@@ -498,8 +498,8 @@ module ReVIEW
         return [] if differences.empty?
 
         # 差異をタイプごとに分類
-        added_lines = differences.select { |d| d[:type] == '+' }
-        removed_lines = differences.select { |d| d[:type] == '-' }
+        differences.select { |d| d[:type] == '+' }
+        differences.select { |d| d[:type] == '-' }
 
         # 変更されたライン範囲を特定
         all_line_numbers = differences.map { |d| d[:line_number] }.uniq.sort
@@ -511,15 +511,13 @@ module ReVIEW
         all_line_numbers.each_with_index do |line_num, _index|
           if current_start.nil?
             current_start = line_num
-            current_end = line_num
           elsif line_num <= current_end + 3 # 3行以内の間隔なら同じグループ
-            current_end = line_num
           else
             # 新しいグループを作成
             groups << create_diff_group(differences, current_start, current_end)
             current_start = line_num
-            current_end = line_num
           end
+          current_end = line_num
         end
 
         # 最後のグループを追加
@@ -550,7 +548,7 @@ module ReVIEW
               line_number: diff[:line_number],
               content: diff[:element]
             }
-          end.sort_by { |line| [line[:line_number], line[:type] == '+' ? 1 : 0] }
+          end.sort_by { |line| [line[:line_number], line[:type] == '+' ? 1 : 0] } # rubocop:disable Style/MultilineBlockChain
         }
       end
 

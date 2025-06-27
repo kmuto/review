@@ -238,7 +238,7 @@ module ReVIEW
         @current_ast_node.add_child(node)
       end
 
-      def compile_block_command_to_ast(f)
+      def compile_block_command_to_ast(f) # rubocop:disable Metrics/CyclomaticComplexity
         name, args, lines = read_command(f)
 
         # Only flush if this is not an olnum command

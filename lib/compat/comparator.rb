@@ -81,7 +81,7 @@ module ReVIEW
             # 行頭・行末の空白を削除（改行文字は保持）
             line_normalized.strip + (line.end_with?("\n") ? "\n" : '')
           end
-          normalized = normalized_lines.join('')
+          normalized = normalized_lines.join
         end
 
         normalized

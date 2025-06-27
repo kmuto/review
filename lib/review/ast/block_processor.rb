@@ -520,8 +520,8 @@ module ReVIEW
         cells.each_with_index do |cell_content, index|
           # Determine cell type based on row context and position
           cell_type = if is_header
-                        :th  # All cells in header rows are <th>
-                      elsif first_cell_header && index == 0
+                        :th # All cells in header rows are <th>
+                      elsif first_cell_header && index == 0 # rubocop:disable Lint/DuplicateBranch
                         :th  # First cell in non-header rows is <th> (row header)
                       else
                         :td  # Regular data cells
