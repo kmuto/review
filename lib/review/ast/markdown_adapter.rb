@@ -81,7 +81,7 @@ module ReVIEW
         when :hrule
           process_thematic_break(cm_node)
 
-        else
+        else # rubocop:disable Style/EmptyElse
           # For inline elements and other types, delegate to inline processing
           # This includes :text, :strong, :emph, :code, :link, :image, etc.
           nil # Inline elements are processed within their parent context
@@ -98,7 +98,6 @@ module ReVIEW
       # Process heading node
       def process_heading(cm_node)
         level = cm_node.header_level
-        caption_text = extract_text(cm_node)
 
         # Create caption node with inline elements
         caption_node = CaptionNode.new(
@@ -392,7 +391,7 @@ module ReVIEW
                                   content: "\n"
                                 ))
 
-        when :html_inline
+        when :html_inline # rubocop:disable Lint/DuplicateBranch
           # Inline HTML - store as text for now
           parent_node.add_child(TextNode.new(
                                   location: current_location(cm_node),
@@ -410,9 +409,7 @@ module ReVIEW
         text = ''
         cm_node.each do |child|
           text += case child.type
-                  when :text
-                    child.string_content
-                  when :code
+                  when :text, :code
                     child.string_content
                   else
                     extract_text(child)
