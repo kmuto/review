@@ -304,18 +304,14 @@ module ReVIEW
         end
 
         def handle(err)
+          error err.message.to_s
           case err
           when FileNotFoundError
-            error "#{err.message}"
             error 'Please check the file path and try again.'
           when UnsupportedFormatError
-            error "#{err.message}"
             error 'Supported formats: html, latex'
           when MissingTargetError
-            error "#{err.message}"
             error 'Example: review-ast-compile --target html chapter1.re'
-          else
-            error "#{err.message}"
           end
 
           if @verbose && err.backtrace

@@ -31,7 +31,7 @@ module ReVIEW
         true
       when :raw, :pre_escaped
         false
-      else
+      else # rubocop:disable Lint/DuplicateBranch
         true # デフォルトでエスケープ
       end
     end
