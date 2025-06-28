@@ -1177,13 +1177,32 @@ module ReVIEW
           content
         when 'hd'
           if node.args && node.args.first
-            # Heading reference
-            ref_id = node.args.first
-            "\\ref{#{escape(ref_id)}}"
+            # Heading reference - use Re:VIEW section reference like LATEXBuilder
+            heading_id = node.args.first
+            if @chapter && @chapter.headline_index
+              begin
+                headline_item = @chapter.headline_index[heading_id]
+                if headline_item
+                  # Generate section number and label like LATEXBuilder
+                  section_number = @chapter.headline_index.number(heading_id)
+                  section_label = "sec:#{section_number.tr('.', '-')}"
+                  section_title = headline_item.caption || heading_id
+                  "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
+                else
+                  # Fallback if headline not found in index
+                  "\\ref{#{escape(heading_id)}}"
+                end
+              rescue StandardError => e
+                raise NotImplementedError, "Heading reference failed for #{heading_id}: #{e.message}"
+              end
+            else
+              # Fallback when no headline index available
+              "\\ref{#{escape(heading_id)}}"
+            end
           else
             content
           end
-        when 'labelref', 'ref' # rubocop:disable Lint/DuplicateBranch
+        when 'labelref', 'ref'
           if node.args && node.args.first
             ref_id = node.args.first
             "\\ref{#{escape(ref_id)}}"
@@ -1211,11 +1230,29 @@ module ReVIEW
           else
             content
           end
-        when 'sec' # rubocop:disable Lint/DuplicateBranch
+        when 'sec'
           if node.args && node.args.first
-            # Section reference
-            ref_id = node.args.first
-            "\\ref{#{escape(ref_id)}}"
+            # Section reference - use Re:VIEW section reference like LATEXBuilder
+            heading_id = node.args.first
+            if @chapter && @chapter.headline_index
+              begin
+                headline_item = @chapter.headline_index[heading_id]
+                if headline_item
+                  # Generate section number and label like LATEXBuilder
+                  section_number = @chapter.headline_index.number(heading_id)
+                  section_label = "sec:#{section_number.tr('.', '-')}"
+                  "\\reviewsecref{#{section_number}}{#{section_label}}"
+                else
+                  # Fallback if headline not found in index
+                  "\\ref{#{escape(heading_id)}}"
+                end
+              rescue StandardError => e
+                raise NotImplementedError, "Section reference failed for #{heading_id}: #{e.message}"
+              end
+            else
+              # Fallback when no headline index available
+              "\\ref{#{escape(heading_id)}}"
+            end
           else
             content
           end
