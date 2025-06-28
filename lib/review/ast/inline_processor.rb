@@ -29,71 +29,22 @@ module ReVIEW
       def parse_inline_elements(str, parent_node)
         return if str.empty?
 
-        words = replace_fence(str).split(/(@<\w+>\{(?:[^}\\]|\\.)*?\})/, -1)
-        words.each do |word|
-          if word.match?(/\A@<\w+>\{.*?\}\z/)
-            # This is an inline element
-            create_inline_ast_node(word, parent_node)
+        # Parse both fence syntax (@<cmd>$...$, @<cmd>|...|) and brace syntax (@<cmd>{...})
+        tokens = tokenize_inline_elements(str)
+
+        tokens.each do |token|
+          if token[:type] == :inline
+            create_inline_ast_node_from_token(token, parent_node)
           else
-            # This is plain text
-            unless word.empty?
+            # Plain text
+            unless token[:content].empty?
               text_node = AST::TextNode.new(
                 location: @ast_compiler.location,
-                content: revert_replace_fence(word)
+                content: token[:content]
               )
               parent_node.add_child(text_node)
             end
           end
-        end
-      end
-
-      # Create inline AST node
-      def create_inline_ast_node(str, parent_node)
-        match = /\A@<(\w+)>\{(.*?)\}\z/.match(revert_replace_fence(str.gsub('\\}', '}').gsub('\\\\', '\\')))
-        return unless match
-
-        op = match[1]
-        arg = match[2]
-
-        # Special handling for certain inline types
-        case op
-        when 'embed'
-          create_inline_embed_ast_node(arg, parent_node)
-        when 'ruby'
-          create_inline_ruby_ast_node(arg, parent_node)
-        when 'href'
-          create_inline_href_ast_node(arg, parent_node)
-        when 'kw'
-          create_inline_kw_ast_node(arg, parent_node)
-        when 'hd'
-          create_inline_hd_ast_node(arg, parent_node)
-        when 'img', 'list', 'table', 'eq'
-          create_inline_ref_ast_node(op, arg, parent_node)
-        when 'chap', 'chapref', 'sec', 'secref', 'labelref', 'ref'
-          create_inline_cross_ref_ast_node(op, arg, parent_node)
-        when 'w', 'wb'
-          create_inline_word_ast_node(op, arg, parent_node)
-        else
-          # Standard inline processing
-          inline_node = AST::InlineNode.new(
-            location: @ast_compiler.location,
-            inline_type: op,
-            args: [arg]
-          )
-
-          # Handle nested inline elements in the argument
-          if arg.include?('@<')
-            parse_inline_elements(arg, inline_node)
-          else
-            # Simple text argument
-            text_node = AST::TextNode.new(
-              location: @ast_compiler.location,
-              content: arg
-            )
-            inline_node.add_child(text_node)
-          end
-
-          parent_node.add_child(inline_node)
         end
       end
 
@@ -314,24 +265,170 @@ module ReVIEW
         parent_node.add_child(inline_node)
       end
 
-      private
+      # Create inline AST node from parsed token
+      def create_inline_ast_node_from_token(token, parent_node)
+        command = token[:command]
+        content = token[:content]
 
-      def replace_fence(str)
-        str.gsub(/@<(\w+)>([$|])(.+?)(\2)/) do
-          op = $1
-          arg = $3
-          if /[\x01\x02\x03\x04]/.match?(arg)
-            # Handle error - would need access to error reporting
-            next "@<#{op}>{#{arg}}"
+        # Special handling for certain inline types
+        case command
+        when 'embed'
+          create_inline_embed_ast_node(content, parent_node)
+        when 'ruby'
+          create_inline_ruby_ast_node(content, parent_node)
+        when 'href'
+          create_inline_href_ast_node(content, parent_node)
+        when 'kw'
+          create_inline_kw_ast_node(content, parent_node)
+        when 'hd'
+          create_inline_hd_ast_node(content, parent_node)
+        when 'img', 'list', 'table', 'eq'
+          create_inline_ref_ast_node(command, content, parent_node)
+        when 'chap', 'chapref', 'sec', 'secref', 'labelref', 'ref'
+          create_inline_cross_ref_ast_node(command, content, parent_node)
+        when 'w', 'wb'
+          create_inline_word_ast_node(command, content, parent_node)
+        else
+          # Standard inline processing
+          inline_node = AST::InlineNode.new(
+            location: @ast_compiler.location,
+            inline_type: command,
+            args: [content]
+          )
+
+          # Handle nested inline elements in the content
+          if content.include?('@<')
+            parse_inline_elements(content, inline_node)
+          else
+            # Simple text content
+            text_node = AST::TextNode.new(
+              location: @ast_compiler.location,
+              content: content
+            )
+            inline_node.add_child(text_node)
           end
 
-          replaced = arg.tr('@', "\x01").tr('\\', "\x02").tr('{', "\x03").tr('}', "\x04")
-          "@<#{op}>{#{replaced}}"
+          parent_node.add_child(inline_node)
         end
       end
 
-      def revert_replace_fence(str)
-        str.tr("\x01", '@').tr("\x02", '\\').tr("\x03", '{').tr("\x04", '}')
+      private
+
+      # Tokenize string into inline elements and text parts
+      def tokenize_inline_elements(str)
+        tokens = []
+        pos = 0
+
+        while pos < str.length
+          # Look for inline element pattern
+          match = str.match(/@<(\w+)>([{$|])/, pos)
+
+          if match
+            # Add text before the match as plain text token
+            if match.begin(0) > pos
+              text_content = str[pos...match.begin(0)]
+              tokens << { type: :text, content: text_content } unless text_content.empty?
+            end
+
+            # Parse the inline element
+            inline_token = parse_inline_element_at(str, match.begin(0))
+            if inline_token
+              tokens << inline_token
+              pos = inline_token[:end_pos]
+            else
+              # Failed to parse as inline element, treat as text
+              tokens << { type: :text, content: match[0] }
+              pos = match.end(0)
+            end
+          else
+            # No more inline elements, add remaining text
+            remaining_text = str[pos..-1]
+            tokens << { type: :text, content: remaining_text } unless remaining_text.empty?
+            break
+          end
+        end
+
+        tokens
+      end
+
+      # Parse inline element at specific position
+      def parse_inline_element_at(str, start_pos)
+        # Match @<command> part from the specified position
+        substring = str[start_pos..-1]
+        command_match = substring.match(/\A@<(\w+)>([{$|])/)
+        return nil unless command_match
+
+        command = command_match[1]
+        delimiter = command_match[2]
+        content_start = start_pos + command_match[0].length
+
+        # Find matching closing delimiter
+        case delimiter
+        when '{'
+          content, end_pos = parse_brace_content(str, content_start)
+        when '$', '|'
+          content, end_pos = parse_fence_content(str, content_start, delimiter)
+        else
+          return nil
+        end
+
+        return nil unless content && end_pos
+
+        {
+          type: :inline,
+          command: command,
+          content: content,
+          start_pos: start_pos,
+          end_pos: end_pos
+        }
+      end
+
+      # Parse content within braces, handling escaped braces
+      def parse_brace_content(str, start_pos)
+        content = ''
+        pos = start_pos
+        brace_count = 1
+
+        while pos < str.length && brace_count > 0
+          char = str[pos]
+
+          case char
+          when '\\'
+            # Handle escaped character
+            if pos + 1 < str.length
+              content += char + str[pos + 1]
+              pos += 2
+            else
+              content += char
+              pos += 1
+            end
+          when '{'
+            brace_count += 1
+            content += char
+            pos += 1
+          when '}'
+            brace_count -= 1
+            if brace_count > 0
+              content += char
+            end
+            pos += 1
+          else
+            content += char
+            pos += 1
+          end
+        end
+
+        # Return content and end position if properly closed
+        brace_count == 0 ? [content, pos] : [nil, nil]
+      end
+
+      # Parse content within fence delimiters
+      def parse_fence_content(str, start_pos, delimiter)
+        end_pos = str.index(delimiter, start_pos)
+        return [nil, nil] unless end_pos
+
+        content = str[start_pos...end_pos]
+        [content, end_pos + 1]
       end
     end
   end
