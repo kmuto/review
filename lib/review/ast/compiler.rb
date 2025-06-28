@@ -195,12 +195,13 @@ module ReVIEW
           # Set column as current node so subsequent content becomes its children
           @current_ast_node = node
         else
-          # Regular headline or unsupported tag
+          # Regular headline or headline with options (nonum, notoc, nodisp)
           node = AST::HeadlineNode.new(
             location: location,
             level: level,
             label: label,
-            caption: processed_caption
+            caption: processed_caption,
+            tag: tag
           )
           if level == 1 && @ast_root && @ast_root.title.nil?
             @ast_root.title = caption

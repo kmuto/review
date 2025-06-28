@@ -516,4 +516,119 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     assert_equal expected, result
   end
+
+  def test_visit_headline_nonum
+    # Test [nonum] option - unnumbered section with TOC entry
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Unnumbered Section'))
+
+    headline = AST::HeadlineNode.new(level: 2, caption: caption, tag: 'nonum')
+    result = @renderer.visit(headline)
+
+    expected = "\\section*{Unnumbered Section}\n" +
+               "\\addcontentsline{toc}{section}{Unnumbered Section}\n" +
+               "\\label{sec:1-1}\n"
+
+    assert_equal expected, result
+  end
+
+  def test_visit_headline_notoc
+    # Test [notoc] option - unnumbered section without TOC entry
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'No TOC Section'))
+
+    headline = AST::HeadlineNode.new(level: 2, caption: caption, tag: 'notoc')
+    result = @renderer.visit(headline)
+
+    expected = "\\section*{No TOC Section}\n" +
+               "\\label{sec:1-1}\n"
+
+    assert_equal expected, result
+  end
+
+  def test_visit_headline_nodisp
+    # Test [nodisp] option - TOC entry only, no visible heading
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Hidden Section'))
+
+    headline = AST::HeadlineNode.new(level: 2, caption: caption, tag: 'nodisp')
+    result = @renderer.visit(headline)
+
+    expected = "\\addcontentsline{toc}{section}{Hidden Section}\n"
+
+    assert_equal expected, result
+  end
+
+  def test_visit_headline_nonum_level_1
+    # Test [nonum] option for level 1 (chapter)
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Unnumbered Chapter'))
+
+    headline = AST::HeadlineNode.new(level: 1, caption: caption, tag: 'nonum')
+    result = @renderer.visit(headline)
+
+    expected = "\\chapter*{Unnumbered Chapter}\n" +
+               "\\addcontentsline{toc}{chapter}{Unnumbered Chapter}\n" +
+               "\\label{chap:test}\n"
+
+    assert_equal expected, result
+  end
+
+  def test_visit_headline_nonum_level_3
+    # Test [nonum] option for level 3 (subsection)
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Unnumbered Subsection'))
+
+    headline = AST::HeadlineNode.new(level: 3, caption: caption, tag: 'nonum')
+    result = @renderer.visit(headline)
+
+    expected = "\\subsection*{Unnumbered Subsection}\n" +
+               "\\addcontentsline{toc}{subsection}{Unnumbered Subsection}\n" +
+               "\\label{sec:1-0-1}\n"
+
+    assert_equal expected, result
+  end
+
+  def test_visit_headline_part_nonum
+    # Test [nonum] option for Part level 1
+    part = ReVIEW::Book::Part.new(@book, 1, 'part1', 'part1.re', StringIO.new)
+    part.generate_indexes
+    part_renderer = Renderer::LatexRenderer.new(part)
+
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Unnumbered Part'))
+    headline = AST::HeadlineNode.new(level: 1, caption: caption, tag: 'nonum')
+    result = part_renderer.visit(headline)
+
+    expected = "\\begin{reviewpart}\n" +
+               "\\part*{Unnumbered Part}\n" +
+               "\\addcontentsline{toc}{chapter}{Unnumbered Part}\n" +
+               "\\label{chap:part1}\n"
+
+    assert_equal expected, result
+  end
+
+  def test_headline_node_tag_methods
+    # Test HeadlineNode tag checking methods
+    nonum_headline = AST::HeadlineNode.new(level: 2, tag: 'nonum')
+    notoc_headline = AST::HeadlineNode.new(level: 2, tag: 'notoc')
+    nodisp_headline = AST::HeadlineNode.new(level: 2, tag: 'nodisp')
+    regular_headline = AST::HeadlineNode.new(level: 2)
+
+    assert_true(nonum_headline.nonum?)
+    assert_false(nonum_headline.notoc?)
+    assert_false(nonum_headline.nodisp?)
+
+    assert_false(notoc_headline.nonum?)
+    assert_true(notoc_headline.notoc?)
+    assert_false(notoc_headline.nodisp?)
+
+    assert_false(nodisp_headline.nonum?)
+    assert_false(nodisp_headline.notoc?)
+    assert_true(nodisp_headline.nodisp?)
+
+    assert_false(regular_headline.nonum?)
+    assert_false(regular_headline.notoc?)
+    assert_false(regular_headline.nodisp?)
+  end
 end

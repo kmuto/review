@@ -107,7 +107,19 @@ module ReVIEW
           @sec_counter.inc(level)
         end
 
-        # LaTeX section commands - match LATEXBuilder behavior
+        # Handle special headline options (nonum, notoc, nodisp)
+        if node.nodisp?
+          # nodisp: Only add TOC entry, no visible heading
+          return prefix + generate_toc_entry(level, caption)
+        elsif node.nonum?
+          # nonum: Unnumbered section that appears in TOC
+          return prefix + generate_nonum_headline(level, caption, node)
+        elsif node.notoc?
+          # notoc: Unnumbered section that does NOT appear in TOC
+          return prefix + generate_notoc_headline(level, caption, node)
+        end
+
+        # Regular headline processing
         section_command = headline_name(level)
 
         # Generate labels like LATEXBuilder
@@ -1371,6 +1383,83 @@ module ReVIEW
       # Check if Part document should be wrapped with reviewpart environment
       def should_wrap_part_with_reviewpart?
         @chapter.is_a?(ReVIEW::Book::Part)
+      end
+
+      # Generate TOC entry only (for nodisp headlines)
+      def generate_toc_entry(level, caption)
+        toc_type = case level
+                   when 1
+                     'chapter'
+                   when 2
+                     'section'
+                   else
+                     'subsection'
+                   end
+        "\\addcontentsline{toc}{#{toc_type}}{#{caption}}\n"
+      end
+
+      # Generate unnumbered headline with TOC entry (for nonum headlines)
+      def generate_nonum_headline(level, caption, node)
+        section_command = get_base_section_name(level) + '*'
+        label_part = generate_label_for_node(level, node)
+
+        result = []
+        result << "\\#{section_command}{#{caption}}"
+
+        # Add TOC entry
+        toc_type = case level
+                   when 1
+                     'chapter'
+                   when 2
+                     'section'
+                   else
+                     'subsection'
+                   end
+        result << "\\addcontentsline{toc}{#{toc_type}}{#{caption}}"
+
+        unless label_part.empty?
+          result << label_part
+        end
+
+        result.join("\n") + "\n"
+      end
+
+      # Generate unnumbered headline without TOC entry (for notoc headlines)
+      def generate_notoc_headline(level, caption, node)
+        section_command = get_base_section_name(level) + '*'
+        label_part = generate_label_for_node(level, node)
+
+        result = []
+        result << "\\#{section_command}{#{caption}}"
+
+        unless label_part.empty?
+          result << label_part
+        end
+
+        result.join("\n") + "\n"
+      end
+
+      # Get base section name without star
+      def get_base_section_name(level)
+        if @chapter.is_a?(ReVIEW::Book::Part) && level == 1
+          'part'
+        else
+          HEADLINE[level] || raise(CompileError, "Unsupported headline level: #{level}")
+        end
+      end
+
+      # Generate label for headline node
+      def generate_label_for_node(level, node)
+        if level == 1 && @chapter
+          "\\label{chap:#{@chapter.id}}"
+        elsif @sec_counter && level >= 2
+          anchor = @sec_counter.anchor(level)
+          "\\label{sec:#{anchor}}"
+        elsif node.label
+          "\\label{#{escape(node.label)}}"
+        else
+          ''
+        end
       end
     end
   end
