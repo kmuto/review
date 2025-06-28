@@ -306,18 +306,16 @@ module ReVIEW
           )
           @current_ast_node.add_child(node)
         when :texequation
-          # Math equations - use specialized block handling
-          # Note: texequation is intentionally using BlockNode rather than CodeBlockNode
-          # because math content doesn't need line numbers, syntax highlighting, or inline processing
-          node = AST::BlockNode.new(
+          # Math equations - use dedicated TexEquationNode
+          require 'review/ast/tex_equation_node'
+          node = AST::TexEquationNode.new(
             location: location,
-            block_type: :texequation,
             id: args && args[0],
             caption: args && args[1]
           )
+          # Add LaTeX content lines
           lines.each do |line|
-            text_node = AST::TextNode.new(location: location, content: line)
-            node.add_child(text_node)
+            node.add_content_line(line)
           end
           @current_ast_node.add_child(node)
         else

@@ -126,6 +126,8 @@ module ReVIEW
           process_embed(node)
         when AST::FootnoteNode
           process_footnote(node)
+        when AST::TexEquationNode
+          process_tex_equation(node)
         end
 
         # Recursively process child nodes
@@ -239,6 +241,16 @@ module ReVIEW
           @crossref[:endnote][node.id] ||= 0
           @endnote_index.add_or_update(node.id, content: footnote_content, footnote_node: node)
         end
+      end
+
+      # Process texequation nodes
+      def process_tex_equation(node)
+        return unless node.id?
+
+        check_id(node.id)
+        caption_text = node.caption? ? node.caption : ''
+        item = ReVIEW::Book::Index::Item.new(node.id, @equation_index.size + 1, caption_text)
+        @equation_index.add_item(item)
       end
 
       # Process inline nodes (matches IndexBuilder behavior)

@@ -817,6 +817,62 @@ module ReVIEW
         result.join("\n") + "\n"
       end
 
+      def visit_tex_equation(node)
+        # Handle LaTeX mathematical equation blocks
+        # Output the LaTeX content directly without escaping since it's raw LaTeX
+        content = node.content
+
+        if node.id? && node.caption?
+          # Equation with ID and caption - use reviewequationblock like traditional compiler
+          equation_num = get_equation_number(node.id)
+          result = []
+          result << '\\begin{reviewequationblock}'
+          result << "\\reviewequationcaption{#{escape("式#{equation_num}: #{node.caption}")}}"
+          result << '\\begin{equation*}'
+          result << content
+          result << '\\end{equation*}'
+          result << '\\end{reviewequationblock}'
+          result.join("\n") + "\n"
+        elsif node.id?
+          # Equation with ID only - still use reviewequationblock for consistency
+          equation_num = get_equation_number(node.id)
+          result = []
+          result << '\\begin{reviewequationblock}'
+          result << "\\reviewequationcaption{#{escape("式#{equation_num}")}}"
+          result << '\\begin{equation*}'
+          result << content
+          result << '\\end{equation*}'
+          result << '\\end{reviewequationblock}'
+          result.join("\n") + "\n"
+        else
+          # Equation without ID - use equation* environment (no numbering)
+          result = []
+          result << '\\begin{equation*}'
+          result << content
+          result << '\\end{equation*}'
+          result.join("\n") + "\n"
+        end
+      end
+
+      # Get equation number for texequation blocks
+      def get_equation_number(equation_id)
+        if @chapter && @chapter.equation_index
+          begin
+            equation_number = @chapter.equation_index.number(equation_id)
+            if @chapter.number
+              "#{@chapter.number}.#{equation_number}"
+            else
+              equation_number.to_s
+            end
+          rescue StandardError
+            # Fallback if equation not found in index
+            '??'
+          end
+        else
+          '??'
+        end
+      end
+
       # Add line numbers to content like LATEXBuilder does
       def add_line_numbers(content)
         lines = content.split("\n")
@@ -1058,7 +1114,22 @@ module ReVIEW
           end
         when 'eq', 'eqref'
           if node.args && node.args.first
-            "\\eqref{#{escape(node.args.first)}}"
+            # Use Re:VIEW equation reference like LATEXBuilder
+            equation_id = node.args.first
+            if @chapter && @chapter.equation_index
+              begin
+                equation_item = @chapter.equation_index.number(equation_id)
+                if @chapter.number
+                  "\\reviewequationref{#{@chapter.number}.#{equation_item}}"
+                else
+                  "\\reviewequationref{#{equation_item}}"
+                end
+              rescue StandardError => e
+                raise NotImplementedError, "Equation reference failed for #{equation_id}: #{e.message}"
+              end
+            else
+              raise NotImplementedError, 'Equation reference requires chapter context but none provided'
+            end
           else
             content
           end
