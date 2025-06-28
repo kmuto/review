@@ -34,7 +34,7 @@ module ReVIEW
       EXIT_COMPILE_ERROR = 1
       EXIT_UNEXPECTED_ERROR = 2
 
-      attr_reader :options
+      attr_reader :options, :logger
 
       def initialize
         @options = {
@@ -292,15 +292,16 @@ module ReVIEW
       end
 
       def error_handler
-        @error_handler ||= ErrorHandler.new(@options[:verbose])
+        @error_handler ||= ErrorHandler.new(@options[:verbose], logger: @logger)
       end
 
       # Internal class for error handling
       class ErrorHandler
         include ReVIEW::Loggable
 
-        def initialize(verbose)
+        def initialize(verbose, logger:)
           @verbose = verbose
+          @logger = logger
         end
 
         def handle(err)

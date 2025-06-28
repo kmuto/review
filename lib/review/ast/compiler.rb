@@ -216,7 +216,9 @@ module ReVIEW
         f.until_match(%r{\A//|\A\#@}) do |line|
           break if line.strip.empty?
 
-          raw_lines.push(line.sub(/^(\t*)(.*)$/) { $1 + $2.strip })
+          # Remove trailing newline and process indentation/content
+          processed_line = line.chomp.sub(/^(\t*)(.*)$/) { $1 + $2.rstrip }
+          raw_lines.push(processed_line)
         end
 
         return if raw_lines.empty?

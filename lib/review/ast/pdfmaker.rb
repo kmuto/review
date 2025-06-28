@@ -20,6 +20,38 @@ module ReVIEW
       def initialize
         super
         @processor_type = nil
+        @compile_errors_list = []
+      end
+
+      # Override check_compile_status to provide detailed error information
+      def check_compile_status(ignore_errors)
+        # Check for errors in both main class and adapter
+        has_errors = @compile_errors || (@renderer_adapter && @renderer_adapter.any_errors?)
+        return unless has_errors
+
+        # Set the compile_errors flag for parent class compatibility
+        @compile_errors = true
+
+        # Output detailed error summary
+        if summary = compilation_error_summary
+          @logger.error summary
+        end
+
+        super
+      end
+
+      # Provide summary of all compilation errors
+      def compilation_error_summary
+        errors = @compile_errors_list.dup
+        errors.concat(@renderer_adapter.compile_errors_list) if @renderer_adapter
+
+        return nil if errors.empty?
+
+        summary = ["Compilation errors occurred in #{errors.length} file(s):"]
+        errors.each_with_index do |error, i|
+          summary << "  #{i + 1}. #{error}"
+        end
+        summary.join("\n")
       end
 
       private
@@ -38,7 +70,7 @@ module ReVIEW
       def create_converter(book)
         # Create a wrapper that makes Renderer compatible with Converter interface
         # Renderer will be created per chapter in the adapter
-        RendererConverterAdapter.new(book)
+        @renderer_adapter = RendererConverterAdapter.new(book)
       end
 
       # Override the converter creation point in build_pdf
@@ -55,10 +87,18 @@ module ReVIEW
 
     # Adapter to make Renderer compatible with Converter interface
     class RendererConverterAdapter
+      attr_reader :compile_errors_list
+
       def initialize(book)
         @book = book
         @config = book.config
-        @compile_errors = []
+        @compile_errors = false
+        @compile_errors_list = []
+        @logger = ReVIEW.logger
+      end
+
+      def any_errors?
+        @compile_errors || !@compile_errors_list.empty?
       end
 
       # Convert a chapter using the AST Renderer
@@ -84,18 +124,46 @@ module ReVIEW
           File.write(output_path, latex_output)
 
           true
-        rescue StandardError => e
-          @compile_errors << "#{filename}: #{e.message}"
-          if @config['ast'] && @config['ast']['debug']
-            puts "AST Renderer Error in #{filename}: #{e.message}"
-            puts e.backtrace.first(5)
+        rescue ReVIEW::CompileError, ReVIEW::SyntaxError, ReVIEW::InlineTokenizeError => e
+          # These are known ReVIEW compilation errors - handle them specifically
+          error_message = "#{filename}: #{e.class.name} - #{e.message}"
+          @compile_errors_list << error_message
+          @compile_errors = true
+
+          @logger.error "Compilation error in #{filename}: #{e.message}"
+
+          # Show location information if available
+          if e.respond_to?(:location) && e.location
+            @logger.error "  at line #{e.location.lineno} in #{e.location.filename}"
           end
+
+          # Show backtrace in debug mode
+          if @config['ast'] && @config['ast']['debug']
+            @logger.debug('Backtrace:')
+            e.backtrace.first(10).each { |line| @logger.debug("  #{line}") }
+          end
+
+          false
+        rescue StandardError => e
+          error_message = "#{filename}: #{e.message}"
+          @compile_errors_list << error_message
+          @compile_errors = true # Set flag for parent class compatibility
+
+          # Always output error to user, not just in debug mode
+          @logger.error "AST Renderer Error in #{filename}: #{e.message}"
+
+          # Show backtrace in debug mode
+          if @config['ast'] && @config['ast']['debug']
+            @logger.debug('Backtrace:')
+            e.backtrace.first(10).each { |line| @logger.debug("  #{line}") }
+          end
+
           false
         end
       end
 
       # Compatibility method for error handling
-      attr_reader :compile_errors
+      attr_reader :compile_errors_list
 
       private
 

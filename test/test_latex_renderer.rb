@@ -44,7 +44,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     paragraph.add_child(text)
 
     result = @renderer.visit(paragraph)
-    assert_equal "This is a paragraph.\n", result
+    assert_equal "This is a paragraph.\n\n", result
   end
 
   def test_visit_paragraph_dual
@@ -53,7 +53,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     paragraph.add_child(text)
 
     result = @renderer.visit(paragraph)
-    assert_equal "This is a paragraph.\n\nNext paragraph.\n\n", result
+    assert_equal "This is a paragraph.\n\nNext paragraph.\n\n\n", result
   end
 
   def test_visit_headline_level_1
@@ -245,7 +245,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     document.add_child(paragraph)
 
     result = @renderer.visit(document)
-    assert_equal "Hello World\n", result
+    assert_equal "Hello World\n\n", result
   end
 
   def test_render_inline_element_href_with_args

@@ -143,10 +143,10 @@ module ReVIEW
         # Check for noindent attribute
         if node.attribute?(:noindent)
           # Add \noindent command like LATEXBuilder
-          "\\noindent\n#{content}\n"
+          "\\noindent\n#{content}\n\n"
         else
-          # Add single newline for paragraph end
-          "#{content}\n"
+          # Add double newline for paragraph separation (LaTeX standard)
+          "#{content}\n\n"
         end
       end
 
