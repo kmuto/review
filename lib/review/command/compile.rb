@@ -177,13 +177,66 @@ module ReVIEW
         book = ReVIEW::Book::Base.new(book_basedir, config: config)
         basename = File.basename(@input_file, '.*')
 
+        # Try to find the correct chapter number from book catalog
+        chapter_number = find_chapter_number(book, basename)
+
+        # If chapter number not found, try to extract from filename (e.g., ch03.re -> 3)
+        if chapter_number.nil?
+          chapter_number = extract_chapter_number_from_filename(basename)
+        end
+
+        # Final fallback to 1 if all else fails
+        chapter_number ||= 1
+
         ReVIEW::Book::Chapter.new(
           book,
-          1,
+          chapter_number,
           basename,
           @input_file,
           StringIO.new(content)
         )
+      end
+
+      def find_chapter_number(book, basename)
+        # Try to load catalog and find chapter number
+        return nil unless book
+
+        # Look for catalog.yml in the book directory
+        catalog_file = File.join(book.basedir, 'catalog.yml')
+        return nil unless File.exist?(catalog_file)
+
+        begin
+          require 'yaml'
+          catalog = YAML.load_file(catalog_file)
+
+          # Search in CHAPS section for the chapter filename
+          if catalog['CHAPS']
+            catalog['CHAPS'].each_with_index do |chapter_file, index|
+              # Remove extension and compare basename
+              catalog_basename = File.basename(chapter_file, '.*')
+              return index + 1 if catalog_basename == basename
+            end
+          end
+        rescue StandardError => e
+          log("Warning: Could not parse catalog.yml: #{e.message}")
+        end
+
+        nil
+      end
+
+      def extract_chapter_number_from_filename(basename)
+        # Try to extract chapter number from common filename patterns
+        case basename
+        when /^ch(?:ap)?(\d+)$/i          # ch01, ch1, chap01, chap1, etc.
+          $1.to_i
+        when /^chapter(\d+)$/i            # chapter01, chapter1, etc.
+          $1.to_i
+        when /^(\d+)$/                    # 01, 1, etc.
+          $1.to_i
+        else
+          log("Warning: Could not extract chapter number from filename '#{basename}', using fallback")
+          nil
+        end
       end
 
       def generate_ast(chapter)
