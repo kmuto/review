@@ -257,6 +257,31 @@ class TestMarkdownColumn < Test::Unit::TestCase
     assert_equal 0, columns.length
   end
 
+  def test_code_spans_in_columns
+    content = <<~MARKDOWN
+      # Chapter
+
+      ### [column] Code Test
+      This column has `inline code` and more `code spans`.
+      <!-- /column -->
+    MARKDOWN
+
+    chapter = create_chapter(content)
+    ast_root = @compiler.compile_to_ast(chapter)
+
+    # Test HTML rendering
+    html_renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    html_output = html_renderer.render(ast_root)
+    assert_match(%r{<code[^>]*>inline code</code>}, html_output)
+    assert_match(%r{<code[^>]*>code spans</code>}, html_output)
+
+    # Test LaTeX rendering
+    latex_renderer = ReVIEW::Renderer::LatexRenderer.new(chapter)
+    latex_output = latex_renderer.render(ast_root)
+    assert_match(/\\reviewcode\{inline code\}/, latex_output)
+    assert_match(/\\reviewcode\{code spans\}/, latex_output)
+  end
+
   def test_unmatched_column_end
     content = <<~MARKDOWN
       # Chapter

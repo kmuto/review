@@ -863,7 +863,7 @@ module ReVIEW
       end
 
       def render_inline_element(type, content, node)
-        case type
+        case type.to_s
         when 'b'
           "\\reviewbold{#{content}}"
         when 'strong'

@@ -495,7 +495,7 @@ module ReVIEW
       end
 
       def render_inline_element(type, content, node) # rubocop:disable Metrics/CyclomaticComplexity
-        case type
+        case type.to_s
         when 'b'
           render_inline_b(content, node)
         when 'strong'
