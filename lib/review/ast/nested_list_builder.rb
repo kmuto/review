@@ -79,10 +79,11 @@ module ReVIEW
           # Create list item for term/definition pair
           item_node = create_list_item_node(item_data)
 
-          # Add term content (first child)
-          add_content_to_item(item_node, item_data.content)
+          # For definition lists, process the term inline elements and store separately
+          # from definition content to avoid mixing term and definition children
+          process_definition_term_content(item_node, item_data.content)
 
-          # Add definition content (additional children)
+          # Add definition content (additional children) - only definition, not term
           item_data.continuation_lines.each do |definition_line|
             add_definition_content(item_node, definition_line)
           end
@@ -272,6 +273,45 @@ module ReVIEW
         end
       end
 
+      # Process definition list term content with inline elements
+      # @param item_node [ListItemNode] Target item node
+      # @param term_content [String] Term content to process
+      def process_definition_term_content(item_node, term_content)
+        # Add term_children functionality to the item_node if it doesn't exist
+        unless item_node.respond_to?(:term_children)
+          add_term_children_functionality(item_node)
+        end
+
+        if term_content.include?('@<') && @inline_processor
+          # Create a temporary container to collect processed term elements
+          temp_container = AST::Node.new(location: current_location)
+          @inline_processor.parse_inline_elements(term_content, temp_container)
+
+          # Set the processed elements as term_children
+          item_node.term_children = temp_container.children
+        else
+          # For plain text terms, create a simple text node
+          text_node = AST::TextNode.new(location: current_location, content: term_content)
+          item_node.term_children = [text_node]
+        end
+      end
+
+      # Add term_children functionality to a ListItemNode instance
+      # @param item_node [ListItemNode] Target item node
+      def add_term_children_functionality(item_node)
+        # Add instance variable
+        item_node.instance_variable_set(:@term_children, [])
+
+        # Add accessor methods
+        item_node.define_singleton_method(:term_children) do
+          @term_children
+        end
+
+        item_node.define_singleton_method(:term_children=) do |value|
+          @term_children = value
+        end
+      end
+
       # Create a new ListNode
       # @param list_type [Symbol] Type of list (:ul, :ol, :dl, etc.)
       # @return [ListNode] New list node
@@ -297,7 +337,7 @@ module ReVIEW
           node_attributes[:content] = item_data.content
         end
 
-        ListItemNode.new(**node_attributes)
+        AST::ListItemNode.new(**node_attributes)
       end
 
       # Create empty list node

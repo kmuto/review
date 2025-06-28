@@ -162,9 +162,6 @@ module ReVIEW
         end
       end
 
-      # Compatibility method for error handling
-      attr_reader :compile_errors_list
-
       private
 
       # Find chapter object by filename

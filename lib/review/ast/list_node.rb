@@ -47,12 +47,13 @@ module ReVIEW
     end
 
     class ListItemNode < Node
-      attr_accessor :level, :number
+      attr_accessor :level, :number, :term_children
 
       def initialize(location: nil, content: nil, level: 1, number: nil, **kwargs)
         super(location: location, content: content, **kwargs)
         @level = level
         @number = number
+        @term_children = [] # For definition lists: stores processed term content separately
       end
 
       def to_h
@@ -60,6 +61,7 @@ module ReVIEW
           level: level
         )
         result[:number] = number if number
+        result[:term_children] = term_children.map(&:to_h) if term_children.any?
         result
       end
 
@@ -67,6 +69,7 @@ module ReVIEW
 
       def serialize_properties(hash, options)
         hash[:children] = children.map { |child| child.serialize_to_hash(options) } if children.any?
+        hash[:term_children] = term_children.map { |child| child.serialize_to_hash(options) } if term_children.any?
         hash[:level] = level
         hash[:number] = number if number
         hash

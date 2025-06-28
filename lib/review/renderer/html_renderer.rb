@@ -71,61 +71,6 @@ module ReVIEW
         render_children(node)
       end
 
-      private
-
-      # Generate indexes using AST::Indexer for Renderer (builder-independent)
-      def generate_ast_indexes(ast_node)
-        return if @ast_indexes_generated
-
-        if @chapter
-          # Use AST::Indexer to generate indexes directly from AST
-          @ast_indexer = ReVIEW::AST::Indexer.new(@chapter)
-          @ast_indexer.build_indexes(ast_node)
-
-          # Set indexes on chapter object for compatibility
-          # (using instance variable access since there are no setter methods)
-          @chapter.instance_variable_set(:@list_index, @ast_indexer.list_index)
-          @chapter.instance_variable_set(:@table_index, @ast_indexer.table_index)
-          @chapter.instance_variable_set(:@equation_index, @ast_indexer.equation_index)
-          @chapter.instance_variable_set(:@footnote_index, @ast_indexer.footnote_index)
-          @chapter.instance_variable_set(:@endnote_index, @ast_indexer.endnote_index)
-          @chapter.instance_variable_set(:@headline_index, @ast_indexer.headline_index)
-          @chapter.instance_variable_set(:@column_index, @ast_indexer.column_index)
-          @chapter.instance_variable_set(:@numberless_image_index, @ast_indexer.numberless_image_index)
-          @chapter.instance_variable_set(:@image_index, @ast_indexer.image_index)
-          @chapter.instance_variable_set(:@icon_index, @ast_indexer.icon_index)
-          @chapter.instance_variable_set(:@indepimage_index, @ast_indexer.indepimage_index)
-          @chapter.instance_variable_set(:@bibpaper_index, @ast_indexer.bibpaper_index)
-        end
-
-        # Generate book-level indexes if book is available
-        # This handles bib files and chapter index creation
-        if @book && @book.respond_to?(:generate_indexes)
-          @book.generate_indexes
-        end
-
-        @ast_indexes_generated = true
-      end
-
-      # Access indexes from AST::Indexer or fallback to chapter
-      def get_list_index
-        @ast_indexer&.list_index || @chapter&.list_index
-      end
-
-      def get_table_index
-        @ast_indexer&.table_index || @chapter&.table_index
-      end
-
-      def get_image_index
-        @ast_indexer&.image_index || @chapter&.image_index
-      end
-
-      def get_headline_index
-        @ast_indexer&.headline_index || @chapter&.headline_index
-      end
-
-      public
-
       def visit_headline(node)
         level = node.level
         caption = render_children(node.caption) if node.caption
@@ -201,7 +146,7 @@ module ReVIEW
               "<dd>#{definition_content}</dd>"
             end
 
-            dt_element + definitions.join('')
+            dt_element + definitions.join
           elsif node.children && node.children.length == 1
             # Only term, no definition
             term = visit(node.children[0])
@@ -234,13 +179,9 @@ module ReVIEW
         case node.code_type
         when :emlist
           # Emlist block - like HTMLBuilder's emlist with proper detab and line processing
-          caption_html = if node.caption
+          caption_html = if node.caption && caption_top?('list')
                            caption_content = render_children(node.caption)
-                           if caption_top?('list')
-                             %Q(<p class="caption">#{caption_content}</p>\n)
-                           else
-                             ''
-                           end
+                           %Q(<p class="caption">#{caption_content}</p>\n)
                          else
                            ''
                          end
@@ -260,13 +201,9 @@ module ReVIEW
           %Q(<div class="emlist-code">\n#{caption_html}<pre class="emlist#{lang_class}#{highlight_class}">#{processed_content}</pre>\n#{caption_bottom_html}</div>\n)
         when :emlistnum
           # Emlistnum block - like HTMLBuilder's emlistnum
-          caption_html = if node.caption
+          caption_html = if node.caption && caption_top?('list')
                            caption_content = render_children(node.caption)
-                           if caption_top?('list')
-                             %Q(<p class="caption">#{caption_content}</p>\n)
-                           else
-                             ''
-                           end
+                           %Q(<p class="caption">#{caption_content}</p>\n)
                          else
                            ''
                          end
@@ -878,16 +815,10 @@ module ReVIEW
         # HTMLBuilder uses: lines.inject('') { |i, j| i + detab(j) + "\n" }
         # We need to emulate this exact behavior to match Builder output
 
-        # Debug: Check what we're receiving
-        # puts "DEBUG: lines_content received: #{lines_content.inspect}"
-
         lines = lines_content.split("\n")
-        # puts "DEBUG: split lines: #{lines.inspect}"
 
         # Use inject pattern exactly like HTMLBuilder for consistency
         body = lines.inject('') { |i, j| i + detab(j) + "\n" }
-
-        # puts "DEBUG: final body: #{body.inspect}"
 
         # Apply highlighting if enabled, otherwise return processed body
         highlight(body: body, lexer: lang, format: 'html')
@@ -965,12 +896,6 @@ module ReVIEW
           options: options,
           location: location
         )
-      end
-
-      private
-
-      def highlighter
-        @highlighter ||= ReVIEW::Highlighter.new(@book&.config || {})
       end
 
       public
@@ -1178,6 +1103,44 @@ module ReVIEW
       end
 
       private
+
+      # Generate indexes using AST::Indexer for Renderer (builder-independent)
+      def generate_ast_indexes(ast_node)
+        return if @ast_indexes_generated
+
+        if @chapter
+          # Use AST::Indexer to generate indexes directly from AST
+          @ast_indexer = ReVIEW::AST::Indexer.new(@chapter)
+          @ast_indexer.build_indexes(ast_node)
+
+          # Set indexes on chapter object for compatibility
+          # (using instance variable access since there are no setter methods)
+          @chapter.instance_variable_set(:@list_index, @ast_indexer.list_index)
+          @chapter.instance_variable_set(:@table_index, @ast_indexer.table_index)
+          @chapter.instance_variable_set(:@equation_index, @ast_indexer.equation_index)
+          @chapter.instance_variable_set(:@footnote_index, @ast_indexer.footnote_index)
+          @chapter.instance_variable_set(:@endnote_index, @ast_indexer.endnote_index)
+          @chapter.instance_variable_set(:@headline_index, @ast_indexer.headline_index)
+          @chapter.instance_variable_set(:@column_index, @ast_indexer.column_index)
+          @chapter.instance_variable_set(:@numberless_image_index, @ast_indexer.numberless_image_index)
+          @chapter.instance_variable_set(:@image_index, @ast_indexer.image_index)
+          @chapter.instance_variable_set(:@icon_index, @ast_indexer.icon_index)
+          @chapter.instance_variable_set(:@indepimage_index, @ast_indexer.indepimage_index)
+          @chapter.instance_variable_set(:@bibpaper_index, @ast_indexer.bibpaper_index)
+        end
+
+        # Generate book-level indexes if book is available
+        # This handles bib files and chapter index creation
+        if @book && @book.respond_to?(:generate_indexes)
+          @book.generate_indexes
+        end
+
+        @ast_indexes_generated = true
+      end
+
+      def highlighter
+        @highlighter ||= ReVIEW::Highlighter.new(@book&.config || {})
+      end
 
       # Helper methods for template variables
       def strip_html(content)

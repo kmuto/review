@@ -150,7 +150,7 @@ module ReVIEW
             compile_ul_to_ast(f)
           when /\A\s+\d+\.\s/ # ordered list (must start with space)
             compile_ol_to_ast(f)
-          when /\A\s+:\s/ # definition list (must start with space)
+          when /\A\s*:\s/ # definition list (may start with optional space)
             compile_dl_to_ast(f)
           else
             compile_paragraph_to_ast(f)
@@ -282,9 +282,6 @@ module ReVIEW
             node.add_child(text_node)
           end
           @current_ast_node.add_child(node)
-        when :footnote, :endnote
-          # Footnote and endnote commands are handled by Block Processor
-          # This ensures proper argument parsing and content extraction
         when :blankline, :noindent, :pagebreak, :firstlinenum, :tsize, :label, :printendnotes, :hr, :bpo, :parasep
           # Control commands without content or with special handling
           node = AST::BlockNode.new(

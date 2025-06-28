@@ -202,8 +202,7 @@ module ReVIEW
                  when 'source'
                    visit_source_block(node, content, caption)
                  else
-                   # Default to emlist for unknown or nil code types
-                   visit_emlist_block(node, content, caption)
+                   raise NotImplementedError, "Unknown code block type: #{code_type}"
                  end
 
         # Add footnotetext commands for footnotes used in caption
@@ -497,16 +496,23 @@ module ReVIEW
         when :dl
           # Definition list - generate LaTeX description environment like LATEXBuilder
           items = node.children.map do |item|
-            if item.children && item.children.length >= 2
-              # Handle definition term (first child)
-              term_node = item.children[0]
-              term = visit(term_node) # Use visit instead of render_children for individual nodes
+            # Handle definition term - use term_children if available (new AST structure)
+            term = if item.respond_to?(:term_children) && item.term_children && !item.term_children.empty?
+                     # Render term children (which contain inline elements)
+                     item.term_children.map { |child| visit(child) }.join
+                   elsif item.content
+                     # Fallback to item content (raw text)
+                     item.content.to_s
+                   else
+                     ''
+                   end
 
-              # Escape square brackets in terms like LATEXBuilder does
-              term = term.gsub('[', '\\lbrack{}').gsub(']', '\\rbrack{}')
+            # Escape square brackets in terms like LATEXBuilder does
+            term = term.gsub('[', '\\lbrack{}').gsub(']', '\\rbrack{}')
 
-              # Handle definition content (rest of children)
-              definition_parts = item.children[1..-1].map do |child|
+            # Handle definition content (all children are definition content)
+            if item.children && !item.children.empty?
+              definition_parts = item.children.map do |child|
                 visit(child) # Use visit instead of render_children for individual nodes
               end
               definition = definition_parts.join(' ').strip
@@ -514,14 +520,7 @@ module ReVIEW
               # Use exact LATEXBuilder format: \item[term] \mbox{} \\
               "\\item[#{term}] \\mbox{} \\\\\n#{definition}"
             else
-              # Single child - treat entire content as term with empty definition
-              term = if item.children && item.children.length == 1
-                       visit(item.children[0])
-                     else
-                       # Fallback to item content if no children
-                       item.content.to_s
-                     end
-              term = term.gsub('[', '\\lbrack{}').gsub(']', '\\rbrack{}')
+              # No definition content - term only
               "\\item[#{term}] \\mbox{} \\\\"
             end
           end.join("\n")
@@ -535,7 +534,7 @@ module ReVIEW
         raise NotImplementedError, 'List item processing should be handled by visit_list, not as standalone items'
       end
 
-      def visit_block(node)
+      def visit_block(node) # rubocop:disable Metrics/CyclomaticComplexity
         content = render_children(node)
         block_type = node.block_type.to_s
 
@@ -594,7 +593,7 @@ module ReVIEW
         when 'comment'
           # Comment blocks should not produce any output in final document
           ''
-        when 'beginchild', 'endchild'
+        when 'beginchild', 'endchild' # rubocop:disable Lint/DuplicateBranch
           # Child nesting control commands - produce no output
           ''
         when 'centering'
@@ -603,7 +602,7 @@ module ReVIEW
         when 'flushright'
           # Right alignment
           "\\begin{flushright}\n#{content}\\end{flushright}\n"
-        when 'address'
+        when 'address' # rubocop:disable Lint/DuplicateBranch
           # Address block - similar to flushright
           "\\begin{flushright}\n#{content}\\end{flushright}\n"
         when 'talk'
@@ -615,11 +614,11 @@ module ReVIEW
         when 'blockquote'
           # Block quotation - same as quote but different semantic meaning
           "\\begin{quote}\n#{content}\\end{quote}\n"
-        when 'blankline', 'noindent', 'pagebreak', 'tsize', 'endnote', 'label', 'printendnotes', 'hr', 'bpo', 'parasep'
+        when 'blankline', 'noindent', 'pagebreak', 'tsize', 'endnote', 'label', 'printendnotes', 'hr', 'bpo', 'parasep' # rubocop:disable Lint/DuplicateBranch
           # Control commands that should not generate LaTeX environment blocks
           ''
         else
-          raise NotImplementedError, "Unsupported block type: #{block_type}"
+          raise NotImplementedError, "Unknown block type: #{block_type}"
         end
       end
 
@@ -692,7 +691,7 @@ module ReVIEW
                         'subsection'
                       when 4
                         'subsubsection'
-                      else
+                      else # rubocop:disable Lint/DuplicateBranch
                         'subsection' # fallback
                       end
           result << "\\addcontentsline{toc}{#{toc_level}}{#{caption}}"
@@ -709,11 +708,8 @@ module ReVIEW
 
       def visit_embed(node)
         # Handle different embed types
-        if node.respond_to?(:embed_type) && node.embed_type == :raw
-          # Handle //raw command with LATEXBuilder-compatible behavior
-          return process_raw_embed(node)
-        elsif node.respond_to?(:embed_type) && node.embed_type == :inline
-          # Handle inline @<raw> command
+        if node.respond_to?(:embed_type) && (node.embed_type == :raw || node.embed_type == :inline)
+          # Handle //raw command or inline @<raw> command
           return process_raw_embed(node)
         end
 
@@ -832,7 +828,6 @@ module ReVIEW
           result << content
           result << '\\end{equation*}'
           result << '\\end{reviewequationblock}'
-          result.join("\n") + "\n"
         elsif node.id?
           # Equation with ID only - still use reviewequationblock for consistency
           equation_num = get_equation_number(node.id)
@@ -843,15 +838,15 @@ module ReVIEW
           result << content
           result << '\\end{equation*}'
           result << '\\end{reviewequationblock}'
-          result.join("\n") + "\n"
         else
           # Equation without ID - use equation* environment (no numbering)
           result = []
           result << '\\begin{equation*}'
           result << content
           result << '\\end{equation*}'
-          result.join("\n") + "\n"
         end
+
+        result.join("\n") + "\n"
       end
 
       # Get equation number for texequation blocks
@@ -918,7 +913,7 @@ module ReVIEW
         end
       end
 
-      def render_inline_element(type, content, node)
+      def render_inline_element(type, content, node) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
         case type.to_s
         when 'b'
           "\\reviewbold{#{content}}"
@@ -956,7 +951,7 @@ module ReVIEW
                   footnote_number = @chapter.footnote_index.number(footnote_id)
                   @foottext[footnote_id] = footnote_number
                   '\\protect\\footnotemark'
-                rescue StandardError => e
+                rescue StandardError => e # rubocop:disable Metrics/BlockNesting
                   raise NotImplementedError, "Footnote inline processing failed for #{footnote_id}: #{e.message}"
                 end
               else
@@ -968,7 +963,7 @@ module ReVIEW
                 index_item = @chapter.footnote_index[footnote_id]
 
                 # Try to get FootnoteNode for proper AST rendering
-                footnote_content = if index_item.has_footnote_node?
+                footnote_content = if index_item.footnote_node?
                                      # Render the footnote AST children properly
                                      render_footnote_ast(index_item.footnote_node)
                                    else
@@ -977,7 +972,7 @@ module ReVIEW
                                    end
 
                 "\\footnote{#{footnote_content}}"
-              rescue StandardError => e
+              rescue StandardError => _e
                 # Fallback to footnote ID if content not found
                 "\\footnote{#{footnote_id}}"
               end
@@ -995,28 +990,6 @@ module ReVIEW
           else
             "\\reviewkw{#{content}}"
           end
-        when 'ami'
-          "\\underline{#{content}}"
-        when 'bou'
-          "\\textbf{#{content}}"
-        when 'ruby'
-          if node.args && node.args.length >= 2
-            base = escape(node.args[0])
-            ruby = escape(node.args[1])
-            "\\ruby{#{base}}{#{ruby}}"
-          else
-            content
-          end
-        when 'idx'
-          "#{content}\\index{#{escape(content)}}"
-        when 'hidx'
-          if node.args && node.args.first
-            "\\index{#{escape(node.args.first)}}"
-          else
-            ''
-          end
-        when 'br'
-          "\\\\\n"
         when 'chap'
           if node.args && node.args.first
             # Use Re:VIEW chapter number reference like LATEXBuilder
@@ -1184,16 +1157,6 @@ module ReVIEW
           else
             content
           end
-        when 'kw'
-          if node.args && node.args.length >= 2
-            term = escape(node.args[0])
-            desc = escape(node.args[1])
-            "\\reviewkw{#{term}, #{desc}}"
-          elsif node.args && node.args.first
-            "\\reviewkw{#{escape(node.args.first)}}"
-          else
-            content
-          end
         when 'icon'
           if node.args && node.args.first
             icon_id = node.args.first
@@ -1207,8 +1170,8 @@ module ReVIEW
           else
             content
           end
-        when 'ami', 'amI'
-          '\\reviewami{}'
+        when 'ami'
+          "\\reviewami{#{content}}"
         when 'w', 'wb'
           # Word expansion - pass through content
           content
@@ -1220,7 +1183,7 @@ module ReVIEW
           else
             content
           end
-        when 'labelref', 'ref'
+        when 'labelref', 'ref' # rubocop:disable Lint/DuplicateBranch
           if node.args && node.args.first
             ref_id = node.args.first
             "\\ref{#{escape(ref_id)}}"
@@ -1248,23 +1211,7 @@ module ReVIEW
           else
             content
           end
-        when 'chapref'
-          if node.args && node.args.first
-            # Chapter reference
-            ref_id = node.args.first
-            "\\chapref{#{escape(ref_id)}}"
-          else
-            content
-          end
-        when 'chap'
-          if node.args && node.args.first
-            # Chapter number reference
-            ref_id = node.args.first
-            "\\ref{#{escape(ref_id)}}"
-          else
-            content
-          end
-        when 'sec'
+        when 'sec' # rubocop:disable Lint/DuplicateBranch
           if node.args && node.args.first
             # Section reference
             ref_id = node.args.first
@@ -1272,64 +1219,9 @@ module ReVIEW
           else
             content
           end
-        when 'list'
-          if node.args && node.args.first
-            # List reference
-            ref_id = node.args.first
-            "\\reviewlistref{#{escape(ref_id)}}"
-          else
-            content
-          end
-        when 'img'
-          if node.args && node.args.first
-            # Image reference
-            ref_id = node.args.first
-            "\\reviewimageref{#{escape(ref_id)}}"
-          else
-            content
-          end
-        when 'table'
-          if node.args && node.args.first
-            # Table reference
-            ref_id = node.args.first
-            "\\reviewtableref{#{escape(ref_id)}}"
-          else
-            content
-          end
-        when 'eq'
-          if node.args && node.args.first
-            # Equation reference
-            ref_id = node.args.first
-            "\\reviewequationref{#{escape(ref_id)}}"
-          else
-            content
-          end
-        when 'fn'
-          if node.args && node.args.first
-            # Footnote reference
-            ref_id = node.args.first
-            if @chapter && @chapter.footnote_index
-              begin
-                footnote_number = @chapter.footnote_index.number(ref_id)
-                "\\footnotemark[#{footnote_number}]"
-              rescue StandardError => e
-                "\\footnote{#{escape(ref_id)}}"
-              end
-            else
-              "\\footnote{#{escape(ref_id)}}"
-            end
-          else
-            content
-          end
         when 'bou'
           # Boudou (emphasis)
           "\\reviewbou{#{content}}"
-        when 'ami'
-          # Ami (dots)
-          "\\reviewami{#{content}}"
-        when 'u'
-          # Underline
-          "\\underline{#{content}}"
         when 'balloon'
           if node.args && node.args.first
             # Balloon annotation
@@ -1338,12 +1230,6 @@ module ReVIEW
           else
             content
           end
-        when 'sub'
-          # Subscript
-          "\\textsubscript{#{content}}"
-        when 'sup'
-          # Superscript
-          "\\textsuperscript{#{content}}"
         when 'endnote'
           if node.args && node.args.first
             # Endnote reference
@@ -1352,7 +1238,7 @@ module ReVIEW
               begin
                 endnote_number = @chapter.endnote_index.number(ref_id)
                 "\\endnotemark[#{endnote_number}]"
-              rescue StandardError => e
+              rescue StandardError => _e
                 "\\endnote{#{escape(ref_id)}}"
               end
             else
@@ -1369,12 +1255,6 @@ module ReVIEW
           else
             content
           end
-        when 'ttb', 'ttbold'
-          # Teletype bold (monospace bold)
-          "\\textbf{\\texttt{#{content}}}"
-        when 'tti', 'ttitalic'
-          # Teletype italic (monospace italic)
-          "\\textit{\\texttt{#{content}}}"
         when 'raw'
           if node.args && node.args.first
             # Raw content for specific format
@@ -1387,10 +1267,10 @@ module ReVIEW
           else
             content
           end
-        when 'embed'
+        when 'embed' # rubocop:disable Lint/DuplicateBranch
           # Embedded content - pass through
           content
-        else
+        else # rubocop:disable Lint/DuplicateBranch
           # Fallback: treat unknown inline elements as plain text
           # This is more forgiving than raising an error
           content

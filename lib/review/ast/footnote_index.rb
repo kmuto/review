@@ -24,7 +24,7 @@ module ReVIEW
         end
 
         # Check if this entry has an AST footnote node
-        def has_footnote_node?
+        def footnote_node?
           !footnote_node.nil?
         end
       end

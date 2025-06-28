@@ -228,25 +228,22 @@ module ReVIEW
             # Handle escaped character - implements consistent escape rules
             if pos + 1 < str.length
               next_char = str[pos + 1]
-              case next_char
-              when '}'
-                # \} → } : Escape closing brace (allows literal } in content)
-                content += '}'
-                pos += 2
-              when '\\'
-                # \\ → \ : Escape backslash (allows literal \ in content)
-                content += '\\'
-                pos += 2
-              when '@'
-                # \@ → @ : Escape at-sign (allows literal @ in content)
-                content += '@'
-                pos += 2
-              else
-                # \x → \x : Other characters are NOT escaped (preserve as-is)
-                # This includes \{ which remains \{ (opening brace not escaped)
-                content += char + next_char
-                pos += 2
-              end
+              content += case next_char
+                         when '}'
+                           # \} → } : Escape closing brace (allows literal } in content)
+                           '}'
+                         when '\\'
+                           # \\ → \ : Escape backslash (allows literal \ in content)
+                           '\\'
+                         when '@'
+                           # \@ → @ : Escape at-sign (allows literal @ in content)
+                           '@'
+                         else
+                           # \x → \x : Other characters are NOT escaped (preserve as-is)
+                           # This includes \{ which remains \{ (opening brace not escaped)
+                           char + next_char
+                         end
+              pos += 2
             else
               # Backslash at end of string - preserve as-is
               content += char
