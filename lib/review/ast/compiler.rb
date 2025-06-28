@@ -164,7 +164,7 @@ module ReVIEW
         m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*?)(?:\{(.+?)\})?\s*\z/.match(line)
         level = m[1].size
         if level > 6 # MAX_HEADLINE_LEVEL
-          raise CompileError, 'Invalid header: max headline level is 6'
+          raise CompileError, "Invalid header: max headline level is 6#{format_location_info}"
         end
 
         # m[2] is optional tag parameter (e.g., [column])
