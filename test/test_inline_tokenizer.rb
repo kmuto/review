@@ -62,7 +62,7 @@ class TestInlineTokenizer < Test::Unit::TestCase
   end
 
   def test_escaped_braces
-    tokens = @tokenizer.tokenize('Test @<code>{func\\{\\}} end')
+    tokens = @tokenizer.tokenize('Test @<code>{func\\\\{\\\\}} end')
 
     assert_equal 3, tokens.length
 

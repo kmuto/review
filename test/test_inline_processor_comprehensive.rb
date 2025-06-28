@@ -263,7 +263,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
       location: ReVIEW::Location.new('test.re', 1)
     )
 
-    @processor.parse_inline_elements('Code @<code>{func\\{param\\}} example', parent)
+    @processor.parse_inline_elements('Code @<code>{func\\\\{param\\\\}} example', parent)
 
     assert_equal 3, parent.children.size
     assert_equal 'Code ', parent.children[0].content

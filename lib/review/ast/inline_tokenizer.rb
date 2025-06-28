@@ -144,8 +144,25 @@ module ReVIEW
           when '\\'
             # Handle escaped character
             if pos + 1 < str.length
-              content += char + str[pos + 1]
-              pos += 2
+              next_char = str[pos + 1]
+              case next_char
+              when '}'
+                # Escape } by adding only the }
+                content += '}'
+                pos += 2
+              when '\\'
+                # Escape \\ by adding only the \
+                content += '\\'
+                pos += 2
+              when '@'
+                # Escape \@ by adding only the @
+                content += '@'
+                pos += 2
+              else
+                # Keep backslash for other characters
+                content += char + next_char
+                pos += 2
+              end
             else
               content += char
               pos += 1
