@@ -159,18 +159,35 @@ module ReVIEW
       end
 
       def compile_headline_to_ast(line)
-        # Parse headline using same logic as compile_headline
-        # Handle both new syntax: = Caption{label} and old syntax: ={label} Caption
-        m = /\A(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*?)(?:\{(.+?)\})?\s*\z/.match(line)
-        level = m[1].size
+        # Parse headline more carefully to handle inline markup in captions
+        # First, extract level and optional tag
+        level_match = /\A(=+)(?:\[(.+?)\])?/.match(line)
+        return nil unless level_match
+
+        level = level_match[1].size
         if level > 6 # MAX_HEADLINE_LEVEL
           raise CompileError, "Invalid header: max headline level is 6#{format_location_info}"
         end
 
-        # m[2] is optional tag parameter (e.g., [column])
-        tag = m[2]
-        label = m[3] || m[5] # Label can be in position 3 (old syntax) or 5 (new syntax)
-        caption = m[4].strip
+        tag = level_match[2]
+        remaining = line[level_match.end(0)..-1].strip
+
+        # Now handle label and caption extraction
+        label = nil
+        caption = nil
+
+        # Check for old syntax: {label} Caption
+        if remaining =~ /\A\{([^}]+)\}\s*(.+)/
+          label = $1
+          caption = $2.strip
+        # Check for new syntax: Caption{label} - but only if the last {...} is not part of inline markup
+        elsif remaining.match(/\A(.+?)\{([^}]+)\}\s*\z/) && !$1.match?(/@<[^>]+>\s*\z/)
+          caption = $1.strip
+          label = $2
+        else
+          # No label, or label is part of inline markup - treat everything as caption
+          caption = remaining
+        end
 
         processed_caption = AST::CaptionNode.parse(
           caption,

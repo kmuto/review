@@ -210,8 +210,16 @@ module ReVIEW
           next unless @chapter && @chapter.footnote_index
 
           begin
-            footnote_content = @chapter.footnote_index[footnote_id].content || ''
-            result += "\\footnotetext[#{footnote_number}]{#{escape(footnote_content)}}\n"
+            index_item = @chapter.footnote_index[footnote_id]
+            # Try to get FootnoteNode for proper AST rendering
+            footnote_content = if index_item.footnote_node?
+                                 # Render the footnote AST children properly
+                                 render_footnote_ast(index_item.footnote_node)
+                               else
+                                 # Fallback to text content
+                                 escape(index_item.content || '')
+                               end
+            result += "\\footnotetext[#{footnote_number}]{#{footnote_content}}\n"
           rescue StandardError => e
             raise NotImplementedError, "Footnote not found in index: #{footnote_id} (#{e.message})"
           end
@@ -303,8 +311,15 @@ module ReVIEW
           begin
             footnote_item = @chapter.footnote_index[footnote_id]
             if footnote_item
-              footnote_content = footnote_item.content || ''
-              table_result += "\\footnotetext[#{footnote_number}]{#{escape(footnote_content)}}\n"
+              # Try to get FootnoteNode for proper AST rendering
+              footnote_content = if footnote_item.footnote_node?
+                                   # Render the footnote AST children properly
+                                   render_footnote_ast(footnote_item.footnote_node)
+                                 else
+                                   # Fallback to text content
+                                   escape(footnote_item.content || '')
+                                 end
+              table_result += "\\footnotetext[#{footnote_number}]{#{footnote_content}}\n"
             else
               raise NotImplementedError, "Footnote not found in index: #{footnote_id}"
             end
@@ -417,8 +432,16 @@ module ReVIEW
           next unless @chapter && @chapter.footnote_index
 
           begin
-            footnote_content = @chapter.footnote_index[footnote_id].content || ''
-            image_result += "\\footnotetext[#{footnote_number}]{#{escape(footnote_content)}}\n"
+            index_item = @chapter.footnote_index[footnote_id]
+            # Try to get FootnoteNode for proper AST rendering
+            footnote_content = if index_item.footnote_node?
+                                 # Render the footnote AST children properly
+                                 render_footnote_ast(index_item.footnote_node)
+                               else
+                                 # Fallback to text content
+                                 escape(index_item.content || '')
+                               end
+            image_result += "\\footnotetext[#{footnote_number}]{#{footnote_content}}\n"
           rescue StandardError => e
             raise NotImplementedError, "Footnote not found in index: #{footnote_id} (#{e.message})"
           end
