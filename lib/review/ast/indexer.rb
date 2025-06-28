@@ -10,6 +10,7 @@ require 'review/book/index'
 require 'review/exception'
 require 'review/sec_counter'
 require 'review/ast/footnote_node'
+require 'review/ast/footnote_index'
 
 module ReVIEW
   module AST
@@ -52,8 +53,8 @@ module ReVIEW
           list: @list_index,
           table: @table_index,
           equation: @equation_index,
-          footnote: @footnote_index,
-          endnote: @endnote_index,
+          footnote: @footnote_index.to_book_index,
+          endnote: @endnote_index.to_book_index,
           image: @image_index,
           icon: @icon_index,
           numberless_image: @numberless_image_index,
@@ -80,8 +81,8 @@ module ReVIEW
         @list_index = ReVIEW::Book::ListIndex.new
         @table_index = ReVIEW::Book::TableIndex.new
         @equation_index = ReVIEW::Book::EquationIndex.new
-        @footnote_index = ReVIEW::Book::FootnoteIndex.new
-        @endnote_index = ReVIEW::Book::EndnoteIndex.new
+        @footnote_index = AST::FootnoteIndex.new
+        @endnote_index = AST::FootnoteIndex.new
         @headline_index = ReVIEW::Book::HeadlineIndex.new(@chapter)
         @column_index = ReVIEW::Book::ColumnIndex.new
         @chapter_index = ReVIEW::Book::ChapterIndex.new
@@ -223,49 +224,20 @@ module ReVIEW
         end
       end
 
-      # Process footnote nodes (matches IndexBuilder behavior)
+      # Process footnote nodes (simplified with AST::FootnoteIndex)
       def process_footnote(node)
         check_id(node.id)
 
-        # Initialize crossref entry
+        # Extract footnote content
+        footnote_content = extract_footnote_content(node)
+
+        # Add or update footnote in appropriate index
         if node.footnote_type == :footnote
           @crossref[:footnote][node.id] ||= 0
-          # Add to index if not already present (avoid duplicates)
-          if @footnote_index.key?(node.id)
-            # Update existing entry with node from FootnoteNode
-            existing_item = @footnote_index[node.id]
-            # Store the FootnoteNode for proper AST rendering
-            existing_item.instance_variable_set(:@footnote_node, node)
-            # Also update caption with processed content for compatibility
-            footnote_content = extract_footnote_content(node)
-            existing_item.instance_variable_set(:@caption, footnote_content)
-          else
-            # Extract footnote content from node content or children
-            footnote_content = extract_footnote_content(node)
-            item = ReVIEW::Book::Index::Item.new(node.id, @footnote_index.size + 1, footnote_content)
-            # Store the FootnoteNode for proper AST rendering
-            item.instance_variable_set(:@footnote_node, node)
-            @footnote_index.add_item(item)
-          end
+          @footnote_index.add_or_update(node.id, content: footnote_content, footnote_node: node)
         elsif node.footnote_type == :endnote
           @crossref[:endnote][node.id] ||= 0
-          # Add to index if not already present (avoid duplicates)
-          if @endnote_index.key?(node.id)
-            # Update existing entry with node from EndnoteNode
-            existing_item = @endnote_index[node.id]
-            # Store the EndnoteNode for proper AST rendering
-            existing_item.instance_variable_set(:@footnote_node, node)
-            # Also update caption with processed content for compatibility
-            endnote_content = extract_footnote_content(node)
-            existing_item.instance_variable_set(:@caption, endnote_content)
-          else
-            # Extract endnote content from node content or children
-            endnote_content = extract_footnote_content(node)
-            item = ReVIEW::Book::Index::Item.new(node.id, @endnote_index.size + 1, endnote_content)
-            # Store the EndnoteNode for proper AST rendering
-            item.instance_variable_set(:@footnote_node, node)
-            @endnote_index.add_item(item)
-          end
+          @endnote_index.add_or_update(node.id, content: footnote_content, footnote_node: node)
         end
       end
 
@@ -276,25 +248,19 @@ module ReVIEW
           if node.args && node.args.first
             footnote_id = node.args.first
             check_id(footnote_id)
-            # Track cross-reference like IndexBuilder
+            # Track cross-reference
             @crossref[:footnote][footnote_id] = @crossref[:footnote][footnote_id] ? @crossref[:footnote][footnote_id] + 1 : 1
-            # Add to index if not already present (for compatibility with tests and IndexBuilder behavior)
-            unless @footnote_index.key?(footnote_id)
-              item = ReVIEW::Book::Index::Item.new(footnote_id, @footnote_index.size + 1)
-              @footnote_index.add_item(item)
-            end
+            # Add reference entry (content will be filled when FootnoteNode is processed)
+            @footnote_index.add_or_update(footnote_id)
           end
         when 'endnote'
           if node.args && node.args.first
             endnote_id = node.args.first
             check_id(endnote_id)
-            # Track cross-reference like IndexBuilder
+            # Track cross-reference
             @crossref[:endnote][endnote_id] = @crossref[:endnote][endnote_id] ? @crossref[:endnote][endnote_id] + 1 : 1
-            # Add to index if not already present (for compatibility with tests and IndexBuilder behavior)
-            unless @endnote_index.key?(endnote_id)
-              item = ReVIEW::Book::Index::Item.new(endnote_id, @endnote_index.size + 1)
-              @endnote_index.add_item(item)
-            end
+            # Add reference entry (content will be filled when FootnoteNode is processed)
+            @endnote_index.add_or_update(endnote_id)
           end
         when 'bib'
           if node.args && node.args.first

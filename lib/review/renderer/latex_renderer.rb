@@ -912,14 +912,13 @@ module ReVIEW
                 index_item = @chapter.footnote_index[footnote_id]
 
                 # Try to get FootnoteNode for proper AST rendering
-                if index_item.instance_variable_get(:@footnote_node)
-                  footnote_node = index_item.instance_variable_get(:@footnote_node)
-                  # Render the footnote AST children properly
-                  footnote_content = render_footnote_ast(footnote_node)
-                else
-                  # Fallback to text content
-                  footnote_content = escape(index_item.content || '')
-                end
+                footnote_content = if index_item.has_footnote_node?
+                                     # Render the footnote AST children properly
+                                     render_footnote_ast(index_item.footnote_node)
+                                   else
+                                     # Fallback to text content
+                                     escape(index_item.content || '')
+                                   end
 
                 "\\footnote{#{footnote_content}}"
               rescue StandardError => e
