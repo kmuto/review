@@ -102,21 +102,34 @@ module ReVIEW
       def process_heading(cm_node)
         level = cm_node.header_level
 
-        # Create caption node with inline elements
-        caption_node = CaptionNode.new(
-          location: current_location(cm_node)
-        )
-        process_inline_content(cm_node, caption_node)
+        # Extract text content to check for column marker
+        heading_text = extract_text(cm_node)
 
-        # Create headline node
-        headline = HeadlineNode.new(
-          location: current_location(cm_node),
-          level: level,
-          label: nil, # Markdown doesn't have explicit labels
-          caption: caption_node
-        )
+        # Check if this is a column heading: ### [column] Title or ### [column]
+        if heading_text =~ /\A\s*\[column\](.*)/
+          title = $1.strip
+          title = nil if title.empty?
 
-        add_node_to_current_context(headline)
+          # Start a column with heading-based syntax
+          start_column_from_heading(cm_node, title)
+        else
+          # Regular heading processing
+          # Create caption node with inline elements
+          caption_node = CaptionNode.new(
+            location: current_location(cm_node)
+          )
+          process_inline_content(cm_node, caption_node)
+
+          # Create headline node
+          headline = HeadlineNode.new(
+            location: current_location(cm_node),
+            level: level,
+            label: nil, # Markdown doesn't have explicit labels
+            caption: caption_node
+          )
+
+          add_node_to_current_context(headline)
+        end
       end
 
       # Process paragraph node
@@ -476,6 +489,34 @@ module ReVIEW
         # Create column node
         column_node = ColumnNode.new(
           location: html_node.location,
+          caption: caption
+        )
+
+        # Push current context to stack
+        @column_stack.push({
+                             column_node: column_node,
+                             previous_node: @current_node
+                           })
+
+        # Set column as current context
+        @current_node = column_node
+      end
+
+      # Start a new column context from heading syntax
+      def start_column_from_heading(cm_node, title)
+        # Create caption node if title is provided
+        caption = if title && !title.empty?
+                    caption_node = CaptionNode.new(location: current_location(cm_node))
+                    caption_node.add_child(TextNode.new(
+                                             location: current_location(cm_node),
+                                             content: title
+                                           ))
+                    caption_node
+                  end
+
+        # Create column node
+        column_node = ColumnNode.new(
+          location: current_location(cm_node),
           caption: caption
         )
 

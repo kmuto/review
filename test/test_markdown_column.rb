@@ -175,6 +175,88 @@ class TestMarkdownColumn < Test::Unit::TestCase
     assert_nil(end_node.column_title)
   end
 
+  def test_mixed_syntax_heading_start
+    content = <<~MARKDOWN
+      # Chapter
+
+      ### [column] Test Column
+      Column content
+      <!-- /column -->
+    MARKDOWN
+
+    chapter = create_chapter(content)
+    ast_root = @compiler.compile_to_ast(chapter)
+
+    columns = find_columns(ast_root)
+    assert_equal 1, columns.length
+    assert_equal 'Test Column', extract_column_title(columns.first)
+  end
+
+  def test_mixed_syntax_heading_no_title
+    content = <<~MARKDOWN
+      # Chapter
+
+      ### [column]
+      Column content
+      <!-- /column -->
+    MARKDOWN
+
+    chapter = create_chapter(content)
+    ast_root = @compiler.compile_to_ast(chapter)
+
+    columns = find_columns(ast_root)
+    assert_equal 1, columns.length
+    assert_nil(extract_column_title(columns.first))
+  end
+
+  def test_mixed_syntax_with_markdown_content
+    content = <<~MARKDOWN
+      # Chapter
+
+      ### [column] Rich Mixed Column
+
+      This is **bold** and *italic* text.
+
+      - List item 1
+      - List item 2
+
+      ```python
+      def example():
+          print("Hello")
+      ```
+
+      <!-- /column -->
+    MARKDOWN
+
+    chapter = create_chapter(content)
+    ast_root = @compiler.compile_to_ast(chapter)
+
+    columns = find_columns(ast_root)
+    assert_equal 1, columns.length
+
+    column = columns.first
+    assert_equal 'Rich Mixed Column', extract_column_title(column)
+    assert_equal 3, column.children.length # paragraph, list, code block
+  end
+
+  def test_regular_headings_not_columns
+    content = <<~MARKDOWN
+      # Chapter
+
+      ### Regular Heading
+      Regular content
+
+      #### Another Heading
+      More content
+    MARKDOWN
+
+    chapter = create_chapter(content)
+    ast_root = @compiler.compile_to_ast(chapter)
+
+    columns = find_columns(ast_root)
+    assert_equal 0, columns.length
+  end
+
   def test_unmatched_column_end
     content = <<~MARKDOWN
       # Chapter
