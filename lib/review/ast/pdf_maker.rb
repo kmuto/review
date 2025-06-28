@@ -12,11 +12,11 @@ require 'review/renderer/latex_renderer'
 
 module ReVIEW
   module AST
-    # PDFMaker - PDFMaker with AST Renderer support
+    # PdfMaker - PDFMaker with AST Renderer support
     #
     # This class extends PDFMaker to support both traditional Builder and new Renderer approaches.
     # It automatically selects the appropriate processor based on configuration settings.
-    class PDFMaker < ReVIEW::PDFMaker
+    class PdfMaker < ReVIEW::PDFMaker
       def initialize
         super
         @processor_type = nil
@@ -60,7 +60,7 @@ module ReVIEW
       def build_pdf
         # Log processor selection for user feedback
         if @config['ast'] && @config['ast']['debug']
-          puts "AST::PDFMaker: Using #{@processor_type} processor"
+          puts "AST::PdfMaker: Using #{@processor_type} processor"
         end
 
         super
@@ -115,7 +115,7 @@ module ReVIEW
           ast_root = compiler.compile_to_ast(chapter)
 
           # Create renderer with current chapter
-          renderer = ReVIEW::Renderer::LATEXRenderer.new(chapter)
+          renderer = ReVIEW::Renderer::LatexRenderer.new(chapter)
 
           # Render to LaTeX (AST::Indexer will handle indexing during this process)
           latex_output = renderer.render(ast_root)

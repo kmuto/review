@@ -12,7 +12,7 @@ require 'review/ast'
 require 'review/book'
 require 'review/book/chapter'
 
-class TestLATEXRenderer < Test::Unit::TestCase
+class TestLatexRenderer < Test::Unit::TestCase
   include ReVIEW
 
   def setup
@@ -23,7 +23,7 @@ class TestLATEXRenderer < Test::Unit::TestCase
     @chapter.generate_indexes
     @book.generate_indexes
 
-    @renderer = Renderer::LATEXRenderer.new(@chapter)
+    @renderer = Renderer::LatexRenderer.new(@chapter)
   end
 
   def test_visit_text

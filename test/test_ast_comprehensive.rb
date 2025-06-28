@@ -255,8 +255,8 @@ class TestASTComprehensive < Test::Unit::TestCase
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(chapter_ast)
 
-    # Render to HTML using HTMLRenderer
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter_ast)
+    # Render to HTML using HtmlRenderer
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter_ast)
     result_ast = renderer.render(ast_root)
 
     # Verify AST/Renderer system produces comprehensive HTML

@@ -16,7 +16,7 @@
 #
 # Usage:
 #   # HTML output
-#   html_renderer = ReVIEW::Renderer::HTMLRenderer.new
+#   html_renderer = ReVIEW::Renderer::HtmlRenderer.new
 #   html_output = html_renderer.render(ast_root)
 #
 #   # JSON output is handled by ReVIEW::AST::JSONSerializer
@@ -25,7 +25,8 @@ module ReVIEW
   module Renderer
     # Load renderer classes
     autoload :Base, 'review/renderer/base'
-    autoload :HTMLRenderer, 'review/renderer/html_renderer'
+    autoload :HtmlRenderer, 'review/renderer/html_renderer'
+    autoload :LatexRenderer, 'review/renderer/latex_renderer'
     # NOTE: JSONRenderer removed - use ReVIEW::AST::JSONSerializer instead
   end
 end

@@ -9,7 +9,7 @@ require 'review/book/chapter'
 require 'review/configure'
 require 'review/i18n'
 
-class TestHTMLRenderer < Test::Unit::TestCase
+class TestHtmlRenderer < Test::Unit::TestCase
   def setup
     @config = ReVIEW::Configure.values
     @config['language'] = 'ja'
@@ -30,7 +30,7 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
     html_output = renderer.render(ast_root)
 
     assert_match(%r{<h1>.*Test Chapter</h1>}, html_output)
@@ -44,7 +44,7 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
     html_output = renderer.render(ast_root)
 
     assert_match(%r{<b>bold</b>}, html_output)
@@ -64,7 +64,7 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
     html_output = renderer.render(ast_root)
 
     assert_match(/<div id="sample" class="caption-code">/, html_output)
@@ -87,7 +87,7 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
     html_output = renderer.render(ast_root)
 
     assert_match(/<div id="sample" class="table">/, html_output)
@@ -115,7 +115,7 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
     html_output = renderer.render(ast_root)
 
     assert_match(/<div class="column">/, html_output)
@@ -136,7 +136,7 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
     html_output = renderer.render(ast_root)
 
     assert_match(/<div class="note">/, html_output)
@@ -152,7 +152,7 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
     html_output = renderer.render(ast_root)
 
     assert_match(/&lt;html&gt; &amp; &quot;quotes&quot;/, html_output)
@@ -165,10 +165,10 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
     html_output = renderer.render(ast_root)
 
-    # HTMLRenderer now uses fixed anchor IDs like HTMLBuilder
+    # HtmlRenderer now uses fixed anchor IDs like HTMLBuilder
     assert_match(%r{<h1>.*</h1>}, html_output)
     # Chapter title should be present
     assert_match(/Test Chapter/, html_output)
@@ -181,7 +181,7 @@ class TestHTMLRenderer < Test::Unit::TestCase
     chapter.generate_indexes
     @book.generate_indexes
     ast_root = @compiler.compile_to_ast(chapter)
-    renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
     html_output = renderer.render(ast_root)
 
     assert_match(%r{<a href="https://example\.com".*>Example Site</a>}, html_output)

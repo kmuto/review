@@ -12,11 +12,11 @@ require 'review/renderer/html_renderer'
 
 module ReVIEW
   module AST
-    # EPUBMaker - EPUBMaker with AST Renderer support
+    # EpubMaker - EPUBMaker with AST Renderer support
     #
     # This class extends EPUBMaker to support both traditional Builder and new Renderer approaches.
     # It automatically selects the appropriate processor based on configuration settings.
-    class EPUBMaker < ReVIEW::EPUBMaker
+    class EpubMaker < ReVIEW::EPUBMaker
       def initialize
         super
         @processor_type = 'AST/Renderer'
@@ -28,7 +28,7 @@ module ReVIEW
       def create_converter(book)
         # Create a wrapper that makes Renderer compatible with Converter interface
         # Renderer will be created per chapter in the adapter
-        HTMLRendererConverterAdapter.new(book)
+        HtmlRendererConverterAdapter.new(book)
       end
 
       # Override the converter creation point in build_epub
@@ -40,7 +40,7 @@ module ReVIEW
     end
 
     # Adapter to make HTML Renderer compatible with Converter interface
-    class HTMLRendererConverterAdapter
+    class HtmlRendererConverterAdapter
       def initialize(book)
         @book = book
         @config = book.config
@@ -58,7 +58,7 @@ module ReVIEW
           ast_root = compiler.compile_to_ast(chapter)
 
           # Create renderer with current chapter
-          renderer = ReVIEW::Renderer::HTMLRenderer.new(chapter)
+          renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
 
           # Render to HTML
           html_output = renderer.render(ast_root)

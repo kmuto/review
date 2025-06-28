@@ -20,7 +20,7 @@ require 'review/template'
 
 module ReVIEW
   module Renderer
-    class HTMLRenderer < Base
+    class HtmlRenderer < Base
       include ReVIEW::HTMLUtils
       include ReVIEW::TextUtils
       include ReVIEW::EscapeUtils

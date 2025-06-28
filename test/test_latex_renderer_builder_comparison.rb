@@ -10,7 +10,7 @@ require File.expand_path('test_helper', __dir__)
 require 'review/latex_converter'
 require 'review/latex_comparator'
 
-class TestLATEXRendererBuilderComparison < Test::Unit::TestCase
+class TestLatexRendererBuilderComparison < Test::Unit::TestCase
   include ReVIEW
 
   def setup

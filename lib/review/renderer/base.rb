@@ -23,7 +23,7 @@ module ReVIEW
     #   - etc.
     #
     # Usage:
-    #   class HTMLRenderer < ReVIEW::Renderer::Base
+    #   class HtmlRenderer < ReVIEW::Renderer::Base
     #     def visit_headline(node)
     #       level = node.level
     #       caption = process_inline_content(node.caption)
@@ -31,7 +31,7 @@ module ReVIEW
     #     end
     #   end
     #
-    #   renderer = HTMLRenderer.new
+    #   renderer = HtmlRenderer.new
     #   html_output = renderer.render(ast_root)
     class Base < ReVIEW::AST::Visitor
       attr_reader :chapter, :book, :config

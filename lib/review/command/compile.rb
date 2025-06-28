@@ -250,10 +250,10 @@ module ReVIEW
         case format
         when 'html'
           require 'review/renderer/html_renderer'
-          ReVIEW::Renderer::HTMLRenderer
+          ReVIEW::Renderer::HtmlRenderer
         when 'latex'
           require 'review/renderer/latex_renderer'
-          ReVIEW::Renderer::LATEXRenderer
+          ReVIEW::Renderer::LatexRenderer
         else
           raise UnsupportedFormatError, "Unsupported format: #{format}"
         end

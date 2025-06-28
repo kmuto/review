@@ -48,7 +48,7 @@ module ReVIEW
       builder.raw_result
     end
 
-    # Convert a Re:VIEW source string to HTML using HTMLRenderer
+    # Convert a Re:VIEW source string to HTML using HtmlRenderer
     #
     # @param source [String] Re:VIEW source content
     # @param chapter [ReVIEW::Book::Chapter, nil] Chapter context (optional)
@@ -65,8 +65,8 @@ module ReVIEW
       ast_compiler = ReVIEW::AST::Compiler.for_chapter(chapter)
       ast = ast_compiler.compile_to_ast(chapter)
 
-      # Render with HTMLRenderer
-      renderer = Renderer::HTMLRenderer.new(chapter)
+      # Render with HtmlRenderer
+      renderer = Renderer::HtmlRenderer.new(chapter)
 
       renderer.render(ast)
     end

@@ -11,7 +11,7 @@ require 'review/html_converter'
 
 require 'review/html_comparator'
 
-class TestHTMLRendererBuilderComparison < Test::Unit::TestCase
+class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
   include ReVIEW
 
   def setup

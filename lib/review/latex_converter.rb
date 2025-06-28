@@ -48,7 +48,7 @@ module ReVIEW
       builder.raw_result
     end
 
-    # Convert a Re:VIEW source string to LaTeX using LATEXRenderer
+    # Convert a Re:VIEW source string to LaTeX using LatexRenderer
     #
     # @param source [String] Re:VIEW source content
     # @param chapter [ReVIEW::Book::Chapter, nil] Chapter context (optional)
@@ -65,8 +65,8 @@ module ReVIEW
       ast_compiler = ReVIEW::AST::Compiler.for_chapter(chapter)
       ast = ast_compiler.compile_to_ast(chapter)
 
-      # Render with LATEXRenderer
-      renderer = Renderer::LATEXRenderer.new(chapter)
+      # Render with LatexRenderer
+      renderer = Renderer::LatexRenderer.new(chapter)
 
       renderer.render(ast)
     end

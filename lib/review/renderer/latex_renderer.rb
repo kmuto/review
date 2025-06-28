@@ -13,7 +13,7 @@ require 'review/i18n'
 
 module ReVIEW
   module Renderer
-    class LATEXRenderer < Base
+    class LatexRenderer < Base
       include ReVIEW::LaTeXUtils
 
       attr_reader :chapter, :book
