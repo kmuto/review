@@ -8,6 +8,21 @@
 
 module ReVIEW
   module AST
+    # Token classes using Ruby 3.2+ Data class for immutable, structured tokens
+
+    # Text token for plain text content
+    TextToken = Data.define(:content) do
+      def type
+        :text
+      end
+    end
+
+    # Inline element token for @<command>{content} syntax
+    InlineToken = Data.define(:command, :content, :start_pos, :end_pos) do
+      def type
+        :inline
+      end
+    end
     # InlineTokenizer - Tokenizes inline markup syntax into structured tokens
     #
     # This class handles the parsing of Re:VIEW inline markup syntax and converts
@@ -22,7 +37,7 @@ module ReVIEW
     class InlineTokenizer
       # Tokenize string into inline elements and text parts
       # @param str [String] The input string to tokenize
-      # @return [Array<Hash>] Array of tokens with :type, :content, and other metadata
+      # @return [Array<Token>] Array of Token objects (TextToken or InlineToken)
       def tokenize(str)
         tokens = []
         pos = 0
@@ -35,23 +50,23 @@ module ReVIEW
             # Add text before the match as plain text token
             if match.begin(0) > pos
               text_content = str[pos...match.begin(0)]
-              tokens << create_text_token(text_content) unless text_content.empty?
+              tokens << TextToken.new(content: text_content) unless text_content.empty?
             end
 
             # Parse the inline element
             inline_token = parse_inline_element_at(str, match.begin(0))
             if inline_token
               tokens << inline_token
-              pos = inline_token[:end_pos]
+              pos = inline_token.end_pos
             else
               # Failed to parse as inline element, treat as text
-              tokens << create_text_token(match[0])
+              tokens << TextToken.new(content: match[0])
               pos = match.end(0)
             end
           else
             # No more inline elements, add remaining text
             remaining_text = str[pos..-1]
-            tokens << create_text_token(remaining_text) unless remaining_text.empty?
+            tokens << TextToken.new(content: remaining_text) unless remaining_text.empty?
             break
           end
         end
@@ -60,11 +75,6 @@ module ReVIEW
       end
 
       private
-
-      # Create a text token
-      def create_text_token(content)
-        { type: :text, content: content }
-      end
 
       # Parse inline element at specific position
       def parse_inline_element_at(str, start_pos)
@@ -89,13 +99,12 @@ module ReVIEW
 
         return nil unless content && end_pos
 
-        {
-          type: :inline,
+        InlineToken.new(
           command: command,
           content: content,
           start_pos: start_pos,
           end_pos: end_pos
-        }
+        )
       end
 
       # Parse content within braces, handling escaped braces

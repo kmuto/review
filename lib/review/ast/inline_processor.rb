@@ -35,14 +35,14 @@ module ReVIEW
         tokens = @tokenizer.tokenize(str)
 
         tokens.each do |token|
-          if token[:type] == :inline
+          if token.type == :inline
             create_inline_ast_node_from_token(token, parent_node)
           else
             # Plain text
-            unless token[:content].empty?
+            unless token.content.empty?
               text_node = AST::TextNode.new(
                 location: @ast_compiler.location,
-                content: token[:content]
+                content: token.content
               )
               parent_node.add_child(text_node)
             end
@@ -269,8 +269,8 @@ module ReVIEW
 
       # Create inline AST node from parsed token
       def create_inline_ast_node_from_token(token, parent_node)
-        command = token[:command]
-        content = token[:content]
+        command = token.command
+        content = token.content
 
         # Special handling for certain inline types
         case command
