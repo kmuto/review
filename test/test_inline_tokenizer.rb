@@ -117,19 +117,10 @@ class TestInlineTokenizer < Test::Unit::TestCase
   end
 
   def test_malformed_inline_element
-    # Unclosed brace should be treated as separate text tokens
-    tokens = @tokenizer.tokenize('Bad @<b>{unclosed text')
-
-    assert_equal 3, tokens.length
-
-    assert_equal :text, tokens[0].type
-    assert_equal 'Bad ', tokens[0].content
-
-    assert_equal :text, tokens[1].type
-    assert_equal '@<b>{', tokens[1].content
-
-    assert_equal :text, tokens[2].type
-    assert_equal 'unclosed text', tokens[2].content
+    # Unclosed brace should cause an InlineTokenizeError
+    assert_raises(ReVIEW::InlineTokenizeError) do
+      @tokenizer.tokenize('Bad @<b>{unclosed text')
+    end
   end
 
   def test_empty_string
