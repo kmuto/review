@@ -205,10 +205,24 @@ class TestMarkdownCompiler < Test::Unit::TestCase
     chapter = create_chapter(markdown)
     ast = @compiler.compile_to_ast(chapter)
 
+    # Standalone images are now processed as ImageNode instead of inline icon
+    image = ast.children.find { |n| n.is_a?(ReVIEW::AST::ImageNode) }
+    assert_not_nil(image)
+    assert_equal 'image', image.id
+    assert_equal 'Alt text', image.caption.children.first.content
+  end
+
+  def test_inline_image_conversion
+    markdown = 'This is text with ![inline image](icon.png) in the middle.'
+
+    chapter = create_chapter(markdown)
+    ast = @compiler.compile_to_ast(chapter)
+
+    # Inline images (not standalone) should still be processed as icon
     para = ast.children.first
     image = para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :icon }
     assert_not_nil(image)
-    assert_equal 'image.png', image.args[0]
+    assert_equal 'icon.png', image.args[0]
   end
 
   def test_table_conversion

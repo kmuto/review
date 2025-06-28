@@ -211,7 +211,7 @@ module ReVIEW
           next unless @chapter && @chapter.footnote_index
 
           begin
-            footnote_content = @chapter.footnote_index[footnote_id].content
+            footnote_content = @chapter.footnote_index[footnote_id].content || ''
             result += "\\footnotetext[#{footnote_number}]{#{escape(footnote_content)}}\n"
           rescue StandardError => e
             raise NotImplementedError, "Footnote not found in index: #{footnote_id} (#{e.message})"
@@ -304,7 +304,7 @@ module ReVIEW
           begin
             footnote_item = @chapter.footnote_index[footnote_id]
             if footnote_item
-              footnote_content = footnote_item.content
+              footnote_content = footnote_item.content || ''
               table_result += "\\footnotetext[#{footnote_number}]{#{escape(footnote_content)}}\n"
             else
               raise NotImplementedError, "Footnote not found in index: #{footnote_id}"
@@ -418,7 +418,7 @@ module ReVIEW
           next unless @chapter && @chapter.footnote_index
 
           begin
-            footnote_content = @chapter.footnote_index[footnote_id].content
+            footnote_content = @chapter.footnote_index[footnote_id].content || ''
             image_result += "\\footnotetext[#{footnote_number}]{#{escape(footnote_content)}}\n"
           rescue StandardError => e
             raise NotImplementedError, "Footnote not found in index: #{footnote_id} (#{e.message})"
@@ -906,6 +906,26 @@ module ReVIEW
               else
                 '\\protect\\footnotemark'
               end
+            elsif @chapter && @chapter.footnote_index
+              # Get footnote content from index
+              begin
+                index_item = @chapter.footnote_index[footnote_id]
+
+                # Try to get FootnoteNode for proper AST rendering
+                if index_item.instance_variable_get(:@footnote_node)
+                  footnote_node = index_item.instance_variable_get(:@footnote_node)
+                  # Render the footnote AST children properly
+                  footnote_content = render_footnote_ast(footnote_node)
+                else
+                  # Fallback to text content
+                  footnote_content = escape(index_item.content || '')
+                end
+
+                "\\footnote{#{footnote_content}}"
+              rescue StandardError => e
+                # Fallback to footnote ID if content not found
+                "\\footnote{#{footnote_id}}"
+              end
             else
               "\\footnote{#{footnote_id}}"
             end
@@ -1366,40 +1386,11 @@ module ReVIEW
         false
       end
 
-      def visit_footnote(node)
-        # Select appropriate index based on footnote type
-        index = case node.footnote_type
-                when :endnote
-                  @chapter&.endnote_index
-                else
-                  @chapter&.footnote_index
-                end
-
-        if @chapter && index
-          begin
-            footnote_item = index.number(node.id)
-            footnote_content = index[node.id].content
-
-            # Handle footnotes differently based on context and type
-            if node.footnote_type == :endnote
-              # Endnotes are not displayed inline, just collect the content
-              # In LaTeX, endnotes are typically handled separately
-              ''
-            elsif @doc_status[:table] || @doc_status[:caption] || @doc_status[:column]
-              # In table/caption/column context, store for later \footnotetext output
-              @foottext[node.id] = footnote_item
-              "\\footnotemark[#{footnote_item}]"
-            else
-              # Normal footnote context
-              "\\footnote{#{escape(footnote_content)}}"
-            end
-          rescue StandardError => e
-            raise NotImplementedError, "Footnote failed for #{node.id}: #{e.message}"
-          end
-        else
-          index_type = node.footnote_type == :endnote ? 'endnote' : 'footnote'
-          raise NotImplementedError, "Chapter #{index_type} index not available for #{index_type}: #{node.id}"
-        end
+      def visit_footnote(_node)
+        # FootnoteNode represents a footnote definition (//footnote[id][content])
+        # These should not be rendered in the output - they only define the content
+        # Footnotes are rendered when referenced via @<fn>{id} (InlineNode)
+        ''
       end
 
       # Check caption position configuration
@@ -1567,6 +1558,14 @@ module ReVIEW
 
         # Convert \n to actual newlines
         content.gsub('\\n', "\n")
+      end
+
+      # Render footnote AST children
+      def render_footnote_ast(footnote_node)
+        return '' unless footnote_node.respond_to?(:children) && footnote_node.children
+
+        # Render all children and join the result
+        footnote_node.children.map { |child| visit(child) }.join
       end
     end
   end

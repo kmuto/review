@@ -232,7 +232,7 @@ module ReVIEW
         @current_ast_node.add_child(node)
       end
 
-      def compile_block_command_to_ast(f) # rubocop:disable Metrics/CyclomaticComplexity
+      def compile_block_command_to_ast(f)
         name, args, lines = read_command(f)
 
         case name
@@ -246,6 +246,8 @@ module ReVIEW
           block_processor.compile_list_to_ast(name, lines)
         when :note, :memo, :tip, :info, :warning, :important, :caution, :notice
           block_processor.compile_minicolumn_to_ast(name, args, lines)
+        when :footnote, :endnote
+          block_processor.compile_footnote_to_ast(name, args, lines)
         when :embed
           block_processor.compile_embed_to_ast(args, lines)
         when :read, :quote, :blockquote, :lead, :centering, :flushright, :address, :talk
@@ -281,20 +283,8 @@ module ReVIEW
           end
           @current_ast_node.add_child(node)
         when :footnote, :endnote
-          # Footnote and endnote commands
-          node = AST::FootnoteNode.new(
-            location: location,
-            id: args[0],
-            content: lines&.join("\n"),
-            footnote_type: name
-          )
-          # Parse inline elements in footnote content
-          if lines && lines.any?
-            lines.each do |line|
-              inline_processor.parse_inline_elements(line, node)
-            end
-          end
-          @current_ast_node.add_child(node)
+          # Footnote and endnote commands are handled by Block Processor
+          # This ensures proper argument parsing and content extraction
         when :blankline, :noindent, :pagebreak, :firstlinenum, :tsize, :label, :printendnotes, :hr, :bpo, :parasep
           # Control commands without content or with special handling
           node = AST::BlockNode.new(

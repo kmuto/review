@@ -66,6 +66,16 @@ module ReVIEW
 
       private
 
+      # Extract footnote content from FootnoteNode
+      def extract_footnote_content(node)
+        # Use the original content from FootnoteNode
+        # Inline processing will be handled later by the renderer
+        return node.content if node.content && !node.content.empty?
+
+        # Fallback to empty string to avoid nil issues
+        ''
+      end
+
       def initialize_indexes
         @list_index = ReVIEW::Book::ListIndex.new
         @table_index = ReVIEW::Book::TableIndex.new
@@ -220,12 +230,42 @@ module ReVIEW
         # Initialize crossref entry
         if node.footnote_type == :footnote
           @crossref[:footnote][node.id] ||= 0
-          item = ReVIEW::Book::Index::Item.new(node.id, @footnote_index.size + 1, node.content)
-          @footnote_index.add_item(item)
+          # Add to index if not already present (avoid duplicates)
+          if @footnote_index.key?(node.id)
+            # Update existing entry with node from FootnoteNode
+            existing_item = @footnote_index[node.id]
+            # Store the FootnoteNode for proper AST rendering
+            existing_item.instance_variable_set(:@footnote_node, node)
+            # Also update caption with processed content for compatibility
+            footnote_content = extract_footnote_content(node)
+            existing_item.instance_variable_set(:@caption, footnote_content)
+          else
+            # Extract footnote content from node content or children
+            footnote_content = extract_footnote_content(node)
+            item = ReVIEW::Book::Index::Item.new(node.id, @footnote_index.size + 1, footnote_content)
+            # Store the FootnoteNode for proper AST rendering
+            item.instance_variable_set(:@footnote_node, node)
+            @footnote_index.add_item(item)
+          end
         elsif node.footnote_type == :endnote
           @crossref[:endnote][node.id] ||= 0
-          item = ReVIEW::Book::Index::Item.new(node.id, @endnote_index.size + 1, node.content)
-          @endnote_index.add_item(item)
+          # Add to index if not already present (avoid duplicates)
+          if @endnote_index.key?(node.id)
+            # Update existing entry with node from EndnoteNode
+            existing_item = @endnote_index[node.id]
+            # Store the EndnoteNode for proper AST rendering
+            existing_item.instance_variable_set(:@footnote_node, node)
+            # Also update caption with processed content for compatibility
+            endnote_content = extract_footnote_content(node)
+            existing_item.instance_variable_set(:@caption, endnote_content)
+          else
+            # Extract endnote content from node content or children
+            endnote_content = extract_footnote_content(node)
+            item = ReVIEW::Book::Index::Item.new(node.id, @endnote_index.size + 1, endnote_content)
+            # Store the EndnoteNode for proper AST rendering
+            item.instance_variable_set(:@footnote_node, node)
+            @endnote_index.add_item(item)
+          end
         end
       end
 

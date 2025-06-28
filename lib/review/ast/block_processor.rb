@@ -298,8 +298,29 @@ module ReVIEW
 
       # Build footnote AST node
       def build_footnote_ast(command_name, args, _lines)
-        # Footnotes are single-line commands, not block commands
-        # They are handled by inline processing, not block processing
+        # Extract footnote ID and content from args
+        footnote_id = safe_arg(args, 0)
+        footnote_content = safe_arg(args, 1) || ''
+
+        # Create FootnoteNode with proper content
+        node = AST::FootnoteNode.new(
+          location: @ast_compiler.location,
+          id: footnote_id,
+          content: footnote_content,
+          footnote_type: command_name
+        )
+
+        # Parse inline elements in footnote content if present
+        if footnote_content && !footnote_content.empty?
+          @ast_compiler.inline_processor.parse_inline_elements(footnote_content, node)
+        end
+
+        add_node_to_ast(node)
+      end
+
+      # Compile footnote to AST (entry point from compiler)
+      def compile_footnote_to_ast(command_name, args, lines)
+        build_footnote_ast(command_name, args, lines)
       end
 
       # Build raw AST node
