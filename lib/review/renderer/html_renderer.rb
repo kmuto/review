@@ -1232,14 +1232,7 @@ module ReVIEW
         processed_content = content.gsub('\\n', "\n")
 
         # Apply XHTML compliance for HTML output
-        processed_content = ensure_xhtml_compliance(processed_content)
-
-        # Add newline if content doesn't end with one, to separate from following content
-        if !processed_content.empty? && !processed_content.end_with?("\n")
-          processed_content + "\n"
-        else
-          processed_content
-        end
+        ensure_xhtml_compliance(processed_content)
       end
 
       # Ensure XHTML compliance for self-closing tags

@@ -1545,15 +1545,8 @@ module ReVIEW
                     ''
                   end
 
-        # Convert \n to actual newlines and ensure proper line ending
-        processed_content = content.gsub('\\n', "\n")
-
-        # Add newline if content doesn't end with one, to separate from following content
-        if !processed_content.empty? && !processed_content.end_with?("\n")
-          processed_content + "\n"
-        else
-          processed_content
-        end
+        # Convert \n to actual newlines
+        content.gsub('\\n', "\n")
       end
     end
   end
