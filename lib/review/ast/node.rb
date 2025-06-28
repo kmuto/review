@@ -12,7 +12,8 @@ require_relative 'json_serializer'
 module ReVIEW
   module AST
     class Node
-      attr_accessor :location, :parent, :children, :type, :id, :content, :original_text
+      attr_reader :location, :type, :id, :content, :original_text
+      attr_accessor :parent, :children
 
       def initialize(location: nil, type: nil, id: nil, content: nil, original_text: nil, **_kwargs)
         @location = location

@@ -20,8 +20,7 @@ class TestASTInline < Test::Unit::TestCase
   end
 
   def test_text_node_creation
-    node = ReVIEW::AST::TextNode.new
-    node.content = 'Hello world'
+    node = ReVIEW::AST::TextNode.new(content: 'Hello world')
 
     hash = node.to_h
     assert_equal 'TextNode', hash[:type]

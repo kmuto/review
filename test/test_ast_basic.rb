@@ -39,8 +39,7 @@ class TestASTBasic < Test::Unit::TestCase
   end
 
   def test_paragraph_node
-    node = ReVIEW::AST::ParagraphNode.new
-    node.content = 'This is a test paragraph.'
+    node = ReVIEW::AST::ParagraphNode.new(content: 'This is a test paragraph.')
 
     hash = node.to_h
     assert_equal 'ParagraphNode', hash[:type]
