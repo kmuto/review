@@ -665,14 +665,41 @@ module ReVIEW
 
       def visit_column(node)
         content = render_children(node)
+        caption = render_children(node.caption) if node.caption
 
-        # Column is rendered as a minicolumn-like environment
+        # Generate column label for hypertarget
+        column_label = generate_column_label(node, caption)
+        hypertarget = "\\hypertarget{#{column_label}}{}"
+
         result = []
-        result << '\\begin{reviewcolumn}'
-        result << ''  # blank line
+        result << '' # blank line before column
+
+        # support Re:VIEW Version 3+ format only
+        caption_part = caption ? "[#{caption}#{hypertarget}]" : "[#{hypertarget}]"
+        result << "\\begin{reviewcolumn}#{caption_part}"
+
+        # Add TOC entry if within toclevel
+        if node.level && caption && node.level <= @book.config['toclevel'].to_i
+          toc_level = case node.level
+                      when 1
+                        'chapter'
+                      when 2
+                        'section'
+                      when 3
+                        'subsection'
+                      when 4
+                        'subsubsection'
+                      else
+                        'subsection' # fallback
+                      end
+          result << "\\addcontentsline{toc}{#{toc_level}}{#{caption}}"
+        end
+
+        result << ''  # blank line after header
         result << content.chomp
-        result << ''  # blank line
+        result << ''  # blank line before end
         result << '\\end{reviewcolumn}'
+        result << ''  # blank line after column
 
         result.join("\n") + "\n"
       end
@@ -1460,6 +1487,26 @@ module ReVIEW
         else
           ''
         end
+      end
+
+      # Generate column label for hypertarget (matches LATEXBuilder behavior)
+      def generate_column_label(node, caption)
+        # Use explicit label if provided, otherwise use caption
+        id = node.label || caption || 'column'
+
+        # Get column number from chapter's column index
+        if @chapter && @chapter.respond_to?(:column_index) && @chapter.column_index
+          begin
+            column_item = @chapter.column_index[id]
+            num = column_item ? column_item.number : 1
+          rescue StandardError
+            num = 1
+          end
+        else
+          num = 1
+        end
+
+        "column:#{@chapter&.id || 'unknown'}:#{num}"
       end
     end
   end

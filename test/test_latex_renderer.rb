@@ -631,4 +631,75 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_false(regular_headline.notoc?)
     assert_false(regular_headline.nodisp?)
   end
+
+  def test_visit_column_basic
+    # Test basic column rendering
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Test Column'))
+
+    column = AST::ColumnNode.new(level: 3, caption: caption, column_type: 'column')
+    paragraph = AST::ParagraphNode.new
+    paragraph.add_child(AST::TextNode.new(content: 'Column content here.'))
+    column.add_child(paragraph)
+
+    result = @renderer.visit(column)
+
+    # Should use version 3+ format by default
+    expected = "\n" +
+               "\\begin{reviewcolumn}[Test Column\\hypertarget{column:test:1}{}]\n" +
+               "\\addcontentsline{toc}{subsection}{Test Column}\n" +
+               "\n" +
+               "Column content here.\n\n" +
+               "\n" +
+               "\\end{reviewcolumn}\n" +
+               "\n"
+
+    assert_equal expected, result
+  end
+
+  def test_visit_column_no_caption
+    # Test column without caption
+    column = AST::ColumnNode.new(level: 3, column_type: 'column')
+    paragraph = AST::ParagraphNode.new
+    paragraph.add_child(AST::TextNode.new(content: 'No caption column.'))
+    column.add_child(paragraph)
+
+    result = @renderer.visit(column)
+
+    expected = "\n" +
+               "\\begin{reviewcolumn}[\\hypertarget{column:test:1}{}]\n" +
+               "\n" +
+               "No caption column.\n\n" +
+               "\n" +
+               "\\end{reviewcolumn}\n" +
+               "\n"
+
+    assert_equal expected, result
+  end
+
+  def test_visit_column_toclevel_filter
+    # Test column TOC entry based on toclevel setting
+    @config['toclevel'] = 2 # Only levels 1-2 should get TOC entries
+
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Level 3 Column'))
+
+    column = AST::ColumnNode.new(level: 3, caption: caption, column_type: 'column')
+    paragraph = AST::ParagraphNode.new
+    paragraph.add_child(AST::TextNode.new(content: 'This should not get TOC entry.'))
+    column.add_child(paragraph)
+
+    result = @renderer.visit(column)
+
+    # Should not contain addcontentsline since level 3 > toclevel 2
+    expected = "\n" +
+               "\\begin{reviewcolumn}[Level 3 Column\\hypertarget{column:test:1}{}]\n" +
+               "\n" +
+               "This should not get TOC entry.\n\n" +
+               "\n" +
+               "\\end{reviewcolumn}\n" +
+               "\n"
+
+    assert_equal expected, result
+  end
 end
