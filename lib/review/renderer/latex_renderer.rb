@@ -74,8 +74,8 @@ module ReVIEW
           end
         end
 
-        # Generate content directly without complex post-processing
-        content = render_children(node)
+        # Generate content with proper separation between document-level elements
+        content = render_document_children(node)
 
         # Close the reviewpart environment if it was opened
         if @part_env_opened
@@ -1311,6 +1311,26 @@ module ReVIEW
         return '' unless node.children
 
         node.children.map { |child| visit(child) }.join
+      end
+
+      # Render document children with proper separation
+      def render_document_children(node)
+        return '' unless node.children
+
+        results = []
+        node.children.each_with_index do |child, _index|
+          result = visit(child)
+          next if result.nil? || result.empty?
+
+          # Add proper separation after raw embeds
+          if child.respond_to?(:embed_type) && child.embed_type == :raw && !result.end_with?("\n")
+            result += "\n"
+          end
+
+          results << result
+        end
+
+        results.join
       end
 
       def normalize_id(id)
