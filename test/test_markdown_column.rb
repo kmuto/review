@@ -282,6 +282,43 @@ class TestMarkdownColumn < Test::Unit::TestCase
     assert_match(/\\reviewcode\{code spans\}/, latex_output)
   end
 
+  def test_standalone_images
+    content = <<~MARKDOWN
+      # Chapter
+
+      ![Sample Image](sample1)
+
+      Regular paragraph with text.
+
+      ![Another Image](sample2)
+    MARKDOWN
+
+    chapter = create_chapter(content)
+    ast_root = @compiler.compile_to_ast(chapter)
+
+    # Find ImageNodes
+    images = find_images(ast_root)
+    assert_equal 2, images.length
+
+    # Check first image
+    first_image = images.first
+    assert_equal 'sample1', first_image.id
+    assert_not_nil(first_image.caption)
+    assert_equal 'Sample Image', extract_image_caption(first_image)
+
+    # Check second image
+    second_image = images.last
+    assert_equal 'sample2', second_image.id
+    assert_not_nil(second_image.caption)
+    assert_equal 'Another Image', extract_image_caption(second_image)
+
+    # Test LaTeX rendering
+    latex_renderer = ReVIEW::Renderer::LatexRenderer.new(chapter)
+    latex_output = latex_renderer.render(ast_root)
+    assert_match(/\\reviewimagecaption\{Sample Image\}/, latex_output)
+    assert_match(/\\reviewimagecaption\{Another Image\}/, latex_output)
+  end
+
   def test_unmatched_column_end
     content = <<~MARKDOWN
       # Chapter
@@ -320,6 +357,26 @@ class TestMarkdownColumn < Test::Unit::TestCase
     return nil unless column_node.caption
 
     first_child = column_node.caption.children.first
+    first_child&.content
+  end
+
+  def find_images(node)
+    images = []
+    if node.is_a?(AST::ImageNode)
+      images << node
+    end
+
+    if node.respond_to?(:children) && node.children
+      node.children.each { |child| images.concat(find_images(child)) }
+    end
+
+    images
+  end
+
+  def extract_image_caption(image_node)
+    return nil unless image_node.caption
+
+    first_child = image_node.caption.children.first
     first_child&.content
   end
 end

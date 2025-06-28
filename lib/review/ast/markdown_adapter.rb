@@ -134,14 +134,19 @@ module ReVIEW
 
       # Process paragraph node
       def process_paragraph(cm_node)
-        para = ParagraphNode.new(
-          location: current_location(cm_node)
-        )
+        # Check if this paragraph contains only an image
+        if standalone_image_paragraph?(cm_node)
+          process_standalone_image(cm_node)
+        else
+          para = ParagraphNode.new(
+            location: current_location(cm_node)
+          )
 
-        # Process inline content
-        process_inline_content(cm_node, para)
+          # Process inline content
+          process_inline_content(cm_node, para)
 
-        add_node_to_current_context(para)
+          add_node_to_current_context(para)
+        end
       end
 
       # Process list node
@@ -552,6 +557,50 @@ module ReVIEW
       # Add node to current context (column or document)
       def add_node_to_current_context(node)
         @current_node.add_child(node)
+      end
+
+      # Check if paragraph contains only a standalone image
+      def standalone_image_paragraph?(cm_node)
+        children = cm_node.to_a
+        return false if children.length != 1
+
+        child = children.first
+        child.type == :image
+      end
+
+      # Process standalone image as block-level ImageNode
+      def process_standalone_image(cm_node)
+        image_node = cm_node.first # Get the image node
+
+        # Extract image information
+        image_id = extract_image_id(image_node.url)
+        alt_text = extract_text(image_node) # Extract alt text from children
+
+        # Create caption if alt text exists
+        caption = if alt_text && !alt_text.empty?
+                    caption_node = CaptionNode.new(location: current_location(image_node))
+                    caption_node.add_child(TextNode.new(
+                                             location: current_location(image_node),
+                                             content: alt_text
+                                           ))
+                    caption_node
+                  end
+
+        # Create ImageNode
+        image_block = ImageNode.new(
+          location: current_location(image_node),
+          id: image_id,
+          caption: caption,
+          image_type: :image
+        )
+
+        add_node_to_current_context(image_block)
+      end
+
+      # Extract image ID from URL (remove extension if present)
+      def extract_image_id(url)
+        # Remove file extension for Re:VIEW compatibility
+        File.basename(url, '.*')
       end
     end
   end
