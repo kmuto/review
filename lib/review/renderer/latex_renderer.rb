@@ -500,26 +500,29 @@ module ReVIEW
             if item.children && item.children.length >= 2
               # Handle definition term (first child)
               term_node = item.children[0]
-              # Debug: Check if term_node is InlineNode
-              term = if term_node.class.name.include?('InlineNode')
-                       visit_inline(term_node)
-                     else
-                       render_children(term_node)
-                     end
+              term = visit(term_node) # Use visit instead of render_children for individual nodes
+
+              # Escape square brackets in terms like LATEXBuilder does
+              term = term.gsub('[', '\\lbrack{}').gsub(']', '\\rbrack{}')
 
               # Handle definition content (rest of children)
               definition_parts = item.children[1..-1].map do |child|
-                if child.class.name.include?('TextNode')
-                  child.content.to_s
-                else
-                  render_children(child)
-                end
+                visit(child) # Use visit instead of render_children for individual nodes
               end
               definition = definition_parts.join(' ').strip
+
               # Use exact LATEXBuilder format: \item[term] \mbox{} \\
               "\\item[#{term}] \\mbox{} \\\\\n#{definition}"
             else
-              "\\item[#{render_children(item)}] "
+              # Single child - treat entire content as term with empty definition
+              term = if item.children && item.children.length == 1
+                       visit(item.children[0])
+                     else
+                       # Fallback to item content if no children
+                       item.content.to_s
+                     end
+              term = term.gsub('[', '\\lbrack{}').gsub(']', '\\rbrack{}')
+              "\\item[#{term}] \\mbox{} \\\\"
             end
           end.join("\n")
           "\n\\begin{description}\n#{items}\n\\end{description}\n"
@@ -1520,16 +1523,37 @@ module ReVIEW
 
       # Process //raw command with LATEXBuilder-compatible behavior
       def process_raw_embed(node)
+        # Debug: print node details
+        # puts "DEBUG process_raw_embed: arg=#{node.arg.inspect}, target_builders=#{node.target_builders.inspect}, content=#{node.content.inspect}"
+
         # Check if this embed is targeted for LaTeX builder
         unless node.targeted_for?('latex')
           return ''
         end
 
-        # Get processed content
-        content = node.content || node.arg || ''
+        # Get processed content - use content if available, otherwise parse arg
+        content = if node.content
+                    node.content
+                  elsif node.arg
+                    # Fallback: parse arg directly if content is not set
+                    if matched = node.arg.match(/\A\|(.*?)\|(.*)/)
+                      matched[2] # Extract content part after |builder|
+                    else
+                      node.arg
+                    end
+                  else
+                    ''
+                  end
 
-        # Convert \n to actual newlines
-        content.gsub('\\n', "\n")
+        # Convert \n to actual newlines and ensure proper line ending
+        processed_content = content.gsub('\\n', "\n")
+
+        # Add newline if content doesn't end with one, to separate from following content
+        if !processed_content.empty? && !processed_content.end_with?("\n")
+          processed_content + "\n"
+        else
+          processed_content
+        end
       end
     end
   end

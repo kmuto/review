@@ -305,4 +305,61 @@ class TestHtmlRenderer < Test::Unit::TestCase
 
     assert_equal expected, result
   end
+
+  def test_visit_list_definition
+    # Test definition list
+    list = ReVIEW::AST::ListNode.new(list_type: :dl)
+
+    # First definition item
+    item1 = ReVIEW::AST::ListItemNode.new(content: 'Alpha', level: 1)
+    item1.parent = list # Set parent for list type detection
+    term1 = ReVIEW::AST::TextNode.new(content: 'Alpha')
+    def1 = ReVIEW::AST::TextNode.new(content: 'RISC CPU made by DEC.')
+    item1.add_child(term1)
+    item1.add_child(def1)
+
+    # Second definition item
+    item2 = ReVIEW::AST::ListItemNode.new(content: 'POWER', level: 1)
+    item2.parent = list # Set parent for list type detection
+    term2 = ReVIEW::AST::TextNode.new(content: 'POWER')
+    def2 = ReVIEW::AST::TextNode.new(content: 'RISC CPU made by IBM and Motorola.')
+    item2.add_child(term2)
+    item2.add_child(def2)
+
+    list.add_child(item1)
+    list.add_child(item2)
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(''))
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    result = renderer.visit(list)
+
+    expected = "<dl>\n" +
+               '<dt>Alpha</dt><dd>RISC CPU made by DEC.</dd>' +
+               '<dt>POWER</dt><dd>RISC CPU made by IBM and Motorola.</dd>' +
+               "\n</dl>\n"
+
+    assert_equal expected, result
+  end
+
+  def test_visit_list_definition_single_child
+    # Test definition list with term only (no definition)
+    list = ReVIEW::AST::ListNode.new(list_type: :dl)
+
+    item = ReVIEW::AST::ListItemNode.new(content: 'Term Only', level: 1)
+    item.parent = list # Set parent for list type detection
+    term = ReVIEW::AST::TextNode.new(content: 'Term Only')
+    item.add_child(term)
+
+    list.add_child(item)
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(''))
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    result = renderer.visit(list)
+
+    expected = "<dl>\n" +
+               '<dt>Term Only</dt>' +
+               "\n</dl>\n"
+
+    assert_equal expected, result
+  end
 end

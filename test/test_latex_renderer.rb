@@ -748,6 +748,36 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_equal expected, result
   end
 
+  def test_visit_embed_raw_complex_example
+    # Test complex example: //raw[|html|<div class="custom">HTML用カスタム要素</div>]
+    embed = AST::EmbedNode.new(
+      embed_type: :raw,
+      arg: '|html|<div class="custom">HTML用カスタム要素</div>',
+      target_builders: ['html'],
+      content: '<div class="custom">HTML用カスタム要素</div>'
+    )
+
+    result = @renderer.visit(embed)
+    expected = '' # Should output nothing for LaTeX renderer
+
+    assert_equal expected, result
+  end
+
+  def test_visit_embed_raw_latex_with_clearpage
+    # Test: //raw[|latex|\clearpage]
+    embed = AST::EmbedNode.new(
+      embed_type: :raw,
+      arg: '|latex|\\clearpage',
+      target_builders: ['latex'],
+      content: '\\clearpage'
+    )
+
+    result = @renderer.visit(embed)
+    expected = '\\clearpage'
+
+    assert_equal expected, result
+  end
+
   def test_visit_embed_raw_multiple_builders
     # Test //raw command targeted for multiple builders including LaTeX
     embed = AST::EmbedNode.new(
@@ -789,6 +819,77 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     result = @renderer.visit(embed)
     expected = "Line 1\nLine 2\nLine 3"
+
+    assert_equal expected, result
+  end
+
+  def test_visit_embed_raw_no_builder_specification
+    # Test //raw without builder specification (should output content)
+    embed = AST::EmbedNode.new(
+      embed_type: :raw,
+      arg: 'Raw content without builder spec',
+      target_builders: nil,
+      content: 'Raw content without builder spec'
+    )
+
+    result = @renderer.visit(embed)
+    expected = 'Raw content without builder spec'
+
+    assert_equal expected, result
+  end
+
+  def test_visit_list_definition
+    # Test definition list
+    list = AST::ListNode.new(list_type: :dl)
+
+    # First definition item: : Alpha \n    RISC CPU made by DEC.
+    item1 = AST::ListItemNode.new(content: 'Alpha', level: 1)
+    # First child is the term
+    term1 = AST::TextNode.new(content: 'Alpha')
+    item1.add_child(term1)
+    # Second child is the definition
+    def1 = AST::TextNode.new(content: 'RISC CPU made by DEC.')
+    item1.add_child(def1)
+
+    # Second definition item with brackets in term
+    item2 = AST::ListItemNode.new(content: 'POWER [IBM]', level: 1)
+    # First child is the term
+    term2 = AST::TextNode.new(content: 'POWER [IBM]')
+    item2.add_child(term2)
+    # Second child is the definition
+    def2 = AST::TextNode.new(content: 'RISC CPU made by IBM and Motorola.')
+    item2.add_child(def2)
+
+    list.add_child(item1)
+    list.add_child(item2)
+
+    result = @renderer.visit(list)
+
+    expected = "\n\\begin{description}\n" +
+               "\\item[Alpha] \\mbox{} \\\\\n" +
+               "RISC CPU made by DEC.\n" +
+               "\\item[POWER \\lbrack{}IBM\\rbrack{}] \\mbox{} \\\\\n" +
+               "RISC CPU made by IBM and Motorola.\n" +
+               "\\end{description}\n"
+
+    assert_equal expected, result
+  end
+
+  def test_visit_list_definition_single_child
+    # Test definition list with term only (no definition)
+    list = AST::ListNode.new(list_type: :dl)
+
+    item = AST::ListItemNode.new(content: 'Term Only', level: 1)
+    term = AST::TextNode.new(content: 'Term Only')
+    item.add_child(term)
+
+    list.add_child(item)
+
+    result = @renderer.visit(list)
+
+    expected = "\n\\begin{description}\n" +
+               "\\item[Term Only] \\mbox{} \\\\\n" +
+               "\\end{description}\n"
 
     assert_equal expected, result
   end

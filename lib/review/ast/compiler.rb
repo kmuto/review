@@ -253,14 +253,8 @@ module ReVIEW
         when :doorquote, :bibpaper, :graph, :box
           block_processor.build_block_command_ast(name, args, lines)
         when :raw
-          # For raw blocks, use EmbedNode
-          node = AST::EmbedNode.new(
-            location: location,
-            embed_type: :raw,
-            arg: args && args[0],
-            lines: lines
-          )
-          @current_ast_node.add_child(node)
+          # Use block processor to handle raw blocks with proper parsing
+          block_processor.build_raw_ast(args, lines)
         when :comment
           # Comment blocks are usually ignored, but we can preserve them in AST
           node = AST::BlockNode.new(

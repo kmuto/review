@@ -186,8 +186,35 @@ module ReVIEW
       end
 
       def visit_list_item(node)
-        content = render_children(node)
-        "<li>#{content}</li>"
+        # Get parent list to determine list type
+        parent_list = node.parent
+        if parent_list && parent_list.list_type == :dl
+          # Definition list item - first child is term, rest are definitions
+          if node.children && node.children.length >= 2
+            # First child is the term (dt)
+            term = visit(node.children[0])
+            dt_element = "<dt>#{term}</dt>"
+
+            # Rest are definitions (dd elements)
+            definitions = node.children[1..-1].map do |child|
+              definition_content = visit(child)
+              "<dd>#{definition_content}</dd>"
+            end
+
+            dt_element + definitions.join('')
+          elsif node.children && node.children.length == 1
+            # Only term, no definition
+            term = visit(node.children[0])
+            "<dt>#{term}</dt>"
+          else
+            # Fallback to content
+            "<dt>#{escape_content(node.content.to_s)}</dt>"
+          end
+        else
+          # Regular list item
+          content = render_children(node)
+          "<li>#{content}</li>"
+        end
       end
 
       def visit_text(node)
@@ -1202,10 +1229,17 @@ module ReVIEW
 
         # Get processed content and convert \\n to actual newlines
         content = node.content || ''
-        content = content.gsub('\\n', "\n")
+        processed_content = content.gsub('\\n', "\n")
 
         # Apply XHTML compliance for HTML output
-        ensure_xhtml_compliance(content)
+        processed_content = ensure_xhtml_compliance(processed_content)
+
+        # Add newline if content doesn't end with one, to separate from following content
+        if !processed_content.empty? && !processed_content.end_with?("\n")
+          processed_content + "\n"
+        else
+          processed_content
+        end
       end
 
       # Ensure XHTML compliance for self-closing tags
