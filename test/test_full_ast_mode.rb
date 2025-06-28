@@ -189,7 +189,7 @@ class TestFullASTMode < Test::Unit::TestCase
     assert_equal 'ParagraphNode', read_paragraph['type'], 'Read block child should be ParagraphNode'
     read_text = read_paragraph['children'].first
     assert_equal 'TextNode', read_text['type'], 'Read paragraph should contain TextNode'
-    assert_equal 'This is a read block.', read_text['content'], 'Read block text should match'
+    assert_equal "This is a read block.\n", read_text['content'], 'Read block text should match'
 
     # Check memo block (another minicolumn type)
     memo_block = minicolumn_nodes.find { |node| node['minicolumn_type'] == 'memo' }
