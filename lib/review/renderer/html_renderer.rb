@@ -431,40 +431,34 @@ module ReVIEW
       end
 
       def visit_embed(node)
-        # Handle embed blocks (//embed[format]{...//}) and raw blocks (//raw[format]{...//})
-        # Debug: Check embed_type
-        if defined?(node.embed_type) && node.embed_type == :raw
-          # This is a raw block, processed as EmbedNode
-        end
+        # Handle embed blocks and raw commands
+        case node.embed_type
+        when :raw, :inline
+          # Process raw embed content
+          process_raw_embed(node)
+        else
+          # Handle legacy embed blocks
+          if node.arg
+            # Parse target formats from argument like Builder base class
+            builders = node.arg.gsub(/^\s*\|/, '').gsub(/\|\s*$/, '').gsub(/\s/, '').split(',')
+            target = target_name
 
-        if node.arg
-          # Parse target formats from argument like Builder base class
-          builders = node.arg.gsub(/^\s*\|/, '').gsub(/\|\s*$/, '').gsub(/\s/, '').split(',')
-          target = target_name
-
-          # Only output if this renderer's target is in the list
-          if builders.include?(target)
+            # Only output if this renderer's target is in the list
+            if builders.include?(target)
+              content = node.lines.join("\n")
+              # For HTML output, ensure XHTML compliance for self-closing tags
+              content = ensure_xhtml_compliance(content)
+              return content + "\n"
+            else
+              return ''
+            end
+          else
+            # No format specified, output for all formats
             content = node.lines.join("\n")
             # For HTML output, ensure XHTML compliance for self-closing tags
-            if target == 'html'
-              content = content.gsub(/<hr(\s[^>]*)?>/, '<hr\1 />').
-                        gsub(/<br(\s[^>]*)?>/, '<br\1 />').
-                        gsub(%r{<img([^>]*[^/])>}, '<img\1 />').
-                        gsub(%r{<input([^>]*[^/])>}, '<input\1 />')
-            end
+            content = ensure_xhtml_compliance(content)
             return content + "\n"
-          else
-            return ''
           end
-        else
-          # No format specified, output for all formats
-          content = node.lines.join("\n")
-          # For HTML output, ensure XHTML compliance for self-closing tags
-          content = content.gsub(/<hr(\s[^>]*)?>/, '<hr\1 />').
-                    gsub(/<br(\s[^>]*)?>/, '<br\1 />').
-                    gsub(%r{<img([^>]*[^/])>}, '<img\1 />').
-                    gsub(%r{<input([^>]*[^/])>}, '<input\1 />')
-          return content + "\n"
         end
       end
 
@@ -1171,7 +1165,12 @@ module ReVIEW
       end
 
       def render_inline_raw(content, node)
-        # Handle inline raw elements like @<raw>{|html|<hr>}
+        # Handle inline raw elements - delegate to visit_embed for EmbedNode
+        if node.respond_to?(:embed_type) && (node.embed_type == :inline || node.embed_type == :raw)
+          return visit_embed(node)
+        end
+
+        # Legacy fallback for old-style inline raw
         if node.args && node.args.first
           raw_content = node.args.first
           # Parse target formats from argument like Builder base class
@@ -1194,6 +1193,27 @@ module ReVIEW
 
         # Fallback to content if no format specified
         content
+      end
+
+      # Process raw embed content (//raw and @<raw>)
+      def process_raw_embed(node)
+        # Check if content should be output for this renderer
+        return '' unless node.targeted_for?('html')
+
+        # Get processed content and convert \\n to actual newlines
+        content = node.content || ''
+        content = content.gsub('\\n', "\n")
+
+        # Apply XHTML compliance for HTML output
+        ensure_xhtml_compliance(content)
+      end
+
+      # Ensure XHTML compliance for self-closing tags
+      def ensure_xhtml_compliance(content)
+        content.gsub(/<hr(\s[^>]*)?>/, '<hr\1 />').
+          gsub(/<br(\s[^>]*)?>/, '<br\1 />').
+          gsub(%r{<img([^>]*[^/])>}, '<img\1 />').
+          gsub(%r{<input([^>]*[^/])>}, '<input\1 />')
       end
 
       # Builder compatibility - return target name for embed blocks

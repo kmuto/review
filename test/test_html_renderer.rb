@@ -186,4 +186,123 @@ class TestHtmlRenderer < Test::Unit::TestCase
 
     assert_match(%r{<a href="https://example\.com".*>Example Site</a>}, html_output)
   end
+
+  def test_visit_embed_raw_basic
+    # Test basic //raw command without builder specification
+    embed = ReVIEW::AST::EmbedNode.new(
+      embed_type: :raw,
+      arg: 'Raw HTML content with <br> tag',
+      target_builders: nil,
+      content: 'Raw HTML content with <br> tag'
+    )
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(''))
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    result = renderer.visit(embed)
+    expected = 'Raw HTML content with <br /> tag'
+
+    assert_equal expected, result
+  end
+
+  def test_visit_embed_raw_html_targeted
+    # Test //raw command targeted for HTML
+    embed = ReVIEW::AST::EmbedNode.new(
+      embed_type: :raw,
+      arg: '|html|<div class="custom">HTML content</div>',
+      target_builders: ['html'],
+      content: '<div class="custom">HTML content</div>'
+    )
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(''))
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    result = renderer.visit(embed)
+    expected = '<div class="custom">HTML content</div>'
+
+    assert_equal expected, result
+  end
+
+  def test_visit_embed_raw_latex_targeted
+    # Test //raw command targeted for LaTeX (should output nothing)
+    embed = ReVIEW::AST::EmbedNode.new(
+      embed_type: :raw,
+      arg: '|latex|\\textbf{LaTeX content}',
+      target_builders: ['latex'],
+      content: '\\textbf{LaTeX content}'
+    )
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(''))
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    result = renderer.visit(embed)
+    expected = ''
+
+    assert_equal expected, result
+  end
+
+  def test_visit_embed_raw_multiple_builders
+    # Test //raw command targeted for multiple builders including HTML
+    embed = ReVIEW::AST::EmbedNode.new(
+      embed_type: :raw,
+      arg: '|html,latex|Content for both',
+      target_builders: ['html', 'latex'],
+      content: 'Content for both'
+    )
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(''))
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    result = renderer.visit(embed)
+    expected = 'Content for both'
+
+    assert_equal expected, result
+  end
+
+  def test_visit_embed_raw_inline
+    # Test inline @<raw> command
+    embed = ReVIEW::AST::EmbedNode.new(
+      embed_type: :inline,
+      arg: '|html|<span class="inline">HTML</span>',
+      target_builders: ['html'],
+      content: '<span class="inline">HTML</span>'
+    )
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(''))
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    result = renderer.visit(embed)
+    expected = '<span class="inline">HTML</span>'
+
+    assert_equal expected, result
+  end
+
+  def test_visit_embed_raw_newline_conversion
+    # Test \\n to newline conversion
+    embed = ReVIEW::AST::EmbedNode.new(
+      embed_type: :raw,
+      arg: 'Line 1\\nLine 2\\nLine 3',
+      target_builders: nil,
+      content: 'Line 1\\nLine 2\\nLine 3'
+    )
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(''))
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    result = renderer.visit(embed)
+    expected = "Line 1\nLine 2\nLine 3"
+
+    assert_equal expected, result
+  end
+
+  def test_visit_embed_raw_xhtml_compliance
+    # Test XHTML compliance for self-closing tags
+    embed = ReVIEW::AST::EmbedNode.new(
+      embed_type: :raw,
+      arg: '<hr><br><img src="test.png"><input type="text">',
+      target_builders: nil,
+      content: '<hr><br><img src="test.png"><input type="text">'
+    )
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(''))
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    result = renderer.visit(embed)
+    expected = '<hr /><br /><img src="test.png" /><input type="text" />'
+
+    assert_equal expected, result
+  end
 end

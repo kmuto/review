@@ -702,4 +702,94 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     assert_equal expected, result
   end
+
+  def test_visit_embed_raw_basic
+    # Test basic //raw command without builder specification
+    embed = AST::EmbedNode.new(
+      embed_type: :raw,
+      arg: 'Raw content with \\n newline',
+      target_builders: nil,
+      content: 'Raw content with \\n newline'
+    )
+
+    result = @renderer.visit(embed)
+    expected = "Raw content with \n newline"
+
+    assert_equal expected, result
+  end
+
+  def test_visit_embed_raw_latex_targeted
+    # Test //raw command targeted for LaTeX
+    embed = AST::EmbedNode.new(
+      embed_type: :raw,
+      arg: '|latex|\\textbf{Bold LaTeX text}',
+      target_builders: ['latex'],
+      content: '\\textbf{Bold LaTeX text}'
+    )
+
+    result = @renderer.visit(embed)
+    expected = '\\textbf{Bold LaTeX text}'
+
+    assert_equal expected, result
+  end
+
+  def test_visit_embed_raw_html_targeted
+    # Test //raw command targeted for HTML (should output nothing)
+    embed = AST::EmbedNode.new(
+      embed_type: :raw,
+      arg: '|html|<div>HTML content</div>',
+      target_builders: ['html'],
+      content: '<div>HTML content</div>'
+    )
+
+    result = @renderer.visit(embed)
+    expected = ''
+
+    assert_equal expected, result
+  end
+
+  def test_visit_embed_raw_multiple_builders
+    # Test //raw command targeted for multiple builders including LaTeX
+    embed = AST::EmbedNode.new(
+      embed_type: :raw,
+      arg: '|html,latex|Content for both',
+      target_builders: ['html', 'latex'],
+      content: 'Content for both'
+    )
+
+    result = @renderer.visit(embed)
+    expected = 'Content for both'
+
+    assert_equal expected, result
+  end
+
+  def test_visit_embed_raw_inline
+    # Test inline @<raw> command
+    embed = AST::EmbedNode.new(
+      embed_type: :inline,
+      arg: '|latex|\\LaTeX{}',
+      target_builders: ['latex'],
+      content: '\\LaTeX{}'
+    )
+
+    result = @renderer.visit(embed)
+    expected = '\\LaTeX{}'
+
+    assert_equal expected, result
+  end
+
+  def test_visit_embed_raw_newline_conversion
+    # Test \n to newline conversion
+    embed = AST::EmbedNode.new(
+      embed_type: :raw,
+      arg: 'Line 1\\nLine 2\\nLine 3',
+      target_builders: nil,
+      content: 'Line 1\\nLine 2\\nLine 3'
+    )
+
+    result = @renderer.visit(embed)
+    expected = "Line 1\nLine 2\nLine 3"
+
+    assert_equal expected, result
+  end
 end

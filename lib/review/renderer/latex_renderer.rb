@@ -705,7 +705,16 @@ module ReVIEW
       end
 
       def visit_embed(node)
-        # Embed blocks are typically raw content that should be passed through
+        # Handle different embed types
+        if node.respond_to?(:embed_type) && node.embed_type == :raw
+          # Handle //raw command with LATEXBuilder-compatible behavior
+          return process_raw_embed(node)
+        elsif node.respond_to?(:embed_type) && node.embed_type == :inline
+          # Handle inline @<raw> command
+          return process_raw_embed(node)
+        end
+
+        # Default embed processing for other types
         if node.respond_to?(:lines) && node.lines
           node.lines.join("\n") + "\n"
         elsif node.respond_to?(:arg) && node.arg
@@ -1507,6 +1516,20 @@ module ReVIEW
         end
 
         "column:#{@chapter&.id || 'unknown'}:#{num}"
+      end
+
+      # Process //raw command with LATEXBuilder-compatible behavior
+      def process_raw_embed(node)
+        # Check if this embed is targeted for LaTeX builder
+        unless node.targeted_for?('latex')
+          return ''
+        end
+
+        # Get processed content
+        content = node.content || node.arg || ''
+
+        # Convert \n to actual newlines
+        content.gsub('\\n', "\n")
       end
     end
   end

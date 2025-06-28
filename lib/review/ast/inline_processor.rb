@@ -290,6 +290,8 @@ module ReVIEW
           create_inline_cross_ref_ast_node(command, content, parent_node)
         when 'w', 'wb'
           create_inline_word_ast_node(command, content, parent_node)
+        when 'raw'
+          create_inline_raw_ast_node(content, parent_node)
         else
           # Standard inline processing
           inline_node = AST::InlineNode.new(
@@ -311,6 +313,38 @@ module ReVIEW
           end
 
           parent_node.add_child(inline_node)
+        end
+      end
+
+      # Create inline raw AST node (@<raw> command)
+      def create_inline_raw_ast_node(content, parent_node)
+        target_builders, processed_content = parse_raw_content(content)
+
+        embed_node = AST::EmbedNode.new(
+          location: @ast_compiler.location,
+          embed_type: :inline,
+          arg: content,
+          target_builders: target_builders,
+          content: processed_content
+        )
+
+        parent_node.add_child(embed_node)
+      end
+
+      private
+
+      # Parse raw content for builder specification (shared with BlockProcessor)
+      def parse_raw_content(content)
+        return [nil, content] if content.nil? || content.empty?
+
+        # Check for builder specification: |builder1,builder2|content
+        if matched = content.match(/\A\|(.*?)\|(.*)/)
+          builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }
+          processed_content = matched[2]
+          [builders, processed_content]
+        else
+          # No builder specification - target all builders
+          [nil, content]
         end
       end
     end

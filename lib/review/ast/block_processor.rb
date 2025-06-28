@@ -304,10 +304,15 @@ module ReVIEW
 
       # Build raw AST node
       def build_raw_ast(args, lines)
+        raw_content = safe_arg(args, 0) || ''
+        target_builders, content = parse_raw_content(raw_content)
+
         create_and_add_node(AST::EmbedNode,
                             embed_type: :raw,
                             lines: lines || [],
-                            arg: safe_arg(args, 0))
+                            arg: raw_content,
+                            target_builders: target_builders,
+                            content: content)
       end
 
       # Build unordered list AST node
@@ -639,6 +644,21 @@ module ReVIEW
           args: args,
           lines: lines
         )
+      end
+
+      # Parse raw content for builder specification
+      def parse_raw_content(content)
+        return [nil, content] if content.nil? || content.empty?
+
+        # Check for builder specification: |builder1,builder2|content
+        if matched = content.match(/\A\|(.*?)\|(.*)/)
+          builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }
+          processed_content = matched[2]
+          [builders, processed_content]
+        else
+          # No builder specification - target all builders
+          [nil, content]
+        end
       end
 
       # Configuration for different code block types
