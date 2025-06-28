@@ -50,6 +50,89 @@ class TestCodeBlockDebug < Test::Unit::TestCase
     assert_not_nil(code_block)
 
     puts "\n=== Code Block Children ==="
-    puts JSON.pretty_generate(code_block['children'])
+    result = JSON.pretty_generate(code_block['children'])
+    expected = <<~EXPECTED.chomp
+      [
+        {
+          "type": "CodeLineNode",
+          "location": {
+            "filename": "debug_chapter.re",
+            "lineno": 3
+          },
+          "children": [
+            {
+              "type": "TextNode",
+              "location": {
+                "filename": "debug_chapter.re",
+                "lineno": 3
+              },
+              "content": "puts "
+            },
+            {
+              "type": "InlineNode",
+              "location": {
+                "filename": "debug_chapter.re",
+                "lineno": 3
+              },
+              "children": [
+                {
+                  "type": "TextNode",
+                  "location": {
+                    "filename": "debug_chapter.re",
+                    "lineno": 3
+                  },
+                  "content": "bold code"
+                }
+              ],
+              "inline_type": "b",
+              "args": [
+                "bold code"
+              ]
+            }
+          ],
+          "original_text": "puts @<b>{bold code}"
+        },
+        {
+          "type": "CodeLineNode",
+          "location": {
+            "filename": "debug_chapter.re",
+            "lineno": 3
+          },
+          "children": [
+            {
+              "type": "TextNode",
+              "location": {
+                "filename": "debug_chapter.re",
+                "lineno": 3
+              },
+              "content": "# Comment with "
+            },
+            {
+              "type": "InlineNode",
+              "location": {
+                "filename": "debug_chapter.re",
+                "lineno": 3
+              },
+              "children": [
+                {
+                  "type": "TextNode",
+                  "location": {
+                    "filename": "debug_chapter.re",
+                    "lineno": 3
+                  },
+                  "content": "code-fn"
+                }
+              ],
+              "inline_type": "fn",
+              "args": [
+                "code-fn"
+              ]
+            }
+          ],
+          "original_text": "# Comment with @<fn>{code-fn}"
+        }
+      ]
+    EXPECTED
+    assert_equal expected, result
   end
 end
