@@ -76,6 +76,150 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_equal "\\section{Section Title}\n\\label{sec:1-1}\n", result
   end
 
+  def test_visit_headline_with_secnolevel_default
+    # Default secnolevel is 2, so level 3 should be subsection*
+    @config['secnolevel'] = 2
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Subsection Title'))
+
+    headline = AST::HeadlineNode.new(level: 3, caption: caption)
+    result = @renderer.visit(headline)
+
+    expected = "\\subsection*{Subsection Title}\n\\addcontentsline{toc}{subsection}{Subsection Title}\n\\label{sec:1-0-1}\n"
+    assert_equal expected, result
+  end
+
+  def test_visit_headline_with_secnolevel_3
+    # secnolevel 3, so level 3 should be normal subsection, level 4 should be subsubsection*
+    @config['secnolevel'] = 3
+
+    # Level 3 - normal subsection
+    caption3 = AST::CaptionNode.new
+    caption3.add_child(AST::TextNode.new(content: 'Subsection Title'))
+    headline3 = AST::HeadlineNode.new(level: 3, caption: caption3)
+    result3 = @renderer.visit(headline3)
+    assert_equal "\\subsection{Subsection Title}\n\\label{sec:1-0-1}\n", result3
+
+    # Level 4 - subsubsection* with addcontentsline
+    caption4 = AST::CaptionNode.new
+    caption4.add_child(AST::TextNode.new(content: 'Subsubsection Title'))
+    headline4 = AST::HeadlineNode.new(level: 4, caption: caption4)
+    result4 = @renderer.visit(headline4)
+    expected4 = "\\subsubsection*{Subsubsection Title}\n\\addcontentsline{toc}{subsection}{Subsubsection Title}\n\\label{sec:1-0-1-1}\n"
+    assert_equal expected4, result4
+  end
+
+  def test_visit_headline_with_secnolevel_1
+    # secnolevel 1, so level 2 and above should be section*
+    @config['secnolevel'] = 1
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Section Title'))
+
+    headline = AST::HeadlineNode.new(level: 2, caption: caption)
+    result = @renderer.visit(headline)
+
+    expected = "\\section*{Section Title}\n\\addcontentsline{toc}{subsection}{Section Title}\n\\label{sec:1-1}\n"
+    assert_equal expected, result
+  end
+
+  def test_visit_headline_numberless_chapter
+    # Numberless chapter: level > 1 should get star commands
+    @chapter.instance_variable_set(:@number, '') # Make chapter numberless
+    @config['secnolevel'] = 3
+
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Section Title'))
+
+    headline = AST::HeadlineNode.new(level: 2, caption: caption)
+    result = @renderer.visit(headline)
+
+    expected = "\\section*{Section Title}\n\\addcontentsline{toc}{subsection}{Section Title}\n\\label{sec:-1}\n"
+    assert_equal expected, result
+  end
+
+  def test_visit_headline_secnolevel_0
+    # secnolevel 0 means all levels should be starred
+    @config['secnolevel'] = 0
+
+    # Level 1 - chapter*
+    caption1 = AST::CaptionNode.new
+    caption1.add_child(AST::TextNode.new(content: 'Chapter Title'))
+    headline1 = AST::HeadlineNode.new(level: 1, caption: caption1)
+    result1 = @renderer.visit(headline1)
+    expected1 = "\\chapter*{Chapter Title}\n\\addcontentsline{toc}{subsection}{Chapter Title}\n\\label{chap:test}\n"
+    assert_equal expected1, result1
+
+    # Level 2 - section*
+    caption2 = AST::CaptionNode.new
+    caption2.add_child(AST::TextNode.new(content: 'Section Title'))
+    headline2 = AST::HeadlineNode.new(level: 2, caption: caption2)
+    result2 = @renderer.visit(headline2)
+    expected2 = "\\section*{Section Title}\n\\addcontentsline{toc}{subsection}{Section Title}\n\\label{sec:1-1}\n"
+    assert_equal expected2, result2
+  end
+
+  def test_visit_headline_part_level_1
+    # Test Part with level 1 - should use \part command
+    part = ReVIEW::Book::Part.new(@book, 1, 'part1', 'part1.re', StringIO.new)
+    part.generate_indexes
+    part_renderer = Renderer::LatexRenderer.new(part)
+
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Part Title'))
+    headline = AST::HeadlineNode.new(level: 1, caption: caption)
+    result = part_renderer.visit(headline)
+
+    expected = "\\begin{reviewpart}\n\\part{Part Title}\n\\label{chap:part1}\n"
+    assert_equal expected, result
+  end
+
+  def test_visit_headline_part_with_secnolevel_0
+    # Test Part with secnolevel 0 - should use \part* command
+    @config['secnolevel'] = 0
+    part = ReVIEW::Book::Part.new(@book, 1, 'part1', 'part1.re', StringIO.new)
+    part.generate_indexes
+    part_renderer = Renderer::LatexRenderer.new(part)
+
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Part Title'))
+    headline = AST::HeadlineNode.new(level: 1, caption: caption)
+    result = part_renderer.visit(headline)
+
+    expected = "\\begin{reviewpart}\n\\part*{Part Title}\n\\addcontentsline{toc}{subsection}{Part Title}\n\\label{chap:part1}\n"
+    assert_equal expected, result
+  end
+
+  def test_visit_headline_part_level_2
+    # Test Part with level 2 - should use normal chapter/section commands
+    part = ReVIEW::Book::Part.new(@book, 1, 'part1', 'part1.re', StringIO.new)
+    part.generate_indexes
+    part_renderer = Renderer::LatexRenderer.new(part)
+
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Chapter in Part'))
+    headline = AST::HeadlineNode.new(level: 2, caption: caption)
+    result = part_renderer.visit(headline)
+
+    expected = "\\section{Chapter in Part}\n\\label{sec:1-1}\n"
+    assert_equal expected, result
+  end
+
+  def test_visit_headline_numberless_part
+    # Test numberless Part - level > 1 should get star commands
+    @config['secnolevel'] = 3
+    part = ReVIEW::Book::Part.new(@book, '', 'partx', 'partx.re', StringIO.new)
+    part.generate_indexes
+    part_renderer = Renderer::LatexRenderer.new(part)
+
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Chapter in Numberless Part'))
+    headline = AST::HeadlineNode.new(level: 2, caption: caption)
+    result = part_renderer.visit(headline)
+
+    expected = "\\section*{Chapter in Numberless Part}\n\\addcontentsline{toc}{subsection}{Chapter in Numberless Part}\n\\label{sec:-1}\n"
+    assert_equal expected, result
+  end
+
   def test_visit_inline_bold
     inline = AST::InlineNode.new(inline_type: 'b')
     inline.add_child(AST::TextNode.new(content: 'bold text'))
@@ -262,5 +406,114 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_raise(NotImplementedError) do
       @renderer.visit(unknown_node)
     end
+  end
+
+  def test_visit_part_document_with_reviewpart_environment
+    # Test Part document wrapping with \begin{reviewpart} and \end{reviewpart}
+    part = ReVIEW::Book::Part.new(@book, 1, 'part1', 'part1.re', StringIO.new)
+    part.generate_indexes
+    part_renderer = Renderer::LatexRenderer.new(part)
+
+    # Create a document with a level 1 headline and some content
+    document = AST::DocumentNode.new
+
+    # Add level 1 headline (Part title)
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Part Title'))
+    headline = AST::HeadlineNode.new(level: 1, caption: caption)
+    document.add_child(headline)
+
+    # Add a paragraph
+    paragraph = AST::ParagraphNode.new
+    paragraph.add_child(AST::TextNode.new(content: 'Part content here.'))
+    document.add_child(paragraph)
+
+    result = part_renderer.visit(document)
+
+    expected = "\\begin{reviewpart}\n" +
+               "\\part{Part Title}\n" +
+               "\\label{chap:part1}\n" +
+               "Part content here.\n\n" +
+               "\\end{reviewpart}\n"
+
+    assert_equal expected, result
+  end
+
+  def test_visit_part_document_multiple_headlines
+    # Test that reviewpart environment is only opened once, even with multiple headlines
+    part = ReVIEW::Book::Part.new(@book, 1, 'part1', 'part1.re', StringIO.new)
+    part.generate_indexes
+    part_renderer = Renderer::LatexRenderer.new(part)
+
+    document = AST::DocumentNode.new
+
+    # Add first level 1 headline
+    caption1 = AST::CaptionNode.new
+    caption1.add_child(AST::TextNode.new(content: 'Part Title'))
+    headline1 = AST::HeadlineNode.new(level: 1, caption: caption1)
+    document.add_child(headline1)
+
+    # Add second level 1 headline (should not open reviewpart again)
+    caption2 = AST::CaptionNode.new
+    caption2.add_child(AST::TextNode.new(content: 'Another Part Title'))
+    headline2 = AST::HeadlineNode.new(level: 1, caption: caption2)
+    document.add_child(headline2)
+
+    result = part_renderer.visit(document)
+
+    expected = "\\begin{reviewpart}\n" +
+               "\\part{Part Title}\n" +
+               "\\label{chap:part1}\n" +
+               "\\part{Another Part Title}\n" +
+               "\\label{chap:part1}\n" +
+               "\\end{reviewpart}\n"
+
+    assert_equal expected, result
+  end
+
+  def test_visit_part_document_with_level_2_first
+    # Test Part document that starts with level 2 headline (no reviewpart environment should be opened)
+    part = ReVIEW::Book::Part.new(@book, 1, 'part1', 'part1.re', StringIO.new)
+    part.generate_indexes
+    part_renderer = Renderer::LatexRenderer.new(part)
+
+    document = AST::DocumentNode.new
+
+    # Add level 2 headline first (should not open reviewpart)
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Section Title'))
+    headline = AST::HeadlineNode.new(level: 2, caption: caption)
+    document.add_child(headline)
+
+    result = part_renderer.visit(document)
+
+    expected = "\\section{Section Title}\n" +
+               "\\label{sec:1-1}\n"
+
+    assert_equal expected, result
+  end
+
+  def test_visit_chapter_document_no_reviewpart
+    # Test that regular Chapter documents do not get reviewpart environment
+    document = AST::DocumentNode.new
+
+    # Add level 1 headline
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Chapter Title'))
+    headline = AST::HeadlineNode.new(level: 1, caption: caption)
+    document.add_child(headline)
+
+    # Add a paragraph
+    paragraph = AST::ParagraphNode.new
+    paragraph.add_child(AST::TextNode.new(content: 'Chapter content here.'))
+    document.add_child(paragraph)
+
+    result = @renderer.visit(document)
+
+    expected = "\\chapter{Chapter Title}\n" +
+               "\\label{chap:test}\n" +
+               "Chapter content here.\n\n"
+
+    assert_equal expected, result
   end
 end

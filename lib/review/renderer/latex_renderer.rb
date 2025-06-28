@@ -37,6 +37,9 @@ module ReVIEW
         # Initialize document status tracking like LATEXBuilder
         @doc_status = { table: false, caption: false, column: false }
         @foottext = {}
+
+        # Initialize Part environment tracking for reviewpart wrapper
+        @part_env_opened = false
       end
 
       def visit_document(node)
@@ -58,6 +61,7 @@ module ReVIEW
           @chapter.instance_variable_set(:@indepimage_index, @ast_indexer.indepimage_index)
           @chapter.instance_variable_set(:@headline_index, @ast_indexer.headline_index)
           @chapter.instance_variable_set(:@column_index, @ast_indexer.column_index)
+          @chapter.instance_variable_set(:@bibpaper_index, @ast_indexer.bibpaper_index)
 
           # Make chapter index available to book for title references
           if @book && !@book.chapter_index
@@ -73,6 +77,11 @@ module ReVIEW
         # Generate content directly without complex post-processing
         content = render_children(node)
 
+        # Close the reviewpart environment if it was opened
+        if @part_env_opened
+          content += "\\end{reviewpart}\n"
+        end
+
         # Ensure content ends with single newline if it contains content
         if content && !content.empty?
           content.chomp + "\n"
@@ -85,28 +94,21 @@ module ReVIEW
         level = node.level
         caption = render_children(node.caption) if node.caption
 
+        # For Part documents with legacy configuration, open reviewpart environment
+        # on first level 1 headline (matching LATEXBuilder behavior)
+        prefix = ''
+        if should_wrap_part_with_reviewpart? && level == 1 && !@part_env_opened
+          @part_env_opened = true
+          prefix = "\\begin{reviewpart}\n"
+        end
+
         # Update section counter like LATEXBuilder
         if @sec_counter
           @sec_counter.inc(level)
         end
 
         # LaTeX section commands - match LATEXBuilder behavior
-        section_command = case level
-                          when 1
-                            'chapter'
-                          when 2
-                            'section'
-                          when 3
-                            'subsection*' # LATEXBuilder uses subsection* for level 3
-                          when 4
-                            'subsubsection*' # LATEXBuilder uses subsubsection* for level 4
-                          when 5
-                            'paragraph*' # LATEXBuilder uses paragraph* for level 5
-                          when 6
-                            'subparagraph'
-                          else
-                            raise NotImplementedError, "Unsupported headline level: #{level}. LaTeX only supports levels 1-6"
-                          end
+        section_command = headline_name(level)
 
         # Generate labels like LATEXBuilder
         label_part = if level == 1 && @chapter
@@ -126,7 +128,7 @@ module ReVIEW
         result << "\\#{section_command}{#{caption}}"
 
         # Add \addcontentsline for subsection* (level 3)
-        if level == 3
+        if level > @book.config['secnolevel'] || (@chapter.number.to_s.empty? && level > 1)
           result << "\\addcontentsline{toc}{subsection}{#{caption}}"
         end
 
@@ -134,7 +136,7 @@ module ReVIEW
           result << label_part
         end
 
-        result.join("\n") + "\n"
+        prefix + result.join("\n") + "\n"
       end
 
       def visit_paragraph(node)
@@ -786,6 +788,29 @@ module ReVIEW
 
       private
 
+      HEADLINE = {
+        1 => 'chapter',
+        2 => 'section',
+        3 => 'subsection',
+        4 => 'subsubsection',
+        5 => 'paragraph',
+        6 => 'subparagraph'
+      }.freeze
+
+      def headline_name(level)
+        name = if @chapter.is_a?(ReVIEW::Book::Part) && level == 1
+                 'part'
+               else
+                 HEADLINE[level] || raise(CompileError, "Unsupported headline level: #{level}. LaTeX only supports levels 1-6")
+               end
+
+        if level > @book.config['secnolevel'] || (@chapter.number.to_s.empty? && level > 1)
+          "#{name}*"
+        else
+          name
+        end
+      end
+
       def render_inline_element(type, content, node)
         case type
         when 'b'
@@ -1341,6 +1366,11 @@ module ReVIEW
         else
           content
         end
+      end
+
+      # Check if Part document should be wrapped with reviewpart environment
+      def should_wrap_part_with_reviewpart?
+        @chapter.is_a?(ReVIEW::Book::Part)
       end
     end
   end
