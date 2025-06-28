@@ -409,6 +409,13 @@ module ReVIEW
         @current_location
       end
 
+      # Force override current location - FOR TESTING ONLY
+      # This method bypasses normal location tracking and should only be used in tests
+      # @param location [Location] The location to force set
+      def force_override_location!(location)
+        @current_location = location
+      end
+
       def add_child_to_current_node(node)
         @current_ast_node.add_child(node)
       end

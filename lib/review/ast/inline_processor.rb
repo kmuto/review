@@ -32,7 +32,7 @@ module ReVIEW
         return if str.empty?
 
         # Use tokenizer to parse both fence syntax (@<cmd>$...$, @<cmd>|...|) and brace syntax (@<cmd>{...})
-        tokens = @tokenizer.tokenize(str)
+        tokens = @tokenizer.tokenize(str, location: @ast_compiler.location)
 
         tokens.each do |token|
           if token.type == :inline

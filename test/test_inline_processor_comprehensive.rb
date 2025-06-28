@@ -21,14 +21,20 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
     # Create mock AST compiler for InlineProcessor
     @ast_compiler = ReVIEW::AST::Compiler.new
-    @ast_compiler.instance_variable_set(:@location, ReVIEW::Location.new('test.re', 1))
+    # Create a default location with proper file object
+    file_mock = StringIO.new('test content')
+    file_mock.lineno = 1
+    default_location = ReVIEW::Location.new('test.re', file_mock)
+    @ast_compiler.force_override_location!(default_location)
     @processor = ReVIEW::AST::InlineProcessor.new(@ast_compiler)
   end
 
   # Simple test cases (2)
   def test_simple_text_only
+    file_mock = StringIO.new('test content')
+    file_mock.lineno = 1
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::Location.new('test.re', file_mock)
     )
 
     @processor.parse_inline_elements('Hello world', parent)
@@ -458,5 +464,155 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     assert_raises(ReVIEW::InlineTokenizeError) do
       @processor.parse_inline_elements('Code @<code>$outer @<m>|inner| text$ end', parent)
     end
+  end
+
+  # Error message tests - verify that error messages contain useful information
+  def test_unclosed_brace_error_message
+    parent = ReVIEW::AST::ParagraphNode.new(
+      location: ReVIEW::Location.new('test.re', 1)
+    )
+
+    # Create a location for error context
+    file_mock = StringIO.new('test content')
+    file_mock.lineno = 42
+    location = ReVIEW::Location.new('sample.re', file_mock)
+    @ast_compiler.force_override_location!(location)
+
+    error = assert_raises(ReVIEW::InlineTokenizeError) do
+      @processor.parse_inline_elements('Text @<b>{unclosed brace content', parent)
+    end
+
+    # Verify error message contains expected information
+    assert_match(/Unclosed inline element braces/, error.message)
+    assert_match(/in element: @<b>\{unclosed brace content/, error.message)
+    assert_match(/at line 42/, error.message)
+    assert_match(/in sample\.re/, error.message)
+  end
+
+  def test_line_break_in_brace_error_message
+    parent = ReVIEW::AST::ParagraphNode.new(
+      location: ReVIEW::Location.new('test.re', 1)
+    )
+
+    # Create a location for error context
+    file_mock = StringIO.new('test content')
+    file_mock.lineno = 15
+    location = ReVIEW::Location.new('chapter01.re', file_mock)
+    @ast_compiler.force_override_location!(location)
+
+    error = assert_raises(ReVIEW::InlineTokenizeError) do
+      @processor.parse_inline_elements("Text @<b>{content with\nline break}", parent)
+    end
+
+    # Verify error message contains expected information
+    assert_match(/Line breaks are not allowed within inline elements/, error.message)
+    assert_match(/in element: @<b>\{content with/, error.message)
+    assert_match(/at line 15/, error.message)
+    assert_match(/in chapter01\.re/, error.message)
+  end
+
+  def test_unclosed_fence_error_message
+    parent = ReVIEW::AST::ParagraphNode.new(
+      location: ReVIEW::Location.new('test.re', 1)
+    )
+
+    # Create a location for error context
+    file_mock = StringIO.new('test content')
+    file_mock.lineno = 99
+    location = ReVIEW::Location.new('appendix.re', file_mock)
+    @ast_compiler.force_override_location!(location)
+
+    error = assert_raises(ReVIEW::InlineTokenizeError) do
+      @processor.parse_inline_elements('Code @<tt>$unclosed fence content', parent)
+    end
+
+    # Verify error message contains expected information
+    assert_match(/Unclosed inline element fence/, error.message)
+    assert_match(/in element: @<tt>\$unclosed fence content/, error.message)
+    assert_match(/at line 99/, error.message)
+    assert_match(/in appendix\.re/, error.message)
+  end
+
+  def test_line_break_in_fence_error_message
+    parent = ReVIEW::AST::ParagraphNode.new(
+      location: ReVIEW::Location.new('test.re', 1)
+    )
+
+    # Create a location for error context
+    file_mock = StringIO.new('test content')
+    file_mock.lineno = 7
+    location = ReVIEW::Location.new('intro.re', file_mock)
+    @ast_compiler.force_override_location!(location)
+
+    error = assert_raises(ReVIEW::InlineTokenizeError) do
+      @processor.parse_inline_elements("Code @<tt>$content with\nline break$", parent)
+    end
+
+    # Verify error message contains expected information
+    assert_match(/Line breaks are not allowed within inline elements/, error.message)
+    assert_match(/in element: @<tt>\$content with/, error.message)
+    assert_match(/at line 7/, error.message)
+    assert_match(/in intro\.re/, error.message)
+  end
+
+  def test_invalid_command_name_error_message
+    parent = ReVIEW::AST::ParagraphNode.new(
+      location: ReVIEW::Location.new('test.re', 1)
+    )
+
+    # Create a location for error context
+    file_mock = StringIO.new('test content')
+    file_mock.lineno = 33
+    location = ReVIEW::Location.new('references.re', file_mock)
+    @ast_compiler.force_override_location!(location)
+
+    error = assert_raises(ReVIEW::InlineTokenizeError) do
+      @processor.parse_inline_elements('Invalid @<B0LD>{content} command', parent)
+    end
+
+    # Verify error message contains expected information
+    assert_match(/Invalid command name 'B0LD'/, error.message)
+    assert_match(/only ASCII lowercase letters are allowed/, error.message)
+  end
+
+  def test_nested_fence_syntax_error_message
+    parent = ReVIEW::AST::ParagraphNode.new(
+      location: ReVIEW::Location.new('test.re', 1)
+    )
+
+    # Create a location for error context
+    file_mock = StringIO.new('test content')
+    file_mock.lineno = 55
+    location = ReVIEW::Location.new('complex.re', file_mock)
+    @ast_compiler.force_override_location!(location)
+
+    error = assert_raises(ReVIEW::InlineTokenizeError) do
+      @processor.parse_inline_elements('Code @<code>$outer @<m>|inner| text$ end', parent)
+    end
+
+    # Verify error message contains expected information
+    assert_match(/Nested inline elements within fence syntax are not allowed/, error.message)
+    assert_match(/in element: @<code>\$outer @<m>\|inner\| text\$/, error.message)
+    assert_match(/at line 55/, error.message)
+    assert_match(/in complex\.re/, error.message)
+  end
+
+  def test_error_message_without_location_info
+    parent = ReVIEW::AST::ParagraphNode.new(
+      location: ReVIEW::Location.new('test.re', 1)
+    )
+
+    # Set location to nil to test error messages without location context
+    @ast_compiler.force_override_location!(nil)
+
+    error = assert_raises(ReVIEW::InlineTokenizeError) do
+      @processor.parse_inline_elements('Text @<b>{unclosed content', parent)
+    end
+
+    # Verify error message contains element info but no location info
+    assert_match(/Unclosed inline element braces/, error.message)
+    assert_match(/in element: @<b>\{unclosed content/, error.message)
+    refute_match(/at line/, error.message)
+    refute_match(/in .*\.re/, error.message)
   end
 end
