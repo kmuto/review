@@ -44,26 +44,26 @@ class TestInlineBraceEscape < Test::Unit::TestCase
   end
 
   def test_mixed_escaped_and_nested_braces
-    # Test combination of escaped braces and nested braces
-    tokens = @tokenizer.tokenize('@<b>{outer {nested \\} content} more}')
+    # Test combination of escaped braces - with new rules, first unescaped } terminates
+    tokens = @tokenizer.tokenize('@<b>{outer \\{nested \\} content\\} more}')
 
     assert_equal 1, tokens.size
     token = tokens[0]
     assert_equal :inline, token.type
     assert_equal 'b', token.command
-    assert_equal 'outer {nested } content} more', token.content
+    assert_equal 'outer \\{nested } content} more', token.content
   end
 
   def test_escape_at_end
     # Test escaped brace at the end of content
-    tokens = @tokenizer.tokenize('@<code>{JSON.parse("{\\"key\\": \\"value\\"}")}')
+    tokens = @tokenizer.tokenize('@<code>{JSON.parse("\\{\\"key\\": \\"value\\"\\}")}')
 
     assert_equal 1, tokens.size
     token = tokens[0]
     assert_equal :inline, token.type
     assert_equal 'code', token.command
-    # NOTE: Other backslashes should be preserved as-is
-    assert_equal 'JSON.parse("{\\"key\\": \\"value\\"}")', token.content
+    # All escaped braces become regular braces, other backslashes preserved
+    assert_equal 'JSON.parse("\\{\\"key\\": \\"value\\"}")', token.content
   end
 
   def test_backslash_not_followed_by_brace

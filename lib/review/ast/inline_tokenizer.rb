@@ -25,17 +25,81 @@ module ReVIEW
         :inline
       end
     end
+
     # InlineTokenizer - Tokenizes inline markup syntax into structured tokens
     #
     # This class handles the parsing of Re:VIEW inline markup syntax and converts
     # it into a sequence of tokens that can be processed by the InlineProcessor.
     # It supports both brace syntax (@<cmd>{...}) and fence syntax (@<cmd>$...$, @<cmd>|...|).
     #
+    # ## Supported Inline Element Syntax
+    #
+    # ### Brace Syntax
+    # - @<command>{content} - Basic inline element with braces
+    # - @<command>{} - Empty content is allowed
+    #
+    # ### Fence Syntax
+    # - @<command>$content$ - Dollar-delimited fence syntax
+    # - @<command>|content| - Pipe-delimited fence syntax
+    #
+    # ## Command Name Rules
+    # - Only ASCII lowercase letters [a-z] are allowed
+    # - Cannot be empty
+    # - Cannot start with numbers or contain uppercase/symbols
+    #
+    # ## Escape Sequence Rules (Consistent Across All Inline Elements)
+    #
+    # The tokenizer implements consistent escape rules for all inline element types
+    # (@<code>, @<m>, @<b>, etc.) regardless of their semantic meaning:
+    #
+    # ### Supported Escape Sequences
+    # - `\}` → `}` - Escape closing brace to include literal brace in content
+    # - `\\` → `\` - Escape backslash to include literal backslash in content
+    # - `\@` → `@` - Escape at-sign to include literal at-sign in content
+    # - `\{` → `\{` - Opening brace is NOT escaped (preserved as-is)
+    # - `\x` → `\x` - Other characters after backslash are preserved as-is
+    #
+    # ### Termination Rules
+    # - Brace elements: Terminated by the FIRST unescaped `}` character
+    # - Fence elements: Terminated by the matching fence delimiter
+    # - Line breaks are not allowed within inline elements
+    #
+    # ### No Automatic Brace Balancing
+    # - The tokenizer does NOT perform automatic brace balancing
+    # - Nested braces must be properly escaped using `\}` when they should be literal
+    # - This ensures consistent behavior across all inline element types
+    #
+    # ## Usage Examples
+    #
+    # ### LaTeX Math (all braces must be escaped)
+    # ```
+    # @<m>{\sum_{i=1\}^{n\} x_i}  # Correct: produces \sum_{i=1}^{n} x_i
+    # @<m>{\sum_{i=1}^{n} x_i}    # Wrong: terminates at first }
+    # ```
+    #
+    # ### Unbalanced Code (escape literal braces)
+    # ```
+    # @<code>{if (x > 0) \{ print("positive")}  # Correct: literal { in output
+    # @<code>{array[0\]}                        # Correct: literal } in output
+    # ```
+    #
+    # ### JSON Strings (escape all braces)
+    # ```
+    # @<code>{JSON.parse("\{\"key\": \"value\"\}")}  # Correct: all braces escaped
+    # ```
+    #
+    # ## Error Handling
+    # - Unclosed inline elements raise InlineTokenizeError with location info
+    # - Invalid command names raise InlineTokenizeError
+    # - Line breaks within elements raise InlineTokenizeError
+    # - Nested fence syntax raises InlineTokenizeError for clarity
+    #
     # Responsibilities:
     # - Parse inline markup strings into tokens
-    # - Handle escaped characters and nested braces
+    # - Apply consistent escape sequence rules
     # - Support multiple delimiter types (braces, fences)
     # - Maintain position tracking for error reporting
+    # - Enforce consistent termination rules for all element types
     class InlineTokenizer
       # Tokenize string into inline elements and text parts
       # @param str [String] The input string to tokenize
@@ -123,16 +187,35 @@ module ReVIEW
         )
       end
 
-      # Parse content within braces, handling escaped braces
+      # Parse content within braces with consistent escape rules
+      #
+      # This method implements the core escape sequence processing for brace syntax.
+      # It processes characters sequentially until the first unescaped '}' is found.
+      #
+      # ## Escape Processing Rules
+      # - `\}` → `}` (escaped closing brace becomes literal)
+      # - `\\` → `\` (escaped backslash becomes literal)
+      # - `\@` → `@` (escaped at-sign becomes literal)
+      # - `\{` → `\{` (opening brace preserved as-is, not escaped)
+      # - `\x` → `\x` (other chars after backslash preserved as-is)
+      #
+      # ## Termination
+      # - Always terminates at the FIRST unescaped `}` character
+      # - Does NOT perform automatic brace balancing
+      # - Line breaks within content raise an error
+      #
+      # @param str [String] The input string being parsed
+      # @param start_pos [Integer] Position after the opening '{'
+      # @param element_start [Integer] Position of the '@<' for error reporting
+      # @return [Array<String, Integer>] Content and end position, or raises error
       def parse_brace_content(str, start_pos, element_start = nil)
         content = ''
         pos = start_pos
-        brace_count = 1
 
         # Use provided element_start or calculate it
         element_start ||= start_pos - 5 # fallback estimate
 
-        while pos < str.length && brace_count > 0
+        while pos < str.length
           char = str[pos]
 
           case char
@@ -142,55 +225,48 @@ module ReVIEW
             error_msg += format_location_info_simple(str, element_start)
             raise ReVIEW::InlineTokenizeError, error_msg
           when '\\'
-            # Handle escaped character
+            # Handle escaped character - implements consistent escape rules
             if pos + 1 < str.length
               next_char = str[pos + 1]
               case next_char
               when '}'
-                # Escape } by adding only the }
+                # \} → } : Escape closing brace (allows literal } in content)
                 content += '}'
                 pos += 2
               when '\\'
-                # Escape \\ by adding only the \
+                # \\ → \ : Escape backslash (allows literal \ in content)
                 content += '\\'
                 pos += 2
               when '@'
-                # Escape \@ by adding only the @
+                # \@ → @ : Escape at-sign (allows literal @ in content)
                 content += '@'
                 pos += 2
               else
-                # Keep backslash for other characters
+                # \x → \x : Other characters are NOT escaped (preserve as-is)
+                # This includes \{ which remains \{ (opening brace not escaped)
                 content += char + next_char
                 pos += 2
               end
             else
+              # Backslash at end of string - preserve as-is
               content += char
               pos += 1
             end
-          when '{'
-            brace_count += 1
-            content += char
-            pos += 1
           when '}'
-            brace_count -= 1
-            if brace_count > 0
-              content += char
-            end
-            pos += 1
+            # First unescaped } terminates the inline element (consistent termination rule)
+            # No brace balancing is performed - this ensures predictable behavior
+            return [content, pos + 1]
           else
+            # Regular character - add to content as-is
             content += char
             pos += 1
           end
         end
 
-        # Return content and end position if properly closed
-        if brace_count == 0
-          [content, pos]
-        else
-          error_msg = 'Unclosed inline element braces'
-          error_msg += format_location_info_simple(str, element_start)
-          raise ReVIEW::InlineTokenizeError, error_msg
-        end
+        # If we reach here, no closing brace was found (reached end of string)
+        error_msg = 'Unclosed inline element braces'
+        error_msg += format_location_info_simple(str, element_start)
+        raise ReVIEW::InlineTokenizeError, error_msg
       end
 
       # Parse content within fence delimiters

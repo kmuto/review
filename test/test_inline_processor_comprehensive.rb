@@ -90,7 +90,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
       location: ReVIEW::Location.new('test.re', 1)
     )
 
-    @processor.parse_inline_elements('Text @<b>{bold with @<i>{nested italic}} more', parent)
+    @processor.parse_inline_elements('Text @<b>{bold with @<i>{nested italic\}} more', parent)
     # Expected behavior: should handle nested inline elements correctly
     assert_equal 3, parent.children.size
     assert_equal 'Text ', parent.children[0].content
@@ -263,7 +263,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
       location: ReVIEW::Location.new('test.re', 1)
     )
 
-    @processor.parse_inline_elements('Code @<code>{func\\\\{param\\\\}} example', parent)
+    @processor.parse_inline_elements('Code @<code>{func\\\\{param\\\\\}} example', parent)
 
     assert_equal 3, parent.children.size
     assert_equal 'Code ', parent.children[0].content
@@ -282,7 +282,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
       location: ReVIEW::Location.new('test.re', 1)
     )
 
-    @processor.parse_inline_elements('Start @<b>{bold @<code>{nested code} and @<i>{italic}} end', parent)
+    @processor.parse_inline_elements('Start @<b>{bold @<code>{nested code\} and @<i>{italic\}} end', parent)
 
     # Expected behavior: should handle complex nested structures
     assert_equal 3, parent.children.size
@@ -337,7 +337,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
       location: ReVIEW::Location.new('test.re', 1)
     )
 
-    @processor.parse_inline_elements('Math @<m>{∑_{i=1}^n x_i} formula', parent)
+    @processor.parse_inline_elements('Math @<m>{∑_{i=1\}^n x_i} formula', parent)
 
     assert_equal 3, parent.children.size
     assert_equal 'Math ', parent.children[0].content
