@@ -196,8 +196,8 @@ module ReVIEW
         when :box
           build_box_ast(args, lines)
         else
-          # Unknown block command - raise error instead of creating generic node
-          raise CompileError, "Unknown block command: //#{command_name}"
+          # Unknown block command - raise error with location info
+          raise CompileError, "Unknown block command: //#{command_name}#{format_location_info}"
         end
       end
 
@@ -351,7 +351,12 @@ module ReVIEW
         f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
           next if /\A\#@/.match?(line)
 
-          num = line.match(/(\d+)\./)[1]
+          match = line.match(/(\d+)\./)
+          unless match
+            raise CompileError, "Invalid ordered list format: expected numbered item but got '#{line.strip}'#{format_location_info}"
+          end
+
+          num = match[1]
           raw_lines = [line.sub(/\d+\./, '').strip]
           f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
             raw_lines.push(cont.strip)
@@ -420,6 +425,19 @@ module ReVIEW
 
       private
 
+      # Format location information for error messages
+      def format_location_info
+        location = @ast_compiler.location
+        # Debug output
+        # puts "DEBUG: BlockProcessor format_location_info - location: #{location ? location.string : 'nil'}"
+
+        return '' unless location
+
+        info = " at line #{location.lineno}"
+        info += " in #{location.filename}" if location.filename
+        info
+      end
+
       # Common AST node creation helpers
 
       # Create any AST node with location automatically set
@@ -447,7 +465,9 @@ module ReVIEW
       # Unified factory method for creating code block nodes
       def create_code_block_node(command_type, args, lines)
         config = CODE_BLOCK_CONFIGS[command_type]
-        raise ArgumentError, "Unknown code block type: #{command_type}" unless config
+        unless config
+          raise ArgumentError, "Unknown code block type: #{command_type}#{format_location_info}"
+        end
 
         # Preserve original text for builders that don't need inline processing
         original_text = lines ? lines.join("\n") : ''
@@ -488,11 +508,15 @@ module ReVIEW
         caption_text = safe_arg(args, caption_index)
         return nil if caption_text.nil?
 
-        AST::CaptionNode.parse(
-          caption_text,
-          location: @ast_compiler.location,
-          inline_processor: @ast_compiler.inline_processor
-        )
+        begin
+          AST::CaptionNode.parse(
+            caption_text,
+            location: @ast_compiler.location,
+            inline_processor: @ast_compiler.inline_processor
+          )
+        rescue StandardError => e
+          raise CompileError, "Error processing caption '#{caption_text}': #{e.message}#{format_location_info}"
+        end
       end
 
       # Extract argument safely
@@ -517,6 +541,10 @@ module ReVIEW
 
         # Split by tab to get cells
         cells = line.split("\t")
+        if cells.empty?
+          raise CompileError, "Invalid table row: empty line or no tab-separated cells#{format_location_info}"
+        end
+
         cells.each_with_index do |cell_content, index|
           # Determine cell type based on row context and position
           cell_type = if is_header

@@ -336,8 +336,8 @@ module ReVIEW
           end
           @current_ast_node.add_child(node)
         else
-          # Unknown block command - raise error instead of creating generic node
-          raise CompileError, "Unknown block command: //#{name}"
+          # Unknown block command - raise error with location info
+          raise CompileError, "Unknown block command: //#{name}#{format_location_info(location)}"
         end
       end
 
@@ -414,6 +414,16 @@ module ReVIEW
       # @param location [Location] The location to force set
       def force_override_location!(location)
         @current_location = location
+      end
+
+      # Format location information for error messages
+      def format_location_info(loc = nil)
+        loc ||= @current_location
+        return '' unless loc
+
+        info = " at line #{loc.lineno}"
+        info += " in #{loc.filename}" if loc.filename
+        info
       end
 
       def add_child_to_current_node(node)

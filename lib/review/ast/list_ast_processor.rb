@@ -128,17 +128,6 @@ module ReVIEW
       def add_to_ast_and_render(list_node)
         @ast_compiler.add_child_to_current_node(list_node)
       end
-
-      # Validate that required dependencies are available
-      def validate_dependencies
-        unless @ast_compiler.respond_to?(:add_child_to_current_node)
-          raise ArgumentError, 'AST compiler must respond to add_child_to_current_node'
-        end
-
-        unless @ast_compiler.respond_to?(:inline_processor)
-          raise ArgumentError, 'AST compiler must provide inline_processor'
-        end
-      end
     end
   end
 end
