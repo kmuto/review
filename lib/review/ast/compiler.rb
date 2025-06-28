@@ -13,7 +13,7 @@ require 'review/lineinput'
 require 'review/ast/inline_processor'
 require 'review/ast/block_processor'
 require 'review/snapshot_location'
-require 'review/ast/list_ast_processor'
+require 'review/ast/list_processor'
 require 'review/ast/footnote_node'
 
 module ReVIEW
@@ -90,7 +90,7 @@ module ReVIEW
       end
 
       def list_processor
-        @list_processor ||= ListASTProcessor.new(self)
+        @list_processor ||= ListProcessor.new(self)
       end
 
       def compile_to_ast(chapter)

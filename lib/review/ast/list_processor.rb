@@ -11,7 +11,7 @@ require 'review/ast/nested_list_builder'
 
 module ReVIEW
   module AST
-    # ListASTProcessor - Main coordinator for list processing
+    # ListProcessor - Main coordinator for list processing
     #
     # This class orchestrates the full list processing pipeline by coordinating
     # between ListParser (for parsing) and NestedListBuilder (for AST construction).
@@ -23,7 +23,7 @@ module ReVIEW
     # - Provide clean interfaces for different list types
     # - Handle rendering through AST renderer
     # - Manage dependencies between parser, builder, and renderer
-    class ListASTProcessor
+    class ListProcessor
       def initialize(ast_compiler)
         @ast_compiler = ast_compiler
         @parser = ListParser.new(ast_compiler)
@@ -72,20 +72,8 @@ module ReVIEW
         when :dl
           process_definition_list(f)
         else
-          process_generic_list(f, list_type)
+          raise CompileError, "Unknown list type: #{list_type}#{format_location_info}"
         end
-      end
-
-      # Process generic list type
-      # @param f [LineInput] Input file stream
-      # @param list_type [Symbol] Type of list
-      def process_generic_list(f, list_type)
-        # For unknown list types, try to parse as unordered and build as generic
-        items = @parser.parse_unordered_list(f)
-        return if items.empty?
-
-        list_node = @builder.build_generic_list(items, list_type)
-        add_to_ast_and_render(list_node)
       end
 
       # Build list from pre-parsed items (for testing or special cases)
@@ -127,6 +115,16 @@ module ReVIEW
       # @param list_node [ListNode] List node to add
       def add_to_ast_and_render(list_node)
         @ast_compiler.add_child_to_current_node(list_node)
+      end
+
+      # Format location information for error messages
+      def format_location_info
+        location = @ast_compiler.location
+        return '' unless location
+
+        info = " at line #{location.lineno}"
+        info += " in #{location.filename}" if location.filename
+        info
       end
     end
   end

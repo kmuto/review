@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 require_relative 'test_helper'
-require 'review/ast/list_ast_processor'
+require 'review/ast/list_processor'
 require 'review/lineinput'
 require 'stringio'
 
-class TestListASTProcessor < Test::Unit::TestCase
+class TestListProcessor < Test::Unit::TestCase
   class MockASTCompiler
     attr_reader :added_nodes
 
@@ -39,7 +39,7 @@ class TestListASTProcessor < Test::Unit::TestCase
 
   def setup
     @mock_compiler = MockASTCompiler.new
-    @processor = ReVIEW::AST::ListASTProcessor.new(@mock_compiler)
+    @processor = ReVIEW::AST::ListProcessor.new(@mock_compiler)
   end
 
   def create_line_input(content)
@@ -210,17 +210,15 @@ class TestListASTProcessor < Test::Unit::TestCase
     assert_equal :dl, list_node.list_type
   end
 
-  def test_process_generic_list
+  def test_process_list_with_unknown_type
     input = create_line_input(
       "   * Custom item 1\n" +
       "   * Custom item 2\n"
     )
 
-    @processor.process_generic_list(input, :custom)
-
-    list_node = @mock_compiler.added_nodes[0]
-    assert_equal :custom, list_node.list_type
-    assert_equal 2, list_node.children.size
+    assert_raises(ReVIEW::CompileError) do
+      @processor.process_list(input, :custom)
+    end
   end
 
   # Test utility methods
