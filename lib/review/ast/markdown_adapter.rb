@@ -8,6 +8,7 @@
 
 require 'review/ast'
 require 'review/snapshot_location'
+require 'review/ast/markdown_html_node'
 
 module ReVIEW
   module AST
@@ -21,6 +22,8 @@ module ReVIEW
         @list_stack = []
         @table_stack = []
         @current_line = 1
+        @column_stack = [] # Stack for tracking nested columns
+        @pending_nodes = [] # Temporary storage for nodes inside columns
       end
 
       # Convert Markly document to Re:VIEW AST
@@ -75,7 +78,7 @@ module ReVIEW
         when :table_cell
           process_table_cell(cm_node)
 
-        when :html_block
+        when :html_block, :html
           process_html_block(cm_node)
 
         when :hrule
@@ -113,7 +116,7 @@ module ReVIEW
           caption: caption_node
         )
 
-        @current_node.add_child(headline)
+        add_node_to_current_context(headline)
       end
 
       # Process paragraph node
@@ -125,7 +128,7 @@ module ReVIEW
         # Process inline content
         process_inline_content(cm_node, para)
 
-        @current_node.add_child(para)
+        add_node_to_current_context(para)
       end
 
       # Process list node
@@ -136,7 +139,7 @@ module ReVIEW
           start_number: cm_node.list_type == :ordered_list ? cm_node.list_start : nil
         )
 
-        @current_node.add_child(list_node)
+        add_node_to_current_context(list_node)
 
         # Push list context
         @list_stack.push(@current_node)
@@ -155,7 +158,7 @@ module ReVIEW
           location: current_location(cm_node)
         )
 
-        @current_node.add_child(item)
+        add_node_to_current_context(item)
 
         # Process item content
         saved_current = @current_node
@@ -199,7 +202,7 @@ module ReVIEW
           code_block.add_child(line_node)
         end
 
-        @current_node.add_child(code_block)
+        add_node_to_current_context(code_block)
       end
 
       # Process blockquote node
@@ -209,7 +212,7 @@ module ReVIEW
           block_type: :quote
         )
 
-        @current_node.add_child(quote_node)
+        add_node_to_current_context(quote_node)
 
         # Process quote content
         saved_current = @current_node
@@ -224,7 +227,7 @@ module ReVIEW
           location: current_location(cm_node)
         )
 
-        @current_node.add_child(table_node)
+        add_node_to_current_context(table_node)
 
         # Process table content
         @table_stack.push(@current_node)
@@ -277,19 +280,34 @@ module ReVIEW
         # Process cell content
         process_inline_content(cm_node, cell_node)
 
-        @current_node.add_child(cell_node)
+        add_node_to_current_context(cell_node)
       end
 
       # Process HTML block
       def process_html_block(cm_node)
-        # Create embed node for raw HTML
-        embed_node = EmbedNode.new(
+        html_content = cm_node.string_content.strip
+
+        # Create MarkdownHtmlNode to analyze HTML content
+        html_node = MarkdownHtmlNode.new(
           location: current_location(cm_node),
-          embed_type: :html,
-          lines: cm_node.string_content.lines.map(&:chomp)
+          html_content: html_content,
+          html_type: detect_html_type(html_content)
         )
 
-        @current_node.add_child(embed_node)
+        # Check if this is a column marker
+        if html_node.column_start?
+          start_column(html_node)
+        elsif html_node.column_end?
+          end_column(html_node)
+        else
+          # Regular HTML content - add to current context
+          embed_node = EmbedNode.new(
+            location: current_location(cm_node),
+            embed_type: :html,
+            lines: html_content.lines.map(&:chomp)
+          )
+          add_node_to_current_context(embed_node)
+        end
       end
 
       # Process thematic break (horizontal rule)
@@ -299,7 +317,7 @@ module ReVIEW
           block_type: :hr
         )
 
-        @current_node.add_child(hr_node)
+        add_node_to_current_context(hr_node)
       end
 
       # Process inline content within a node
@@ -428,6 +446,71 @@ module ReVIEW
                end
 
         SnapshotLocation.new(@compiler.instance_variable_get(:@chapter).basename, line)
+      end
+
+      # Detect HTML type from content
+      def detect_html_type(html_content)
+        if html_content.strip.start_with?('<!--') && html_content.strip.end_with?('-->')
+          :comment
+        elsif html_content.strip.start_with?('<') && html_content.strip.end_with?('>')
+          :tag
+        else
+          :block
+        end
+      end
+
+      # Start a new column context
+      def start_column(html_node)
+        title = html_node.column_title
+
+        # Create caption node if title is provided
+        caption = if title && !title.empty?
+                    caption_node = CaptionNode.new(location: html_node.location)
+                    caption_node.add_child(TextNode.new(
+                                             location: html_node.location,
+                                             content: title
+                                           ))
+                    caption_node
+                  end
+
+        # Create column node
+        column_node = ColumnNode.new(
+          location: html_node.location,
+          caption: caption
+        )
+
+        # Push current context to stack
+        @column_stack.push({
+                             column_node: column_node,
+                             previous_node: @current_node
+                           })
+
+        # Set column as current context
+        @current_node = column_node
+      end
+
+      # End current column context
+      def end_column(_html_node)
+        if @column_stack.empty?
+          # Warning: /column without matching column
+          return
+        end
+
+        # Pop column context
+        column_context = @column_stack.pop
+        column_node = column_context[:column_node]
+        previous_node = column_context[:previous_node]
+
+        # Add completed column to previous context
+        previous_node.add_child(column_node)
+
+        # Restore previous context
+        @current_node = previous_node
+      end
+
+      # Add node to current context (column or document)
+      def add_node_to_current_context(node)
+        @current_node.add_child(node)
       end
     end
   end
