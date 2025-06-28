@@ -42,14 +42,162 @@ class TestCodeBlockDebug < Test::Unit::TestCase
     json_str = ReVIEW::AST::JSONSerializer.serialize(ast_root)
     ast = JSON.parse(json_str)
 
-    puts '=== Code Block AST Structure ==='
-    puts JSON.pretty_generate(ast)
+    # === Code Block AST Structure ===
+    result = JSON.pretty_generate(ast)
+    expected0 = <<~EXPECTED.chomp
+      {
+        "type": "DocumentNode",
+        "location": {
+          "filename": "debug_chapter.re",
+          "lineno": 1
+        },
+        "children": [
+          {
+            "type": "HeadlineNode",
+            "location": {
+              "filename": "debug_chapter.re",
+              "lineno": 1
+            },
+            "level": 1,
+            "label": null,
+            "caption": {
+              "type": "CaptionNode",
+              "location": {
+                "filename": "debug_chapter.re",
+                "lineno": 1
+              },
+              "children": [
+                {
+                  "type": "TextNode",
+                  "location": {
+                    "filename": "debug_chapter.re",
+                    "lineno": 1
+                  },
+                  "content": "Chapter Title"
+                }
+              ]
+            }
+          },
+          {
+            "type": "CodeBlockNode",
+            "location": {
+              "filename": "debug_chapter.re",
+              "lineno": 3
+            },
+            "id": "test-code",
+            "lang": "ruby",
+            "caption": {
+              "type": "CaptionNode",
+              "location": {
+                "filename": "debug_chapter.re",
+                "lineno": 3
+              },
+              "children": [
+                {
+                  "type": "TextNode",
+                  "location": {
+                    "filename": "debug_chapter.re",
+                    "lineno": 3
+                  },
+                  "content": "Test Code"
+                }
+              ]
+            },
+            "line_numbers": false,
+            "code_type": "list",
+            "original_text": "puts @<b>{bold code}\\n# Comment with @<fn>{code-fn}",
+            "children": [
+              {
+                "type": "CodeLineNode",
+                "location": {
+                  "filename": "debug_chapter.re",
+                  "lineno": 3
+                },
+                "children": [
+                  {
+                    "type": "TextNode",
+                    "location": {
+                      "filename": "debug_chapter.re",
+                      "lineno": 3
+                    },
+                    "content": "puts "
+                  },
+                  {
+                    "type": "InlineNode",
+                    "location": {
+                      "filename": "debug_chapter.re",
+                      "lineno": 3
+                    },
+                    "children": [
+                      {
+                        "type": "TextNode",
+                        "location": {
+                          "filename": "debug_chapter.re",
+                          "lineno": 3
+                        },
+                        "content": "bold code"
+                      }
+                    ],
+                    "inline_type": "b",
+                    "args": [
+                      "bold code"
+                    ]
+                  }
+                ],
+                "original_text": "puts @<b>{bold code}"
+              },
+              {
+                "type": "CodeLineNode",
+                "location": {
+                  "filename": "debug_chapter.re",
+                  "lineno": 3
+                },
+                "children": [
+                  {
+                    "type": "TextNode",
+                    "location": {
+                      "filename": "debug_chapter.re",
+                      "lineno": 3
+                    },
+                    "content": "# Comment with "
+                  },
+                  {
+                    "type": "InlineNode",
+                    "location": {
+                      "filename": "debug_chapter.re",
+                      "lineno": 3
+                    },
+                    "children": [
+                      {
+                        "type": "TextNode",
+                        "location": {
+                          "filename": "debug_chapter.re",
+                          "lineno": 3
+                        },
+                        "content": "code-fn"
+                      }
+                    ],
+                    "inline_type": "fn",
+                    "args": [
+                      "code-fn"
+                    ]
+                  }
+                ],
+                "original_text": "# Comment with @<fn>{code-fn}"
+              }
+            ]
+          }
+        ],
+        "title": "Chapter Title"
+      }
+    EXPECTED
+    assert_equal expected0, result
 
     # Find code block node
     code_block = ast['children'].find { |node| node['type'] == 'CodeBlockNode' }
     assert_not_nil(code_block)
 
-    puts "\n=== Code Block Children ==="
+    # === Code Block Children ===
     result = JSON.pretty_generate(code_block['children'])
     expected = <<~EXPECTED.chomp
       [
