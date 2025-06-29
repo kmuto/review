@@ -230,12 +230,10 @@ module ReVIEW
       end
 
       def visit_code_line(node)
-        # Use original_text to preserve exact formatting including empty lines
-        content = node.original_text
-        # Apply LaTeX escaping to match Builder behavior while preserving structure
-        escaped_content = escape(content)
+        # Render children (TextNode and InlineNode) to process inline elements properly
+        content = render_children(node)
         # Add proper newline for LaTeX code line formatting
-        "#{escaped_content}\n"
+        "#{content}\n"
       end
 
       def visit_table(node)
@@ -1283,13 +1281,8 @@ module ReVIEW
           # Boudou (emphasis)
           "\\reviewbou{#{content}}"
         when 'balloon'
-          if node.args && node.args.first
-            # Balloon annotation
-            balloon_text = escape(node.args.first)
-            "\\reviewballoon{#{content}}{#{balloon_text}}"
-          else
-            content
-          end
+          # Balloon annotation - content contains the balloon text
+          "\\reviewballoon{#{content}}"
         when 'endnote'
           if node.args && node.args.first
             # Endnote reference
