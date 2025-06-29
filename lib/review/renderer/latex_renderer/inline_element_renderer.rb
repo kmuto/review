@@ -705,16 +705,16 @@ module ReVIEW
             chapter = @book.chapters.detect { |chap| chap.id == m[1] }
           end
           if chapter
-            render_inline_column_chap(chapter, m[2])
+            render_column_chap(chapter, m[2])
           else
-            render_inline_column_chap(@chapter, id)
+            render_column_chap(@chapter, id)
           end
         rescue StandardError => e
           raise NotImplementedError, "Unknown column: #{id} - #{e.message}"
         end
 
         # Render column reference for specific chapter
-        def render_inline_column_chap(chapter, id)
+        def render_column_chap(chapter, id)
           return "\\reviewcolumnref{#{escape(id)}}{}" unless chapter&.column_index
 
           begin
