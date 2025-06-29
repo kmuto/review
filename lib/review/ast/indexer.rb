@@ -128,6 +128,8 @@ module ReVIEW
           process_footnote(node)
         when AST::TexEquationNode
           process_tex_equation(node)
+        when AST::BlockNode
+          process_block(node)
         end
 
         # Recursively process child nodes
@@ -251,6 +253,21 @@ module ReVIEW
         caption_text = node.caption? ? node.caption : ''
         item = ReVIEW::Book::Index::Item.new(node.id, @equation_index.size + 1, caption_text)
         @equation_index.add_item(item)
+      end
+
+      def process_block(node)
+        return unless node.block_type
+
+        case node.block_type.to_s
+        when 'bibpaper'
+          if node.args && node.args.length >= 2
+            bib_id = node.args[0]
+            bib_caption = node.args[1]
+            check_id(bib_id)
+            item = ReVIEW::Book::Index::Item.new(bib_id, @bibpaper_index.size + 1, bib_caption)
+            @bibpaper_index.add_item(item)
+          end
+        end
       end
 
       # Process inline nodes (matches IndexBuilder behavior)

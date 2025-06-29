@@ -10,11 +10,13 @@ require 'review/renderer/base'
 require 'review/latexutils'
 require 'review/sec_counter'
 require 'review/i18n'
+require 'review/textutils'
 
 module ReVIEW
   module Renderer
     class LatexRenderer < Base
       include ReVIEW::LaTeXUtils
+      include ReVIEW::TextUtils
 
       attr_reader :chapter, :book
 
@@ -24,6 +26,13 @@ module ReVIEW
         # For AST rendering, we need to set up indexing properly
         # The indexing will be done when we process the AST
         @ast_indexer = nil
+
+        # Initialize I18n if not already setup
+        if @book && @book.config['language']
+          I18n.setup(@book.config['language'])
+        else
+          I18n.setup('ja') # Default to Japanese
+        end
 
         # Initialize LaTeX character escaping
         initialize_metachars('')
@@ -285,12 +294,6 @@ module ReVIEW
         # Process all rows using visitor pattern
         all_rows = node.header_rows + node.body_rows
         all_rows.each do |row|
-          # Skip separator row (contains only ----)
-          if row.children.length == 1 && row.children.first.respond_to?(:children) &&
-             row.children.first.children.any? { |child| child.respond_to?(:content) && child.content.strip == '----' }
-            next
-          end
-
           row_content = visit(row)
           result << "#{row_content} \\\\  \\hline"
         end
@@ -638,6 +641,9 @@ module ReVIEW
         when 'blankline', 'noindent', 'pagebreak', 'tsize', 'endnote', 'label', 'printendnotes', 'hr', 'bpo', 'parasep' # rubocop:disable Lint/DuplicateBranch
           # Control commands that should not generate LaTeX environment blocks
           ''
+        when 'bibpaper'
+          # Bibliography paper - delegate to specialized handler
+          visit_bibpaper(node)
         else
           raise NotImplementedError, "Unknown block type: #{block_type}"
         end
@@ -886,6 +892,57 @@ module ReVIEW
           end
         else
           '??'
+        end
+      end
+
+      def visit_bibpaper(node)
+        # Extract bibliography arguments
+        if node.args && node.args.length >= 2
+          bib_id = node.args[0]
+          bib_caption = node.args[1]
+
+          # Process content
+          content = render_children(node)
+
+          # Generate bibliography entry like LATEXBuilder
+          result = []
+
+          # Header with number and caption
+          if @chapter && @chapter.bibpaper_index
+            begin
+              bib_number = @chapter.bibpaper_index.number(bib_id)
+              result << "[#{bib_number}] #{escape(bib_caption)}"
+            rescue StandardError => e
+              # Fallback if not found in index
+              warn "Bibpaper #{bib_id} not found in index: #{e.message}" if $DEBUG
+              result << "[??] #{escape(bib_caption)}"
+            end
+          elsif @ast_indexer && @ast_indexer.bibpaper_index
+            # Try to get from AST indexer if chapter index not available
+            begin
+              bib_number = @ast_indexer.bibpaper_index.number(bib_id)
+              result << "[#{bib_number}] #{escape(bib_caption)}"
+            rescue StandardError
+              result << "[??] #{escape(bib_caption)}"
+            end
+          else
+            result << "[??] #{escape(bib_caption)}"
+          end
+
+          # Add label for cross-references
+          result << "\\label{bib:#{escape(bib_id)}}"
+          result << ''
+
+          # Add content - process paragraphs
+          result << if @book.config['join_lines_by_lang']
+                      split_paragraph(content).join("\n\n")
+                    else
+                      content
+                    end
+
+          result.join("\n") + "\n"
+        else
+          raise NotImplementedError, 'Malformed bibpaper block: insufficient arguments'
         end
       end
 
@@ -1198,27 +1255,10 @@ module ReVIEW
           content
         when 'hd'
           if node.args && node.args.first
-            # Heading reference - use Re:VIEW section reference like LATEXBuilder
-            heading_id = node.args.first
-            if @chapter && @chapter.headline_index
-              begin
-                headline_item = @chapter.headline_index[heading_id]
-                if headline_item
-                  # Generate section number and label like LATEXBuilder
-                  section_number = @chapter.headline_index.number(heading_id)
-                  section_label = "sec:#{section_number.tr('.', '-')}"
-                  section_title = headline_item.caption || heading_id
-                  "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
-                else
-                  # Fallback if headline not found in index
-                  "\\ref{#{escape(heading_id)}}"
-                end
-              rescue StandardError => e
-                raise NotImplementedError, "Heading reference failed for #{heading_id}: #{e.message}"
-              end
-            else
-              # Fallback when no headline index available
-              "\\ref{#{escape(heading_id)}}"
+            # Heading reference - handle both simple and chapter|heading format
+            heading_ref = node.args.first
+            handle_heading_reference(heading_ref) do |section_number, section_label, section_title|
+              "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
             end
           else
             content
@@ -1254,25 +1294,9 @@ module ReVIEW
         when 'sec'
           if node.args && node.args.first
             # Section reference - use Re:VIEW section reference like LATEXBuilder
-            heading_id = node.args.first
-            if @chapter && @chapter.headline_index
-              begin
-                headline_item = @chapter.headline_index[heading_id]
-                if headline_item
-                  # Generate section number and label like LATEXBuilder
-                  section_number = @chapter.headline_index.number(heading_id)
-                  section_label = "sec:#{section_number.tr('.', '-')}"
-                  "\\reviewsecref{#{section_number}}{#{section_label}}"
-                else
-                  # Fallback if headline not found in index
-                  "\\ref{#{escape(heading_id)}}"
-                end
-              rescue StandardError => e
-                raise NotImplementedError, "Section reference failed for #{heading_id}: #{e.message}"
-              end
-            else
-              # Fallback when no headline index available
-              "\\ref{#{escape(heading_id)}}"
+            heading_ref = node.args.first
+            handle_heading_reference(heading_ref) do |section_number, section_label, _section_title|
+              "\\reviewsecref{#{section_number}}{#{section_label}}"
             end
           else
             content
@@ -1569,6 +1593,35 @@ module ReVIEW
 
         # Render all children and join the result
         footnote_node.children.map { |child| visit(child) }.join
+      end
+
+      # Handle heading references with cross-chapter support
+      def handle_heading_reference(heading_ref, fallback_format = '\\ref{%s}')
+        if heading_ref.include?('|')
+          # Cross-chapter reference format: chapter|heading
+          # Use simple ref format as fallback for cross-chapter references
+          fallback_format % escape(heading_ref)
+        elsif @chapter && @chapter.headline_index
+          # Simple heading reference within current chapter
+          begin
+            headline_item = @chapter.headline_index[heading_ref]
+            if headline_item
+              # Generate section number and label like LATEXBuilder
+              section_number = @chapter.headline_index.number(heading_ref)
+              section_label = "sec:#{section_number.tr('.', '-')}"
+              yield(section_number, section_label, headline_item.caption || heading_ref)
+            else
+              # Fallback if headline not found in index
+              fallback_format % escape(heading_ref)
+            end
+          rescue StandardError
+            # Fallback on any error
+            fallback_format % escape(heading_ref)
+          end
+        else # rubocop:disable Lint/DuplicateBranch
+          # Fallback when no headline index available
+          fallback_format % escape(heading_ref)
+        end
       end
     end
   end
