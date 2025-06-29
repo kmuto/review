@@ -164,10 +164,16 @@ module ReVIEW
 
       private
 
-      # Find chapter object by filename
+      # Find chapter or part object by filename
       def find_chapter(filename)
         basename = File.basename(filename, '.*')
-        @book.chapters.find { |ch| File.basename(ch.path, '.*') == basename }
+
+        # First check chapters
+        chapter = @book.chapters.find { |ch| File.basename(ch.path, '.*') == basename }
+        return chapter if chapter
+
+        # Then check parts with content files
+        @book.parts_in_file.find { |part| File.basename(part.path, '.*') == basename }
       end
     end
   end

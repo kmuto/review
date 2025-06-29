@@ -84,6 +84,27 @@ module ReVIEW
           content += "\\end{reviewpart}\n"
         end
 
+        # Add remaining footnotetext commands if needed
+        # Always output remaining footnotetext entries (they were already marked for separation)
+        unless @foottext.empty?
+          @foottext.each do |footnote_id, footnote_number|
+            next unless @chapter && @chapter.footnote_index
+
+            begin
+              index_item = @chapter.footnote_index[footnote_id]
+              footnote_content = if index_item.footnote_node?
+                                   render_footnote_ast(index_item.footnote_node)
+                                 else
+                                   escape(index_item.content || '')
+                                 end
+              content += "\\footnotetext[#{footnote_number}]{#{footnote_content}}\n"
+            rescue StandardError => e
+              raise NotImplementedError, "Footnote not found in index: #{footnote_id} (#{e.message})"
+            end
+          end
+          @foottext.clear
+        end
+
         # Ensure content ends with single newline if it contains content
         if content && !content.empty?
           content.chomp + "\n"
@@ -239,7 +260,11 @@ module ReVIEW
       end
 
       def visit_table(node)
+        # Set caption context for footnote processing
+        @doc_status[:caption] = true if node.caption
         caption = render_children(node.caption) if node.caption
+        @doc_status[:caption] = false
+
         table_type = node.respond_to?(:table_type) ? node.table_type : :table
 
         # Handle imgtable specially - it should be rendered as an image
@@ -1006,17 +1031,28 @@ module ReVIEW
           "\\reviewunderline{#{content}}"
         when 'href'
           if node.args && node.args.length >= 2
-            url = escape(node.args[0])
+            url = escape_url(node.args[0])
             text = escape(node.args[1])
             "\\href{#{url}}{#{text}}"
           else
-            "\\url{#{content}}"
+            # For single argument href, get raw text from first text child to avoid double escaping
+            raw_url = if node.children && node.children.first.respond_to?(:content)
+                        node.children.first.content
+                      else
+                        raise NotImplementedError, "URL is invalid: #{content}"
+                      end
+            url_content = escape_url(raw_url)
+            "\\url{#{url_content}}"
           end
         when 'fn'
           if node.args && node.args.first
             footnote_id = node.args.first.to_s
-            # Handle footnotes in table context like LATEXBuilder
-            if @doc_status[:table] || @doc_status[:caption] || @doc_status[:column]
+            # Handle footnotes based on config or context like LATEXBuilder
+            # For AST renderer, always use footnotetext separation for problematic contexts
+            use_footnotetext = (@book&.config&.key?('footnotetext') && @book.config['footnotetext']) ||
+                               @doc_status[:table] || @doc_status[:caption] || @doc_status[:column]
+
+            if use_footnotetext
               if @chapter && @chapter.footnote_index
                 begin
                   footnote_number = @chapter.footnote_index.number(footnote_id)
@@ -1389,6 +1425,26 @@ module ReVIEW
           else
             content
           end
+        when 'secref' # rubocop:disable Lint/DuplicateBranch
+          if node.args && node.args.first
+            # Section reference with full title - use Re:VIEW section reference like LATEXBuilder
+            heading_ref = node.args.first
+            handle_heading_reference(heading_ref) do |section_number, section_label, section_title|
+              "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
+            end
+          else
+            content
+          end
+        when 'sectitle'
+          if node.args && node.args.first
+            # Section title only - use Re:VIEW section reference like LATEXBuilder
+            heading_ref = node.args.first
+            handle_heading_reference(heading_ref) do |_section_number, section_label, section_title|
+              "\\reviewsecref{#{escape(section_title)}}{#{section_label}}"
+            end
+          else
+            content
+          end
         when 'bou'
           # Boudou (emphasis)
           "\\reviewbou{#{content}}"
@@ -1686,9 +1742,37 @@ module ReVIEW
       # Handle heading references with cross-chapter support
       def handle_heading_reference(heading_ref, fallback_format = '\\ref{%s}')
         if heading_ref.include?('|')
-          # Cross-chapter reference format: chapter|heading
-          # Use simple ref format as fallback for cross-chapter references
-          fallback_format % escape(heading_ref)
+          # Cross-chapter reference format: chapter|heading or chapter|section|subsection
+          parts = heading_ref.split('|')
+          chapter_id = parts[0]
+          heading_parts = parts[1..-1]
+
+          # Try to find the target chapter and its headline
+          target_chapter = @book.chapters.find { |ch| ch.id == chapter_id } if @book
+
+          if target_chapter && target_chapter.headline_index
+            # Build the hierarchical heading ID like IndexBuilder does
+            heading_id = heading_parts.join('|')
+
+            begin
+              headline_item = target_chapter.headline_index[heading_id]
+              if headline_item
+                # Get the section number from the target chapter
+                section_number = target_chapter.headline_index.number(heading_id)
+                section_label = "sec:#{chapter_id}-#{section_number.tr('.', '-')}"
+                yield(section_number, section_label, headline_item.caption || heading_id)
+              else
+                # Fallback when heading not found in target chapter
+                fallback_format % "#{chapter_id}-#{heading_parts.join('-')}"
+              end
+            rescue StandardError
+              # Fallback on any error
+              fallback_format % "#{chapter_id}-#{heading_parts.join('-')}"
+            end
+          else
+            # Fallback when target chapter not found or no headline index
+            fallback_format % "#{chapter_id}-#{heading_parts.join('-')}"
+          end
         elsif @chapter && @chapter.headline_index
           # Simple heading reference within current chapter
           begin
@@ -1706,7 +1790,7 @@ module ReVIEW
             # Fallback on any error
             fallback_format % escape(heading_ref)
           end
-        else # rubocop:disable Lint/DuplicateBranch
+        else
           # Fallback when no headline index available
           fallback_format % escape(heading_ref)
         end
