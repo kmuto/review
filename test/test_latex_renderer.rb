@@ -264,7 +264,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     expected = "\\begin{reviewlistblock}\n" +
                "\\reviewemlistcaption{Code Example}\n" +
                "\\begin{reviewemlist}\n" +
-               "\n" +
+               "puts \"Hello\"\n" +
                "\\end{reviewemlist}\n" +
                "\\end{reviewlistblock}\n"
 
