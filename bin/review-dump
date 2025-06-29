@@ -13,7 +13,7 @@ bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
 require 'review/init'
-require 'review/dumper'
+require 'review/ast/dumper'
 require 'review/ast/json_serializer'
 require 'optparse'
 
@@ -77,7 +77,7 @@ def main
   end
 
   # Create dumper
-  dumper = ReVIEW::Dumper.new(config: config, serializer_options: serializer_options)
+  dumper = ReVIEW::AST::Dumper.new(config: config, serializer_options: serializer_options)
 
   begin
     # Process each input file

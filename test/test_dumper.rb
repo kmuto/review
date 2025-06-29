@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'test_helper'
-require 'review/dumper'
+require 'review/ast/dumper'
 require 'tmpdir'
 require 'json'
 
@@ -33,7 +33,7 @@ class TestDumper < Test::Unit::TestCase
     REVIEW
 
     path = create_review_file(content)
-    dumper = ReVIEW::Dumper.new
+    dumper = ReVIEW::AST::Dumper.new
     result = dumper.dump_file(path)
 
     json = JSON.parse(result)
@@ -85,7 +85,7 @@ class TestDumper < Test::Unit::TestCase
     options.pretty = false
     options.include_location = false
 
-    dumper = ReVIEW::Dumper.new(serializer_options: options)
+    dumper = ReVIEW::AST::Dumper.new(serializer_options: options)
     result = dumper.dump_file(path)
 
     # Should be compact JSON
@@ -103,7 +103,7 @@ class TestDumper < Test::Unit::TestCase
     path1 = create_review_file(content1, 'ch01.re')
     path2 = create_review_file(content2, 'ch02.re')
 
-    dumper = ReVIEW::Dumper.new
+    dumper = ReVIEW::AST::Dumper.new
     results = dumper.dump_files([path1, path2])
 
     assert_equal 2, results.size
@@ -118,7 +118,7 @@ class TestDumper < Test::Unit::TestCase
   end
 
   def test_dump_nonexistent_file
-    dumper = ReVIEW::Dumper.new
+    dumper = ReVIEW::AST::Dumper.new
     assert_raise(ReVIEW::FileNotFound) do
       dumper.dump_file('/nonexistent/file.re')
     end
