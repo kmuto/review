@@ -121,19 +121,19 @@ module ReVIEW
 
         # Parse ruby format: "base_text,ruby_text"
         if arg.include?(',')
-          parts = arg.split(',', 2)
-          inline_node.args = [parts[0].strip, parts[1].strip]
+          base_text, ruby_text = arg.split(',', 2)
+          inline_node.args = [base_text.strip, ruby_text.strip]
 
           # Add text nodes for both parts
           parent_text = AST::TextNode.new(
             location: @ast_compiler.location,
-            content: parts[0].strip
+            content: base_text.strip
           )
           inline_node.add_child(parent_text)
 
           ruby_text = AST::TextNode.new(
             location: @ast_compiler.location,
-            content: parts[1].strip
+            content: ruby_text.strip
           )
           inline_node.add_child(ruby_text)
         else
