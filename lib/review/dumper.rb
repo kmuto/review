@@ -41,11 +41,8 @@ module ReVIEW
     private
 
     def dump_ast(path, book)
-      content = File.read(path)
-
       basename = File.basename(path)
       chap = ReVIEW::Book::Chapter.new(book, nil, basename, path)
-      chap.instance_variable_set(:@content, content)
 
       compiler = ReVIEW::AST::Compiler.for_chapter(chap)
 
