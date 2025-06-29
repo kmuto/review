@@ -32,11 +32,11 @@ module ReVIEW
         def render(type, content, node)
           case type.to_s
           when 'b', 'strong', 'i', 'em', 'tt', 'ttb', 'tti', 'code', 'u', 'underline'
-            render_text_style_element(type, content)
+            render_text_style_element(type, content, node)
           when 'href'
-            render_href_element(node, content)
+            render_inline_href(type, node, content)
           when 'fn'
-            render_footnote_element(node, content)
+            render_inline_fn(type, node, content)
           when 'kw', 'ruby', 'icon', 'ami', 'bou', 'balloon'
             render_special_notation_element(type, node, content)
           when 'chap', 'chapref', 'list', 'listref', 'table', 'tableref', 'img', 'imgref', 'eq', 'eqref', 'bib', 'bibref'
@@ -60,32 +60,68 @@ module ReVIEW
 
         private
 
-        def render_text_style_element(type, content)
+        def render_text_style_element(type, content, node)
           case type.to_s
           when 'b'
-            "\\reviewbold{#{content}}"
+            render_inline_b(type, content, node)
           when 'strong'
-            "\\reviewstrong{#{content}}"
+            render_inline_strong(type, content, node)
           when 'i'
-            "\\reviewit{#{content}}"
+            render_inline_i(type, content, node)
           when 'em'
-            "\\reviewem{#{content}}"
+            render_inline_em(type, content, node)
           when 'tt'
-            "\\reviewtt{#{content}}"
+            render_inline_tt(type, content, node)
           when 'ttb'
-            "\\reviewttb{#{content}}"
+            render_inline_ttb(type, content, node)
           when 'tti'
-            "\\reviewtti{#{content}}"
+            render_inline_tti(type, content, node)
           when 'code'
-            "\\reviewcode{#{content}}"
+            render_inline_code(type, content, node)
           when 'u', 'underline'
-            "\\reviewunderline{#{content}}"
+            render_inline_u(type, content, node)
           else
-            content
+            raise NotImplementedError, "Invalid inline element: #{type}"
           end
         end
 
-        def render_href_element(node, content)
+        def render_inline_b(_type, content, _node)
+          "\\reviewbold{#{content}}"
+        end
+
+        def render_inline_i(_type, content, _node)
+          "\\reviewit{#{content}}"
+        end
+
+        def render_inline_em(_type, content, _node)
+          "\\reviewem{#{content}}"
+        end
+
+        def render_inline_tt(_type, content, _node)
+          "\\reviewtt{#{content}}"
+        end
+
+        def render_inline_ttb(_type, content, _node)
+          "\\reviewttb{#{content}}"
+        end
+
+        def render_inline_tti(_type, content, _node)
+          "\\reviewtti{#{content}}"
+        end
+
+        def render_inline_code(_type, content, _node)
+          "\\reviewcode{#{content}}"
+        end
+
+        def render_inline_u(_type, content, _node)
+          "\\reviewunderline{#{content}}"
+        end
+
+        def render_inline_strong(_type, content, _node)
+          "\\reviewstrong{#{content}}"
+        end
+
+        def render_inline_href(_type, node, content)
           if node.args && node.args.length >= 2
             url = escape_url(node.args[0])
             text = escape_latex(node.args[1])
@@ -106,32 +142,33 @@ module ReVIEW
         def render_decoration_element(type, node, content)
           case type.to_s
           when 'm'
-            # Mathematical expressions - don't escape content
-            "$#{node.args&.first || content}$"
-          when 'sup', 'superscript'
-            "\\textsuperscript{#{content}}"
-          when 'sub', 'subscript'
-            "\\textsubscript{#{content}}"
-          when 'del', 'strike'
-            "\\reviewstrike{#{content}}"
-          when 'ins', 'insert'
-            "\\reviewinsert{#{content}}"
+            render_inline_m(type, node, content)
+          when 'sup'
+            render_inline_sup(type, node, content)
+          when 'superscript'
+            render_inline_superscript(type, node, content)
+          when 'sub'
+            render_inline_sub(type, node, content)
+          when 'subscript'
+            render_inline_subscript(type, node, content)
+          when 'del'
+            render_inline_del(type, node, content)
+          when 'strike'
+            render_inline_strike(type, node, content)
+          when 'ins'
+            render_inline_ins(type, node, content)
+          when 'insert'
+            render_inline_insert(type, node, content)
           when 'uchar'
-            # Unicode character handling like LATEXBuilder
-            if node.args && node.args.first
-              char_code = node.args.first
-              "\\UTF{#{escape(char_code)}}"
-            else
-              content
-            end
+            render_inline_uchar(type, node, content)
           when 'br'
-            "\\\\\n"
+            render_inline_br(type, node, content)
           else
             content
           end
         end
 
-        def render_footnote_element(node, content)
+        def render_inline_fn(_type, node, content)
           if node.args && node.args.first
             footnote_id = node.args.first.to_s
             # Handle footnotes based on config or context like LATEXBuilder
@@ -181,19 +218,29 @@ module ReVIEW
         def render_reference_element(type, node, content)
           case type.to_s
           when 'chap'
-            render_chapter_reference(node, content)
+            render_inline_chap(type, node, content)
           when 'chapref'
-            render_chapter_title_reference(node, content)
-          when 'list', 'listref'
-            render_list_reference(node, content)
-          when 'table', 'tableref'
-            render_table_reference(node, content)
-          when 'img', 'imgref'
-            render_image_reference(node, content)
-          when 'eq', 'eqref'
-            render_equation_reference(node, content)
-          when 'bib', 'bibref'
-            render_bibliography_reference(node, content)
+            render_inline_chapref(type, node, content)
+          when 'list'
+            render_inline_list(type, node, content)
+          when 'listref'
+            render_inline_listref(type, node, content)
+          when 'table'
+            render_inline_table(type, node, content)
+          when 'tableref'
+            render_inline_tableref(type, node, content)
+          when 'img'
+            render_inline_img(type, node, content)
+          when 'imgref'
+            render_inline_imgref(type, node, content)
+          when 'eq'
+            render_inline_eq(type, node, content)
+          when 'eqref'
+            render_inline_eqref(type, node, content)
+          when 'bib'
+            render_inline_bib(type, node, content)
+          when 'bibref'
+            render_inline_bibref(type, node, content)
           else
             content
           end
@@ -201,48 +248,26 @@ module ReVIEW
 
         # Render section reference inline elements (hd, sec, secref, sectitle)
         def render_section_reference_element(type, node, content)
-          return content unless node.args && node.args.first
-
-          heading_ref = node.args.first
-
           case type.to_s
           when 'hd'
-            # Heading reference - handle both simple and chapter|heading format
-            handle_heading_reference(heading_ref) do |section_number, section_label, section_title|
-              "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
-            end
+            render_inline_hd(type, node, content)
           when 'sec'
-            # Section reference - use Re:VIEW section reference like LATEXBuilder
-            handle_heading_reference(heading_ref) do |section_number, section_label, _section_title|
-              "\\reviewsecref{#{section_number}}{#{section_label}}"
-            end
-          when 'secref' # rubocop:disable Lint/DuplicateBranch
-            # Section reference with full title - use Re:VIEW section reference like LATEXBuilder
-            handle_heading_reference(heading_ref) do |section_number, section_label, section_title|
-              "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
-            end
+            render_inline_sec(type, node, content)
+          when 'secref'
+            render_inline_secref(type, node, content)
           when 'sectitle'
-            # Section title only - use Re:VIEW section reference like LATEXBuilder
-            handle_heading_reference(heading_ref) do |_section_number, section_label, section_title|
-              "\\reviewsecref{#{escape(section_title)}}{#{section_label}}"
-            end
+            render_inline_sectitle(type, node, content)
           else
             content
           end
         end
 
         def render_index_element(type, node, content)
-          return content unless node.args && node.args.first
-
-          index_text = escape(node.args.first)
-
           case type.to_s
           when 'idx'
-            # Index entry like LATEXBuilder
-            "\\index{#{index_text}}"
+            render_inline_idx(type, node, content)
           when 'hidx'
-            # Hidden index entry like LATEXBuilder
-            "\\index{#{index_text}}#{content}"
+            render_inline_hidx(type, node, content)
           else
             content
           end
@@ -251,42 +276,17 @@ module ReVIEW
         def render_special_notation_element(type, node, content)
           case type.to_s
           when 'kw'
-            if node.args && node.args.length >= 2
-              term = escape(node.args[0])
-              description = escape(node.args[1])
-              "\\reviewkw{#{term}}（#{description}）"
-            else
-              "\\reviewkw{#{content}}"
-            end
+            render_inline_kw(type, node, content)
           when 'ruby'
-            if node.args && node.args.length >= 2
-              base_text = escape(node.args[0])
-              ruby_text = escape(node.args[1])
-              "\\ruby{#{base_text}}{#{ruby_text}}"
-            else
-              content
-            end
+            render_inline_ruby(type, node, content)
           when 'icon'
-            if node.args && node.args.first
-              icon_id = node.args.first
-              if @chapter&.image(icon_id)&.path
-                command = @book&.config&.check_version('2', exception: false) ? 'includegraphics' : 'reviewicon'
-                "\\#{command}{#{@chapter.image(icon_id).path}}"
-              else
-                # Fallback for missing image
-                "\\verb|--[[path = #{icon_id}]]--|"
-              end
-            else
-              content
-            end
+            render_inline_icon(type, node, content)
           when 'ami'
-            "\\reviewami{#{content}}"
+            render_inline_ami(type, node, content)
           when 'bou'
-            # Boudou (emphasis)
-            "\\reviewbou{#{content}}"
+            render_inline_bou(type, node, content)
           when 'balloon'
-            # Balloon annotation - content contains the balloon text
-            "\\reviewballoon{#{content}}"
+            render_inline_balloon(type, node, content)
           else
             content
           end
@@ -294,59 +294,16 @@ module ReVIEW
 
         def render_misc_reference_element(type, node, content)
           case type.to_s
-          when 'labelref', 'ref'
-            if node.args && node.args.first
-              ref_id = node.args.first
-              "\\ref{#{escape(ref_id)}}"
-            else
-              content
-            end
+          when 'labelref'
+            render_inline_labelref(type, node, content)
+          when 'ref'
+            render_inline_ref(type, node, content)
           when 'title'
-            if node.args && node.args.first
-              # Book/chapter title reference
-              chapter_id = node.args.first
-              if @book && @book.chapter_index
-                begin
-                  title = @book.chapter_index.title(chapter_id)
-                  if @book.config['chapterlink']
-                    "\\reviewchapref{#{escape(title)}}{chap:#{chapter_id}}"
-                  else
-                    escape(title)
-                  end
-                rescue StandardError => e
-                  raise NotImplementedError, "Chapter title reference failed for #{chapter_id}: #{e.message}"
-                end
-              else
-                "\\reviewtitle{#{escape(chapter_id)}}"
-              end
-            else
-              content
-            end
+            render_inline_title(type, node, content)
           when 'endnote'
-            if node.args && node.args.first
-              # Endnote reference
-              ref_id = node.args.first
-              if @chapter && @chapter.endnote_index
-                begin
-                  endnote_number = @chapter.endnote_index.number(ref_id)
-                  "\\endnotemark[#{endnote_number}]"
-                rescue StandardError => _e
-                  "\\endnote{#{escape(ref_id)}}"
-                end
-              else
-                "\\endnote{#{escape(ref_id)}}"
-              end
-            else
-              content
-            end
+            render_inline_endnote(type, node, content)
           when 'pageref'
-            if node.args && node.args.first
-              # Page reference
-              ref_id = node.args.first
-              "\\pageref{#{escape(ref_id)}}"
-            else
-              content
-            end
+            render_inline_pageref(type, node, content)
           else
             content
           end
@@ -354,31 +311,21 @@ module ReVIEW
 
         def render_special_element(type, node, content)
           case type.to_s
-          when 'w', 'wb'
-            # Word expansion - pass through content
-            content
+          when 'w'
+            render_inline_w(type, node, content)
+          when 'wb'
+            render_inline_wb(type, node, content)
           when 'raw'
-            if node.args && node.args.first
-              # Raw content for specific format
-              format = node.args.first
-              if ['latex', 'tex'].include?(format)
-                content
-              else
-                '' # Ignore raw content for other formats
-              end
-            else
-              content
-            end
-          when 'embed' # rubocop:disable Lint/DuplicateBranch
-            # Embedded content - pass through
-            content
+            render_inline_raw(type, node, content)
+          when 'embed'
+            render_inline_embed(type, node, content)
           else
             raise NotImplementedError, "Invalid special element: #{type}"
           end
         end
 
         # Render list reference
-        def render_list_reference(node, content)
+        def render_inline_list(_type, node, content)
           return content unless node.args && !node.args.empty?
 
           if node.args.length == 2
@@ -390,8 +337,13 @@ module ReVIEW
           end
         end
 
+        # Render listref reference (same as list)
+        def render_inline_listref(type, node, content)
+          render_inline_list(type, node, content)
+        end
+
         # Render table reference
-        def render_table_reference(node, content)
+        def render_inline_table(_type, node, content)
           return content unless node.args && !node.args.empty?
 
           if node.args.length == 2
@@ -403,8 +355,13 @@ module ReVIEW
           end
         end
 
+        # Render tableref reference (same as table)
+        def render_inline_tableref(type, node, content)
+          render_inline_table(type, node, content)
+        end
+
         # Render image reference
-        def render_image_reference(node, content)
+        def render_inline_img(_type, node, content)
           return content unless node.args && !node.args.empty?
 
           if node.args.length == 2
@@ -416,8 +373,13 @@ module ReVIEW
           end
         end
 
+        # Render imgref reference (same as img)
+        def render_inline_imgref(type, node, content)
+          render_inline_img(type, node, content)
+        end
+
         # Render equation reference
-        def render_equation_reference(node, content)
+        def render_inline_eq(_type, node, content)
           return content unless node.args && node.args.first
 
           equation_id = node.args.first
@@ -435,6 +397,11 @@ module ReVIEW
           else
             raise NotImplementedError, 'Equation reference requires chapter context but none provided'
           end
+        end
+
+        # Render eqref reference (same as eq)
+        def render_inline_eqref(type, node, content)
+          render_inline_eq(type, node, content)
         end
 
         # Render same-chapter list reference
@@ -457,12 +424,17 @@ module ReVIEW
         end
 
         # Render bibliography reference
-        def render_bibliography_reference(node, content)
+        def render_inline_bib(_type, node, content)
           return content unless node.args && node.args.first
 
           # Don't escape underscores in bibliography keys - they're allowed in LaTeX cite commands
           bib_key = node.args.first.to_s
           "\\cite{#{bib_key}}"
+        end
+
+        # Render bibref reference (same as bib)
+        def render_inline_bibref(type, node, content)
+          render_inline_bib(type, node, content)
         end
 
         # Render same-chapter table reference
@@ -590,7 +562,7 @@ module ReVIEW
         end
 
         # Render chapter number reference
-        def render_chapter_reference(node, content)
+        def render_inline_chap(_type, node, content)
           return content unless node.args && node.args.first
 
           chapter_id = node.args.first
@@ -607,7 +579,7 @@ module ReVIEW
         end
 
         # Render chapter title reference
-        def render_chapter_title_reference(node, content)
+        def render_inline_chapref(_type, node, content)
           return content unless node.args && node.args.first
 
           chapter_id = node.args.first
@@ -620,6 +592,288 @@ module ReVIEW
             end
           else
             "\\reviewchapref{#{escape(chapter_id)}}{chap:#{escape(chapter_id)}}"
+          end
+        end
+
+        # Render heading reference
+        def render_inline_hd(_type, node, content)
+          return content unless node.args && node.args.first
+
+          heading_ref = node.args.first
+          # Heading reference - handle both simple and chapter|heading format
+          handle_heading_reference(heading_ref) do |section_number, section_label, section_title|
+            "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
+          end
+        end
+
+        # Render section reference
+        def render_inline_sec(_type, node, content)
+          return content unless node.args && node.args.first
+
+          heading_ref = node.args.first
+          # Section reference - use Re:VIEW section reference like LATEXBuilder
+          handle_heading_reference(heading_ref) do |section_number, section_label, _section_title|
+            "\\reviewsecref{#{section_number}}{#{section_label}}"
+          end
+        end
+
+        # Render section reference with full title
+        def render_inline_secref(_type, node, content)
+          return content unless node.args && node.args.first
+
+          heading_ref = node.args.first
+          # Section reference with full title - use Re:VIEW section reference like LATEXBuilder
+          handle_heading_reference(heading_ref) do |section_number, section_label, section_title|
+            "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
+          end
+        end
+
+        # Render section title only
+        def render_inline_sectitle(_type, node, content)
+          return content unless node.args && node.args.first
+
+          heading_ref = node.args.first
+          # Section title only - use Re:VIEW section reference like LATEXBuilder
+          handle_heading_reference(heading_ref) do |_section_number, section_label, section_title|
+            "\\reviewsecref{#{escape(section_title)}}{#{section_label}}"
+          end
+        end
+
+        # Render index entry
+        def render_inline_idx(_type, node, content)
+          return content unless node.args && node.args.first
+
+          index_text = escape(node.args.first)
+          # Index entry like LATEXBuilder
+          "\\index{#{index_text}}"
+        end
+
+        # Render hidden index entry
+        def render_inline_hidx(_type, node, content)
+          return content unless node.args && node.args.first
+
+          index_text = escape(node.args.first)
+          # Hidden index entry like LATEXBuilder
+          "\\index{#{index_text}}#{content}"
+        end
+
+        # Render keyword notation
+        def render_inline_kw(_type, node, content)
+          if node.args && node.args.length >= 2
+            term = escape(node.args[0])
+            description = escape(node.args[1])
+            "\\reviewkw{#{term}}（#{description}）"
+          else
+            "\\reviewkw{#{content}}"
+          end
+        end
+
+        # Render ruby notation
+        def render_inline_ruby(_type, node, content)
+          if node.args && node.args.length >= 2
+            base_text = escape(node.args[0])
+            ruby_text = escape(node.args[1])
+            "\\ruby{#{base_text}}{#{ruby_text}}"
+          else
+            content
+          end
+        end
+
+        # Render icon
+        def render_inline_icon(_type, node, content)
+          if node.args && node.args.first
+            icon_id = node.args.first
+            if @chapter&.image(icon_id)&.path
+              command = @book&.config&.check_version('2', exception: false) ? 'includegraphics' : 'reviewicon'
+              "\\#{command}{#{@chapter.image(icon_id).path}}"
+            else
+              # Fallback for missing image
+              "\\verb|--[[path = #{icon_id}]]--|"
+            end
+          else
+            content
+          end
+        end
+
+        # Render ami notation
+        def render_inline_ami(_type, _node, content)
+          "\\reviewami{#{content}}"
+        end
+
+        # Render bou notation
+        def render_inline_bou(_type, _node, content)
+          # Boudou (emphasis)
+          "\\reviewbou{#{content}}"
+        end
+
+        # Render balloon notation
+        def render_inline_balloon(_type, _node, content)
+          # Balloon annotation - content contains the balloon text
+          "\\reviewballoon{#{content}}"
+        end
+
+        # Render mathematical expression
+        def render_inline_m(_type, node, content)
+          # Mathematical expressions - don't escape content
+          "$#{node.args&.first || content}$"
+        end
+
+        # Render superscript
+        def render_inline_sup(_type, _node, content)
+          "\\textsuperscript{#{content}}"
+        end
+
+        # Render superscript (alias)
+        def render_inline_superscript(type, node, content)
+          render_inline_sup(type, node, content)
+        end
+
+        # Render subscript
+        def render_inline_sub(_type, _node, content)
+          "\\textsubscript{#{content}}"
+        end
+
+        # Render subscript (alias)
+        def render_inline_subscript(type, node, content)
+          render_inline_sub(type, node, content)
+        end
+
+        # Render strikethrough
+        def render_inline_del(_type, _node, content)
+          "\\reviewstrike{#{content}}"
+        end
+
+        # Render strikethrough (alias)
+        def render_inline_strike(type, node, content)
+          render_inline_del(type, node, content)
+        end
+
+        # Render insert
+        def render_inline_ins(_type, _node, content)
+          "\\reviewinsert{#{content}}"
+        end
+
+        # Render insert (alias)
+        def render_inline_insert(type, node, content)
+          render_inline_ins(type, node, content)
+        end
+
+        # Render unicode character
+        def render_inline_uchar(_type, node, content)
+          # Unicode character handling like LATEXBuilder
+          if node.args && node.args.first
+            char_code = node.args.first
+            "\\UTF{#{escape(char_code)}}"
+          else
+            content
+          end
+        end
+
+        # Render line break
+        def render_inline_br(_type, _node, _content)
+          "\\\\\n"
+        end
+
+        # Render word expansion
+        def render_inline_w(_type, _node, content)
+          # Word expansion - pass through content
+          content
+        end
+
+        # Render word expansion (bold)
+        def render_inline_wb(_type, _node, content)
+          # Word expansion - pass through content
+          content
+        end
+
+        # Render raw content
+        def render_inline_raw(_type, node, content)
+          if node.args && node.args.first
+            # Raw content for specific format
+            format = node.args.first
+            if ['latex', 'tex'].include?(format)
+              content
+            else
+              '' # Ignore raw content for other formats
+            end
+          else
+            content
+          end
+        end
+
+        # Render embedded content
+        def render_inline_embed(_type, _node, content)
+          # Embedded content - pass through
+          content
+        end
+
+        # Render label reference
+        def render_inline_labelref(_type, node, content)
+          if node.args && node.args.first
+            ref_id = node.args.first
+            "\\ref{#{escape(ref_id)}}"
+          else
+            content
+          end
+        end
+
+        # Render reference (same as labelref)
+        def render_inline_ref(type, node, content)
+          render_inline_labelref(type, node, content)
+        end
+
+        # Render title reference
+        def render_inline_title(_type, node, content)
+          if node.args && node.args.first
+            # Book/chapter title reference
+            chapter_id = node.args.first
+            if @book && @book.chapter_index
+              begin
+                title = @book.chapter_index.title(chapter_id)
+                if @book.config['chapterlink']
+                  "\\reviewchapref{#{escape(title)}}{chap:#{chapter_id}}"
+                else
+                  escape(title)
+                end
+              rescue StandardError => e
+                raise NotImplementedError, "Chapter title reference failed for #{chapter_id}: #{e.message}"
+              end
+            else
+              "\\reviewtitle{#{escape(chapter_id)}}"
+            end
+          else
+            content
+          end
+        end
+
+        # Render endnote reference
+        def render_inline_endnote(_type, node, content)
+          if node.args && node.args.first
+            # Endnote reference
+            ref_id = node.args.first
+            if @chapter && @chapter.endnote_index
+              begin
+                endnote_number = @chapter.endnote_index.number(ref_id)
+                "\\endnotemark[#{endnote_number}]"
+              rescue StandardError => _e
+                "\\endnote{#{escape(ref_id)}}"
+              end
+            else
+              "\\endnote{#{escape(ref_id)}}"
+            end
+          else
+            content
+          end
+        end
+
+        # Render page reference
+        def render_inline_pageref(_type, node, content)
+          if node.args && node.args.first
+            # Page reference
+            ref_id = node.args.first
+            "\\pageref{#{escape(ref_id)}}"
+          else
+            content
           end
         end
 
