@@ -72,15 +72,8 @@ module ReVIEW
           @chapter.instance_variable_set(:@column_index, @ast_indexer.column_index)
           @chapter.instance_variable_set(:@bibpaper_index, @ast_indexer.bibpaper_index)
 
-          # Make chapter index available to book for title references
-          if @book && !@book.chapter_index
-            chapter_index = ReVIEW::Book::ChapterIndex.new
-            @book.chapters.each do |ch|
-              item = ReVIEW::Book::Index::Item.new(ch.id, ch.number, ch.title)
-              chapter_index.add_item(item)
-            end
-            @book.instance_variable_set(:@chapter_index, chapter_index)
-          end
+          # Build book-wide indexes for cross-chapter references if book is available
+          ReVIEW::AST::Indexer.build_book_indexes(@book) if @book
         end
 
         # Generate content with proper separation between document-level elements
@@ -1103,62 +1096,157 @@ module ReVIEW
             content
           end
         when 'list', 'listref'
-          if node.args && node.args.first
-            # Use Re:VIEW list reference like LATEXBuilder
-            list_id = node.args.first
-            if @chapter && @chapter.list_index
+          if node.args && !node.args.empty?
+
+            if node.args.length == 2
+              # Cross-chapter reference: [chapter_id, list_id]
+              chapter_id, list_id = node.args
+
+              # Find the target chapter
+              target_chapter = @book&.contents&.detect { |chap| chap.id == chapter_id }
+              unless target_chapter
+                raise NotImplementedError, "Cross-chapter list reference failed: chapter '#{chapter_id}' not found"
+              end
+
+              # Ensure the target chapter has list index - this should already be built by build_book_indexes
+              unless target_chapter.list_index
+                raise NotImplementedError, "Cross-chapter list reference failed: no list index for chapter '#{chapter_id}'"
+              end
+
               begin
-                list_item = @chapter.list_index.number(list_id)
-                if @chapter.number
-                  "\\reviewlistref{#{@chapter.number}.#{list_item}}"
+                list_item = target_chapter.list_index.number(list_id)
+                if target_chapter.number
+                  "\\reviewlistref{#{target_chapter.number}.#{list_item}}"
                 else
                   "\\reviewlistref{#{list_item}}"
                 end
               rescue StandardError => e
-                raise NotImplementedError, "List reference failed for #{list_id}: #{e.message}"
+                raise NotImplementedError, "Cross-chapter list reference failed for #{chapter_id}|#{list_id}: #{e.message}"
+              end
+            elsif node.args.length == 1
+              # Same-chapter reference
+              list_ref = node.args.first.to_s
+              if @chapter && @chapter.list_index
+                begin
+                  list_item = @chapter.list_index.number(list_ref)
+                  if @chapter.number
+                    "\\reviewlistref{#{@chapter.number}.#{list_item}}"
+                  else
+                    "\\reviewlistref{#{list_item}}"
+                  end
+                rescue StandardError => e
+                  raise NotImplementedError, "List reference failed for #{list_ref}: #{e.message}"
+                end
+              else
+                "\\ref{#{escape(list_ref)}}"
               end
             else
-              "\\ref{#{escape(list_id)}}"
+              content
             end
           else
             content
           end
         when 'table', 'tableref'
-          if node.args && node.args.first
-            # Use Re:VIEW table reference like LATEXBuilder
-            table_id = node.args.first
-            if @chapter && @chapter.table_index
+          if node.args && !node.args.empty?
+            if node.args.length == 2
+              # Cross-chapter reference: [chapter_id, table_id]
+              chapter_id, table_id = node.args
+
+              # Find the target chapter
+              target_chapter = @book&.contents&.detect { |chap| chap.id == chapter_id }
+              unless target_chapter
+                raise NotImplementedError, "Cross-chapter table reference failed: chapter '#{chapter_id}' not found"
+              end
+
+              # Ensure the target chapter has table index - this should already be built by build_book_indexes
+              unless target_chapter.table_index
+                raise NotImplementedError, "Cross-chapter table reference failed: no table index for chapter '#{chapter_id}'"
+              end
+
               begin
-                table_item = @chapter.table_index.number(table_id)
-                table_label = "table:#{@chapter.id}:#{table_id}"
-                if @chapter.number
-                  "\\reviewtableref{#{@chapter.number}.#{table_item}}{#{table_label}}"
+                table_item = target_chapter.table_index.number(table_id)
+                table_label = "table:#{chapter_id}:#{table_id}"
+                if target_chapter.number
+                  "\\reviewtableref{#{target_chapter.number}.#{table_item}}{#{table_label}}"
                 else
                   "\\reviewtableref{#{table_item}}{#{table_label}}"
                 end
               rescue StandardError => e
-                raise NotImplementedError, "Table reference failed for #{table_id}: #{e.message}"
+                raise NotImplementedError, "Cross-chapter table reference failed for #{chapter_id}|#{table_id}: #{e.message}"
+              end
+            elsif node.args.length == 1
+              # Same-chapter reference
+              table_ref = node.args.first.to_s
+              if @chapter && @chapter.table_index
+                begin
+                  table_item = @chapter.table_index.number(table_ref)
+                  table_label = "table:#{@chapter.id}:#{table_ref}"
+                  if @chapter.number
+                    "\\reviewtableref{#{@chapter.number}.#{table_item}}{#{table_label}}"
+                  else
+                    "\\reviewtableref{#{table_item}}{#{table_label}}"
+                  end
+                rescue StandardError => e
+                  raise NotImplementedError, "Table reference failed for #{table_ref}: #{e.message}"
+                end
+              else
+                "\\ref{#{escape(table_ref)}}"
               end
             else
-              "\\ref{#{escape(table_id)}}"
+              content
             end
           else
             content
           end
         when 'img', 'imgref'
-          if node.args && node.args.first
-            # Use Re:VIEW image reference like LATEXBuilder
-            image_id = node.args.first.to_s
-            if @chapter && @chapter.image_index
+          if node.args && !node.args.empty?
+            if node.args.length == 2
+              # Cross-chapter reference: [chapter_id, image_id]
+              chapter_id, image_id = node.args
+
+              # Find the target chapter
+              target_chapter = @book&.contents&.detect { |chap| chap.id == chapter_id }
+              unless target_chapter
+                raise NotImplementedError, "Cross-chapter image reference failed: chapter '#{chapter_id}' not found"
+              end
+
+              # Ensure the target chapter has image index - this should already be built by build_book_indexes
+              unless target_chapter.image_index
+                raise NotImplementedError, "Cross-chapter image reference failed: no image index for chapter '#{chapter_id}'"
+              end
+
               begin
-                image_item = @chapter.image_index.number(image_id)
-                "\\reviewimageref{#{@chapter.number}.#{image_item}}{image:#{@chapter.id}:#{image_id}}"
+                image_item = target_chapter.image_index.number(image_id)
+                image_label = "image:#{chapter_id}:#{image_id}"
+                if target_chapter.number
+                  "\\reviewimageref{#{target_chapter.number}.#{image_item}}{#{image_label}}"
+                else
+                  "\\reviewimageref{#{image_item}}{#{image_label}}"
+                end
               rescue StandardError => e
-                raise NotImplementedError, "Image reference failed for #{image_id}: #{e.message}"
+                raise NotImplementedError, "Cross-chapter image reference failed for #{chapter_id}|#{image_id}: #{e.message}"
+              end
+            elsif node.args.length == 1
+              # Same-chapter reference
+              image_ref = node.args.first.to_s
+              if @chapter && @chapter.image_index
+                begin
+                  image_item = @chapter.image_index.number(image_ref)
+                  image_label = "image:#{@chapter.id}:#{image_ref}"
+                  if @chapter.number
+                    "\\reviewimageref{#{@chapter.number}.#{image_item}}{#{image_label}}"
+                  else
+                    "\\reviewimageref{#{image_item}}{#{image_label}}"
+                  end
+                rescue StandardError => e
+                  raise NotImplementedError, "Image reference failed for #{image_ref}: #{e.message}"
+                end
+              else
+                # Don't escape underscores in ref labels
+                "\\ref{#{image_ref}}"
               end
             else
-              # Don't escape underscores in ref labels
-              "\\ref{#{image_id}}"
+              content
             end
           else
             content

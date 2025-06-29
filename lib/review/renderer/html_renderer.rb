@@ -1135,6 +1135,9 @@ module ReVIEW
           @book.generate_indexes
         end
 
+        # Build book-wide indexes for cross-chapter references if book is available
+        ReVIEW::AST::Indexer.build_book_indexes(@book) if @book
+
         @ast_indexes_generated = true
       end
 
