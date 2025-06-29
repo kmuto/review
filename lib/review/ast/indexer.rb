@@ -182,6 +182,8 @@ module ReVIEW
         case node
         when AST::HeadlineNode
           process_headline(node)
+        when AST::ColumnNode
+          process_column(node)
         when AST::CodeBlockNode
           process_code_block(node)
         when AST::TableNode
@@ -232,6 +234,24 @@ module ReVIEW
         # Always add to headline index like IndexBuilder does
         item = ReVIEW::Book::Index::Item.new(item_id, @sec_counter.number_list, caption_text)
         @headline_index.add_item(item)
+
+        # Process caption inline elements
+        process_caption_inline_elements(node.caption) if node.caption
+      end
+
+      # Process column nodes
+      def process_column(node)
+        # Check if column has a label (ID)
+        return unless node.label
+
+        check_id(node.label)
+
+        # Extract caption text like IndexBuilder does
+        caption_text = extract_caption_text(node.caption)
+
+        # Create index item - use label as ID and caption text
+        item = ReVIEW::Book::Index::Item.new(node.label, @column_index.size + 1, caption_text)
+        @column_index.add_item(item)
 
         # Process caption inline elements
         process_caption_inline_elements(node.caption) if node.caption

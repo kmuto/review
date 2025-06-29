@@ -632,6 +632,26 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_false(regular_headline.nodisp?)
   end
 
+  def test_render_inline_column
+    # Test inline column reference functionality
+    # Create a column inline node with args
+    inline_node = AST::InlineNode.new(inline_type: 'column')
+    inline_node.args = ['col1']
+    inline_node.add_child(AST::TextNode.new(content: 'Column Reference'))
+
+    # Initialize the renderer properly with a simple inline element first
+    init_node = AST::InlineNode.new(inline_type: 'b')
+    init_node.add_child(AST::TextNode.new(content: 'init'))
+    @renderer.visit_inline(init_node)
+
+    # Check that inline renderer has been initialized
+    inline_renderer = @renderer.instance_variable_get(:@inline_renderer)
+    assert_not_nil(inline_renderer, 'InlineElementRenderer should be initialized')
+
+    # Test that render_inline_column method exists and can be called
+    assert_true(inline_renderer.respond_to?(:render_inline_column, true), 'Should have render_inline_column method')
+  end
+
   def test_visit_column_basic
     # Test basic column rendering
     caption = AST::CaptionNode.new

@@ -516,18 +516,18 @@ module ReVIEW
         end
 
         # Render ami notation
-        def render_inline_ami(_type, _node, content)
+        def render_inline_ami(_type, content, _node)
           "\\reviewami{#{content}}"
         end
 
         # Render bou notation
-        def render_inline_bou(_type, _node, content)
+        def render_inline_bou(_type, content, _node)
           # Boudou (emphasis)
           "\\reviewbou{#{content}}"
         end
 
         # Render balloon notation
-        def render_inline_balloon(_type, _node, content)
+        def render_inline_balloon(_type, content, _node)
           # Balloon annotation - content contains the balloon text
           "\\reviewballoon{#{content}}"
         end
@@ -539,7 +539,7 @@ module ReVIEW
         end
 
         # Render superscript
-        def render_inline_sup(_type, _node, content)
+        def render_inline_sup(_type, content, _node)
           "\\textsuperscript{#{content}}"
         end
 
@@ -549,7 +549,7 @@ module ReVIEW
         end
 
         # Render subscript
-        def render_inline_sub(_type, _node, content)
+        def render_inline_sub(_type, content, _node)
           "\\textsubscript{#{content}}"
         end
 
@@ -559,7 +559,7 @@ module ReVIEW
         end
 
         # Render strikethrough
-        def render_inline_del(_type, _node, content)
+        def render_inline_del(_type, content, _node)
           "\\reviewstrike{#{content}}"
         end
 
@@ -569,7 +569,7 @@ module ReVIEW
         end
 
         # Render insert
-        def render_inline_ins(_type, _node, content)
+        def render_inline_ins(_type, content, _node)
           "\\reviewinsert{#{content}}"
         end
 
@@ -590,18 +590,18 @@ module ReVIEW
         end
 
         # Render line break
-        def render_inline_br(_type, _node, _content)
+        def render_inline_br(_type, _content, _node)
           "\\\\\n"
         end
 
         # Render word expansion
-        def render_inline_w(_type, _node, content)
+        def render_inline_w(_type, content, _node)
           # Word expansion - pass through content
           content
         end
 
         # Render word expansion (bold)
-        def render_inline_wb(_type, _node, content)
+        def render_inline_wb(_type, content, _node)
           # Word expansion - pass through content
           content
         end
@@ -622,7 +622,7 @@ module ReVIEW
         end
 
         # Render embedded content
-        def render_inline_embed(_type, _node, content)
+        def render_inline_embed(_type, content, _node)
           # Embedded content - pass through
           content
         end
@@ -694,6 +694,36 @@ module ReVIEW
             "\\pageref{#{escape(ref_id)}}"
           else
             content
+          end
+        end
+
+        # Render column reference
+        def render_inline_column(_type, _content, node)
+          id = node.args.first
+          m = /\A([^|]+)\|(.+)/.match(id)
+          if m && m[1] && @book
+            chapter = @book.chapters.detect { |chap| chap.id == m[1] }
+          end
+          if chapter
+            render_inline_column_chap(chapter, m[2])
+          else
+            render_inline_column_chap(@chapter, id)
+          end
+        rescue StandardError => e
+          raise NotImplementedError, "Unknown column: #{id} - #{e.message}"
+        end
+
+        # Render column reference for specific chapter
+        def render_inline_column_chap(chapter, id)
+          return "\\reviewcolumnref{#{escape(id)}}{}" unless chapter&.column_index
+
+          begin
+            column_item = chapter.column_index[id]
+            caption = column_item.caption
+            column_label = "column:#{chapter.id}:#{id}"
+            "\\reviewcolumnref{#{escape(caption)}}{#{column_label}}"
+          rescue StandardError => e
+            raise NotImplementedError, "Unknown column: #{id} in chapter #{chapter.id} - #{e.message}"
           end
         end
 
