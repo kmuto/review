@@ -30,60 +30,15 @@ module ReVIEW
         end
 
         def render(type, content, node)
-          case type.to_s
-          when 'b', 'strong', 'i', 'em', 'tt', 'ttb', 'tti', 'code', 'u', 'underline'
-            render_text_style_element(type, content, node)
-          when 'href'
-            render_inline_href(type, node, content)
-          when 'fn'
-            render_inline_fn(type, node, content)
-          when 'kw', 'ruby', 'icon', 'ami', 'bou', 'balloon'
-            render_special_notation_element(type, node, content)
-          when 'chap', 'chapref', 'list', 'listref', 'table', 'tableref', 'img', 'imgref', 'eq', 'eqref', 'bib', 'bibref'
-            render_reference_element(type, node, content)
-          when 'm', 'sup', 'superscript', 'sub', 'subscript', 'del', 'strike', 'ins', 'insert', 'uchar', 'br'
-            render_decoration_element(type, node, content)
-          when 'idx', 'hidx'
-            render_index_element(type, node, content)
-          when 'w', 'wb', 'raw', 'embed'
-            render_special_element(type, node, content)
-          when 'hd', 'sec', 'secref', 'sectitle'
-            render_section_reference_element(type, node, content)
-          when 'labelref', 'ref', 'title', 'endnote', 'pageref'
-            render_misc_reference_element(type, node, content)
+          method_name = "render_inline_#{type}"
+          if respond_to?(method_name, true)
+            send(method_name, type, content, node)
           else
-            # Fallback: treat unknown inline elements as plain text
-            # This is more forgiving than raising an error
-            content
+            raise NotImplementedError, "Unknwon inline element: #{type}"
           end
         end
 
         private
-
-        def render_text_style_element(type, content, node)
-          case type.to_s
-          when 'b'
-            render_inline_b(type, content, node)
-          when 'strong'
-            render_inline_strong(type, content, node)
-          when 'i'
-            render_inline_i(type, content, node)
-          when 'em'
-            render_inline_em(type, content, node)
-          when 'tt'
-            render_inline_tt(type, content, node)
-          when 'ttb'
-            render_inline_ttb(type, content, node)
-          when 'tti'
-            render_inline_tti(type, content, node)
-          when 'code'
-            render_inline_code(type, content, node)
-          when 'u', 'underline'
-            render_inline_u(type, content, node)
-          else
-            raise NotImplementedError, "Invalid inline element: #{type}"
-          end
-        end
 
         def render_inline_b(_type, content, _node)
           "\\reviewbold{#{content}}"
@@ -121,7 +76,11 @@ module ReVIEW
           "\\reviewstrong{#{content}}"
         end
 
-        def render_inline_href(_type, node, content)
+        def render_inline_underline(type, content, node)
+          render_inline_u(type, content, node)
+        end
+
+        def render_inline_href(_type, content, node)
           if node.args && node.args.length >= 2
             url = escape_url(node.args[0])
             text = escape_latex(node.args[1])
@@ -138,37 +97,7 @@ module ReVIEW
           end
         end
 
-        # Render decoration inline elements (m, sup, sub, del, ins, uchar, br)
-        def render_decoration_element(type, node, content)
-          case type.to_s
-          when 'm'
-            render_inline_m(type, node, content)
-          when 'sup'
-            render_inline_sup(type, node, content)
-          when 'superscript'
-            render_inline_superscript(type, node, content)
-          when 'sub'
-            render_inline_sub(type, node, content)
-          when 'subscript'
-            render_inline_subscript(type, node, content)
-          when 'del'
-            render_inline_del(type, node, content)
-          when 'strike'
-            render_inline_strike(type, node, content)
-          when 'ins'
-            render_inline_ins(type, node, content)
-          when 'insert'
-            render_inline_insert(type, node, content)
-          when 'uchar'
-            render_inline_uchar(type, node, content)
-          when 'br'
-            render_inline_br(type, node, content)
-          else
-            content
-          end
-        end
-
-        def render_inline_fn(_type, node, content)
+        def render_inline_fn(_type, content, node)
           if node.args && node.args.first
             footnote_id = node.args.first.to_s
             # Handle footnotes based on config or context like LATEXBuilder
@@ -215,117 +144,8 @@ module ReVIEW
           end
         end
 
-        def render_reference_element(type, node, content)
-          case type.to_s
-          when 'chap'
-            render_inline_chap(type, node, content)
-          when 'chapref'
-            render_inline_chapref(type, node, content)
-          when 'list'
-            render_inline_list(type, node, content)
-          when 'listref'
-            render_inline_listref(type, node, content)
-          when 'table'
-            render_inline_table(type, node, content)
-          when 'tableref'
-            render_inline_tableref(type, node, content)
-          when 'img'
-            render_inline_img(type, node, content)
-          when 'imgref'
-            render_inline_imgref(type, node, content)
-          when 'eq'
-            render_inline_eq(type, node, content)
-          when 'eqref'
-            render_inline_eqref(type, node, content)
-          when 'bib'
-            render_inline_bib(type, node, content)
-          when 'bibref'
-            render_inline_bibref(type, node, content)
-          else
-            content
-          end
-        end
-
-        # Render section reference inline elements (hd, sec, secref, sectitle)
-        def render_section_reference_element(type, node, content)
-          case type.to_s
-          when 'hd'
-            render_inline_hd(type, node, content)
-          when 'sec'
-            render_inline_sec(type, node, content)
-          when 'secref'
-            render_inline_secref(type, node, content)
-          when 'sectitle'
-            render_inline_sectitle(type, node, content)
-          else
-            content
-          end
-        end
-
-        def render_index_element(type, node, content)
-          case type.to_s
-          when 'idx'
-            render_inline_idx(type, node, content)
-          when 'hidx'
-            render_inline_hidx(type, node, content)
-          else
-            content
-          end
-        end
-
-        def render_special_notation_element(type, node, content)
-          case type.to_s
-          when 'kw'
-            render_inline_kw(type, node, content)
-          when 'ruby'
-            render_inline_ruby(type, node, content)
-          when 'icon'
-            render_inline_icon(type, node, content)
-          when 'ami'
-            render_inline_ami(type, node, content)
-          when 'bou'
-            render_inline_bou(type, node, content)
-          when 'balloon'
-            render_inline_balloon(type, node, content)
-          else
-            content
-          end
-        end
-
-        def render_misc_reference_element(type, node, content)
-          case type.to_s
-          when 'labelref'
-            render_inline_labelref(type, node, content)
-          when 'ref'
-            render_inline_ref(type, node, content)
-          when 'title'
-            render_inline_title(type, node, content)
-          when 'endnote'
-            render_inline_endnote(type, node, content)
-          when 'pageref'
-            render_inline_pageref(type, node, content)
-          else
-            content
-          end
-        end
-
-        def render_special_element(type, node, content)
-          case type.to_s
-          when 'w'
-            render_inline_w(type, node, content)
-          when 'wb'
-            render_inline_wb(type, node, content)
-          when 'raw'
-            render_inline_raw(type, node, content)
-          when 'embed'
-            render_inline_embed(type, node, content)
-          else
-            raise NotImplementedError, "Invalid special element: #{type}"
-          end
-        end
-
         # Render list reference
-        def render_inline_list(_type, node, content)
+        def render_inline_list(_type, content, node)
           return content unless node.args && !node.args.empty?
 
           if node.args.length == 2
@@ -338,12 +158,12 @@ module ReVIEW
         end
 
         # Render listref reference (same as list)
-        def render_inline_listref(type, node, content)
-          render_inline_list(type, node, content)
+        def render_inline_listref(type, content, node)
+          render_inline_list(type, content, node)
         end
 
         # Render table reference
-        def render_inline_table(_type, node, content)
+        def render_inline_table(_type, content, node)
           return content unless node.args && !node.args.empty?
 
           if node.args.length == 2
@@ -356,12 +176,12 @@ module ReVIEW
         end
 
         # Render tableref reference (same as table)
-        def render_inline_tableref(type, node, content)
-          render_inline_table(type, node, content)
+        def render_inline_tableref(type, content, node)
+          render_inline_table(type, content, node)
         end
 
         # Render image reference
-        def render_inline_img(_type, node, content)
+        def render_inline_img(_type, content, node)
           return content unless node.args && !node.args.empty?
 
           if node.args.length == 2
@@ -374,12 +194,12 @@ module ReVIEW
         end
 
         # Render imgref reference (same as img)
-        def render_inline_imgref(type, node, content)
-          render_inline_img(type, node, content)
+        def render_inline_imgref(type, content, node)
+          render_inline_img(type, content, node)
         end
 
         # Render equation reference
-        def render_inline_eq(_type, node, content)
+        def render_inline_eq(_type, content, node)
           return content unless node.args && node.args.first
 
           equation_id = node.args.first
@@ -400,8 +220,8 @@ module ReVIEW
         end
 
         # Render eqref reference (same as eq)
-        def render_inline_eqref(type, node, content)
-          render_inline_eq(type, node, content)
+        def render_inline_eqref(type, content, node)
+          render_inline_eq(type, content, node)
         end
 
         # Render same-chapter list reference
@@ -424,7 +244,7 @@ module ReVIEW
         end
 
         # Render bibliography reference
-        def render_inline_bib(_type, node, content)
+        def render_inline_bib(_type, content, node)
           return content unless node.args && node.args.first
 
           # Don't escape underscores in bibliography keys - they're allowed in LaTeX cite commands
@@ -433,8 +253,8 @@ module ReVIEW
         end
 
         # Render bibref reference (same as bib)
-        def render_inline_bibref(type, node, content)
-          render_inline_bib(type, node, content)
+        def render_inline_bibref(type, content, node)
+          render_inline_bib(type, content, node)
         end
 
         # Render same-chapter table reference
@@ -562,7 +382,7 @@ module ReVIEW
         end
 
         # Render chapter number reference
-        def render_inline_chap(_type, node, content)
+        def render_inline_chap(_type, content, node)
           return content unless node.args && node.args.first
 
           chapter_id = node.args.first
@@ -579,7 +399,7 @@ module ReVIEW
         end
 
         # Render chapter title reference
-        def render_inline_chapref(_type, node, content)
+        def render_inline_chapref(_type, content, node)
           return content unless node.args && node.args.first
 
           chapter_id = node.args.first
@@ -596,7 +416,7 @@ module ReVIEW
         end
 
         # Render heading reference
-        def render_inline_hd(_type, node, content)
+        def render_inline_hd(_type, content, node)
           return content unless node.args && node.args.first
 
           heading_ref = node.args.first
@@ -607,7 +427,7 @@ module ReVIEW
         end
 
         # Render section reference
-        def render_inline_sec(_type, node, content)
+        def render_inline_sec(_type, content, node)
           return content unless node.args && node.args.first
 
           heading_ref = node.args.first
@@ -618,7 +438,7 @@ module ReVIEW
         end
 
         # Render section reference with full title
-        def render_inline_secref(_type, node, content)
+        def render_inline_secref(_type, content, node)
           return content unless node.args && node.args.first
 
           heading_ref = node.args.first
@@ -629,7 +449,7 @@ module ReVIEW
         end
 
         # Render section title only
-        def render_inline_sectitle(_type, node, content)
+        def render_inline_sectitle(_type, content, node)
           return content unless node.args && node.args.first
 
           heading_ref = node.args.first
@@ -640,7 +460,7 @@ module ReVIEW
         end
 
         # Render index entry
-        def render_inline_idx(_type, node, content)
+        def render_inline_idx(_type, content, node)
           return content unless node.args && node.args.first
 
           index_text = escape(node.args.first)
@@ -649,7 +469,7 @@ module ReVIEW
         end
 
         # Render hidden index entry
-        def render_inline_hidx(_type, node, content)
+        def render_inline_hidx(_type, content, node)
           return content unless node.args && node.args.first
 
           index_text = escape(node.args.first)
@@ -658,7 +478,7 @@ module ReVIEW
         end
 
         # Render keyword notation
-        def render_inline_kw(_type, node, content)
+        def render_inline_kw(_type, content, node)
           if node.args && node.args.length >= 2
             term = escape(node.args[0])
             description = escape(node.args[1])
@@ -669,7 +489,7 @@ module ReVIEW
         end
 
         # Render ruby notation
-        def render_inline_ruby(_type, node, content)
+        def render_inline_ruby(_type, content, node)
           if node.args && node.args.length >= 2
             base_text = escape(node.args[0])
             ruby_text = escape(node.args[1])
@@ -680,7 +500,7 @@ module ReVIEW
         end
 
         # Render icon
-        def render_inline_icon(_type, node, content)
+        def render_inline_icon(_type, content, node)
           if node.args && node.args.first
             icon_id = node.args.first
             if @chapter&.image(icon_id)&.path
@@ -713,7 +533,7 @@ module ReVIEW
         end
 
         # Render mathematical expression
-        def render_inline_m(_type, node, content)
+        def render_inline_m(_type, content, node)
           # Mathematical expressions - don't escape content
           "$#{node.args&.first || content}$"
         end
@@ -724,8 +544,8 @@ module ReVIEW
         end
 
         # Render superscript (alias)
-        def render_inline_superscript(type, node, content)
-          render_inline_sup(type, node, content)
+        def render_inline_superscript(type, content, node)
+          render_inline_sup(type, content, node)
         end
 
         # Render subscript
@@ -734,8 +554,8 @@ module ReVIEW
         end
 
         # Render subscript (alias)
-        def render_inline_subscript(type, node, content)
-          render_inline_sub(type, node, content)
+        def render_inline_subscript(type, content, node)
+          render_inline_sub(type, content, node)
         end
 
         # Render strikethrough
@@ -744,8 +564,8 @@ module ReVIEW
         end
 
         # Render strikethrough (alias)
-        def render_inline_strike(type, node, content)
-          render_inline_del(type, node, content)
+        def render_inline_strike(type, content, node)
+          render_inline_del(type, content, node)
         end
 
         # Render insert
@@ -754,12 +574,12 @@ module ReVIEW
         end
 
         # Render insert (alias)
-        def render_inline_insert(type, node, content)
-          render_inline_ins(type, node, content)
+        def render_inline_insert(type, content, node)
+          render_inline_ins(type, content, node)
         end
 
         # Render unicode character
-        def render_inline_uchar(_type, node, content)
+        def render_inline_uchar(_type, content, node)
           # Unicode character handling like LATEXBuilder
           if node.args && node.args.first
             char_code = node.args.first
@@ -787,7 +607,7 @@ module ReVIEW
         end
 
         # Render raw content
-        def render_inline_raw(_type, node, content)
+        def render_inline_raw(_type, content, node)
           if node.args && node.args.first
             # Raw content for specific format
             format = node.args.first
@@ -808,7 +628,7 @@ module ReVIEW
         end
 
         # Render label reference
-        def render_inline_labelref(_type, node, content)
+        def render_inline_labelref(_type, content, node)
           if node.args && node.args.first
             ref_id = node.args.first
             "\\ref{#{escape(ref_id)}}"
@@ -818,12 +638,12 @@ module ReVIEW
         end
 
         # Render reference (same as labelref)
-        def render_inline_ref(type, node, content)
-          render_inline_labelref(type, node, content)
+        def render_inline_ref(type, content, node)
+          render_inline_labelref(type, content, node)
         end
 
         # Render title reference
-        def render_inline_title(_type, node, content)
+        def render_inline_title(_type, content, node)
           if node.args && node.args.first
             # Book/chapter title reference
             chapter_id = node.args.first
@@ -847,7 +667,7 @@ module ReVIEW
         end
 
         # Render endnote reference
-        def render_inline_endnote(_type, node, content)
+        def render_inline_endnote(_type, content, node)
           if node.args && node.args.first
             # Endnote reference
             ref_id = node.args.first
@@ -867,7 +687,7 @@ module ReVIEW
         end
 
         # Render page reference
-        def render_inline_pageref(_type, node, content)
+        def render_inline_pageref(_type, content, node)
           if node.args && node.args.first
             # Page reference
             ref_id = node.args.first
