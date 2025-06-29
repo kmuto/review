@@ -50,6 +50,57 @@ module ReVIEW
         end
       end
 
+      private
+
+      # Create inline AST node from parsed token
+      def create_inline_ast_node_from_token(token, parent_node)
+        command = token.command
+        content = token.content
+
+        # Special handling for certain inline types
+        case command
+        when 'embed'
+          create_inline_embed_ast_node(content, parent_node)
+        when 'ruby'
+          create_inline_ruby_ast_node(content, parent_node)
+        when 'href'
+          create_inline_href_ast_node(content, parent_node)
+        when 'kw'
+          create_inline_kw_ast_node(content, parent_node)
+        when 'hd'
+          create_inline_hd_ast_node(content, parent_node)
+        when 'img', 'list', 'table', 'eq'
+          create_inline_ref_ast_node(command, content, parent_node)
+        when 'chap', 'chapref', 'sec', 'secref', 'labelref', 'ref'
+          create_inline_cross_ref_ast_node(command, content, parent_node)
+        when 'w', 'wb'
+          create_inline_word_ast_node(command, content, parent_node)
+        when 'raw'
+          create_inline_raw_ast_node(content, parent_node)
+        else
+          # Standard inline processing
+          inline_node = AST::InlineNode.new(
+            location: @ast_compiler.location,
+            inline_type: command,
+            args: [content]
+          )
+
+          # Handle nested inline elements in the content
+          if content.include?('@<')
+            parse_inline_elements(content, inline_node)
+          else
+            # Simple text content
+            text_node = AST::TextNode.new(
+              location: @ast_compiler.location,
+              content: content
+            )
+            inline_node.add_child(text_node)
+          end
+
+          parent_node.add_child(inline_node)
+        end
+      end
+
       # Create inline embed AST node
       def create_inline_embed_ast_node(arg, parent_node)
         node = AST::EmbedNode.new(
@@ -267,55 +318,6 @@ module ReVIEW
         parent_node.add_child(inline_node)
       end
 
-      # Create inline AST node from parsed token
-      def create_inline_ast_node_from_token(token, parent_node)
-        command = token.command
-        content = token.content
-
-        # Special handling for certain inline types
-        case command
-        when 'embed'
-          create_inline_embed_ast_node(content, parent_node)
-        when 'ruby'
-          create_inline_ruby_ast_node(content, parent_node)
-        when 'href'
-          create_inline_href_ast_node(content, parent_node)
-        when 'kw'
-          create_inline_kw_ast_node(content, parent_node)
-        when 'hd'
-          create_inline_hd_ast_node(content, parent_node)
-        when 'img', 'list', 'table', 'eq'
-          create_inline_ref_ast_node(command, content, parent_node)
-        when 'chap', 'chapref', 'sec', 'secref', 'labelref', 'ref'
-          create_inline_cross_ref_ast_node(command, content, parent_node)
-        when 'w', 'wb'
-          create_inline_word_ast_node(command, content, parent_node)
-        when 'raw'
-          create_inline_raw_ast_node(content, parent_node)
-        else
-          # Standard inline processing
-          inline_node = AST::InlineNode.new(
-            location: @ast_compiler.location,
-            inline_type: command,
-            args: [content]
-          )
-
-          # Handle nested inline elements in the content
-          if content.include?('@<')
-            parse_inline_elements(content, inline_node)
-          else
-            # Simple text content
-            text_node = AST::TextNode.new(
-              location: @ast_compiler.location,
-              content: content
-            )
-            inline_node.add_child(text_node)
-          end
-
-          parent_node.add_child(inline_node)
-        end
-      end
-
       # Create inline raw AST node (@<raw> command)
       def create_inline_raw_ast_node(content, parent_node)
         target_builders, processed_content = parse_raw_content(content)
@@ -330,8 +332,6 @@ module ReVIEW
 
         parent_node.add_child(embed_node)
       end
-
-      private
 
       # Parse raw content for builder specification (shared with BlockProcessor)
       def parse_raw_content(content)
