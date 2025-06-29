@@ -1211,9 +1211,6 @@ module ReVIEW
 
       # Process //raw command with LATEXBuilder-compatible behavior
       def process_raw_embed(node)
-        # Debug: print node details
-        # puts "DEBUG process_raw_embed: arg=#{node.arg.inspect}, target_builders=#{node.target_builders.inspect}, content=#{node.content.inspect}"
-
         # Check if this embed is targeted for LaTeX builder
         unless node.targeted_for?('latex')
           return ''
@@ -1244,242 +1241,6 @@ module ReVIEW
         # Render all children and join the result
         footnote_node.children.map { |child| visit(child) }.join
       end
-
-      # Handle heading references with cross-chapter support
-      def handle_heading_reference(heading_ref, fallback_format = '\\ref{%s}')
-        if heading_ref.include?('|')
-          # Cross-chapter reference format: chapter|heading or chapter|section|subsection
-          parts = heading_ref.split('|')
-          chapter_id = parts[0]
-          heading_parts = parts[1..-1]
-
-          # Try to find the target chapter and its headline
-          target_chapter = @book.chapters.find { |ch| ch.id == chapter_id } if @book
-
-          if target_chapter && target_chapter.headline_index
-            # Build the hierarchical heading ID like IndexBuilder does
-            heading_id = heading_parts.join('|')
-
-            begin
-              headline_item = target_chapter.headline_index[heading_id]
-              if headline_item
-                # Get the section number from the target chapter
-                section_number = target_chapter.headline_index.number(heading_id)
-                section_label = "sec:#{chapter_id}-#{section_number.tr('.', '-')}"
-                yield(section_number, section_label, headline_item.caption || heading_id)
-              else
-                # Fallback when heading not found in target chapter
-                fallback_format % "#{chapter_id}-#{heading_parts.join('-')}"
-              end
-            rescue StandardError
-              # Fallback on any error
-              fallback_format % "#{chapter_id}-#{heading_parts.join('-')}"
-            end
-          else
-            # Fallback when target chapter not found or no headline index
-            fallback_format % "#{chapter_id}-#{heading_parts.join('-')}"
-          end
-        elsif @chapter && @chapter.headline_index
-          # Simple heading reference within current chapter
-          begin
-            headline_item = @chapter.headline_index[heading_ref]
-            if headline_item
-              # Generate section number and label like LATEXBuilder
-              section_number = @chapter.headline_index.number(heading_ref)
-              section_label = "sec:#{section_number.tr('.', '-')}"
-              yield(section_number, section_label, headline_item.caption || heading_ref)
-            else
-              # Fallback if headline not found in index
-              fallback_format % escape(heading_ref)
-            end
-          rescue StandardError
-            # Fallback on any error
-            fallback_format % escape(heading_ref)
-          end
-        else
-          # Fallback when no headline index available
-          fallback_format % escape(heading_ref)
-        end
-      end
-
-      # Render chapter number reference
-      def render_chapter_reference(node, content)
-        return content unless node.args && node.args.first
-
-        chapter_id = node.args.first
-        if @book && @book.chapter_index
-          begin
-            chapter_number = @book.chapter_index.number(chapter_id)
-            "\\reviewchapref{#{chapter_number}}{chap:#{chapter_id}}"
-          rescue StandardError => e
-            raise NotImplementedError, "Chapter reference failed for #{chapter_id}: #{e.message}"
-          end
-        else
-          "\\reviewchapref{#{escape(chapter_id)}}{chap:#{escape(chapter_id)}}"
-        end
-      end
-
-      # Render chapter title reference
-      def render_chapter_title_reference(node, content)
-        return content unless node.args && node.args.first
-
-        chapter_id = node.args.first
-        if @book && @book.chapter_index
-          begin
-            title = @book.chapter_index.display_string(chapter_id)
-            "\\reviewchapref{#{escape(title)}}{chap:#{chapter_id}}"
-          rescue StandardError => e
-            raise NotImplementedError, "Chapter title reference failed for #{chapter_id}: #{e.message}"
-          end
-        else
-          "\\reviewchapref{#{escape(chapter_id)}}{chap:#{escape(chapter_id)}}"
-        end
-      end
-
-      # Render cross-chapter list reference
-      def render_cross_chapter_list_reference(node)
-        chapter_id, list_id = node.args
-
-        # Find the target chapter
-        target_chapter = @book&.contents&.detect { |chap| chap.id == chapter_id }
-        unless target_chapter
-          raise NotImplementedError, "Cross-chapter list reference failed: chapter '#{chapter_id}' not found"
-        end
-
-        # Ensure the target chapter has list index
-        unless target_chapter.list_index
-          raise NotImplementedError, "Cross-chapter list reference failed: no list index for chapter '#{chapter_id}'"
-        end
-
-        begin
-          list_item = target_chapter.list_index.number(list_id)
-          if target_chapter.number
-            "\\reviewlistref{#{target_chapter.number}.#{list_item}}"
-          else
-            "\\reviewlistref{#{list_item}}"
-          end
-        rescue StandardError => e
-          raise NotImplementedError, "Cross-chapter list reference failed for #{chapter_id}|#{list_id}: #{e.message}"
-        end
-      end
-
-      # Render same-chapter list reference
-      def render_same_chapter_list_reference(node)
-        list_ref = node.args.first.to_s
-        if @chapter && @chapter.list_index
-          begin
-            list_item = @chapter.list_index.number(list_ref)
-            if @chapter.number
-              "\\reviewlistref{#{@chapter.number}.#{list_item}}"
-            else
-              "\\reviewlistref{#{list_item}}"
-            end
-          rescue StandardError => e
-            raise NotImplementedError, "List reference failed for #{list_ref}: #{e.message}"
-          end
-        else
-          "\\ref{#{escape(list_ref)}}"
-        end
-      end
-
-      # Render cross-chapter table reference
-      def render_cross_chapter_table_reference(node)
-        chapter_id, table_id = node.args
-
-        # Find the target chapter
-        target_chapter = @book&.contents&.detect { |chap| chap.id == chapter_id }
-        unless target_chapter
-          raise NotImplementedError, "Cross-chapter table reference failed: chapter '#{chapter_id}' not found"
-        end
-
-        # Ensure the target chapter has table index
-        unless target_chapter.table_index
-          raise NotImplementedError, "Cross-chapter table reference failed: no table index for chapter '#{chapter_id}'"
-        end
-
-        begin
-          table_item = target_chapter.table_index.number(table_id)
-          table_label = "table:#{chapter_id}:#{table_id}"
-          if target_chapter.number
-            "\\reviewtableref{#{target_chapter.number}.#{table_item}}{#{table_label}}"
-          else
-            "\\reviewtableref{#{table_item}}{#{table_label}}"
-          end
-        rescue StandardError => e
-          raise NotImplementedError, "Cross-chapter table reference failed for #{chapter_id}|#{table_id}: #{e.message}"
-        end
-      end
-
-      # Render same-chapter table reference
-      def render_same_chapter_table_reference(node)
-        table_ref = node.args.first.to_s
-        if @chapter && @chapter.table_index
-          begin
-            table_item = @chapter.table_index.number(table_ref)
-            table_label = "table:#{@chapter.id}:#{table_ref}"
-            if @chapter.number
-              "\\reviewtableref{#{@chapter.number}.#{table_item}}{#{table_label}}"
-            else
-              "\\reviewtableref{#{table_item}}{#{table_label}}"
-            end
-          rescue StandardError => e
-            raise NotImplementedError, "Table reference failed for #{table_ref}: #{e.message}"
-          end
-        else
-          "\\ref{#{escape(table_ref)}}"
-        end
-      end
-
-      # Render cross-chapter image reference
-      def render_cross_chapter_image_reference(node)
-        chapter_id, image_id = node.args
-
-        # Find the target chapter
-        target_chapter = @book&.contents&.detect { |chap| chap.id == chapter_id }
-        unless target_chapter
-          raise NotImplementedError, "Cross-chapter image reference failed: chapter '#{chapter_id}' not found"
-        end
-
-        # Ensure the target chapter has image index
-        unless target_chapter.image_index
-          raise NotImplementedError, "Cross-chapter image reference failed: no image index for chapter '#{chapter_id}'"
-        end
-
-        begin
-          image_item = target_chapter.image_index.number(image_id)
-          image_label = "image:#{chapter_id}:#{image_id}"
-          if target_chapter.number
-            "\\reviewimageref{#{target_chapter.number}.#{image_item}}{#{image_label}}"
-          else
-            "\\reviewimageref{#{image_item}}{#{image_label}}"
-          end
-        rescue StandardError => e
-          raise NotImplementedError, "Cross-chapter image reference failed for #{chapter_id}|#{image_id}: #{e.message}"
-        end
-      end
-
-      # Render same-chapter image reference
-      def render_same_chapter_image_reference(node)
-        image_ref = node.args.first.to_s
-        if @chapter && @chapter.image_index
-          begin
-            image_item = @chapter.image_index.number(image_ref)
-            image_label = "image:#{@chapter.id}:#{image_ref}"
-            if @chapter.number
-              "\\reviewimageref{#{@chapter.number}.#{image_item}}{#{image_label}}"
-            else
-              "\\reviewimageref{#{image_item}}{#{image_label}}"
-            end
-          rescue StandardError => e
-            raise NotImplementedError, "Image reference failed for #{image_ref}: #{e.message}"
-          end
-        else
-          # Don't escape underscores in ref labels
-          "\\ref{#{image_ref}}"
-        end
-      end
-
-      # Render section reference inline elements (hd, sec, secref, sectitle)
 
       # Inline element renderer for LaTeX output
       class InlineElementRenderer
@@ -1667,6 +1428,7 @@ module ReVIEW
           end
         end
 
+        # Render section reference inline elements (hd, sec, secref, sectitle)
         def render_section_reference_element(type, node, content)
           return content unless node.args && node.args.first
 
@@ -1904,6 +1666,25 @@ module ReVIEW
           end
         end
 
+        # Render same-chapter list reference
+        def render_same_chapter_list_reference(node)
+          list_ref = node.args.first.to_s
+          if @chapter && @chapter.list_index
+            begin
+              list_item = @chapter.list_index.number(list_ref)
+              if @chapter.number
+                "\\reviewlistref{#{@chapter.number}.#{list_item}}"
+              else
+                "\\reviewlistref{#{list_item}}"
+              end
+            rescue StandardError => e
+              raise NotImplementedError, "List reference failed for #{list_ref}: #{e.message}"
+            end
+          else
+            "\\ref{#{escape(list_ref)}}"
+          end
+        end
+
         # Render bibliography reference
         def render_bibliography_reference(node, content)
           return content unless node.args && node.args.first
@@ -1913,17 +1694,219 @@ module ReVIEW
           "\\cite{#{bib_key}}"
         end
 
-        # Delegate accessor methods to renderer
-        def method_missing(method_name, ...)
-          if @renderer.respond_to?(method_name, true)
-            @renderer.send(method_name, ...)
+        # Render same-chapter table reference
+        def render_same_chapter_table_reference(node)
+          table_ref = node.args.first.to_s
+          if @chapter && @chapter.table_index
+            begin
+              table_item = @chapter.table_index.number(table_ref)
+              table_label = "table:#{@chapter.id}:#{table_ref}"
+              if @chapter.number
+                "\\reviewtableref{#{@chapter.number}.#{table_item}}{#{table_label}}"
+              else
+                "\\reviewtableref{#{table_item}}{#{table_label}}"
+              end
+            rescue StandardError => e
+              raise NotImplementedError, "Table reference failed for #{table_ref}: #{e.message}"
+            end
           else
-            super
+            "\\ref{#{escape(table_ref)}}"
           end
         end
 
-        def respond_to_missing?(method_name, include_private = false)
-          @renderer.respond_to?(method_name, include_private) || super
+        # Render same-chapter image reference
+        def render_same_chapter_image_reference(node)
+          image_ref = node.args.first.to_s
+          if @chapter && @chapter.image_index
+            begin
+              image_item = @chapter.image_index.number(image_ref)
+              image_label = "image:#{@chapter.id}:#{image_ref}"
+              if @chapter.number
+                "\\reviewimageref{#{@chapter.number}.#{image_item}}{#{image_label}}"
+              else
+                "\\reviewimageref{#{image_item}}{#{image_label}}"
+              end
+            rescue StandardError => e
+              raise NotImplementedError, "Image reference failed for #{image_ref}: #{e.message}"
+            end
+          else
+            # Don't escape underscores in ref labels
+            "\\ref{#{image_ref}}"
+          end
+        end
+
+        # Render cross-chapter list reference
+        def render_cross_chapter_list_reference(node)
+          chapter_id, list_id = node.args
+
+          # Find the target chapter
+          target_chapter = @book&.contents&.detect { |chap| chap.id == chapter_id }
+          unless target_chapter
+            raise NotImplementedError, "Cross-chapter list reference failed: chapter '#{chapter_id}' not found"
+          end
+
+          # Ensure the target chapter has list index
+          unless target_chapter.list_index
+            raise NotImplementedError, "Cross-chapter list reference failed: no list index for chapter '#{chapter_id}'"
+          end
+
+          begin
+            list_item = target_chapter.list_index.number(list_id)
+            if target_chapter.number
+              "\\reviewlistref{#{target_chapter.number}.#{list_item}}"
+            else
+              "\\reviewlistref{#{list_item}}"
+            end
+          rescue StandardError => e
+            raise NotImplementedError, "Cross-chapter list reference failed for #{chapter_id}|#{list_id}: #{e.message}"
+          end
+        end
+
+        # Render cross-chapter table reference
+        def render_cross_chapter_table_reference(node)
+          chapter_id, table_id = node.args
+
+          # Find the target chapter
+          target_chapter = @book&.contents&.detect { |chap| chap.id == chapter_id }
+          unless target_chapter
+            raise NotImplementedError, "Cross-chapter table reference failed: chapter '#{chapter_id}' not found"
+          end
+
+          # Ensure the target chapter has table index
+          unless target_chapter.table_index
+            raise NotImplementedError, "Cross-chapter table reference failed: no table index for chapter '#{chapter_id}'"
+          end
+
+          begin
+            table_item = target_chapter.table_index.number(table_id)
+            table_label = "table:#{chapter_id}:#{table_id}"
+            if target_chapter.number
+              "\\reviewtableref{#{target_chapter.number}.#{table_item}}{#{table_label}}"
+            else
+              "\\reviewtableref{#{table_item}}{#{table_label}}"
+            end
+          rescue StandardError => e
+            raise NotImplementedError, "Cross-chapter table reference failed for #{chapter_id}|#{table_id}: #{e.message}"
+          end
+        end
+
+        # Render cross-chapter image reference
+        def render_cross_chapter_image_reference(node)
+          chapter_id, image_id = node.args
+
+          # Find the target chapter
+          target_chapter = @book&.contents&.detect { |chap| chap.id == chapter_id }
+          unless target_chapter
+            raise NotImplementedError, "Cross-chapter image reference failed: chapter '#{chapter_id}' not found"
+          end
+
+          # Ensure the target chapter has image index
+          unless target_chapter.image_index
+            raise NotImplementedError, "Cross-chapter image reference failed: no image index for chapter '#{chapter_id}'"
+          end
+
+          begin
+            image_item = target_chapter.image_index.number(image_id)
+            image_label = "image:#{chapter_id}:#{image_id}"
+            if target_chapter.number
+              "\\reviewimageref{#{target_chapter.number}.#{image_item}}{#{image_label}}"
+            else
+              "\\reviewimageref{#{image_item}}{#{image_label}}"
+            end
+          rescue StandardError => e
+            raise NotImplementedError, "Cross-chapter image reference failed for #{chapter_id}|#{image_id}: #{e.message}"
+          end
+        end
+
+        # Render chapter number reference
+        def render_chapter_reference(node, content)
+          return content unless node.args && node.args.first
+
+          chapter_id = node.args.first
+          if @book && @book.chapter_index
+            begin
+              chapter_number = @book.chapter_index.number(chapter_id)
+              "\\reviewchapref{#{chapter_number}}{chap:#{chapter_id}}"
+            rescue StandardError => e
+              raise NotImplementedError, "Chapter reference failed for #{chapter_id}: #{e.message}"
+            end
+          else
+            "\\reviewchapref{#{escape(chapter_id)}}{chap:#{escape(chapter_id)}}"
+          end
+        end
+
+        # Render chapter title reference
+        def render_chapter_title_reference(node, content)
+          return content unless node.args && node.args.first
+
+          chapter_id = node.args.first
+          if @book && @book.chapter_index
+            begin
+              title = @book.chapter_index.display_string(chapter_id)
+              "\\reviewchapref{#{escape(title)}}{chap:#{chapter_id}}"
+            rescue StandardError => e
+              raise NotImplementedError, "Chapter title reference failed for #{chapter_id}: #{e.message}"
+            end
+          else
+            "\\reviewchapref{#{escape(chapter_id)}}{chap:#{escape(chapter_id)}}"
+          end
+        end
+
+        # Handle heading references with cross-chapter support
+        def handle_heading_reference(heading_ref, fallback_format = '\\ref{%s}')
+          if heading_ref.include?('|')
+            # Cross-chapter reference format: chapter|heading or chapter|section|subsection
+            parts = heading_ref.split('|')
+            chapter_id = parts[0]
+            heading_parts = parts[1..-1]
+
+            # Try to find the target chapter and its headline
+            target_chapter = @book.chapters.find { |ch| ch.id == chapter_id } if @book
+
+            if target_chapter && target_chapter.headline_index
+              # Build the hierarchical heading ID like IndexBuilder does
+              heading_id = heading_parts.join('|')
+
+              begin
+                headline_item = target_chapter.headline_index[heading_id]
+                if headline_item
+                  # Get the section number from the target chapter
+                  section_number = target_chapter.headline_index.number(heading_id)
+                  section_label = "sec:#{chapter_id}-#{section_number.tr('.', '-')}"
+                  yield(section_number, section_label, headline_item.caption || heading_id)
+                else
+                  # Fallback when heading not found in target chapter
+                  fallback_format % "#{chapter_id}-#{heading_parts.join('-')}"
+                end
+              rescue StandardError
+                # Fallback on any error
+                fallback_format % "#{chapter_id}-#{heading_parts.join('-')}"
+              end
+            else
+              # Fallback when target chapter not found or no headline index
+              fallback_format % "#{chapter_id}-#{heading_parts.join('-')}"
+            end
+          elsif @chapter && @chapter.headline_index
+            # Simple heading reference within current chapter
+            begin
+              headline_item = @chapter.headline_index[heading_ref]
+              if headline_item
+                # Generate section number and label like LATEXBuilder
+                section_number = @chapter.headline_index.number(heading_ref)
+                section_label = "sec:#{section_number.tr('.', '-')}"
+                yield(section_number, section_label, headline_item.caption || heading_ref)
+              else
+                # Fallback if headline not found in index
+                fallback_format % escape(heading_ref)
+              end
+            rescue StandardError
+              # Fallback on any error
+              fallback_format % escape(heading_ref)
+            end
+          else
+            # Fallback when no headline index available
+            fallback_format % escape(heading_ref)
+          end
         end
       end
     end
