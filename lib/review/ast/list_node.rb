@@ -47,12 +47,13 @@ module ReVIEW
     end
 
     class ListItemNode < Node
-      attr_accessor :level, :number, :term_children
+      attr_accessor :level, :number, :term_children, :item_type
 
-      def initialize(location: nil, content: nil, level: 1, number: nil, **kwargs)
+      def initialize(location: nil, content: nil, level: 1, number: nil, item_type: nil, **kwargs)
         super(location: location, content: content, **kwargs)
         @level = level
         @number = number
+        @item_type = item_type # :dt, :dd, or nil for regular list items
         @term_children = [] # For definition lists: stores processed term content separately
       end
 
@@ -61,8 +62,18 @@ module ReVIEW
           level: level
         )
         result[:number] = number if number
+        result[:item_type] = item_type if item_type
         result[:term_children] = term_children.map(&:to_h) if term_children.any?
         result
+      end
+
+      # Convenience methods for type checking
+      def definition_term?
+        item_type == :dt
+      end
+
+      def definition_desc?
+        item_type == :dd
       end
 
       protected
@@ -72,6 +83,7 @@ module ReVIEW
         hash[:term_children] = term_children.map { |child| child.serialize_to_hash(options) } if term_children.any?
         hash[:level] = level
         hash[:number] = number if number
+        hash[:item_type] = item_type if item_type
         hash
       end
     end

@@ -300,10 +300,11 @@ module ReVIEW
         node
       end
 
-      # Build simple list
-      def build_simple_list_ast(context)
+      # Build list with support for both simple lines and //li blocks
+      def build_list_ast(context)
         list_node = context.create_node(AST::ListNode, list_type: context.name)
 
+        # Process text content as simple list items
         if context.content?
           context.lines.each do |line|
             item_node = context.create_node(AST::ListItemNode,
@@ -313,11 +314,84 @@ module ReVIEW
           end
         end
 
-        # Process nested blocks
+        # Process nested blocks (including //li blocks)
         context.process_nested_blocks(list_node)
 
         @ast_compiler.add_child_to_current_node(list_node)
         list_node
+      end
+
+      # Build individual list item with nested content support
+      def build_list_item_ast(context)
+        # Validate that //li is inside a list block
+        parent_node = @ast_compiler.current_ast_node
+        unless parent_node.is_a?(AST::ListNode)
+          raise CompileError, "//li must be inside //ul, //ol, or //dl block#{context.format_location_info}"
+        end
+
+        # Create list item node - simple, no complex title handling
+        item_node = context.create_node(AST::ListItemNode, level: 1)
+
+        # Process content using the same structured content processing as other blocks
+        # This handles paragraphs, nested lists, and block elements naturally
+        if context.content?
+          @ast_compiler.process_structured_content(item_node, context.lines)
+        end
+
+        # Process nested blocks within this item
+        context.process_nested_blocks(item_node)
+
+        # Add to parent (should be a list node)
+        @ast_compiler.add_child_to_current_node(item_node)
+        item_node
+      end
+
+      # Build definition term (//dt) for definition lists
+      def build_definition_term_ast(context)
+        # Validate that //dt is inside a //dl block
+        parent_node = @ast_compiler.current_ast_node
+        unless parent_node.is_a?(AST::ListNode) && parent_node.list_type == :dl
+          raise CompileError, "//dt must be inside //dl block#{context.format_location_info}"
+        end
+
+        # Create list item node with dt type
+        item_node = context.create_node(AST::ListItemNode, level: 1, item_type: :dt)
+
+        # Process content
+        if context.content?
+          @ast_compiler.process_structured_content(item_node, context.lines)
+        end
+
+        # Process nested blocks
+        context.process_nested_blocks(item_node)
+
+        # Add to parent (should be a dl list node)
+        @ast_compiler.add_child_to_current_node(item_node)
+        item_node
+      end
+
+      # Build definition description (//dd) for definition lists
+      def build_definition_desc_ast(context)
+        # Validate that //dd is inside a //dl block
+        parent_node = @ast_compiler.current_ast_node
+        unless parent_node.is_a?(AST::ListNode) && parent_node.list_type == :dl
+          raise CompileError, "//dd must be inside //dl block#{context.format_location_info}"
+        end
+
+        # Create list item node with dd type
+        item_node = context.create_node(AST::ListItemNode, level: 1, item_type: :dd)
+
+        # Process content
+        if context.content?
+          @ast_compiler.process_structured_content(item_node, context.lines)
+        end
+
+        # Process nested blocks
+        context.process_nested_blocks(item_node)
+
+        # Add to parent (should be a dl list node)
+        @ast_compiler.add_child_to_current_node(item_node)
+        item_node
       end
 
       # Build minicolumn (with nesting support)
@@ -700,9 +774,16 @@ module ReVIEW
         imgtable: :build_table_ast,
 
         # Simple list blocks (//ul, //ol, //dl commands)
-        ul: :build_simple_list_ast,
-        ol: :build_simple_list_ast,
-        dl: :build_simple_list_ast,
+        ul: :build_list_ast,
+        ol: :build_list_ast,
+        dl: :build_list_ast,
+
+        # List item blocks (//li command for use within lists)
+        li: :build_list_item_ast,
+
+        # Definition list blocks (//dt and //dd for use within //dl)
+        dt: :build_definition_term_ast,
+        dd: :build_definition_desc_ast,
 
         # Minicolumn blocks
         note: :build_minicolumn_ast,
