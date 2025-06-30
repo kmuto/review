@@ -12,6 +12,8 @@ require 'review/loggable'
 require 'review/lineinput'
 require 'review/ast/inline_processor'
 require 'review/ast/block_processor'
+require 'review/ast/block_data'
+require 'review/ast/block_context'
 require 'review/snapshot_location'
 require 'review/ast/list_processor'
 require 'review/ast/footnote_node'
@@ -53,6 +55,9 @@ module ReVIEW
         @inline_processor = nil
         @block_processor = nil
         @list_processor = nil
+
+        # Block-scoped compilation support
+        @block_context_stack = []
 
         @logger = ReVIEW.logger
 
@@ -250,92 +255,9 @@ module ReVIEW
       end
 
       def compile_block_command_to_ast(f)
-        name, args, lines = read_command(f)
-
-        case name
-        when :list, :listnum, :emlist, :emlistnum, :cmd, :source
-          block_processor.compile_code_block_to_ast(name, args, lines)
-        when :image, :indepimage, :numberlessimage
-          block_processor.compile_image_to_ast(name, args)
-        when :table, :emtable, :imgtable
-          block_processor.compile_table_to_ast(name, args, lines)
-        when :ul, :ol, :dl
-          block_processor.compile_list_to_ast(name, lines)
-        when :note, :memo, :tip, :info, :warning, :important, :caution, :notice
-          block_processor.compile_minicolumn_to_ast(name, args, lines)
-        when :footnote, :endnote
-          block_processor.compile_footnote_to_ast(name, args, lines)
-        when :embed
-          block_processor.compile_embed_to_ast(args, lines)
-        when :read, :quote, :blockquote, :lead, :centering, :flushright, :address, :talk
-          block_processor.compile_block_to_ast(lines, name)
-        when :doorquote, :bibpaper, :graph, :box
-          block_processor.build_block_command_ast(name, args, lines)
-        when :raw
-          # Use block processor to handle raw blocks with proper parsing
-          block_processor.build_raw_ast(args, lines)
-        when :comment
-          # Comment blocks are usually ignored, but we can preserve them in AST
-          node = AST::BlockNode.new(
-            location: location,
-            block_type: :comment
-          )
-
-          lines.each do |line|
-            text_node = AST::TextNode.new(location: location, content: line)
-            node.add_child(text_node)
-          end
-          @current_ast_node.add_child(node)
-        when :olnum
-          # Simple olnum block node - will be processed by OlnumProcessor
-          node = AST::BlockNode.new(
-            location: location,
-            block_type: :olnum,
-            args: args
-          )
-          # Store lines if any
-          lines.each do |line|
-            text_node = AST::TextNode.new(location: location, content: line)
-            node.add_child(text_node)
-          end
-          @current_ast_node.add_child(node)
-        when :blankline, :noindent, :pagebreak, :firstlinenum, :tsize, :label, :printendnotes, :hr, :bpo, :parasep
-          # Control commands without content or with special handling
-          node = AST::BlockNode.new(
-            location: location,
-            block_type: name,
-            args: args
-          )
-          # Store lines if any
-          lines.each do |line|
-            text_node = AST::TextNode.new(location: location, content: line)
-            node.add_child(text_node)
-          end
-          @current_ast_node.add_child(node)
-        when :beginchild, :endchild
-          # Child nesting control
-          node = AST::BlockNode.new(
-            location: location,
-            block_type: name
-          )
-          @current_ast_node.add_child(node)
-        when :texequation
-          # Math equations - use dedicated TexEquationNode
-          require 'review/ast/tex_equation_node'
-          node = AST::TexEquationNode.new(
-            location: location,
-            id: args && args[0],
-            caption: args && args[1]
-          )
-          # Add LaTeX content lines
-          lines.each do |line|
-            node.add_content_line(line)
-          end
-          @current_ast_node.add_child(node)
-        else
-          # Unknown block command - raise error with location info
-          raise CompileError, "Unknown block command: //#{name}#{format_location_info(location)}"
-        end
+        # IO読み込みはCompilerが担当、処理はBlockProcessorに委譲
+        block_data = read_block_command(f)
+        block_processor.process_block_command(block_data)
       end
 
       def ast_result
@@ -355,50 +277,6 @@ module ReVIEW
       # Compile definition list to AST (delegates to list processor)
       def compile_dl_to_ast(f)
         list_processor.process_definition_list(f)
-      end
-
-      # Build headline AST node
-      def build_headline_ast(level, label, caption)
-        processed_caption = AST::CaptionNode.parse(
-          caption,
-          location: location,
-          inline_processor: inline_processor
-        )
-
-        node = AST::HeadlineNode.new(location: location, level: level, label: label, caption: processed_caption)
-        @current_ast_node.add_child(node)
-      end
-
-      # Build paragraph AST node
-      def build_paragraph_ast(lines)
-        node = AST::ParagraphNode.new(location: location)
-
-        # Parse inline elements in each line and create child nodes
-        lines.each do |line|
-          inline_processor.parse_inline_elements(line, node)
-        end
-
-        @current_ast_node.add_child(node)
-      end
-
-      # Build unordered list AST - now using dedicated ListASTProcessor
-      def build_ulist_ast(f)
-        list_processor.process_unordered_list(f)
-      end
-
-      # Build ordered list AST - now using dedicated ListASTProcessor
-      def build_olist_ast(f)
-        list_processor.process_ordered_list(f)
-      end
-
-      # Build definition list AST - now using dedicated ListASTProcessor
-      def build_dlist_ast(f)
-        list_processor.process_definition_list(f)
-      end
-
-      # Delegate to block processor for block command AST building
-      def build_block_command_ast(command_name, args, lines)
-        block_processor.build_block_command_ast(command_name, args, lines)
       end
 
       # Helper methods that need to be accessible from processors
@@ -454,6 +332,128 @@ module ReVIEW
 
       # Expose performance tracker for external access
       attr_reader :performance_tracker
+
+      # Block-Scoped Compilation Support
+
+      # Execute block processing in dedicated context
+      # Maintain block start location information and perform AST construction with consistent location information
+      #
+      # @param block_data [BlockData] Block data to process
+      # @yield [BlockContext] Block processing context
+      # @return [Object] Processing result within block
+      def with_block_context(block_data)
+        context = BlockContext.new(block_data: block_data, compiler: self)
+        @block_context_stack.push(context)
+
+        begin
+          yield(context)
+        ensure
+          @block_context_stack.pop
+        end
+      end
+
+      # Get current block context
+      # Returns the innermost context in nested block processing
+      #
+      # @return [BlockContext, nil] Current block context
+      def current_block_context
+        @block_context_stack.last
+      end
+
+      # Get current block start position
+      # Returns start position within block context, current position outside
+      #
+      # @return [Location] Location information
+      def current_block_location
+        current_block_context&.start_location || @current_location
+      end
+
+      # Get location information for inline processing
+      # Always returns block start position within blocks
+      #
+      # @return [Location] Location information for inline processing
+      def inline_processing_location
+        current_block_location
+      end
+
+      # Determine if within block context
+      #
+      # @return [Boolean] true if within block context
+      def in_block_context?
+        !@block_context_stack.empty?
+      end
+
+      # Temporary override of location information (Bang Methods)
+
+      # Temporarily save current location information and set to new location
+      # Used when temporarily changing location information during block or inline processing
+      #
+      # @param new_location [Location] New location information to set
+      # @return [Location] Previous location information (for restoration)
+      def override_location!(new_location)
+        old_location = @current_location
+        @current_location = new_location
+        old_location
+      end
+
+      # Restore location information to specified value
+      # Used when restoring location information saved by override_location!
+      #
+      # @param location [Location] Location information to restore
+      def restore_location!(location)
+        @current_location = location
+      end
+
+      # Temporarily override location information and execute block
+      # Automatically restore original location information after block execution
+      #
+      # @param new_location [Location] Location information to set temporarily
+      # @yield New location information is effective during block execution
+      # @return [Object] Block execution result
+      def with_temporary_location!(new_location)
+        old_location = override_location!(new_location)
+        begin
+          yield
+        ensure
+          restore_location!(old_location)
+        end
+      end
+
+      # Temporary override of AST node context (Bang Methods)
+
+      # Temporarily save current AST node and set to new node
+      # Used when temporarily changing current AST node in nested block processing
+      #
+      # @param new_node [AST::Node] New AST node to set
+      # @return [AST::Node] Previous AST node (for restoration)
+      def override_current_ast_node!(new_node)
+        old_node = @current_ast_node
+        @current_ast_node = new_node
+        old_node
+      end
+
+      # Restore AST node to specified value
+      # Used when restoring AST node saved by override_current_ast_node!
+      #
+      # @param node [AST::Node] AST node to restore
+      def restore_current_ast_node!(node)
+        @current_ast_node = node
+      end
+
+      # Temporarily override AST node and execute block
+      # Automatically restore original AST node after block execution
+      #
+      # @param new_node [AST::Node] AST node to set temporarily
+      # @yield New AST node is effective during block execution
+      # @return [Object] Block execution result
+      def with_temporary_ast_node!(new_node)
+        old_node = override_current_ast_node!(new_node)
+        begin
+          yield
+        ensure
+          restore_current_ast_node!(old_node)
+        end
+      end
 
       # Universal block content processing method for HTML Builder compatibility
       # This method processes structured content within block elements using the same
@@ -517,29 +517,112 @@ module ReVIEW
         node
       end
 
-      private
+      # IO reading dedicated method - nesting support and error handling
+      def read_block_command(f)
+        # Save location information at block start
+        block_start_location = @current_location
 
-      def read_command(f)
-        # Simplified implementation with proper arg parsing
         line = f.gets
-        name = line.slice(/[a-z]+/).to_sym
+        unless line
+          raise CompileError, "Unexpected end of file while reading block command#{format_location_info}"
+        end
+
+        # Special handling for termination tags (processed in normal compilation flow)
+        if line.start_with?('//}')
+          raise CompileError, "Unexpected block terminator '//}' without opening block#{format_location_info}"
+        end
+
+        # Extract command name
+        command_match = line.match(%r{\A//([a-z]+)})
+        unless command_match
+          raise CompileError, "Invalid block command syntax: '#{line.strip}'#{format_location_info}"
+        end
+
+        name = command_match[1].to_sym
         args = parse_args(line.sub(%r{\A//[a-z]+}, '').rstrip.chomp('{'), name)
-        lines = block_open?(line) ? read_block(f) : []
-        [name, args, lines]
+
+        # Read block content (with nesting support)
+        if block_open?(line)
+          lines, nested_blocks = read_block_with_nesting(f, name, block_start_location)
+        else
+          lines = []
+          nested_blocks = []
+        end
+
+        BlockData.new(
+          name: name,
+          args: args,
+          lines: lines,
+          nested_blocks: nested_blocks,
+          location: block_start_location
+        )
+      rescue StandardError => e
+        # Re-raise block reading errors with appropriate location information
+        if e.is_a?(CompileError)
+          raise e
+        else
+          raise CompileError, "Error reading block command: #{e.message}#{format_location_info}"
+        end
+      end
+
+      # Reading with nested block support - enhanced error handling
+      def read_block_with_nesting(f, parent_command, block_start_location)
+        lines = []
+        nested_blocks = []
+        block_depth = 1 # Starting block count
+        start_location = block_start_location
+
+        while f.next?
+          line = f.gets
+          unless line
+            raise CompileError, "Unexpected end of file in block //#{parent_command} started#{format_location_info(start_location)}"
+          end
+
+          # Update location information
+          @current_location = SnapshotLocation.new(@chapter.basename, f.lineno)
+
+          # Detect termination tag
+          if line.start_with?('//}')
+            block_depth -= 1
+            if block_depth == 0
+              break # Reached corresponding termination tag
+            else
+              # Nested termination tag - treat as content
+              lines << line.chomp
+            end
+          # Detect nested block commands
+          elsif line.match?(%r{\A//[a-z]+})
+            # Recursively read nested blocks
+            f.send(:ungets, line) # Return line and let read_block_command process it (private method call)
+            begin
+              nested_block_data = read_block_command(f)
+              nested_blocks << nested_block_data
+            rescue CompileError => e
+              # Add parent context information to nested block errors
+              raise CompileError, "#{e.message} (in nested block within //#{parent_command})"
+            end
+          # Skip preprocessor directives
+          elsif /\A\#@/.match?(line)
+            next
+          else
+            # Regular content line
+            lines << line.chomp
+          end
+        end
+
+        # Check if block is properly closed
+        if block_depth > 0
+          raise CompileError, "Unclosed block //#{parent_command} started#{format_location_info(start_location)}"
+        end
+
+        [lines, nested_blocks]
       end
 
       def block_open?(line)
-        line.rstrip[-1, 1] == '{'
+        line.rstrip.end_with?('{')
       end
 
-      def read_block(f)
-        buf = []
-        f.until_match(%r{\A//\}}) do |line|
-          buf.push(line.chomp) unless /\A\#@/.match?(line)
-        end
-        f.gets if f.peek.to_s.start_with?('//}') # discard terminator
-        buf
-      end
+      private
 
       def parse_args(str, _name = nil)
         return [] if str.empty?

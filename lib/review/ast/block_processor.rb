@@ -7,6 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/ast'
+require 'review/ast/block_data'
 require 'review/lineinput'
 require 'stringio'
 
@@ -25,6 +26,44 @@ module ReVIEW
     class BlockProcessor
       def initialize(ast_compiler)
         @ast_compiler = ast_compiler
+        # Copy the static table to allow runtime modifications
+        @dynamic_command_table = BLOCK_COMMAND_TABLE.dup
+      end
+
+      # Register a new block command handler
+      # @param command_name [Symbol] The block command name (e.g., :custom_block)
+      # @param handler_method [Symbol] The method name to handle this command
+      # @example
+      #   register_block_handler(:custom_block, :build_custom_block_ast)
+      def register_block_handler(command_name, handler_method)
+        @dynamic_command_table[command_name] = handler_method
+      end
+
+      # Unregister a block command handler
+      # @param command_name [Symbol] The block command name to remove
+      def unregister_block_handler(command_name)
+        @dynamic_command_table.delete(command_name)
+      end
+
+      # Get all registered block commands
+      # @return [Array<Symbol>] List of all registered command names
+      def registered_commands
+        @dynamic_command_table.keys
+      end
+
+      # Unified entry point - table-driven block processing
+      # Receives BlockData and calls corresponding method based on dynamic command table
+      def process_block_command(block_data)
+        handler_method = @dynamic_command_table[block_data.name]
+
+        unless handler_method
+          raise CompileError, "Unknown block command: //#{block_data.name}#{format_location_info(block_data.location)}"
+        end
+
+        # Process block using Block-Scoped Compilation
+        @ast_compiler.with_block_context(block_data) do |context|
+          send(handler_method, context)
+        end
       end
 
       def compile_code_block_to_ast(type, args, lines)
@@ -72,20 +111,20 @@ module ReVIEW
           if separator_index
             header_lines = lines[0...separator_index]
             header_lines.each do |line|
-              row_node = create_table_row_from_line(line, is_header: true)
+              row_node = create_table_row_from_line(line, is_header: true, block_location: @ast_compiler.location)
               node.add_header_row(row_node)
             end
 
             # Process body rows
             body_lines = lines[(separator_index + 1)..-1] || []
             body_lines.each do |line|
-              row_node = create_table_row_from_line(line, first_cell_header: false)
+              row_node = create_table_row_from_line(line, first_cell_header: false, block_location: @ast_compiler.location)
               node.add_body_row(row_node)
             end
           else
             # No separator, all lines are body rows with first cell as header
             lines.each do |line|
-              row_node = create_table_row_from_line(line, first_cell_header: true)
+              row_node = create_table_row_from_line(line, first_cell_header: true, block_location: @ast_compiler.location)
               node.add_body_row(row_node)
             end
           end
@@ -156,307 +195,321 @@ module ReVIEW
         @ast_compiler.add_child_to_current_node(node)
       end
 
-      # Build block command AST node (e.g., embed, list, table, etc.)
-      def build_block_command_ast(command_name, args, lines)
-        case command_name
-        when :embed
-          build_embed_ast(args, lines)
-        when :list, :listnum
-          build_list_ast(command_name, args, lines)
-        when :emlist, :emlistnum
-          build_emlist_ast(command_name, args, lines)
-        when :source
-          build_source_ast(args, lines)
-        when :cmd
-          build_cmd_ast(args, lines)
-        when :table, :emtable, :imgtable
-          build_table_ast(command_name, args, lines)
-        when :image, :indepimage, :numberlessimage
-          build_image_ast(command_name, args, lines)
-        when :quote, :blockquote
-          build_quote_ast(command_name, args, lines)
-        when :note, :memo, :tip, :info, :warning, :important, :caution, :notice
-          build_minicolumn_ast(command_name, args, lines)
-        when :footnote, :endnote
-          build_footnote_ast(command_name, args, lines)
-        when :raw
-          build_raw_ast(args, lines)
-        when :doorquote
-          build_doorquote_ast(args, lines)
-        when :bibpaper
-          build_bibpaper_ast(args, lines)
-        when :talk
-          build_talk_ast(args, lines)
-        when :graph
-          build_graph_ast(args, lines)
-        when :address, :flushright, :centering
-          build_text_block_ast(command_name, args, lines)
-        when :bpo, :hr, :parasep
-          build_line_command_ast(command_name, args, lines)
-        when :box
-          build_box_ast(args, lines)
-        else
-          # Unknown block command - raise error with location info
-          raise CompileError, "Unknown block command: //#{command_name}#{format_location_info}"
-        end
-      end
-
-      # Build embed AST node
-      def build_embed_ast(args, lines)
-        node = AST::EmbedNode.new(
-          location: @ast_compiler.location,
-          embed_type: :block,
-          lines: lines || [],
-          arg: args&.any? ? args.first : nil
-        )
-        @ast_compiler.add_child_to_current_node(node)
-      end
-
-      # Build list/listnum AST node
-      def build_list_ast(command_name, args, lines)
-        create_code_block_node(command_name, args, lines)
-      end
-
-      # Build emlist/emlistnum AST node
-      def build_emlist_ast(command_name, args, lines)
-        create_code_block_node(command_name, args, lines)
-      end
-
-      # Build source AST node
-      def build_source_ast(args, lines)
-        create_code_block_node(:source, args, lines)
-      end
-
-      # Build cmd AST node
-      def build_cmd_ast(args, lines)
-        create_code_block_node(:cmd, args, lines)
-      end
-
-      # Build table AST node
-      def build_table_ast(_command_name, args, lines)
-        # Create table node
-        node = create_node(AST::TableNode,
-                           id: safe_arg(args, 0),
-                           caption: process_caption(args, 1),
-                           table_type: :table)
-
-        # Parse table content and add rows
-        if lines&.any?
-          separator_index = lines.find_index { |line| line.match?(/\A[=-]{12}/) || line.match?(/\A[={}-]{12}/) }
-
-          if separator_index
-            # Process header rows
-            header_lines = lines[0...separator_index]
-            header_lines.each do |line|
-              row_node = create_table_row_from_line(line, is_header: true)
-              node.add_header_row(row_node)
-            end
-
-            # Process body rows
-            body_lines = lines[(separator_index + 1)..-1] || []
-            body_lines.each do |line|
-              row_node = create_table_row_from_line(line, first_cell_header: false)
-              node.add_body_row(row_node)
-            end
-          else
-            # No separator, all lines are body rows with first cell as header
-            lines.each do |line|
-              row_node = create_table_row_from_line(line, first_cell_header: true)
-              node.add_body_row(row_node)
-            end
-          end
-        end
-
-        add_node_to_ast(node)
-      end
-
-      # Build image AST node
-      def build_image_ast(_command_name, args, _lines)
-        create_and_add_node(AST::ImageNode,
-                            id: safe_arg(args, 0),
-                            caption: process_caption(args, 1),
-                            metric: safe_arg(args, 2))
-      end
-
-      # Build quote AST node
-      def build_quote_ast(_command_name, _args, lines)
-        node = create_node(AST::ParagraphNode)
-
-        # Parse inline elements in quote content
-        (lines || []).each do |line|
-          @ast_compiler.inline_processor.parse_inline_elements(line, node)
-        end
-
-        add_node_to_ast(node)
-      end
-
-      # Build minicolumn AST node (note, memo, tip, etc.)
-      def build_minicolumn_ast(command_name, args, lines)
-        # Use the same logic as compile_minicolumn_to_ast for consistency
-        compile_minicolumn_to_ast(command_name.to_sym, args, lines)
-      end
-
-      # Build footnote AST node
-      def build_footnote_ast(command_name, args, _lines)
-        # Extract footnote ID and content from args
-        footnote_id = safe_arg(args, 0)
-        footnote_content = safe_arg(args, 1) || ''
-
-        # Create FootnoteNode with proper content
-        node = AST::FootnoteNode.new(
-          location: @ast_compiler.location,
-          id: footnote_id,
-          content: footnote_content,
-          footnote_type: command_name
-        )
-
-        # Parse inline elements in footnote content if present
-        if footnote_content && !footnote_content.empty?
-          @ast_compiler.inline_processor.parse_inline_elements(footnote_content, node)
-        end
-
-        add_node_to_ast(node)
-      end
-
       # Compile footnote to AST (entry point from compiler)
       def compile_footnote_to_ast(command_name, args, lines)
         build_footnote_ast(command_name, args, lines)
       end
 
-      # Build raw AST node
-      def build_raw_ast(args, lines)
-        raw_content = safe_arg(args, 0) || ''
-        target_builders, content = parse_raw_content(raw_content)
-
-        create_and_add_node(AST::EmbedNode,
-                            embed_type: :raw,
-                            lines: lines || [],
-                            arg: raw_content,
-                            target_builders: target_builders,
-                            content: content)
-      end
-
-      # Build unordered list AST node
-      def build_ulist_ast(f)
-        node = create_node(AST::ListNode,
-                           list_type: :ul)
-
-        level = 0
-        f.while_match(/\A\s+\*|\A\#@/) do |line|
-          next if /\A\#@/.match?(line)
-
-          # Collect raw lines without processing inline elements for AST
-          raw_lines = [line.sub(/\*+/, '').strip]
-          f.while_match(/\A\s+(?!\*)\S/) do |cont|
-            raw_lines.push(cont.strip)
-          end
-
-          line =~ /\A\s+(\*+)/
-          current_level = $1.size
-
-          item_node = create_node(AST::ListItemNode,
-                                  level: current_level)
-
-          # Parse inline elements in item content
-          raw_lines.each do |raw_line|
-            @ast_compiler.inline_processor.parse_inline_elements(raw_line, item_node)
-          end
-
-          node.children << item_node
-          level = current_level
-        end
-
-        add_node_to_ast(node)
-      end
-
-      # Build ordered list AST node
-      def build_olist_ast(f)
-        node = create_node(AST::ListNode,
-                           list_type: :ol)
-
-        f.while_match(/\A\s+\d+\.|\A\#@/) do |line|
-          next if /\A\#@/.match?(line)
-
-          match = line.match(/(\d+)\./)
-          unless match
-            raise CompileError, "Invalid ordered list format: expected numbered item but got '#{line.strip}'#{format_location_info}"
-          end
-
-          num = match[1]
-          raw_lines = [line.sub(/\d+\./, '').strip]
-          f.while_match(/\A\s+(?!\d+\.)\S/) do |cont|
-            raw_lines.push(cont.strip)
-          end
-
-          item_node = AST::ListItemNode.new(
-            location: @ast_compiler.location,
-            level: 1,
-            content: num # Store original number for reference
-          )
-
-          # Parse inline elements in item content
-          raw_lines.each do |raw_line|
-            @ast_compiler.inline_processor.parse_inline_elements(raw_line, item_node)
-          end
-
-          node.children << item_node
-        end
-
-        @ast_compiler.add_child_to_current_node(node)
-      end
-
-      # Build definition list AST node
-      def build_dlist_ast(f)
-        node = AST::ListNode.new(
-          location: @ast_compiler.location,
-          list_type: :dl
-        )
-
-        while /\A\s*:/ =~ f.peek
-          # Get definition term
-          dt_line = f.gets.sub(/\A\s*:/, '').strip
-          dt_node = AST::ListItemNode.new(
-            location: @ast_compiler.location,
-            level: 1
-          )
-          @ast_compiler.inline_processor.parse_inline_elements(dt_line, dt_node)
-
-          # Get definition description
-          desc_lines = []
-          f.until_match(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/) do |line|
-            desc_lines << line.strip
-          end
-
-          # Create a container node for the dt/dd pair
-          item_node = AST::ListItemNode.new(
-            location: @ast_compiler.location,
-            level: 1
-          )
-
-          # Add dt as first child
-          item_node.add_child(dt_node)
-
-          # Add dd content as additional children
-          desc_lines.each do |desc_line|
-            @ast_compiler.inline_processor.parse_inline_elements(desc_line, item_node)
-          end
-
-          node.children << item_node
-          f.skip_blank_lines
-          f.skip_comment_lines
-        end
-
-        @ast_compiler.add_child_to_current_node(node)
-      end
-
       private
 
-      # Format location information for error messages
-      def format_location_info
-        location = @ast_compiler.location
-        # Debug output
-        # puts "DEBUG: BlockProcessor format_location_info - location: #{location ? location.string : 'nil'}"
+      # New methods supporting BlockData
 
+      # Build code block (with nesting support)
+      # Use BlockContext for consistent location information in AST construction
+      def build_code_block_ast(context)
+        config = CODE_BLOCK_CONFIGS[context.name]
+        unless config
+          raise CompileError, "Unknown code block type: #{context.name}#{context.format_location_info}"
+        end
+
+        # Preserve original text
+        original_text = context.lines ? context.lines.join("\n") : ''
+
+        # Create node using BlockContext (location automatically set to block start position)
+        node = context.create_node(AST::CodeBlockNode,
+                                   id: context.arg(config[:id_index]),
+                                   caption: context.process_caption(context.args, config[:caption_index]),
+                                   lang: context.arg(config[:lang_index]) || config[:default_lang],
+                                   line_numbers: config[:line_numbers] || false,
+                                   code_type: context.name,
+                                   original_text: original_text)
+
+        # Process main content
+        if context.content?
+          context.lines.each_with_index do |line, index|
+            line_node = context.create_node(AST::CodeLineNode,
+                                            line_number: config[:line_numbers] ? index + 1 : nil,
+                                            original_text: line)
+
+            # When inline processing is needed (BlockContext properly manages location information)
+            if builder_needs_inline_processing?
+              context.process_inline_elements(line, line_node)
+            else
+              text_node = context.create_node(AST::TextNode, content: line)
+              line_node.add_child(text_node)
+            end
+
+            node.add_child(line_node)
+          end
+        end
+
+        # Process nested blocks
+        context.process_nested_blocks(node)
+
+        # Add node to current AST
+        @ast_compiler.add_child_to_current_node(node)
+        node
+      end
+
+      # Build image block
+      def build_image_ast(context)
+        node = context.create_node(AST::ImageNode,
+                                   id: context.arg(0),
+                                   caption: context.process_caption(context.args, 1),
+                                   metric: context.arg(2),
+                                   image_type: context.name)
+        @ast_compiler.add_child_to_current_node(node)
+        node
+      end
+
+      # Build table block (with nesting support)
+      def build_table_ast(context)
+        node = case context.name
+               when :table
+                 context.create_node(AST::TableNode,
+                                     id: context.arg(0),
+                                     caption: context.process_caption(context.args, 1),
+                                     table_type: :table)
+               when :emtable
+                 context.create_node(AST::TableNode,
+                                     id: nil,
+                                     caption: context.process_caption(context.args, 0),
+                                     table_type: :emtable)
+               when :imgtable
+                 context.create_node(AST::TableNode,
+                                     id: context.arg(0),
+                                     caption: context.process_caption(context.args, 1),
+                                     table_type: :imgtable,
+                                     metric: context.arg(2))
+               else
+                 context.create_node(AST::TableNode,
+                                     id: context.arg(0),
+                                     caption: context.process_caption(context.args, 1),
+                                     table_type: context.name)
+               end
+
+        # Process table rows
+        if context.content?
+          process_table_content(node, context.lines, context.start_location)
+        end
+
+        # Process nested blocks
+        context.process_nested_blocks(node)
+
+        @ast_compiler.add_child_to_current_node(node)
+        node
+      end
+
+      # Build simple list
+      def build_simple_list_ast(context)
+        list_node = context.create_node(AST::ListNode, list_type: context.name)
+
+        if context.content?
+          context.lines.each do |line|
+            item_node = context.create_node(AST::ListItemNode,
+                                            content: line,
+                                            level: 1)
+            list_node.add_child(item_node)
+          end
+        end
+
+        # Process nested blocks
+        context.process_nested_blocks(list_node)
+
+        @ast_compiler.add_child_to_current_node(list_node)
+        list_node
+      end
+
+      # Build minicolumn (with nesting support)
+      def build_minicolumn_ast(context)
+        node = context.create_node(AST::MinicolumnNode,
+                                   minicolumn_type: context.name,
+                                   caption: context.process_caption(context.args, 0))
+
+        # Process structured content
+        context.process_structured_content_with_blocks(node)
+
+        @ast_compiler.add_child_to_current_node(node)
+        node
+      end
+
+      # Build quote block
+      def build_quote_block_ast(context)
+        node = context.create_node(AST::BlockNode, block_type: context.name)
+
+        # Process structured content and nested blocks
+        if context.nested_blocks?
+          context.process_structured_content_with_blocks(node)
+        elsif context.content?
+          case context.name
+          when :quote, :lead, :blockquote, :read, :centering, :flushright, :address, :talk
+            @ast_compiler.process_structured_content(node, context.lines)
+          else
+            context.lines.each { |line| context.process_inline_elements(line, node) }
+          end
+        end
+
+        @ast_compiler.add_child_to_current_node(node)
+        node
+      end
+
+      # Build complex block
+      def build_complex_block_ast(context)
+        node = context.create_node(AST::BlockNode,
+                                   block_type: context.name,
+                                   args: context.args)
+
+        # Process content and nested blocks
+        if context.nested_blocks?
+          context.process_structured_content_with_blocks(node)
+        elsif context.content?
+          context.lines.each do |line|
+            context.process_inline_elements(line, node)
+          end
+        end
+
+        @ast_compiler.add_child_to_current_node(node)
+        node
+      end
+
+      # Build control command
+      def build_control_command_ast(context)
+        case context.name
+        when :texequation
+          build_tex_equation_ast(context)
+        else
+          node = context.create_node(AST::BlockNode,
+                                     block_type: context.name,
+                                     args: context.args)
+
+          if context.content?
+            context.lines.each do |line|
+              text_node = context.create_node(AST::TextNode, content: line)
+              node.add_child(text_node)
+            end
+          end
+
+          @ast_compiler.add_child_to_current_node(node)
+          node
+        end
+      end
+
+      # TeX数式構築
+      def build_tex_equation_ast(context)
+        require 'review/ast/tex_equation_node'
+        node = context.create_node(AST::TexEquationNode,
+                                   id: context.arg(0),
+                                   caption: context.arg(1))
+
+        if context.content?
+          context.lines.each { |line| node.add_content_line(line) }
+        end
+
+        @ast_compiler.add_child_to_current_node(node)
+        node
+      end
+
+      # Raw AST構築
+      def build_raw_ast(context)
+        raw_content = context.arg(0) || ''
+        target_builders, content = parse_raw_content(raw_content)
+
+        node = context.create_node(AST::EmbedNode,
+                                   embed_type: :raw,
+                                   lines: context.lines || [],
+                                   arg: raw_content,
+                                   target_builders: target_builders,
+                                   content: content)
+
+        @ast_compiler.add_child_to_current_node(node)
+        node
+      end
+
+      # Embed AST構築
+      def build_embed_ast(context)
+        node = context.create_node(AST::EmbedNode,
+                                   embed_type: :block,
+                                   arg: context.arg(0),
+                                   lines: context.lines || [])
+
+        @ast_compiler.add_child_to_current_node(node)
+        node
+      end
+
+      # Build footnote
+      def build_footnote_ast(context)
+        footnote_id = context.arg(0)
+        footnote_content = context.arg(1) || ''
+
+        node = context.create_node(AST::FootnoteNode,
+                                   id: footnote_id,
+                                   content: footnote_content,
+                                   footnote_type: context.name)
+
+        if footnote_content && !footnote_content.empty?
+          context.process_inline_elements(footnote_content, node)
+        end
+
+        @ast_compiler.add_child_to_current_node(node)
+        node
+      end
+
+      # Process nested blocks
+      def process_nested_blocks(parent_node, block_data)
+        return unless block_data.nested_blocks?
+
+        # Save current node context
+        saved_current_node = @ast_compiler.current_ast_node
+        @ast_compiler.instance_variable_set(:@current_ast_node, parent_node)
+
+        # Process nested blocks recursively
+        block_data.nested_blocks.each do |nested_block|
+          process_block_command(nested_block)
+        end
+
+        # Restore context
+        @ast_compiler.instance_variable_set(:@current_ast_node, saved_current_node)
+      end
+
+      # Process structured content including nested blocks
+      def process_structured_content_with_blocks(parent_node, block_data)
+        # Process regular lines
+        @ast_compiler.process_structured_content(parent_node, block_data.lines) if block_data.content?
+
+        # Process nested blocks
+        process_nested_blocks(parent_node, block_data)
+      end
+
+      # Process table content
+      def process_table_content(table_node, lines, block_location = nil)
+        separator_index = lines.find_index { |line| line.match?(/\A[=-]{12}/) || line.match?(/\A[={}-]{12}/) }
+
+        if separator_index
+          # Process header rows
+          header_lines = lines[0...separator_index]
+          header_lines.each do |line|
+            row_node = create_table_row_from_line(line, is_header: true, block_location: block_location)
+            table_node.add_header_row(row_node)
+          end
+
+          # Process body rows
+          body_lines = lines[(separator_index + 1)..-1] || []
+          body_lines.each do |line|
+            row_node = create_table_row_from_line(line, first_cell_header: false, block_location: block_location)
+            table_node.add_body_row(row_node)
+          end
+        else
+          # No separator - all body rows (first cell as header)
+          lines.each do |line|
+            row_node = create_table_row_from_line(line, first_cell_header: true, block_location: block_location)
+            table_node.add_body_row(row_node)
+          end
+        end
+      end
+
+      # Format location information for error messages
+      def format_location_info(location = nil)
+        location ||= @ast_compiler.location
         return '' unless location
 
         info = " at line #{location.lineno}"
@@ -530,18 +583,21 @@ module ReVIEW
         node
       end
 
-      def process_caption(args, caption_index)
+      def process_caption(args, caption_index, location = nil)
         caption_text = safe_arg(args, caption_index)
         return nil if caption_text.nil?
+
+        # Location information priority: argument > @ast_compiler.location
+        caption_location = location || @ast_compiler.location
 
         begin
           AST::CaptionNode.parse(
             caption_text,
-            location: @ast_compiler.location,
+            location: caption_location,
             inline_processor: @ast_compiler.inline_processor
           )
         rescue StandardError => e
-          raise CompileError, "Error processing caption '#{caption_text}': #{e.message}#{format_location_info}"
+          raise CompileError, "Error processing caption '#{caption_text}': #{e.message}#{format_location_info(caption_location)}"
         end
       end
 
@@ -562,13 +618,14 @@ module ReVIEW
       # Create a table row node from a line containing tab-separated cells
       # The is_header parameter determines if all cells should be header cells
       # The first_cell_header parameter determines if only the first cell should be a header
-      def create_table_row_from_line(line, is_header: false, first_cell_header: false)
+      def create_table_row_from_line(line, is_header: false, first_cell_header: false, block_location: nil)
         row_node = create_node(AST::TableRowNode)
 
         # Split by tab to get cells
         cells = line.split("\t")
         if cells.empty?
-          raise CompileError, "Invalid table row: empty line or no tab-separated cells#{format_location_info}"
+          error_location = block_location || @ast_compiler.location
+          raise CompileError, "Invalid table row: empty line or no tab-separated cells#{format_location_info(error_location)}"
         end
 
         cells.each_with_index do |cell_content, index|
@@ -595,78 +652,6 @@ module ReVIEW
         row_node
       end
 
-      # Build doorquote AST node
-      def build_doorquote_ast(args, lines)
-        @ast_compiler.create_and_add_block_node(
-          block_type: :doorquote,
-          args: args,
-          lines: lines
-        )
-      end
-
-      # Build bibpaper AST node
-      def build_bibpaper_ast(args, lines)
-        @ast_compiler.create_and_add_block_node(
-          block_type: :bibpaper,
-          args: args,
-          lines: lines
-        )
-      end
-
-      # Build talk AST node
-      def build_talk_ast(args, lines)
-        @ast_compiler.create_and_add_block_node(
-          block_type: :talk,
-          args: args,
-          lines: lines
-        )
-      end
-
-      # Build graph AST node
-      def build_graph_ast(args, lines)
-        @ast_compiler.create_and_add_block_node(
-          block_type: :graph,
-          args: args,
-          lines: lines
-        )
-      end
-
-      # Build text block AST node (address, flushright, centering)
-      def build_text_block_ast(command_name, args, lines)
-        @ast_compiler.create_and_add_block_node(
-          block_type: command_name,
-          args: args,
-          lines: lines
-        )
-      end
-
-      # Build line command AST node (bpo, hr, parasep)
-      def build_line_command_ast(command_name, args, lines)
-        lines ||= []
-        node = AST::BlockNode.new(
-          location: @ast_compiler.location,
-          block_type: command_name,
-          args: args
-        )
-
-        # Line commands typically don't have content lines
-        lines.each do |line|
-          text_node = AST::TextNode.new(location: @ast_compiler.location, content: line)
-          node.add_child(text_node)
-        end
-
-        @ast_compiler.add_child_to_current_node(node)
-      end
-
-      # Build box AST node
-      def build_box_ast(args, lines)
-        @ast_compiler.create_and_add_block_node(
-          block_type: :box,
-          args: args,
-          lines: lines
-        )
-      end
-
       # Parse raw content for builder specification
       def parse_raw_content(content)
         return [nil, content] if content.nil? || content.empty?
@@ -690,6 +675,87 @@ module ReVIEW
         emlistnum: { caption_index: 0, lang_index: 1, line_numbers: true },
         cmd: { caption_index: 0, default_lang: 'shell' },
         source: { caption_index: 0, lang_index: 1 }
+      }.freeze
+
+      # Block command to handler method mapping table
+      # This table-driven approach makes it easy to add new block types
+      # and provides a clear overview of all supported commands
+      BLOCK_COMMAND_TABLE = {
+        # Code blocks
+        list: :build_code_block_ast,
+        listnum: :build_code_block_ast,
+        emlist: :build_code_block_ast,
+        emlistnum: :build_code_block_ast,
+        cmd: :build_code_block_ast,
+        source: :build_code_block_ast,
+
+        # Media blocks
+        image: :build_image_ast,
+        indepimage: :build_image_ast,
+        numberlessimage: :build_image_ast,
+
+        # Table blocks
+        table: :build_table_ast,
+        emtable: :build_table_ast,
+        imgtable: :build_table_ast,
+
+        # Simple list blocks (//ul, //ol, //dl commands)
+        ul: :build_simple_list_ast,
+        ol: :build_simple_list_ast,
+        dl: :build_simple_list_ast,
+
+        # Minicolumn blocks
+        note: :build_minicolumn_ast,
+        memo: :build_minicolumn_ast,
+        tip: :build_minicolumn_ast,
+        info: :build_minicolumn_ast,
+        warning: :build_minicolumn_ast,
+        important: :build_minicolumn_ast,
+        caution: :build_minicolumn_ast,
+        notice: :build_minicolumn_ast,
+
+        # Reference blocks
+        footnote: :build_footnote_ast,
+        endnote: :build_footnote_ast,
+
+        # Embed blocks
+        embed: :build_embed_ast,
+        raw: :build_raw_ast,
+
+        # Quote and content blocks
+        read: :build_quote_block_ast,
+        quote: :build_quote_block_ast,
+        blockquote: :build_quote_block_ast,
+        lead: :build_quote_block_ast,
+        centering: :build_quote_block_ast,
+        flushright: :build_quote_block_ast,
+        address: :build_quote_block_ast,
+        talk: :build_quote_block_ast,
+
+        # Complex blocks
+        doorquote: :build_complex_block_ast,
+        bibpaper: :build_complex_block_ast,
+        graph: :build_complex_block_ast,
+        box: :build_complex_block_ast,
+
+        # Control commands
+        comment: :build_control_command_ast,
+        olnum: :build_control_command_ast,
+        blankline: :build_control_command_ast,
+        noindent: :build_control_command_ast,
+        pagebreak: :build_control_command_ast,
+        firstlinenum: :build_control_command_ast,
+        tsize: :build_control_command_ast,
+        label: :build_control_command_ast,
+        printendnotes: :build_control_command_ast,
+        hr: :build_control_command_ast,
+        bpo: :build_control_command_ast,
+        parasep: :build_control_command_ast,
+        beginchild: :build_control_command_ast,
+        endchild: :build_control_command_ast,
+
+        # Math blocks
+        texequation: :build_tex_equation_ast
       }.freeze
     end
   end
