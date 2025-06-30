@@ -284,7 +284,7 @@ module ReVIEW
 
         if term_content.include?('@<') && @inline_processor
           # Create a temporary container to collect processed term elements
-          temp_container = AST::Node.new(location: current_location)
+          temp_container = AST::ParagraphNode.new(location: current_location)
           @inline_processor.parse_inline_elements(term_content, temp_container)
 
           # Set the processed elements as term_children

@@ -11,11 +11,18 @@ require_relative 'json_serializer'
 
 module ReVIEW
   module AST
+    # Abstract base class for all AST nodes
+    # This class should not be instantiated directly - use specific subclasses instead
     class Node
       attr_reader :location, :type, :id, :content, :original_text
       attr_accessor :parent, :children
 
       def initialize(location: nil, type: nil, id: nil, content: nil, original_text: nil, **_kwargs)
+        # Prevent direct instantiation of abstract base class (except in tests)
+        if self.instance_of?(ReVIEW::AST::Node)
+          raise StandardError, 'AST::Node is an abstract class and cannot be instantiated directly. Use a specific subclass instead.'
+        end
+
         @location = location
         @children = []
         @parent = nil

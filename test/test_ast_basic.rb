@@ -19,7 +19,7 @@ class TestASTBasic < Test::Unit::TestCase
   end
 
   def test_ast_node_creation
-    node = ReVIEW::AST::Node.new
+    node = ReVIEW::AST::ParagraphNode.new
     assert_equal [], node.children
     assert_nil(node.parent)
     assert_nil(node.location)

@@ -413,15 +413,8 @@ module ReVIEW
               column_type: hash['column_type']
             )
           else
-            # Unknown node type, create generic node
-            node = ReVIEW::AST::Node.new
-            if hash['children']
-              hash['children'].each do |child_hash|
-                child = deserialize_from_hash(child_hash)
-                node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
-              end
-            end
-            node
+            # Unknown node type - raise an error as this indicates a deserialization problem
+            raise StandardError, "Unknown node type: #{node_type}. Cannot deserialize JSON with unknown node type."
           end
         else
           raise StandardError, "invalid hash: `#{hash}`"

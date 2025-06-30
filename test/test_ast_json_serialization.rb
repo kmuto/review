@@ -16,11 +16,12 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   end
 
   def test_basic_node_serialization
-    node = AST::Node.new(location: @location)
+    # Test with a concrete node class instead of abstract Node
+    node = AST::ParagraphNode.new(location: @location)
     json = node.to_json
     parsed = JSON.parse(json)
 
-    assert_equal 'Node', parsed['type']
+    assert_equal 'ParagraphNode', parsed['type']
     assert_equal 'test.re', parsed['location']['filename']
     assert_equal 42, parsed['location']['lineno']
     assert_equal [], parsed['children']

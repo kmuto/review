@@ -400,8 +400,8 @@ class TestLatexRenderer < Test::Unit::TestCase
   end
 
   def test_generic_visitor_error
-    # Create an unknown node type by using a generic Node
-    unknown_node = AST::Node.new(type: 'UnknownNode')
+    # Create an unknown node type by using a BlockNode with unknown type
+    unknown_node = AST::BlockNode.new(block_type: :UnknownNode)
 
     assert_raise(NotImplementedError) do
       @renderer.visit(unknown_node)
