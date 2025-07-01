@@ -88,6 +88,19 @@ module ReVIEW
         end
       end
 
+      # Map over all entries (for compatibility with Enumerable)
+      def map
+        return enum_for(:map) unless block_given?
+
+        @entries.values.map do |entry|
+          # Convert to Book::Index::Item format for compatibility
+          item = ReVIEW::Book::Index::Item.new(entry.id, entry.number, entry.content)
+          # Store FootnoteNode for AST rendering
+          item.instance_variable_set(:@footnote_node, entry.footnote_node) if entry.footnote_node
+          yield item
+        end
+      end
+
       # Convert to traditional Book::FootnoteIndex for compatibility
       def to_book_index
         book_index = ReVIEW::Book::FootnoteIndex.new

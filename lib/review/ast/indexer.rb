@@ -109,6 +109,53 @@ module ReVIEW
         }
       end
 
+      # Find index by type name (type-safe alternative to send)
+      def index_for(type)
+        case type.to_sym
+        when :list then @list_index
+        when :table then @table_index
+        when :equation then @equation_index
+        when :footnote then @footnote_index
+        when :endnote then @endnote_index
+        when :image then @image_index
+        when :icon then @icon_index
+        when :numberless_image then @numberless_image_index
+        when :indepimage then @indepimage_index
+        when :headline then @headline_index
+        when :column then @column_index
+        when :bibpaper then @bibpaper_index
+        else
+          raise ArgumentError, "Unknown index type: #{type}"
+        end
+      end
+
+      # Available index types
+      def available_index_types
+        %i[list table equation footnote endnote image icon numberless_image indepimage headline column bibpaper]
+      end
+
+      # Collect index items of specific type from this indexer for book-wide aggregation
+      def collect_index_items(type)
+        index = index_for(type)
+        return [] unless index
+
+        # Transform each item to add chapter context for book-wide reference
+        index.map do |item|
+          ReVIEW::Book::Index::Item.new(item.id, item.number, @chapter)
+        end
+      end
+
+      # Create combined index from multiple indexers
+      def self.combine_indexes(indexers, type)
+        combined_index = ReVIEW::Book::Index.new
+
+        # Collect all items from all indexers and add them to the combined index
+        indexers.flat_map { |indexer| indexer.collect_index_items(type) }.
+          each { |item| combined_index.add_item(item) }
+
+        combined_index
+      end
+
       private
 
       # Extract footnote content from FootnoteNode

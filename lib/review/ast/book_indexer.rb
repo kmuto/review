@@ -66,21 +66,13 @@ module ReVIEW
       def build_book_indexes
         return if @chapter_indexers.empty?
 
-        # Collect all indexes by type
-        @book_wide_indexes = {
-          list: collect_index_by_type(:list_index),
-          table: collect_index_by_type(:table_index),
-          equation: collect_index_by_type(:equation_index),
-          image: collect_index_by_type(:image_index),
-          icon: collect_index_by_type(:icon_index),
-          indepimage: collect_index_by_type(:indepimage_index),
-          numberless_image: collect_index_by_type(:numberless_image_index),
-          footnote: collect_index_by_type(:footnote_index),
-          endnote: collect_index_by_type(:endnote_index),
-          headline: collect_index_by_type(:headline_index),
-          column: collect_index_by_type(:column_index),
-          bibpaper: collect_index_by_type(:bibpaper_index)
-        }
+        indexers = @chapter_indexers.values
+
+        # Use Indexer's logic to combine indexes
+        @book_wide_indexes = {}
+        indexers.first.available_index_types.each do |type|
+          @book_wide_indexes[type] = AST::Indexer.combine_indexes(indexers, type)
+        end
 
         # Make book-wide indexes available to each chapter
         @chapter_indexers.each_key do |chapter|
@@ -102,17 +94,17 @@ module ReVIEW
       def find_item(type, id, context_chapter = nil)
         # First try the context chapter if provided
         if context_chapter && @chapter_indexers[context_chapter]
-          indexer = @chapter_indexers[context_chapter]
-          index = indexer.send("#{type}_index")
+          chapter_indexer = @chapter_indexers[context_chapter]
+          index = chapter_indexer.index_for(type)
           item = index&.find_item(id)
           return item if item
         end
 
         # Search all chapters
-        @chapter_indexers.each do |chapter, chapter_indexer|
+        @chapter_indexers.each do |chapter, indexer|
           next if chapter == context_chapter # Already checked
 
-          index = chapter_indexer.send("#{type}_index")
+          index = indexer.index_for(type)
           item = index&.find_item(id)
           return item if item
         end
@@ -123,7 +115,7 @@ module ReVIEW
       # Get chapter that contains a specific item
       def find_chapter_for_item(type, id)
         @chapter_indexers.each do |chapter, indexer|
-          index = indexer.send("#{type}_index")
+          index = indexer.index_for(type)
           return chapter if index&.find_item(id)
         end
         nil
@@ -160,24 +152,6 @@ module ReVIEW
         chapter.instance_variable_set(:@headline_index, indexer.headline_index)
         chapter.instance_variable_set(:@column_index, indexer.column_index)
         chapter.instance_variable_set(:@bibpaper_index, indexer.bibpaper_index)
-      end
-
-      # Collect indexes of a specific type from all chapters
-      def collect_index_by_type(index_method)
-        combined_index = ReVIEW::Book::Index.new
-
-        @chapter_indexers.each do |chapter, indexer|
-          chapter_index = indexer.send(index_method)
-          next unless chapter_index
-
-          chapter_index.each do |item|
-            # Add chapter context to the item for book-wide reference
-            book_item = ReVIEW::Book::Index::Item.new(item.id, item.number, chapter)
-            combined_index.add_item(book_item)
-          end
-        end
-
-        combined_index
       end
 
       # Set book-wide indexes on a chapter for cross-chapter references
