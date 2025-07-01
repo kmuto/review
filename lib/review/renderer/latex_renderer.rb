@@ -247,7 +247,13 @@ module ReVIEW
         end
 
         # Process table content with table context
-        table_content = @rendering_context.with_child_context(:table) do |table_context|
+        table_context = nil
+        table_content = @rendering_context.with_child_context(:table) do |ctx|
+          table_context = ctx
+          # Temporarily set the renderer's context to the table context
+          old_context = @rendering_context
+          @rendering_context = table_context
+
           # Calculate column count from first row
           all_rows = node.header_rows + node.body_rows
           col_count = all_rows.first ? all_rows.first.children.length : 1
@@ -283,20 +289,24 @@ module ReVIEW
           result << '\\hline'
 
           # Process all rows using visitor pattern with table context
+          # table_context is now the current @rendering_context within this block
           all_rows.each do |row|
-            row_content = visit_with_context(row, table_context)
+            row_content = visit(row)
             result << "#{row_content} \\\\  \\hline"
           end
 
           result << '\\end{reviewtable}'
           result << '\\end{table}'
+
+          # Restore the previous context
+          @rendering_context = old_context
           result.join("\n") + "\n"
         end
 
         # Add collected footnotetext commands from table context
-        if @rendering_context.footnote_collector.any?
-          table_content += generate_footnotetext_from_collector(@rendering_context.footnote_collector)
-          @rendering_context.footnote_collector.clear
+        if table_context && table_context.footnote_collector.any?
+          table_content += generate_footnotetext_from_collector(table_context.footnote_collector)
+          table_context.footnote_collector.clear
         end
 
         table_content
@@ -327,12 +337,15 @@ module ReVIEW
       end
 
       def visit_table_row(node)
-        # Process all cells in the row using visitor pattern
+        # Process all cells in the row using visitor pattern while maintaining table context
+        # Note: table context should already be set by visit_table
         cells = node.children.map { |cell| visit(cell) }
         cells.join(' & ')
       end
 
       def visit_table_cell(node)
+        # Process cell content while maintaining table context to collect footnotes
+        # Note: table context should already be set by visit_table
         content = render_children(node)
         # Use cell_type to determine LaTeX formatting
         if node.cell_type == :th
@@ -973,14 +986,15 @@ module ReVIEW
 
       def render_inline_element(type, content, node)
         require 'review/renderer/latex_renderer/inline_element_renderer'
-        @inline_renderer ||=
-          InlineElementRenderer.new(
-            self,
-            book: @book,
-            chapter: @chapter,
-            rendering_context: @rendering_context
-          )
-        @inline_renderer.render(type, content, node)
+        # Always create a new inline renderer with current rendering context
+        # This ensures that context changes (like table context) are properly reflected
+        inline_renderer = InlineElementRenderer.new(
+          self,
+          book: @book,
+          chapter: @chapter,
+          rendering_context: @rendering_context
+        )
+        inline_renderer.render(type, content, node)
       end
 
       def render_children(node)
@@ -1042,9 +1056,10 @@ module ReVIEW
       def generate_footnotetext_from_collector(collector)
         return '' unless collector.any?
 
-        footnotetext_commands = collector.map do |entry|
+        footnotetext_commands = []
+        collector.each do |entry|
           content = render_footnote_content(entry.node)
-          "\\footnotetext[#{entry.number}]{#{content}}"
+          footnotetext_commands << "\\footnotetext[#{entry.number}]{#{content}}"
         end
 
         footnotetext_commands.join("\n") + "\n"

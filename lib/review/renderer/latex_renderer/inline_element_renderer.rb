@@ -100,8 +100,9 @@ module ReVIEW
           if node.args && node.args.first
             footnote_id = node.args.first.to_s
             # Check if we need to use footnotetext based on context
-            use_footnotetext = (@book&.config&.key?('footnotetext') && @book.config['footnotetext']) ||
-                               @rendering_context.requires_footnotetext?
+            footnotetext_config = @book&.config&.key?('footnotetext') && @book.config['footnotetext']
+            context_requires = @rendering_context.requires_footnotetext?
+            use_footnotetext = footnotetext_config || context_requires
 
             if use_footnotetext
               if @chapter && @chapter.footnote_index
