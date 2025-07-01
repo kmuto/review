@@ -522,6 +522,16 @@ module ReVIEW
           render_hidx(content, node)
         when 'comment'
           render_comment(content, node)
+        when 'hd'
+          render_headline_ref(content, node)
+        when 'sec'
+          render_section_ref(content, node)
+        when 'secref'
+          render_section_ref(content, node)
+        when 'labelref'
+          render_label_ref(content, node)
+        when 'ref'
+          render_label_ref(content, node)
         else
           content
         end
@@ -1405,6 +1415,21 @@ module ReVIEW
         end
 
         %Q(<div class="footnotes">#{footnote_items.join("\n")}</div>)
+      end
+
+      # Render headline reference
+      def render_headline_ref(content, _node)
+        %Q(<span class="headline-ref">#{escape_content(content)}</span>)
+      end
+
+      # Render section reference
+      def render_section_ref(content, _node)
+        %Q(<span class="section-ref">#{escape_content(content)}</span>)
+      end
+
+      # Render label reference
+      def render_label_ref(content, _node)
+        %Q(<span class="label-ref">#{escape_content(content)}</span>)
       end
     end
   end

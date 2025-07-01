@@ -17,6 +17,7 @@ require 'review/ast/block_context'
 require 'review/snapshot_location'
 require 'review/ast/list_processor'
 require 'review/ast/footnote_node'
+require 'review/ast/reference_resolver'
 
 module ReVIEW
   module AST
@@ -117,6 +118,11 @@ module ReVIEW
 
         # Full AST mode: build complete AST
         do_compile_with_ast_building
+
+        # Resolve references after AST building but before post-processing
+        @performance_tracker.start_timing(:reference_resolution_time)
+        resolve_references
+        @performance_tracker.end_timing(:reference_resolution_time)
 
         # Record performance statistics
         @performance_tracker.end_timing(:total_compilation_time)
@@ -673,6 +679,29 @@ module ReVIEW
         require_relative('olnum_processor')
         processor = OlnumProcessor.new
         processor.process(@ast_root)
+      end
+
+      # Resolve references in the AST
+      def resolve_references
+        return unless @ast_root
+
+        # Skip reference resolution in test environments or when chapter lacks book context
+        return unless @chapter.respond_to?(:book) && @chapter.book
+
+        # Skip reference resolution if explicitly disabled
+        return if @chapter.book.config && @chapter.book.config['disable_reference_resolution']
+
+        resolver = ReferenceResolver.new(@chapter)
+        result = resolver.resolve_references(@ast_root)
+
+        if result[:failed] > 0
+          warn "Reference resolution: #{result[:resolved]} resolved, #{result[:failed]} failed"
+        else
+          debug("Reference resolution: #{result[:resolved]} references resolved successfully")
+        end
+      rescue StandardError => e
+        # Log error but don't fail compilation
+        warn "Reference resolution failed: #{e.message}" if defined?(warn)
       end
     end
   end

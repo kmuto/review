@@ -414,34 +414,52 @@ module ReVIEW
 
         # Render heading reference
         def render_inline_hd(_type, content, node)
-          return content unless node.args && node.args.first
-
-          heading_ref = node.args.first
-          # Heading reference - handle both simple and chapter|heading format
-          handle_heading_reference(heading_ref) do |section_number, section_label, section_title|
-            "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
+          # Use resolved content from ReferenceResolver if available,
+          # otherwise fall back to legacy behavior
+          if content && !content.empty?
+            "\\reviewsecref{「#{escape(content)}」}{}"
+          elsif node.args && node.args.first
+            heading_ref = node.args.first
+            # Heading reference - handle both simple and chapter|heading format
+            handle_heading_reference(heading_ref) do |section_number, section_label, section_title|
+              "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
+            end
+          else
+            ''
           end
         end
 
         # Render section reference
         def render_inline_sec(_type, content, node)
-          return content unless node.args && node.args.first
-
-          heading_ref = node.args.first
-          # Section reference - use Re:VIEW section reference like LATEXBuilder
-          handle_heading_reference(heading_ref) do |section_number, section_label, _section_title|
-            "\\reviewsecref{#{section_number}}{#{section_label}}"
+          # Use resolved content from ReferenceResolver if available,
+          # otherwise fall back to legacy behavior
+          if content && !content.empty?
+            "\\reviewsecref{#{escape(content)}}{}"
+          elsif node.args && node.args.first
+            heading_ref = node.args.first
+            # Section reference - use Re:VIEW section reference like LATEXBuilder
+            handle_heading_reference(heading_ref) do |section_number, section_label, _section_title|
+              "\\reviewsecref{#{section_number}}{#{section_label}}"
+            end
+          else
+            ''
           end
         end
 
         # Render section reference with full title
         def render_inline_secref(_type, content, node)
-          return content unless node.args && node.args.first
-
-          heading_ref = node.args.first
-          # Section reference with full title - use Re:VIEW section reference like LATEXBuilder
-          handle_heading_reference(heading_ref) do |section_number, section_label, section_title|
-            "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
+          # Use resolved content from ReferenceResolver if available,
+          # otherwise fall back to legacy behavior
+          if content && !content.empty?
+            "\\reviewsecref{#{escape(content)}}{}"
+          elsif node.args && node.args.first
+            heading_ref = node.args.first
+            # Section reference with full title - use Re:VIEW section reference like LATEXBuilder
+            handle_heading_reference(heading_ref) do |section_number, section_label, section_title|
+              "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
+            end
+          else
+            ''
           end
         end
 
@@ -626,11 +644,15 @@ module ReVIEW
 
         # Render label reference
         def render_inline_labelref(_type, content, node)
-          if node.args && node.args.first
+          # Use resolved content from ReferenceResolver if available,
+          # otherwise fall back to legacy behavior
+          if content && !content.empty?
+            "\\textbf{#{escape(content)}}"
+          elsif node.args && node.args.first
             ref_id = node.args.first
             "\\ref{#{escape(ref_id)}}"
           else
-            content
+            ''
           end
         end
 

@@ -7,9 +7,40 @@ require 'review/ast/json_serializer'
 require 'review/compiler'
 require 'review/htmlbuilder'
 require 'review/book'
+require 'review/book/chapter'
 require 'json'
 require 'stringio'
 require 'fileutils'
+
+# Mock chapter for testing
+class MockChapter
+  attr_accessor :content, :id, :number, :path, :book
+  attr_accessor :headline_index, :list_index, :table_index, :image_index,
+                :footnote_index, :equation_index, :column_index
+
+  def initialize(id = 'test', number = 1)
+    @id = id
+    @number = number
+    @path = "#{id}.re"
+    @book = nil
+  end
+
+  def name
+    @id
+  end
+
+  def title
+    'Test Chapter'
+  end
+
+  def basename
+    File.basename(@path, '.*')
+  end
+
+  def filename
+    @path
+  end
+end
 
 class ASTJSONVerificationTest < Test::Unit::TestCase
   def setup
@@ -170,9 +201,13 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
   end
 
   def compile_to_json(content, mode, _config = nil)
+    # Create a mock chapter for AST compilation
+    chapter = MockChapter.new('test', 1)
+    chapter.content = content
+
     # Use direct AST compilation
     ast_compiler = ReVIEW::AST::Compiler.new
-    ast_result = ast_compiler.compile(content)
+    ast_result = ast_compiler.compile_to_ast(chapter)
 
     # Convert AST to JSON
     if ast_result

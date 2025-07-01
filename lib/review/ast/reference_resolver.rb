@@ -68,7 +68,12 @@ module ReVIEW
 
       # Build indexes if not already built
       def build_indexes_if_needed(ast)
-        unless @chapter.instance_variable_get(:@footnote_index)
+        # Check if indexes are already built (multiple ways to check for compatibility)
+        has_indexes = @chapter.instance_variable_get(:@footnote_index) ||
+                      (@chapter.respond_to?(:footnote_index) && @chapter.footnote_index) ||
+                      @chapter.instance_variable_get(:@ast_indexes_built)
+
+        unless has_indexes
           indexer = Indexer.new(@chapter)
           indexer.build_indexes(ast)
 
@@ -85,6 +90,9 @@ module ReVIEW
           @chapter.instance_variable_set(:@headline_index, indexer.headline_index)
           @chapter.instance_variable_set(:@column_index, indexer.column_index)
           @chapter.instance_variable_set(:@bibpaper_index, indexer.bibpaper_index)
+
+          # Mark that AST indexes have been built
+          @chapter.instance_variable_set(:@ast_indexes_built, true)
         end
       end
 

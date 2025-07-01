@@ -13,6 +13,7 @@ class TestCodeBlockDebug < Test::Unit::TestCase
     @config = ReVIEW::Configure.values
     @config['secnolevel'] = 2
     @config['language'] = 'ja'
+    @config['disable_reference_resolution'] = true
     @book.config = @config
 
     @log_io = StringIO.new

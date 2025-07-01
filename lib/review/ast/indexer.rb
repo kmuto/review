@@ -179,12 +179,13 @@ module ReVIEW
         @chapter_index = ReVIEW::Book::ChapterIndex.new
         @bibpaper_index = ReVIEW::Book::BibpaperIndex.new
 
-        if @book
-          @image_index = ReVIEW::Book::ImageIndex.new(@chapter)
-          @icon_index = ReVIEW::Book::IconIndex.new(@chapter)
-          @numberless_image_index = ReVIEW::Book::NumberlessImageIndex.new(@chapter)
-          @indepimage_index = ReVIEW::Book::IndepImageIndex.new(@chapter)
+        @image_index = ReVIEW::Book::ImageIndex.new(@chapter)
+        @icon_index = ReVIEW::Book::IconIndex.new(@chapter)
+        unless @book
+          # Create basic indexes even without book for testing
         end
+        @numberless_image_index = ReVIEW::Book::NumberlessImageIndex.new(@chapter)
+        @indepimage_index = ReVIEW::Book::IndepImageIndex.new(@chapter)
       end
 
       def initialize_counters

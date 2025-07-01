@@ -43,13 +43,13 @@ module ReVIEW
             when AST::TextNode
               child.content
             when AST::InlineNode
-              # Reconstruct Re:VIEW syntax from children or args
-              content = if child.children&.any?
+              # Reconstruct Re:VIEW syntax from original args (preserve original IDs)
+              content = if child.args&.any?
+                          child.args.first
+                        elsif child.children&.any?
                           child.children.map do |grandchild|
                             grandchild.respond_to?(:content) ? grandchild.content : grandchild.to_s
                           end.join
-                        elsif child.args&.any?
-                          child.args.first
                         else
                           ''
                         end
