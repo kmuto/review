@@ -38,22 +38,36 @@ module ReVIEW
         initialize_counters
       end
 
-      # Build book-wide indexes for cross-chapter references
+      # Build book-wide indexes for cross-chapter references using BookIndexer
       # This is a class method that can be used by any renderer
       def self.build_book_indexes(book)
         return unless book
 
         # Skip if already built
+        return if book.instance_variable_get(:@ast_book_indexer)
+
+        require 'review/ast/book_indexer'
+
+        # Create BookIndexer and build all indexes
+        book_indexer = AST::BookIndexer.new(book)
+        book_indexer.build_all_chapter_indexes
+        book_indexer.build_book_indexes
+
+        # Store book indexer on book for reuse
+        book.instance_variable_set(:@ast_book_indexer, book_indexer)
+
+        # Build chapter index for compatibility
+        build_chapter_index(book)
+      end
+
+      # Build chapter index for compatibility with existing Book class expectations
+      def self.build_chapter_index(book)
         return if book.instance_variable_get(:@chapter_index)
 
-        require 'review/ast/compiler'
-
-        # Initialize chapter index
         chapter_index = ReVIEW::Book::ChapterIndex.new
 
-        # Process all chapters and build their indexes - use Book::Base's method
+        # Process all chapters and add to chapter index
         book.each_chapter do |chapter|
-          # Add chapter to chapter index - follow Book::Base#create_chapter_index pattern
           chapter_index.add_item(ReVIEW::Book::Index::Item.new(chapter.id, chapter.number, chapter))
         end
 
@@ -64,48 +78,8 @@ module ReVIEW
           end
         end
 
-        # Now build indexes for all chapters
-        book.each_chapter do |chapter|
-          # Build AST and indexes for this chapter if not already done
-          next if chapter.instance_variable_get(:@list_index)
-
-          begin
-            ast = compile_chapter_to_ast(chapter)
-            indexer = new(chapter)
-            indexer.build_indexes(ast)
-
-            # Set indexes on the chapter
-            chapter.instance_variable_set(:@footnote_index, indexer.footnote_index)
-            chapter.instance_variable_set(:@endnote_index, indexer.endnote_index)
-            chapter.instance_variable_set(:@list_index, indexer.list_index)
-            chapter.instance_variable_set(:@table_index, indexer.table_index)
-            chapter.instance_variable_set(:@equation_index, indexer.equation_index)
-            chapter.instance_variable_set(:@image_index, indexer.image_index)
-            chapter.instance_variable_set(:@icon_index, indexer.icon_index)
-            chapter.instance_variable_set(:@numberless_image_index, indexer.numberless_image_index)
-            chapter.instance_variable_set(:@indepimage_index, indexer.indepimage_index)
-            chapter.instance_variable_set(:@headline_index, indexer.headline_index)
-            chapter.instance_variable_set(:@column_index, indexer.column_index)
-            chapter.instance_variable_set(:@bibpaper_index, indexer.bibpaper_index)
-          rescue StandardError => e
-            # Skip chapters that can't be processed
-            warn "Failed to build index for chapter #{chapter.id}: #{e.message}" if $DEBUG
-          end
-        end
-
         # Set chapter index on book
         book.instance_variable_set(:@chapter_index, chapter_index)
-      end
-
-      # Compile a chapter to AST (class method helper)
-      def self.compile_chapter_to_ast(chapter)
-        compiler = ReVIEW::AST::Compiler.new
-        content = chapter.content
-        compiler.compile(content)
-      rescue StandardError => e
-        warn "Failed to compile chapter #{chapter.id} to AST: #{e.message}" if $DEBUG
-        # Return empty document node as fallback
-        ReVIEW::AST::DocumentNode.new(location: nil)
       end
 
       # Main index building method

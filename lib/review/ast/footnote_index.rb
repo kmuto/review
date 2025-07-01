@@ -75,6 +75,19 @@ module ReVIEW
         @entries.size
       end
 
+      # Iterate over all entries (for compatibility with Book::Index)
+      def each
+        return enum_for(:each) unless block_given?
+
+        @entries.each_value do |entry|
+          # Convert to Book::Index::Item format for compatibility
+          item = ReVIEW::Book::Index::Item.new(entry.id, entry.number, entry.content)
+          # Store FootnoteNode for AST rendering
+          item.instance_variable_set(:@footnote_node, entry.footnote_node) if entry.footnote_node
+          yield item
+        end
+      end
+
       # Convert to traditional Book::FootnoteIndex for compatibility
       def to_book_index
         book_index = ReVIEW::Book::FootnoteIndex.new
