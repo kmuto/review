@@ -169,7 +169,7 @@ class TestCodeBlockDebug < Test::Unit::TestCase
                     },
                     "children": [
                       {
-                        "type": "TextNode",
+                        "type": "ReferenceNode",
                         "location": {
                           "filename": "debug_chapter.re",
                           "lineno": 3
@@ -263,7 +263,7 @@ class TestCodeBlockDebug < Test::Unit::TestCase
               },
               "children": [
                 {
-                  "type": "TextNode",
+                  "type": "ReferenceNode",
                   "location": {
                     "filename": "debug_chapter.re",
                     "lineno": 3

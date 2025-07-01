@@ -179,9 +179,12 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     hd_node = parent.children[1]
     assert_equal 'hd', hd_node.inline_type
     assert_equal ['chapter1', 'Introduction'], hd_node.args
-    assert_equal 2, hd_node.children.size
-    assert_equal 'chapter1', hd_node.children[0].content
-    assert_equal 'Introduction', hd_node.children[1].content
+    assert_equal 1, hd_node.children.size
+
+    reference_node = hd_node.children[0]
+    assert_equal 'Introduction', reference_node.ref_id
+    assert_equal 'chapter1', reference_node.context_id
+    assert_equal 'chapter1|Introduction', reference_node.content
   end
 
   def test_reference_inline_elements

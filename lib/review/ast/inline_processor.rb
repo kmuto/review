@@ -8,6 +8,7 @@
 
 require 'review/ast'
 require_relative 'inline_tokenizer'
+require_relative 'reference_node'
 
 module ReVIEW
   module AST
@@ -67,11 +68,9 @@ module ReVIEW
           create_inline_href_ast_node(content, parent_node)
         when 'kw'
           create_inline_kw_ast_node(content, parent_node)
-        when 'hd'
-          create_inline_hd_ast_node(content, parent_node)
-        when 'img', 'list', 'table', 'eq'
+        when 'img', 'list', 'table', 'eq', 'fn', 'endnote'
           create_inline_ref_ast_node(command, content, parent_node)
-        when 'chap', 'chapref', 'sec', 'secref', 'labelref', 'ref'
+        when 'hd', 'chap', 'chapref', 'sec', 'secref', 'labelref', 'ref'
           create_inline_cross_ref_ast_node(command, content, parent_node)
         when 'w', 'wb'
           create_inline_word_ast_node(command, content, parent_node)
@@ -246,7 +245,7 @@ module ReVIEW
         parent_node.add_child(inline_node)
       end
 
-      # Create inline reference AST node (for img, list, table, eq)
+      # Create inline reference AST node (for img, list, table, eq, fn, endnote)
       def create_inline_ref_ast_node(ref_type, arg, parent_node)
         inline_node = AST::InlineNode.new(
           location: @ast_compiler.location,
@@ -256,28 +255,21 @@ module ReVIEW
         # Parse reference format: "ID" or "chapter_id|ID"
         if arg.include?('|')
           parts = arg.split('|', 2)
-          inline_node.args = [parts[0].strip, parts[1].strip]
+          context_id = parts[0].strip
+          ref_id = parts[1].strip
+          inline_node.args = [context_id, ref_id]
 
-          # Add text nodes for both parts
-          chapter_text = AST::TextNode.new(
-            location: @ast_compiler.location,
-            content: parts[0].strip
-          )
-          inline_node.add_child(chapter_text)
-
-          id_text = AST::TextNode.new(
-            location: @ast_compiler.location,
-            content: parts[1].strip
-          )
-          inline_node.add_child(id_text)
+          # Add ReferenceNode instead of TextNodes
+          reference_node = AST::ReferenceNode.new(ref_id, context_id)
         else
-          inline_node.args = [arg]
-          text_node = AST::TextNode.new(
-            location: @ast_compiler.location,
-            content: arg
-          )
-          inline_node.add_child(text_node)
+          ref_id = arg
+          inline_node.args = [ref_id]
+
+          # Add ReferenceNode for single ID
+          reference_node = AST::ReferenceNode.new(ref_id)
         end
+        reference_node.location = @ast_compiler.location
+        inline_node.add_child(reference_node)
 
         parent_node.add_child(inline_node)
       end
@@ -289,13 +281,24 @@ module ReVIEW
           inline_type: ref_type
         )
 
-        # Cross-references typically just have a single ID argument
-        inline_node.args = [arg]
-        text_node = AST::TextNode.new(
-          location: @ast_compiler.location,
-          content: arg
-        )
-        inline_node.add_child(text_node)
+        # Handle special case for hd which supports pipe-separated format
+        if ref_type == 'hd' && arg.include?('|')
+          parts = arg.split('|', 2)
+          context_id = parts[0].strip
+          ref_id = parts[1].strip
+          inline_node.args = [context_id, ref_id]
+
+          # Add ReferenceNode with context
+          reference_node = AST::ReferenceNode.new(ref_id, context_id)
+        else
+          # Standard cross-references with single ID argument
+          inline_node.args = [arg]
+
+          # Add ReferenceNode for cross-references
+          reference_node = AST::ReferenceNode.new(arg)
+        end
+        reference_node.location = @ast_compiler.location
+        inline_node.add_child(reference_node)
 
         parent_node.add_child(inline_node)
       end
