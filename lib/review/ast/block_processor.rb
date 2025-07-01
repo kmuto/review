@@ -407,6 +407,21 @@ module ReVIEW
         node
       end
 
+      # Build column block
+      def build_column_ast(context)
+        node = context.create_node(AST::ColumnNode,
+                                   level: 2, # Default level for block columns
+                                   label: context.arg(0),
+                                   caption: context.process_caption(context.args, 1),
+                                   column_type: 'column')
+
+        # Process structured content
+        context.process_structured_content_with_blocks(node)
+
+        @ast_compiler.add_child_to_current_node(node)
+        node
+      end
+
       # Build quote block
       def build_quote_block_ast(context)
         node = context.create_node(AST::BlockNode, block_type: context.name)
@@ -794,6 +809,9 @@ module ReVIEW
         important: :build_minicolumn_ast,
         caution: :build_minicolumn_ast,
         notice: :build_minicolumn_ast,
+
+        # Column blocks
+        column: :build_column_ast,
 
         # Reference blocks
         footnote: :build_footnote_ast,

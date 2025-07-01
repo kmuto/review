@@ -417,6 +417,20 @@ module ReVIEW
         end
       end
 
+      def visit_reference(node)
+        # Handle ReferenceNode - simply render the content
+        node.content || ''
+      end
+
+      def visit_footnote(node)
+        # Handle FootnoteNode - render as footnote definition
+        if node.id && node.content
+          %Q(<div class="footnote" id="fn-#{node.id}">#{node.content}</div>)
+        else
+          ''
+        end
+      end
+
       def visit_embed(node)
         # Handle embed blocks and raw commands
         case node.embed_type
@@ -454,87 +468,17 @@ module ReVIEW
         raise NotImplementedError, "HTMLRenderer does not support generic visitor. Implement #{method_name} for #{node.class.name}"
       end
 
-      def render_inline_element(type, content, node) # rubocop:disable Metrics/CyclomaticComplexity
-        case type.to_s
-        when 'b'
-          render_inline_b(content, node)
-        when 'strong'
-          render_inline_strong(content, node)
-        when 'i'
-          render_inline_i(content, node)
-        when 'em'
-          render_inline_em(content, node)
-        when 'code'
-          render_inline_code(content, node)
-        when 'tt'
-          render_inline_tt(content, node)
-        when 'kbd'
-          "<kbd>#{escape_content(content)}</kbd>"
-        when 'samp'
-          "<samp>#{escape_content(content)}</samp>"
-        when 'var'
-          "<var>#{escape_content(content)}</var>"
-        when 'sup'
-          "<sup>#{escape_content(content)}</sup>"
-        when 'sub'
-          "<sub>#{escape_content(content)}</sub>"
-        when 'del'
-          "<del>#{escape_content(content)}</del>"
-        when 'ins'
-          "<ins>#{escape_content(content)}</ins>"
-        when 'u'
-          "<u>#{escape_content(content)}</u>"
-        when 'br'
-          '<br />'
-        when 'raw'
-          render_inline_raw(content, node)
-        when 'chap'
-          render_chap(content, node)
-        when 'title'
-          render_title(content, node)
-        when 'chapref'
-          render_chapref(content, node)
-        when 'list'
-          render_list(content, node)
-        when 'img'
-          render_img(content, node)
-        when 'table'
-          render_inline_table(content, node)
-        when 'fn'
-          render_footnote(content, node)
-        when 'kw'
-          render_keyword(content, node)
-        when 'bou'
-          render_bou(content, node)
-        when 'ami'
-          render_ami(content, node)
-        when 'href'
-          render_href(content, node)
-        when 'url'
-          render_url(content, node)
-        when 'ruby'
-          render_ruby(content, node)
-        when 'm'
-          render_math(content, node)
-        when 'idx'
-          render_idx(content, node)
-        when 'hidx'
-          render_hidx(content, node)
-        when 'comment'
-          render_comment(content, node)
-        when 'hd'
-          render_headline_ref(content, node)
-        when 'sec'
-          render_section_ref(content, node)
-        when 'secref'
-          render_section_ref(content, node)
-        when 'labelref'
-          render_label_ref(content, node)
-        when 'ref'
-          render_label_ref(content, node)
-        else
-          content
-        end
+      def render_inline_element(type, content, node)
+        require 'review/renderer/html_renderer/inline_element_renderer'
+        # Always create a new inline renderer with current rendering context
+        # This ensures that context changes are properly reflected
+        inline_renderer = InlineElementRenderer.new(
+          self,
+          book: @book,
+          chapter: @chapter,
+          rendering_context: @rendering_context
+        )
+        inline_renderer.render(type, content, node)
       end
 
       def render_table_section(rows, section_tag, cell_tag)

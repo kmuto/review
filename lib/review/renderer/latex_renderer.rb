@@ -1003,6 +1003,11 @@ module ReVIEW
         node.children.map { |child| visit(child) }.join
       end
 
+      def visit_reference(node)
+        # Handle ReferenceNode - simply render the content
+        escape(node.content || '')
+      end
+
       # Render document children with proper separation
       def render_document_children(node)
         return '' unless node.children
