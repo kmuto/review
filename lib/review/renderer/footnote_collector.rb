@@ -63,34 +63,6 @@ module ReVIEW
         @footnotes.dup
       end
 
-      # Generate LaTeX footnotetext commands
-      # @param renderer [Object] the renderer to use for content rendering
-      # @return [String] LaTeX footnotetext commands
-      def generate_latex_footnotetext(renderer)
-        return '' if @footnotes.empty?
-
-        footnotetext_commands = @footnotes.map do |entry|
-          content = renderer.render_footnote_content(entry.node)
-          "\\footnotetext[#{entry.number}]{#{content}}"
-        end
-
-        footnotetext_commands.join("\n")
-      end
-
-      # Generate HTML footnote output
-      # @param renderer [Object] the renderer to use for content rendering
-      # @return [String] HTML footnote output
-      def generate_html_footnotes(renderer)
-        return '' if @footnotes.empty?
-
-        footnote_items = @footnotes.map do |entry|
-          content = renderer.render_footnote_content(entry.node)
-          %Q(<div class="footnote" id="fn#{entry.number}">#{content}</div>)
-        end
-
-        %Q(<div class="footnotes">#{footnote_items.join("\n")}</div>)
-      end
-
       # Iterate over collected footnotes
       # @yield [FootnoteEntry] each footnote entry
       def each(&block)

@@ -86,7 +86,7 @@ module ReVIEW
 
         # Add any remaining collected footnotetext commands
         if @rendering_context.footnote_collector.any?
-          content += @rendering_context.footnote_collector.generate_latex_footnotetext(self)
+          content += generate_footnotetext_from_collector(@rendering_context.footnote_collector)
           @rendering_context.footnote_collector.clear
         end
 
@@ -217,7 +217,7 @@ module ReVIEW
 
         # Add collected footnotetext commands
         if @rendering_context.footnote_collector.any?
-          result += @rendering_context.footnote_collector.generate_latex_footnotetext(self)
+          result += generate_footnotetext_from_collector(@rendering_context.footnote_collector)
           @rendering_context.footnote_collector.clear
         end
 
@@ -295,7 +295,7 @@ module ReVIEW
 
         # Add collected footnotetext commands from table context
         if @rendering_context.footnote_collector.any?
-          table_content += @rendering_context.footnote_collector.generate_latex_footnotetext(self)
+          table_content += generate_footnotetext_from_collector(@rendering_context.footnote_collector)
           @rendering_context.footnote_collector.clear
         end
 
@@ -401,7 +401,7 @@ module ReVIEW
 
         # Add collected footnotetext commands from caption context
         if @rendering_context.footnote_collector.any?
-          image_result += @rendering_context.footnote_collector.generate_latex_footnotetext(self)
+          image_result += generate_footnotetext_from_collector(@rendering_context.footnote_collector)
           @rendering_context.footnote_collector.clear
         end
 
@@ -1010,6 +1010,20 @@ module ReVIEW
         else
           escape(footnote_node&.content || '')
         end
+      end
+
+      # Generate LaTeX footnotetext commands from collected footnotes
+      # @param collector [FootnoteCollector] the footnote collector
+      # @return [String] LaTeX footnotetext commands
+      def generate_footnotetext_from_collector(collector)
+        return '' unless collector.any?
+
+        footnotetext_commands = collector.map do |entry|
+          content = render_footnote_content(entry.node)
+          "\\footnotetext[#{entry.number}]{#{content}}"
+        end
+
+        footnotetext_commands.join("\n") + "\n"
       end
 
       def normalize_id(id)

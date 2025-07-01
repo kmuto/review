@@ -55,7 +55,7 @@ module ReVIEW
         result = yield(child_context)
 
         # Process any collected footnotes when the context ends
-        if child_context.footnote_collector.any?
+        if child_context.footnotes?
           process_collected_footnotes(child_context)
         end
 
@@ -71,7 +71,7 @@ module ReVIEW
 
       # Check if any footnotes have been collected in this context
       # @return [Boolean] true if footnotes were collected
-      def has_collected_footnotes?
+      def footnotes?
         @footnote_collector.any?
       end
 
