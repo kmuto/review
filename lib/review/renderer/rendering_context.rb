@@ -111,13 +111,14 @@ module ReVIEW
       # Get a string representation for debugging
       # @return [String] string representation
       def to_s
-        context_chain = []
-        current = self
-        while current
-          context_chain.unshift(current.context_type.to_s)
-          current = current.parent_context
-        end
+        context_chain = ancestors.map(&:context_type)
         "RenderingContext[#{context_chain.join(' > ')}]"
+      end
+
+      # Get all ancestors (including self) in order from root to current
+      # @return [Array<RenderingContext>] array of contexts
+      def ancestors
+        Enumerator.produce(self, &:parent_context).take_while(&:itself).reverse
       end
 
       private
