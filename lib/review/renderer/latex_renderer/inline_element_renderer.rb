@@ -638,6 +638,15 @@ module ReVIEW
           render_inline_labelref(type, content, node)
         end
 
+        # Render inline comment
+        def render_inline_comment(_type, content, _node)
+          if @book&.config&.[]('draft')
+            "\\pdfcomment{#{escape(content)}}"
+          else
+            ''
+          end
+        end
+
         # Render title reference
         def render_inline_title(_type, content, node)
           if node.args && node.args.first

@@ -397,6 +397,8 @@ module ReVIEW
           render_notice_block(node)
         when 'quote', 'blockquote'
           render_quote_block(node)
+        when 'comment'
+          render_comment_block(node)
         else
           render_generic_block(node)
         end
@@ -575,6 +577,29 @@ module ReVIEW
         id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
         content = render_children(node)
         %Q(<blockquote#{id_attr}>#{content}</blockquote>)
+      end
+
+      def render_comment_block(node)
+        # ブロックcomment - draft設定時のみ表示
+        return '' unless @book&.config&.[]('draft')
+
+        content_lines = []
+
+        # 引数があれば最初に追加
+        if node.args && node.args.first && !node.args.first.empty?
+          content_lines << escape(node.args.first)
+        end
+
+        # 本文を追加
+        if node.content && !node.content.empty?
+          body_content = render_children(node)
+          content_lines << body_content unless body_content.empty?
+        end
+
+        return '' if content_lines.empty?
+
+        content_str = content_lines.join('<br />')
+        %Q(<div class="draft-comment">#{content_str}</div>)
       end
 
       def render_callout_block(node, type)

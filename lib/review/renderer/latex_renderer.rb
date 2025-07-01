@@ -571,9 +571,9 @@ module ReVIEW
           # without LaTeX environment wrapping since content is raw LaTeX math
           content.strip.empty? ? '' : "#{content}\n"
         when 'comment'
-          # Comment blocks should not produce any output in final document
-          ''
-        when 'beginchild', 'endchild' # rubocop:disable Lint/DuplicateBranch
+          # Handle comment blocks - only output in draft mode
+          visit_comment_block(node)
+        when 'beginchild', 'endchild'
           # Child nesting control commands - produce no output
           ''
         when 'centering'
@@ -646,6 +646,30 @@ module ReVIEW
 
       def visit_caption(node)
         render_children(node)
+      end
+
+      def visit_comment_block(node)
+        # block comment - only display in draft mode
+        return '' unless @book&.config&.[]('draft')
+
+        content_lines = []
+
+        # add argument if it exists
+        if node.args && node.args.first && !node.args.first.empty?
+          content_lines << escape(node.args.first)
+        end
+
+        # add body content
+        if node.content && !node.content.empty?
+          body_content = render_children(node)
+          content_lines << body_content unless body_content.empty?
+        end
+
+        return '' if content_lines.empty?
+
+        # use pdfcomment macro in LaTeX
+        content_str = content_lines.join('\\par ')
+        "\\pdfcomment{#{content_str}}\n"
       end
 
       def visit_column(node)
