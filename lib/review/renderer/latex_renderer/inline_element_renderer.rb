@@ -18,12 +18,11 @@ module ReVIEW
         include ReVIEW::LaTeXUtils
         include ReVIEW::TextUtils
 
-        def initialize(renderer, book:, chapter:, doc_status:, foottext:)
+        def initialize(renderer, book:, chapter:, rendering_context:)
           @renderer = renderer
           @book = book
           @chapter = chapter
-          @doc_status = doc_status
-          @foottext = foottext
+          @rendering_context = rendering_context
 
           # Initialize LaTeX character escaping
           initialize_metachars('')
@@ -100,16 +99,19 @@ module ReVIEW
         def render_inline_fn(_type, content, node)
           if node.args && node.args.first
             footnote_id = node.args.first.to_s
-            # Handle footnotes based on config or context like LATEXBuilder
-            # For AST renderer, always use footnotetext separation for problematic contexts
+            # Check if we need to use footnotetext based on context
             use_footnotetext = (@book&.config&.key?('footnotetext') && @book.config['footnotetext']) ||
-                               @doc_status[:table] || @doc_status[:caption] || @doc_status[:column]
+                               @rendering_context.requires_footnotetext?
 
             if use_footnotetext
               if @chapter && @chapter.footnote_index
                 begin
                   footnote_number = @chapter.footnote_index.number(footnote_id)
-                  @foottext[footnote_id] = footnote_number
+                  index_item = @chapter.footnote_index[footnote_id]
+                  # Add footnote to context collector
+                  if index_item.footnote_node?
+                    @rendering_context.collect_footnote(index_item.footnote_node, footnote_number)
+                  end
                   '\\protect\\footnotemark'
                 rescue StandardError => e
                   raise NotImplementedError, "Footnote inline processing failed for #{footnote_id}: #{e.message}"
@@ -118,22 +120,16 @@ module ReVIEW
                 '\\protect\\footnotemark'
               end
             elsif @chapter && @chapter.footnote_index
-              # Get footnote content from index
+              # Get footnote content from index for direct footnote
               begin
                 index_item = @chapter.footnote_index[footnote_id]
-
-                # Try to get FootnoteNode for proper AST rendering
                 footnote_content = if index_item.footnote_node?
-                                     # Render the footnote AST children properly
-                                     @renderer.render_footnote_ast(index_item.footnote_node)
+                                     @renderer.render_footnote_content(index_item.footnote_node)
                                    else
-                                     # Fallback to text content
                                      escape(index_item.content || '')
                                    end
-
                 "\\footnote{#{footnote_content}}"
               rescue StandardError => _e
-                # Fallback to footnote ID if content not found
                 "\\footnote{#{footnote_id}}"
               end
             else

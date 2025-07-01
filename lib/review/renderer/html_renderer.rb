@@ -7,6 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/renderer/base'
+require 'review/renderer/rendering_context'
 require 'review/htmlutils'
 require 'review/textutils'
 require 'review/escape_utils'
@@ -49,6 +50,9 @@ module ReVIEW
         # Initialize template variables like HTMLBuilder
         @javascripts = []
         @body_ext = ''
+
+        # Initialize RenderingContext for cleaner state management
+        @rendering_context = RenderingContext.new(:document)
       end
 
       def visit_document(node)
@@ -272,26 +276,33 @@ module ReVIEW
       def visit_table(node)
         id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
 
+        # Process caption with proper context management
         caption_html = if node.caption
-                         caption_content = render_children(node.caption)
-                         # Generate table number like HTMLBuilder with proper counter
-                         @table_counter += 1
-                         table_number = "表1.#{@table_counter}: #{caption_content}"
-                         %Q(<p class="caption">#{table_number}</p>
+                         @rendering_context.with_child_context(:caption) do |caption_context|
+                           caption_content = render_children_with_context(node.caption, caption_context)
+                           # Generate table number like HTMLBuilder with proper counter
+                           @table_counter += 1
+                           table_number = "表1.#{@table_counter}: #{caption_content}"
+                           %Q(<p class="caption">#{table_number}</p>
 )
+                         end
                        else
                          ''
                        end
 
-        # Process all table rows using visitor pattern
-        # AST generation has already determined cell types, so we just visit each row
-        all_rows = node.header_rows + node.body_rows
-        rows_html = all_rows.map { |row| visit(row) }.join("\n")
-        rows_html += "\n" unless rows_html.empty?
+        # Process table content with table context
+        table_html = @rendering_context.with_child_context(:table) do |table_context|
+          # Process all table rows using visitor pattern with table context
+          all_rows = node.header_rows + node.body_rows
+          rows_html = all_rows.map { |row| visit_with_context(row, table_context) }.join("\n")
+          rows_html += "\n" unless rows_html.empty?
+
+          %Q(<table>
+#{rows_html}</table>)
+        end
 
         %Q(<div#{id_attr} class="table">
-#{caption_html}<table>
-#{rows_html}</table>
+#{caption_html}#{table_html}
 </div>
 )
       end
@@ -346,11 +357,21 @@ module ReVIEW
       def visit_image(node)
         id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
 
-        # Check if image is bound like HTMLBuilder does
-        if @chapter&.image_bound?(node.id)
+        # Process image with caption context management
+        if node.caption
+          @rendering_context.with_child_context(:caption) do |caption_context|
+            # Check if image is bound like HTMLBuilder does
+            if @chapter&.image_bound?(node.id)
+              image_image_html_with_context(node.id, node.caption, nil, id_attr, caption_context)
+            else
+              # For dummy images, ImageNode doesn't have lines, so use empty array
+              image_dummy_html_with_context(node.id, node.caption, [], id_attr, caption_context)
+            end
+          end
+        elsif @chapter&.image_bound?(node.id)
+          # No caption, no special context needed
           image_image_html(node.id, node.caption, nil, id_attr)
         else
-          # For dummy images, ImageNode doesn't have lines, so use empty array
           image_dummy_html(node.id, node.caption, [], id_attr)
         end
       end
@@ -696,8 +717,29 @@ module ReVIEW
         end
       end
 
-      def render_footnote(content, _node)
-        %Q(<span class="footnote">#{content}</span>)
+      def render_footnote(content, node)
+        # HTMLでは常にspan要素として出力
+        # FootnoteCollectorは使用しないが、一貫性のためRenderingContextを認識
+        if node.args && node.args.first
+          footnote_id = node.args.first.to_s
+          if @chapter && @chapter.footnote_index
+            begin
+              index_item = @chapter.footnote_index[footnote_id]
+              footnote_content = if index_item.footnote_node?
+                                   render_footnote_content(index_item.footnote_node)
+                                 else
+                                   escape(index_item.content || '')
+                                 end
+              %Q(<span class="footnote">#{footnote_content}</span>)
+            rescue StandardError
+              %Q(<span class="footnote">#{footnote_id}</span>)
+            end
+          else
+            %Q(<span class="footnote">#{footnote_id}</span>)
+          end
+        else
+          %Q(<span class="footnote">#{content}</span>)
+        end
       end
 
       def render_keyword(content, node)
@@ -975,6 +1017,38 @@ module ReVIEW
         end
       end
 
+      # Context-aware version of image_image_html
+      def image_image_html_with_context(id, caption, _metric, id_attr, caption_context)
+        caption_html = if caption
+                         image_header_html_with_context(id, caption, caption_context)
+                       else
+                         ''
+                       end
+
+        begin
+          image_path = @chapter.image(id).path.sub(%r{\A\./}, '')
+          caption_content = caption ? render_children_with_context(caption, caption_context) : ''
+
+          img_html = %Q(<img src="#{image_path}" alt="#{escape(caption_content)}" />)
+
+          # Check caption positioning like HTMLBuilder
+          if caption_top?('image') && caption
+            %Q(<div#{id_attr} class="image">
+#{caption_html}#{img_html}
+</div>
+)
+          else
+            %Q(<div#{id_attr} class="image">
+#{img_html}
+#{caption_html}</div>
+)
+          end
+        rescue StandardError
+          # If image loading fails, fall back to dummy
+          image_dummy_html_with_context(id, caption, [], id_attr, caption_context)
+        end
+      end
+
       def image_dummy_html(id, caption, lines, id_attr)
         caption_html = image_header_html(id, caption)
 
@@ -1000,10 +1074,63 @@ module ReVIEW
         end
       end
 
+      # Context-aware version of image_dummy_html
+      def image_dummy_html_with_context(id, caption, lines, id_attr, caption_context)
+        caption_html = if caption
+                         image_header_html_with_context(id, caption, caption_context)
+                       else
+                         ''
+                       end
+
+        # Generate dummy image content exactly like HTMLBuilder
+        lines_content = if lines.empty?
+                          "\n" # Empty image block just has one newline
+                        else
+                          "\n" + lines.map { |line| escape(line) }.join("\n") + "\n"
+                        end
+
+        # Check caption positioning like HTMLBuilder
+        if caption_top?('image') && caption
+          %Q(<div#{id_attr} class="image">
+#{caption_html}<pre class="dummyimage">#{lines_content}</pre>
+</div>
+)
+        else
+          %Q(<div#{id_attr} class="image">
+<pre class="dummyimage">#{lines_content}</pre>
+#{caption_html}</div>
+)
+        end
+      end
+
       def image_header_html(id, caption)
         return '' unless caption
 
         caption_content = render_children(caption)
+
+        # Generate image number like HTMLBuilder using chapter image index
+        image_item = @chapter&.image(id)
+        unless image_item && image_item.number
+          raise KeyError, "image '#{id}' not found"
+        end
+
+        image_number = if get_chap
+                         %Q(#{I18n.t('image')}#{I18n.t('format_number_header', [get_chap, image_item.number])})
+                       else
+                         %Q(#{I18n.t('image')}#{I18n.t('format_number_header_without_chapter', [image_item.number])})
+                       end
+
+        %Q(<p class="caption">
+#{image_number}#{I18n.t('caption_prefix')}#{caption_content}
+</p>
+)
+      end
+
+      # Context-aware version of image_header_html
+      def image_header_html_with_context(id, caption, caption_context)
+        return '' unless caption
+
+        caption_content = render_children_with_context(caption, caption_context)
 
         # Generate image number like HTMLBuilder using chapter image index
         image_item = @chapter&.image(id)
@@ -1212,6 +1339,33 @@ module ReVIEW
       # Builder compatibility - return target name for embed blocks
       def target_name
         'html'
+      end
+
+      # Render children with specific rendering context
+      def render_children_with_context(node, context)
+        old_context = @rendering_context
+        @rendering_context = context
+        result = render_children(node)
+        @rendering_context = old_context
+        result
+      end
+
+      # Visit node with specific rendering context
+      def visit_with_context(node, context)
+        old_context = @rendering_context
+        @rendering_context = context
+        result = visit(node)
+        @rendering_context = old_context
+        result
+      end
+
+      # Render footnote content (consistent with LatexRenderer)
+      def render_footnote_content(footnote_node)
+        if footnote_node && footnote_node.respond_to?(:children)
+          render_children(footnote_node)
+        else
+          escape(footnote_node&.content || '')
+        end
       end
     end
   end

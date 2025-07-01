@@ -7,6 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/renderer/base'
+require 'review/renderer/rendering_context'
 require 'review/latexutils'
 require 'review/sec_counter'
 require 'review/i18n'
@@ -43,9 +44,8 @@ module ReVIEW
         # Initialize first line number state like LATEXBuilder
         @first_line_num = nil
 
-        # Initialize document status tracking like LATEXBuilder
-        @doc_status = { table: false, caption: false, column: false }
-        @foottext = {}
+        # Initialize RenderingContext for cleaner state management
+        @rendering_context = RenderingContext.new(:document)
 
         # Initialize Part environment tracking for reviewpart wrapper
         @part_env_opened = false
@@ -84,25 +84,10 @@ module ReVIEW
           content += "\\end{reviewpart}\n"
         end
 
-        # Add remaining footnotetext commands if needed
-        # Always output remaining footnotetext entries (they were already marked for separation)
-        unless @foottext.empty?
-          @foottext.each do |footnote_id, footnote_number|
-            next unless @chapter && @chapter.footnote_index
-
-            begin
-              index_item = @chapter.footnote_index[footnote_id]
-              footnote_content = if index_item.footnote_node?
-                                   render_footnote_ast(index_item.footnote_node)
-                                 else
-                                   escape(index_item.content || '')
-                                 end
-              content += "\\footnotetext[#{footnote_number}]{#{footnote_content}}\n"
-            rescue StandardError => e
-              raise NotImplementedError, "Footnote not found in index: #{footnote_id} (#{e.message})"
-            end
-          end
-          @foottext.clear
+        # Add any remaining collected footnotetext commands
+        if @rendering_context.footnote_collector.any?
+          content += @rendering_context.footnote_collector.generate_latex_footnotetext(self)
+          @rendering_context.footnote_collector.clear
         end
 
         # Ensure content ends with single newline if it contains content
@@ -200,10 +185,12 @@ module ReVIEW
       end
 
       def visit_code_block(node)
-        # Set caption context for footnote processing
-        @doc_status[:caption] = true if node.caption
-        caption = render_children(node.caption) if node.caption
-        @doc_status[:caption] = false
+        # Process caption with proper context management
+        caption = if node.caption
+                    @rendering_context.with_child_context(:caption) do |caption_context|
+                      render_children_with_context(node.caption, caption_context)
+                    end
+                  end
 
         # Process children to get properly escaped content while preserving structure
         content = render_children(node)
@@ -228,26 +215,11 @@ module ReVIEW
                    raise NotImplementedError, "Unknown code block type: #{code_type}"
                  end
 
-        # Add footnotetext commands for footnotes used in caption
-        @foottext.each do |footnote_id, footnote_number|
-          next unless @chapter && @chapter.footnote_index
-
-          begin
-            index_item = @chapter.footnote_index[footnote_id]
-            # Try to get FootnoteNode for proper AST rendering
-            footnote_content = if index_item.footnote_node?
-                                 # Render the footnote AST children properly
-                                 render_footnote_ast(index_item.footnote_node)
-                               else
-                                 # Fallback to text content
-                                 escape(index_item.content || '')
-                               end
-            result += "\\footnotetext[#{footnote_number}]{#{footnote_content}}\n"
-          rescue StandardError => e
-            raise NotImplementedError, "Footnote not found in index: #{footnote_id} (#{e.message})"
-          end
+        # Add collected footnotetext commands
+        if @rendering_context.footnote_collector.any?
+          result += @rendering_context.footnote_collector.generate_latex_footnotetext(self)
+          @rendering_context.footnote_collector.clear
         end
-        @foottext.clear
 
         result
       end
@@ -260,10 +232,12 @@ module ReVIEW
       end
 
       def visit_table(node)
-        # Set caption context for footnote processing
-        @doc_status[:caption] = true if node.caption
-        caption = render_children(node.caption) if node.caption
-        @doc_status[:caption] = false
+        # Process caption with proper context management
+        caption = if node.caption
+                    @rendering_context.with_child_context(:caption) do |caption_context|
+                      render_children_with_context(node.caption, caption_context)
+                    end
+                  end
 
         table_type = node.respond_to?(:table_type) ? node.table_type : :table
 
@@ -272,83 +246,60 @@ module ReVIEW
           return visit_imgtable(node, caption)
         end
 
-        # Set table context for footnote processing
-        @doc_status[:table] = true
+        # Process table content with table context
+        table_content = @rendering_context.with_child_context(:table) do |table_context|
+          # Calculate column count from first row
+          all_rows = node.header_rows + node.body_rows
+          col_count = all_rows.first ? all_rows.first.children.length : 1
 
-        # Calculate column count from first row
-        all_rows = node.header_rows + node.body_rows
-        col_count = all_rows.first ? all_rows.first.children.length : 1
+          # Generate column specification with borders (like LATEXBuilder)
+          col_spec = '|' + ('l|' * col_count)
 
-        # Generate column specification with borders (like LATEXBuilder)
-        col_spec = '|' + ('l|' * col_count)
-
-        result = []
-        # Use Re:VIEW table structure like LATEXBuilder
-        result << if node.id?
-                    "\\begin{table}%%#{node.id}"
-                  else
-                    '\\begin{table}%%'
-                  end
-
-        if caption && !caption.empty?
-          # emtable uses reviewtablecaption* (with asterisk)
-          caption_command = table_type == :emtable ? 'reviewtablecaption*' : 'reviewtablecaption'
-          result << "\\#{caption_command}{#{caption}}"
-        end
-
-        if node.id?
-          # Generate label like LATEXBuilder: table:chapter:id
-          # Don't escape underscores in labels - they're allowed in LaTeX label names
-          result << if @chapter
-                      "\\label{table:#{@chapter.id}:#{node.id}}"
+          result = []
+          # Use Re:VIEW table structure like LATEXBuilder
+          result << if node.id?
+                      "\\begin{table}%%#{node.id}"
                     else
-                      "\\label{table:test:#{node.id}}"
+                      '\\begin{table}%%'
                     end
-        end
 
-        result << "\\begin{reviewtable}{#{col_spec}}"
-        result << '\\hline'
-
-        # Process all rows using visitor pattern
-        all_rows = node.header_rows + node.body_rows
-        all_rows.each do |row|
-          row_content = visit(row)
-          result << "#{row_content} \\\\  \\hline"
-        end
-
-        result << '\\end{reviewtable}'
-        result << '\\end{table}'
-
-        # Clear table context and add footnotetext commands for table footnotes
-        @doc_status[:table] = false
-        table_result = result.join("\n") + "\n"
-
-        # Add footnotetext commands for footnotes used in table
-        @foottext.each do |footnote_id, footnote_number|
-          next unless @chapter && @chapter.footnote_index
-
-          begin
-            footnote_item = @chapter.footnote_index[footnote_id]
-            if footnote_item
-              # Try to get FootnoteNode for proper AST rendering
-              footnote_content = if footnote_item.footnote_node?
-                                   # Render the footnote AST children properly
-                                   render_footnote_ast(footnote_item.footnote_node)
-                                 else
-                                   # Fallback to text content
-                                   escape(footnote_item.content || '')
-                                 end
-              table_result += "\\footnotetext[#{footnote_number}]{#{footnote_content}}\n"
-            else
-              raise NotImplementedError, "Footnote not found in index: #{footnote_id}"
-            end
-          rescue StandardError => e
-            raise NotImplementedError, "Footnote not found in index: #{footnote_id} (#{e.message})"
+          if caption && !caption.empty?
+            # emtable uses reviewtablecaption* (with asterisk)
+            caption_command = table_type == :emtable ? 'reviewtablecaption*' : 'reviewtablecaption'
+            result << "\\#{caption_command}{#{caption}}"
           end
-        end
-        @foottext.clear
 
-        table_result
+          if node.id?
+            # Generate label like LATEXBuilder: table:chapter:id
+            # Don't escape underscores in labels - they're allowed in LaTeX label names
+            result << if @chapter
+                        "\\label{table:#{@chapter.id}:#{node.id}}"
+                      else
+                        "\\label{table:test:#{node.id}}"
+                      end
+          end
+
+          result << "\\begin{reviewtable}{#{col_spec}}"
+          result << '\\hline'
+
+          # Process all rows using visitor pattern with table context
+          all_rows.each do |row|
+            row_content = visit_with_context(row, table_context)
+            result << "#{row_content} \\\\  \\hline"
+          end
+
+          result << '\\end{reviewtable}'
+          result << '\\end{table}'
+          result.join("\n") + "\n"
+        end
+
+        # Add collected footnotetext commands from table context
+        if @rendering_context.footnote_collector.any?
+          table_content += @rendering_context.footnote_collector.generate_latex_footnotetext(self)
+          @rendering_context.footnote_collector.clear
+        end
+
+        table_content
       end
 
       def visit_imgtable(node, caption)
@@ -392,10 +343,12 @@ module ReVIEW
       end
 
       def visit_image(node)
-        # Set caption context for footnote processing
-        @doc_status[:caption] = true if node.caption
-        caption = render_children(node.caption) if node.caption
-        @doc_status[:caption] = false
+        # Process caption with proper context management
+        caption = if node.caption
+                    @rendering_context.with_child_context(:caption) do |caption_context|
+                      render_children_with_context(node.caption, caption_context)
+                    end
+                  end
 
         image_type = node.respond_to?(:image_type) ? node.image_type : :image
 
@@ -446,26 +399,11 @@ module ReVIEW
 
         image_result = result.join("\n") + "\n"
 
-        # Add footnotetext commands for footnotes used in caption
-        @foottext.each do |footnote_id, footnote_number|
-          next unless @chapter && @chapter.footnote_index
-
-          begin
-            index_item = @chapter.footnote_index[footnote_id]
-            # Try to get FootnoteNode for proper AST rendering
-            footnote_content = if index_item.footnote_node?
-                                 # Render the footnote AST children properly
-                                 render_footnote_ast(index_item.footnote_node)
-                               else
-                                 # Fallback to text content
-                                 escape(index_item.content || '')
-                               end
-            image_result += "\\footnotetext[#{footnote_number}]{#{footnote_content}}\n"
-          rescue StandardError => e
-            raise NotImplementedError, "Footnote not found in index: #{footnote_id} (#{e.message})"
-          end
+        # Add collected footnotetext commands from caption context
+        if @rendering_context.footnote_collector.any?
+          image_result += @rendering_context.footnote_collector.generate_latex_footnotetext(self)
+          @rendering_context.footnote_collector.clear
         end
-        @foottext.clear
 
         image_result
       end
@@ -1016,8 +954,7 @@ module ReVIEW
             self,
             book: @book,
             chapter: @chapter,
-            doc_status: @doc_status,
-            foottext: @foottext
+            rendering_context: @rendering_context
           )
         @inline_renderer.render(type, content, node)
       end
@@ -1046,6 +983,33 @@ module ReVIEW
         end
 
         results.join
+      end
+
+      # Render children with specific rendering context
+      def render_children_with_context(node, context)
+        old_context = @rendering_context
+        @rendering_context = context
+        result = render_children(node)
+        @rendering_context = old_context
+        result
+      end
+
+      # Visit node with specific rendering context
+      def visit_with_context(node, context)
+        old_context = @rendering_context
+        @rendering_context = context
+        result = visit(node)
+        @rendering_context = old_context
+        result
+      end
+
+      # Render footnote content for footnotetext
+      def render_footnote_content(footnote_node)
+        if footnote_node && footnote_node.respond_to?(:children)
+          render_children(footnote_node)
+        else
+          escape(footnote_node&.content || '')
+        end
       end
 
       def normalize_id(id)
@@ -1233,14 +1197,6 @@ module ReVIEW
 
         # Convert \n to actual newlines
         content.gsub('\\n', "\n")
-      end
-
-      # Render footnote AST children
-      def render_footnote_ast(footnote_node)
-        return '' unless footnote_node.respond_to?(:children) && footnote_node.children
-
-        # Render all children and join the result
-        footnote_node.children.map { |child| visit(child) }.join
       end
     end
   end
