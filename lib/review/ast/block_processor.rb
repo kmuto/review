@@ -170,11 +170,23 @@ module ReVIEW
       end
 
       def compile_minicolumn_to_ast(type, args, lines)
+        # Handle both 1-arg and 2-arg minicolumn syntax
+        if args.length >= 2
+          # 2-argument form: [id][caption]
+          id = args[0]
+          caption_index = 1
+        else
+          # 1-argument form: [caption]
+          id = nil
+          caption_index = 0
+        end
+
         # Create a MinicolumnNode for note, memo, tip, etc.
         node = AST::MinicolumnNode.new(
           location: @ast_compiler.location,
           minicolumn_type: type.to_sym,
-          caption: process_caption(args, 0)
+          id: id,
+          caption: process_caption(args, caption_index)
         )
 
         # Use the universal block processing method from Compiler for HTML Builder compatibility
@@ -396,9 +408,23 @@ module ReVIEW
 
       # Build minicolumn (with nesting support)
       def build_minicolumn_ast(context)
+        # Handle both 1-arg and 2-arg minicolumn syntax
+        # //note[caption]{ ... }         - 1 arg: caption only
+        # //note[id][caption]{ ... }     - 2 args: id and caption
+        if context.args.length >= 2
+          # 2-argument form: [id][caption]
+          id = context.arg(0)
+          caption_index = 1
+        else
+          # 1-argument form: [caption]
+          id = nil
+          caption_index = 0
+        end
+
         node = context.create_node(AST::MinicolumnNode,
                                    minicolumn_type: context.name,
-                                   caption: context.process_caption(context.args, 0))
+                                   id: id,
+                                   caption: context.process_caption(context.args, caption_index))
 
         # Process structured content
         context.process_structured_content_with_blocks(node)

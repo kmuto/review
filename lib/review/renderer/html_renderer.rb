@@ -407,7 +407,7 @@ module ReVIEW
       protected
 
       def render_children(node)
-        return '' unless node&.children
+        return '' unless node.children
 
         # Special handling for CodeBlockNode - preserve line breaks
         if node.instance_of?(::ReVIEW::AST::CodeBlockNode)

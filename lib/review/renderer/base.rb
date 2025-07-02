@@ -7,9 +7,13 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/ast/visitor'
+require 'review/exception'
 
 module ReVIEW
   module Renderer
+    # Error class for renderer-specific errors
+    class RenderError < ReVIEW::ApplicationError; end
+
     # Base class for all AST renderers.
     # This class extends the Visitor pattern to provide rendering capabilities
     # for converting AST nodes into various output formats.

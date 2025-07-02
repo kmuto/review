@@ -72,8 +72,8 @@ module ReVIEW
           create_inline_ref_ast_node(command, content, parent_node)
         when 'hd', 'chap', 'chapref', 'sec', 'secref', 'labelref', 'ref'
           create_inline_cross_ref_ast_node(command, content, parent_node)
-        when 'w', 'wb'
-          create_inline_word_ast_node(command, content, parent_node)
+        when 'w', 'wb' # rubocop:disable Lint/DuplicateBranch
+          create_inline_ref_ast_node(command, content, parent_node)
         when 'raw'
           create_inline_raw_ast_node(content, parent_node)
         else
@@ -299,24 +299,6 @@ module ReVIEW
         end
         reference_node.location = @ast_compiler.location
         inline_node.add_child(reference_node)
-
-        parent_node.add_child(inline_node)
-      end
-
-      # Create inline word AST node (for w, wb)
-      def create_inline_word_ast_node(word_type, arg, parent_node)
-        inline_node = AST::InlineNode.new(
-          location: @ast_compiler.location,
-          inline_type: word_type
-        )
-
-        # Word expansion commands just have the filename argument
-        inline_node.args = [arg]
-        text_node = AST::TextNode.new(
-          location: @ast_compiler.location,
-          content: arg
-        )
-        inline_node.add_child(text_node)
 
         parent_node.add_child(inline_node)
       end

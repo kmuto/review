@@ -191,6 +191,10 @@ module ReVIEW
       "[#{label}](#{url})"
     end
 
+    def inline_url(str)
+      "[#{str}](#{str})"
+    end
+
     def inline_i(str)
       "*#{str.gsub('*', '\*')}*"
     end

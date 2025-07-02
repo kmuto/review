@@ -6,14 +6,14 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require 'review/renderer/html_renderer'
+require 'review/renderer/markdown_renderer'
 require 'review/htmlutils'
 require 'review/textutils'
 
 module ReVIEW
   module Renderer
-    class HtmlRenderer < Base
-      # Inline element renderer for HTML output
+    class MarkdownRenderer < Base
+      # Inline element renderer for Markdown output
       class InlineElementRenderer
         include ReVIEW::HTMLUtils
         include ReVIEW::TextUtils
@@ -37,69 +37,69 @@ module ReVIEW
         private
 
         def render_inline_b(_type, content, _node)
-          %Q(<b>#{escape_content(content)}</b>)
+          "**#{escape_asterisks(content)}**"
         end
 
         def render_inline_strong(_type, content, _node)
-          %Q(<strong>#{escape_content(content)}</strong>)
+          "**#{escape_asterisks(content)}**"
         end
 
         def render_inline_i(_type, content, _node)
-          %Q(<i>#{escape_content(content)}</i>)
+          "*#{escape_asterisks(content)}*"
         end
 
         def render_inline_em(_type, content, _node)
-          %Q(<em>#{escape_content(content)}</em>)
+          "*#{escape_asterisks(content)}*"
         end
 
         def render_inline_code(_type, content, _node)
-          %Q(<code class="inline-code tt">#{escape_content(content)}</code>)
+          "`#{content}`"
         end
 
         def render_inline_tt(_type, content, _node)
-          %Q(<code class="tt">#{escape_content(content)}</code>)
+          "`#{content}`"
         end
 
         def render_inline_kbd(_type, content, _node)
-          %Q(<kbd>#{escape_content(content)}</kbd>)
+          "`#{content}`"
         end
 
         def render_inline_samp(_type, content, _node)
-          %Q(<samp>#{escape_content(content)}</samp>)
+          "`#{content}`"
         end
 
         def render_inline_var(_type, content, _node)
-          %Q(<var>#{escape_content(content)}</var>)
+          "*#{escape_asterisks(content)}*"
         end
 
         def render_inline_sup(_type, content, _node)
-          %Q(<sup>#{escape_content(content)}</sup>)
+          "<sup>#{escape_content(content)}</sup>"
         end
 
         def render_inline_sub(_type, content, _node)
-          %Q(<sub>#{escape_content(content)}</sub>)
+          "<sub>#{escape_content(content)}</sub>"
         end
 
         def render_inline_del(_type, content, _node)
-          %Q(<del>#{escape_content(content)}</del>)
+          "~~#{content}~~"
         end
 
         def render_inline_ins(_type, content, _node)
-          %Q(<ins>#{escape_content(content)}</ins>)
+          "<ins>#{escape_content(content)}</ins>"
         end
 
         def render_inline_u(_type, content, _node)
-          %Q(<u>#{escape_content(content)}</u>)
+          "<u>#{escape_content(content)}</u>"
         end
 
         def render_inline_br(_type, _content, _node)
-          '<br />'
+          "\n"
         end
 
         def render_inline_raw(_type, content, node)
           if node.args && node.args.first
             format = node.args.first
-            if format == 'html'
+            if format == 'markdown'
               content
             else
               '' # Ignore raw content for other formats
@@ -109,16 +109,12 @@ module ReVIEW
           end
         end
 
-        def render_inline_chap(_type, content, node)
-          if node.args && node.args.first
-            node.args.first
-            # Simple chapter reference
-          end
+        def render_inline_chap(_type, content, _node)
           escape_content(content)
         end
 
         def render_inline_title(_type, content, _node)
-          %Q(<span class="title">#{escape_content(content)}</span>)
+          "**#{escape_asterisks(content)}**"
         end
 
         def render_inline_chapref(_type, content, _node)
@@ -129,8 +125,23 @@ module ReVIEW
           escape_content(content)
         end
 
-        def render_inline_img(_type, content, _node)
-          escape_content(content)
+        def render_inline_img(_type, content, node)
+          if node.args && node.args.first
+            image_id = node.args.first
+            "![#{escape_content(content)}](##{image_id})"
+          else
+            "![#{escape_content(content)}](##{content})"
+          end
+        end
+
+        def render_inline_icon(_type, content, node)
+          if node.args && node.args.first
+            image_path = node.args.first
+            image_path = image_path.sub(%r{\A\./}, '')
+            "![](#{image_path})"
+          else
+            "![](#{content})"
+          end
         end
 
         def render_inline_table(_type, content, _node)
@@ -140,9 +151,9 @@ module ReVIEW
         def render_inline_fn(_type, content, node)
           if node.args && node.args.first
             fn_id = node.args.first
-            %Q(<a id="fnb-#{fn_id}" href="#fn-#{fn_id}" class="noteref">*#{content}</a>)
+            "[^#{fn_id}]"
           else
-            escape_content(content)
+            "[^#{content}]"
           end
         end
 
@@ -150,98 +161,110 @@ module ReVIEW
           if node.args && node.args.length >= 2
             word = node.args[0]
             alt = node.args[1]
-            %Q(<b class="kw">#{escape_content(word)}</b>（#{escape_content(alt)}）)
+            "**#{escape_asterisks(word)}** (#{escape_content(alt)})"
           else
-            %Q(<b class="kw">#{escape_content(content)}</b>)
+            "**#{escape_asterisks(content)}**"
           end
         end
 
         def render_inline_bou(_type, content, _node)
-          %Q(<span class="bou">#{escape_content(content)}</span>)
+          "*#{escape_asterisks(content)}*"
         end
 
         def render_inline_ami(_type, content, _node)
-          %Q(<span class="ami">#{escape_content(content)}</span>)
+          "*#{escape_asterisks(content)}*"
         end
 
         def render_inline_href(_type, content, node)
           args = node.args || []
           if args.length >= 2
-            url = escape_content(args[0])
+            url = args[0]
             text = args[1]
-            %Q(<a href="#{url}" class="link">#{text}</a>)
+            "[#{text}](#{url})"
           else
-            %Q(<a href="#{content}" class="link">#{content}</a>)
+            "[#{content}](#{content})"
           end
         end
 
         def render_inline_url(_type, content, _node)
-          %Q(<a href="#{escape_content(content)}">#{content}</a>)
+          "[#{content}](#{content})"
         end
 
         def render_inline_ruby(_type, content, node)
           if node.args && node.args.length >= 2
             base = node.args[0]
             ruby = node.args[1]
-            %Q(<ruby>#{escape_content(base)}<rt>#{escape_content(ruby)}</rt></ruby>)
+            "<ruby>#{escape_content(base)}<rt>#{escape_content(ruby)}</rt></ruby>"
           else
             escape_content(content)
           end
         end
 
         def render_inline_m(_type, content, _node)
-          %Q(<span class="math">#{escape_content(content)}</span>)
+          "$$#{content}$$"
         end
 
         def render_inline_idx(_type, content, _node)
-          %Q(<a id="idx-#{content.tr(' ', '-')}"></a>#{escape_content(content)})
+          escape_content(content)
         end
 
-        def render_inline_hidx(_type, content, _node)
-          %Q(<a id="hidx-#{content.tr(' ', '-')}"></a>)
+        def render_inline_hidx(_type, _content, _node)
+          ''
         end
 
         def render_inline_comment(_type, content, _node)
           if @book&.config&.[]('draft')
-            %Q(<span class="draft-comment">#{escape_content(content)}</span>)
+            "<!-- #{escape_content(content)} -->"
           else
             ''
           end
         end
 
         def render_inline_hd(_type, content, _node)
-          %Q(<span class="headline-ref">#{escape_content(content)}</span>)
-        end
-
-        def render_inline_sec(_type, content, _node)
-          %Q(<span class="section-ref">#{escape_content(content)}</span>)
-        end
-
-        def render_inline_secref(_type, content, _node)
-          %Q(<span class="section-ref">#{escape_content(content)}</span>)
-        end
-
-        def render_inline_labelref(_type, content, _node)
-          %Q(<span class="label-ref">#{escape_content(content)}</span>)
-        end
-
-        def render_inline_ref(_type, content, _node)
-          %Q(<span class="label-ref">#{escape_content(content)}</span>)
-        end
-
-        def render_inline_w(_type, content, _node)
-          # Content should already be resolved by ReferenceResolver
           escape_content(content)
         end
 
-        def render_inline_wb(_type, content, _node)
-          # Content should already be resolved by ReferenceResolver
-          %Q(<b>#{escape_content(content)}</b>)
+        def render_inline_sec(_type, content, _node)
+          escape_content(content)
         end
 
-        # Helper method to escape content
+        def render_inline_secref(_type, content, _node)
+          escape_content(content)
+        end
+
+        def render_inline_labelref(_type, content, _node)
+          escape_content(content)
+        end
+
+        def render_inline_ref(_type, content, _node)
+          escape_content(content)
+        end
+
+        def render_inline_pageref(_type, content, _node)
+          escape_content(content)
+        end
+
+        def render_inline_w(_type, content, _node)
+          # Dictionary lookup for word substitution
+          dictionary = @book&.config&.[]('dictionary') || {}
+          translated = dictionary[content]
+          escape_content(translated || "[missing word: #{content}]")
+        end
+
+        def render_inline_wb(_type, content, _node)
+          # Dictionary lookup with bold formatting
+          dictionary = @book&.config&.[]('dictionary') || {}
+          word_content = dictionary[content] || "[missing word: #{content}]"
+          "**#{escape_asterisks(word_content)}**"
+        end
+
+        # Helper methods
         def escape_content(str)
           escape(str)
+        end
+
+        def escape_asterisks(str)
+          str.gsub('*', '\\*')
         end
       end
     end

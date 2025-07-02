@@ -111,6 +111,8 @@ module ReVIEW
                   when 'sec' then resolve_section_ref(node.ref_id)
                   when 'secref' then "#{resolve_section_ref(node.ref_id)}節"
                   when 'labelref', 'ref' then resolve_label_ref(node.ref_id)
+                  when 'w' then resolve_word_ref(node.ref_id)
+                  when 'wb' then resolve_word_ref(node.ref_id) # rubocop:disable Lint/DuplicateBranch
                   else
                     raise CompileError, "Unknown reference type: #{ref_type}"
                   end
@@ -343,6 +345,16 @@ module ReVIEW
           index[id]
         rescue KeyError
           nil
+        end
+      end
+
+      # Resolve word references (dictionary lookup)
+      def resolve_word_ref(id)
+        dictionary = @book.config['dictionary'] || {}
+        if dictionary.key?(id)
+          dictionary[id]
+        else
+          raise CompileError, "word not bound: #{id}"
         end
       end
     end
