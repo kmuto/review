@@ -28,7 +28,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency('nkf')
   gem.add_dependency('rexml')
   gem.add_dependency('rouge')
-  gem.add_dependency('rubyzip', '~> 2.0')
+  gem.add_dependency('rubyzip')
   gem.add_dependency('tty-logger')
   gem.add_development_dependency('mini_magick', '~> 5.0.0')
   gem.add_development_dependency('playwright-runner')
