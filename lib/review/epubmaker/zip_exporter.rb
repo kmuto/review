@@ -11,6 +11,7 @@
 require 'pathname'
 begin
   require 'zip'
+  Zip.write_zip64_support = false
 rescue LoadError
   ## I cannot find rubyzip library, so I use external zip command.
   warn 'rubyzip not found, so use external zip command'
