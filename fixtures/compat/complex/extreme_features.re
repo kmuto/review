@@ -150,18 +150,18 @@ Opera 76+	○	○	○	△	△	Chromiumベース
 順序ありリストの複雑な例:
 
  1. 第1段階: 設計フェーズ
-   a. 要件定義
-     i. 機能要件
-       A. 必須機能
-         I. ユーザー認証
-         II. データ管理
-       B. オプション機能
-     ii. 非機能要件
-   b. アーキテクチャ設計
+ a. 要件定義
+ i. 機能要件
+ A. 必須機能
+ I. ユーザー認証
+ II. データ管理
+ B. オプション機能
+ ii. 非機能要件
+ b. アーキテクチャ設計
  2. 第2段階: 実装フェーズ
-   a. バックエンド開発
-   b. フロントエンド開発
-   c. API統合
+ a. バックエンド開発
+ b. フロントエンド開発
+ c. API統合
  3. 第3段階: テストフェーズ
 
 == 複雑なミニコラムとエッジケース
@@ -177,9 +177,9 @@ Opera 76+	○	○	○	△	△	Chromiumベース
 //memo[パフォーマンス最適化のヒント]{
 複数のアプローチを比較検討:
 
-1. @<list>{nested_functions}: 関数型アプローチ
-2. @<list>{numbered_code}: オブジェクト指向アプローチ
-3. @<table>{performance_matrix}: パフォーマンス比較
+ 1. @<list>{nested_functions}: 関数型アプローチ
+ 2. @<list>{numbered_code}: オブジェクト指向アプローチ
+ 3. @<table>{performance_matrix}: パフォーマンス比較
 
 特に@<table>{compatibility_matrix}で示された互換性問題に注意。
 //}
@@ -187,18 +187,18 @@ Opera 76+	○	○	○	△	△	Chromiumベース
 //tip[高度なテクニック]{
 実装時の注意点:
 
-* エスケープ処理: @<tt>{&lt;script&gt;}は@<tt>{<script>}としてレンダリング
-* 特殊文字: @<tt>{"quotes"}, @<tt>{'apostrophes'}, @<tt>{&amp;entities;}
-* ネストした参照: @<list>{nested_functions}内の@<table>{performance_matrix}参照
+ * エスケープ処理: @<tt>{&lt;script&gt;}は@<tt>{<script>}としてレンダリング
+ * 特殊文字: @<tt>{"quotes"}, @<tt>{'apostrophes'}, @<tt>{&amp;entities;}
+ * ネストした参照: @<list>{nested_functions}内の@<table>{performance_matrix}参照
 //}
 
 //warning[セキュリティ重要事項]{
 セキュリティ上の重要な考慮事項:
 
-* 入力値検証: 全ての@<code>{user_input}に対してサニタイゼーション実施
-* SQL インジェクション対策
-* XSS (Cross-Site Scripting) 対策
-* CSRF (Cross-Site Request Forgery) 対策
+ * 入力値検証: 全ての@<code>{user_input}に対してサニタイゼーション実施
+ * SQL インジェクション対策
+ * XSS (Cross-Site Scripting) 対策
+ * CSRF (Cross-Site Request Forgery) 対策
 
 詳細は@<list>{numbered_code}のバリデーション部分を参照。
 //}
@@ -206,9 +206,9 @@ Opera 76+	○	○	○	△	△	Chromiumベース
 //info[デバッグ情報]{
 デバッグ時に有用な情報:
 
-* ログレベル設定
-* スタックトレース詳細出力
-* パフォーマンスプロファイリング
+ * ログレベル設定
+ * スタックトレース詳細出力
+ * パフォーマンスプロファイリング
 
 @<table>{performance_matrix}の数値は本番環境での実測値。
 //}
@@ -216,9 +216,9 @@ Opera 76+	○	○	○	△	△	Chromiumベース
 //caution[重要な制限事項]{
 システムの制限事項と回避策:
 
-1. 同時接続数制限: 最大10,000接続
-2. ファイルサイズ制限: 1リクエストあたり100MB
-3. レート制限: 1秒あたり1,000リクエスト
+ 1. 同時接続数制限: 最大10,000接続
+ 2. ファイルサイズ制限: 1リクエストあたり100MB
+ 3. レート制限: 1秒あたり1,000リクエスト
 
 対策については@<list>{nested_functions}の実装例を参照。
 //}
@@ -238,17 +238,15 @@ Opera 76+	○	○	○	△	△	Chromiumベース
 
 この章では以下の要素を相互参照します:
 
-* コードサンプル群:
-  - @<list>{nested_functions}: JavaScript関数型プログラミング
-  - @<list>{numbered_code}: Python非同期プログラミング
-  
-* データ比較表:
-  - @<table>{performance_matrix}: パフォーマンス指標
-  - @<table>{compatibility_matrix}: ブラウザ互換性
-  
-* システム図:
-  - @<img>{complex_architecture}: 全体アーキテクチャ
-  - @<img>{data_flow}: データフロー詳細
+ * コードサンプル群:
+ ** @<list>{nested_functions}: JavaScript関数型プログラミング
+ ** @<list>{numbered_code}: Python非同期プログラミング
+ * データ比較表:
+ ** @<table>{performance_matrix}: パフォーマンス指標
+ ** @<table>{compatibility_matrix}: ブラウザ互換性
+ * システム図:
+ ** @<img>{complex_architecture}: 全体アーキテクチャ
+ ** @<img>{data_flow}: データフロー詳細
 
 相互依存関係: @<list>{nested_functions}の実装は@<table>{performance_matrix}の
 「Advanced API」行に対応し、@<img>{complex_architecture}の「API Layer」部分
@@ -293,13 +291,13 @@ Unicode文字のテスト: 🚀📊💻🔧⚡️🛡️🎯📈🔍✨
 
 この超複雑なテストでは以下を検証しました:
 
-1. **深いネスト構造**: 9階層のリスト、複雑なインライン要素
-2. **複雑なコードブロック**: 関数型、OOP、非同期処理の組み合わせ
-3. **高度なテーブル**: 複雑な記号、マルチバイト文字を含むセル
-4. **全種類のミニコラム**: note, memo, tip, warning, info, caution
-5. **相互参照の複雑性**: 複数要素間のクロスリファレンス
-6. **エッジケース**: 空要素、特殊文字、長いテキスト
-7. **Unicode対応**: 絵文字、数学記号、特殊記号
+ 1. **深いネスト構造**: 9階層のリスト、複雑なインライン要素
+ 2. **複雑なコードブロック**: 関数型、OOP、非同期処理の組み合わせ
+ 3. **高度なテーブル**: 複雑な記号、マルチバイト文字を含むセル
+ 4. **全種類のミニコラム**: note, memo, tip, warning, info, caution
+ 5. **相互参照の複雑性**: 複数要素間のクロスリファレンス
+ 6. **エッジケース**: 空要素、特殊文字、長いテキスト
+ 7. **Unicode対応**: 絵文字、数学記号、特殊記号
 
 すべての機能が@<list>{nested_functions}から@<list>{numbered_code}まで、
 @<table>{performance_matrix}から@<table>{compatibility_matrix}まで、

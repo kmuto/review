@@ -57,21 +57,21 @@ GET	/users/:id	特定ユーザー取得	Optional	200/min	JSON Object
 API設計のベストプラクティス:
 
  1. RESTful原則の遵守
-   a. 適切なHTTPメソッドの使用
-     i. GET: リソース取得 (@<list>{api_implementation}のgetUsers参照)
-     ii. POST: リソース作成
-     iii. PUT: リソース更新
-     iv. DELETE: リソース削除
-   b. ステートレス設計
-   c. 統一されたURL構造
+ a. 適切なHTTPメソッドの使用
+ i. GET: リソース取得 (@<list>{api_implementation}のgetUsers参照)
+ ii. POST: リソース作成
+ iii. PUT: リソース更新
+ iv. DELETE: リソース削除
+ b. ステートレス設計
+ c. 統一されたURL構造
  2. セキュリティ対策
-   a. 認証・認可の実装
-   b. 入力値検証
-   c. レート制限 (@<table>{api_endpoints}参照)
+ a. 認証・認可の実装
+ b. 入力値検証
+ c. レート制限 (@<table>{api_endpoints}参照)
  3. パフォーマンス最適化
-   a. キャッシング戦略
-   b. ページネーション実装
-   c. データベースクエリ最適化
+ a. キャッシング戦略
+ b. ページネーション実装
+ c. データベースクエリ最適化
 
 === 複雑なテーブル構造
 
@@ -154,9 +154,9 @@ class ErrorHandler {
 //note[API設計の重要なポイント]{
 @<list>{api_implementation}の実装では以下の点に注意:
 
-1. エラーハンドリング: @<list>{error_handling}のパターン適用
-2. レスポンス形式: @<table>{response_codes}の標準に準拠
-3. セキュリティ: @<table>{api_endpoints}の認証要件遵守
+ 1. エラーハンドリング: @<list>{error_handling}のパターン適用
+ 2. レスポンス形式: @<table>{response_codes}の標準に準拠
+ 3. セキュリティ: @<table>{api_endpoints}の認証要件遵守
 
 特に@<table>{response_codes}の422エラーは、
 @<list>{error_handling}の ValidationError 処理と対応しています。
@@ -165,33 +165,29 @@ class ErrorHandler {
 //tip[パフォーマンス最適化テクニック]{
 実装時のパフォーマンス向上策:
 
-* データベースクエリ最適化:
-  - @<list>{api_implementation}のfindAll()でのselective loading
-  - インデックスの適切な設定
-
-* キャッシング戦略:
-  - Redis/Memcached活用
-  - @<table>{api_endpoints}のGETエンドポイントでの適用
-
-* レート制限実装:
-  - @<table>{api_endpoints}で定義された制限値の実装
-  - @<list>{error_handling}での429エラー処理
+ * データベースクエリ最適化:
+ ** @<list>{api_implementation}のfindAll()でのselective loading
+ ** インデックスの適切な設定
+ * キャッシング戦略:
+ ** Redis/Memcached活用
+ ** @<table>{api_endpoints}のGETエンドポイントでの適用
+ * レート制限実装:
+ ** @<table>{api_endpoints}で定義された制限値の実装
+ ** @<list>{error_handling}での429エラー処理
 //}
 
 //warning[セキュリティ脆弱性対策]{
 重要なセキュリティ考慮事項:
 
-1. SQL インジェクション対策
-   - @<list>{api_implementation}のクエリパラメータ処理
-   - ORMの適切な使用
-
-2. 認証・認可の実装
-   - @<table>{api_endpoints}の認証要件
-   - JWTトークンの適切な検証
-
-3. 入力値検証
-   - @<list>{error_handling}のValidationError処理
-   - @<table>{response_codes}の400/422エラー活用
+ 1. SQL インジェクション対策
+ - @<list>{api_implementation}のクエリパラメータ処理
+ - ORMの適切な使用
+ 2. 認証・認可の実装
+ - @<table>{api_endpoints}の認証要件
+ - JWTトークンの適切な検証
+ 3. 入力値検証
+ - @<list>{error_handling}のValidationError処理
+ - @<table>{response_codes}の400/422エラー活用
 
 @<table>{response_codes}の401/403エラーの使い分けが重要です。
 //}
@@ -274,12 +270,12 @@ role	metadata.permissions	権限パース	JSON形式	{}
 
 この文書では以下の高度な機能を組み合わせてテストしました:
 
-1. **API実装**: @<list>{api_implementation}
-2. **エラーハンドリング**: @<list>{error_handling}  
-3. **データ変換**: @<list>{complex_data_structures}
-4. **API仕様**: @<table>{api_endpoints}
-5. **レスポンスコード**: @<table>{response_codes}
-6. **データ変換仕様**: @<table>{data_transformation_matrix}
+ 1. **API実装**: @<list>{api_implementation}
+ 2. **エラーハンドリング**: @<list>{error_handling}  
+ 3. **データ変換**: @<list>{complex_data_structures}
+ 4. **API仕様**: @<table>{api_endpoints}
+ 5. **レスポンスコード**: @<table>{response_codes}
+ 6. **データ変換仕様**: @<table>{data_transformation_matrix}
 
 相互関係:
 - @<list>{api_implementation} ← → @<table>{api_endpoints}
