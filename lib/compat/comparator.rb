@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'yaml'
 require 'diff/lcs'
 require 'nokogiri'
 
@@ -9,7 +8,6 @@ module ReVIEW
     class Comparator
       def initialize(format, options = {})
         @format = format
-        @expected_differences = load_expected_differences
         @ignore_whitespace = options[:ignore_whitespace] || true
         @normalize_output = options[:normalize_output] || true
         @show_diff = options[:show_diff] || false
@@ -37,18 +35,6 @@ module ReVIEW
       end
 
       private
-
-      def load_expected_differences
-        config_path = File.join(File.dirname(__FILE__), '../../config/compat_expected_differences.yml')
-        if File.exist?(config_path)
-          YAML.load_file(config_path)
-        else
-          {}
-        end
-      rescue StandardError => e
-        warn "Warning: Could not load expected differences: #{e.message}"
-        {}
-      end
 
       def normalize(content)
         return content unless @normalize_output
@@ -132,24 +118,7 @@ module ReVIEW
       end
 
       def determine_status(differences)
-        return :pass if differences.empty?
-
-        # 既知の差異かチェック
-        if all_expected_differences?(differences)
-          :pass_with_known_differences
-        else
-          :fail
-        end
-      end
-
-      def all_expected_differences?(_differences)
-        # 簡易実装：将来的により詳細な判定を追加
-        expected = @expected_differences[@format] || {}
-        return false if expected.empty?
-
-        # ここで期待される差異パターンと照合
-        # 現在は false を返すが、将来的に実装
-        false
+        differences.empty? ? :pass : :fail
       end
     end
   end
