@@ -17,7 +17,7 @@ require 'review/ast/dumper'
 require 'review/ast/json_serializer'
 require 'optparse'
 
-def main
+def parse_options
   config = ReVIEW::Configure.values
   output_file = nil
   serializer_options = ReVIEW::AST::JSONSerializer::Options.new
@@ -76,21 +76,28 @@ def main
     exit 1
   end
 
-  # Create dumper
+  [config, output_file, serializer_options]
+end
+
+def dump_files(dumper, output_file)
+  ARGV.each do |path|
+    output = dumper.dump_file(path)
+
+    if output_file
+      File.write(output_file, output)
+      $stderr.puts "Output written to: #{output_file}"
+    else
+      puts output
+    end
+  end
+end
+
+def main
+  config, output_file, serializer_options = parse_options
   dumper = ReVIEW::AST::Dumper.new(config: config, serializer_options: serializer_options)
 
   begin
-    # Process each input file
-    ARGV.each do |path|
-      output = dumper.dump_file(path)
-
-      if output_file
-        File.write(output_file, output)
-        $stderr.puts "Output written to: #{output_file}"
-      else
-        puts output
-      end
-    end
+    dump_files(dumper, output_file)
   rescue ReVIEW::ApplicationError, ReVIEW::FileNotFound => e
     $stderr.puts "Error: #{e.message}"
     exit 1
