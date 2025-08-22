@@ -93,8 +93,8 @@ ListItemData = Struct.new(
 
 ### 4. Coordinator Component
 
-#### ListASTProcessor
-`ListASTProcessor`は、リスト処理全体を調整する高レベルのインターフェースです。
+#### ListProcessor
+`ListProcessor`は、リスト処理全体を調整する高レベルのインターフェースです。
 
 **責務:**
 - `ListParser`と`NestedListBuilder`の協調
@@ -124,15 +124,15 @@ end
 * 項目2
 
 処理フロー:
-1. Compiler → ListASTProcessor.process_unordered_list(f)
-2. ListASTProcessor → ListParser.parse_unordered_list(f)
+1. Compiler → ListProcessor.process_unordered_list(f)
+2. ListProcessor → ListParser.parse_unordered_list(f)
    - 各行を解析し、ListItemData構造体の配列を生成
    - レベル判定: "*"の数でネストレベルを決定
-3. ListASTProcessor → NestedListBuilder.build_unordered_list(items)
+3. ListProcessor → NestedListBuilder.build_unordered_list(items)
    - ListNodeを作成（list_type: :ul）
    - 各ListItemDataに対してListItemNodeを作成
    - ネスト構造を構築
-4. ListASTProcessor → AST Compilerに追加 & レンダリング
+4. ListProcessor → AST Compilerに追加 & レンダリング
 ```
 
 ### 2. 番号付きリスト（Ordered List）の処理
@@ -192,7 +192,7 @@ end
                          |
                          | 使用
                          v
-                 ListASTProcessor
+                   ListProcessor
                     /         \
                    /           \
               使用 /             \ 使用
@@ -229,7 +229,7 @@ end
 ### カスタムリスト処理
 ```ruby
 # 独自のリスト処理を実装する場合
-processor = ListASTProcessor.new(ast_compiler)
+processor = ListProcessor.new(ast_compiler)
 items = processor.parser.parse_unordered_list(input)
 # カスタム処理...
 list_node = processor.builder.build_nested_structure(items, :ul)
@@ -237,6 +237,6 @@ list_node = processor.builder.build_nested_structure(items, :ul)
 
 ## まとめ
 
-Re:VIEWのASTリスト処理アーキテクチャは、明確な責務分離と段階的な処理により、複雑なリスト構造を効率的に処理します。ListParser、NestedListBuilder、ListASTProcessorの協調により、Re:VIEW記法からASTへの変換、そして最終的なレンダリングまでがスムーズに行われます。
+Re:VIEWのASTリスト処理アーキテクチャは、明確な責務分離と段階的な処理により、複雑なリスト構造を効率的に処理します。ListParser、NestedListBuilder、ListProcessorの協調により、Re:VIEW記法からASTへの変換、そして最終的なレンダリングまでがスムーズに行われます。
 
 この設計により、新しいリスト型の追加や、異なるレンダリング要件への対応が容易になっています。
