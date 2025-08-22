@@ -40,7 +40,7 @@ class TestRendererBuilderComparison < Test::Unit::TestCase
 
       # Get result from builder
       builder.result
-    rescue => e
+    rescue StandardError => e
       # If builder fails, return empty string with error comment
       "<!-- Builder Error: #{e.message} -->\n"
     end
