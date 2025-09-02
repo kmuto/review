@@ -6,7 +6,7 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require File.expand_path('test_helper', __dir__)
+require_relative '../test_helper'
 require 'review/renderer/latex_renderer'
 require 'review/ast'
 require 'review/book'
