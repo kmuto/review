@@ -15,6 +15,7 @@ module ReVIEW
   module Book
     class BookUnit
       include TextUtils
+
       attr_reader :book
       attr_reader :path
       attr_reader :lines

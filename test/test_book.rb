@@ -27,7 +27,7 @@ class BookTest < Test::Unit::TestCase
       Dir.mktmpdir do |dir|
         File.write(File.join(dir, 'review-ext.rb'), "#{test_const} = #{num}")
         Book::Base.new(dir)
-        assert_equal num, (Object.class_eval { const_get(test_const) })
+        assert_equal(num, Object.class_eval { const_get(test_const) })
       end
     ensure
       Object.class_eval { remove_const(test_const) }

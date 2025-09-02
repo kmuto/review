@@ -524,7 +524,7 @@ module ReVIEW
     end
 
     def make_code_block_args(title, caption, lang, first_line_num: 1)
-      caption_str = compile_inline((caption || ''))
+      caption_str = compile_inline(caption || '')
       if title == 'title' && caption_str == '' && @book.config.check_version('2', exception: false)
         caption_str = '\relax' ## dummy charactor to remove lstname
       end
