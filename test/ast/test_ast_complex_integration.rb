@@ -203,13 +203,6 @@ class TestASTComplexIntegration < Test::Unit::TestCase
     assert(latex_result.length > 10000, 'LaTeX output should be substantial')
     assert(html_result.include?('<h2>'), 'HTML should contain section headers')
     assert(latex_result.include?('\\section'), 'LaTeX should contain section commands')
-
-    puts 'Performance results:'
-    puts "  AST compilation: #{(ast_time * 1000).round(2)}ms"
-    puts "  HTML rendering: #{(html_time * 1000).round(2)}ms"
-    puts "  LaTeX rendering: #{(latex_time * 1000).round(2)}ms"
-    puts "  HTML output: #{html_result.length} chars"
-    puts "  LaTeX output: #{latex_result.length} chars"
   end
 
   def test_error_handling_with_malformed_content

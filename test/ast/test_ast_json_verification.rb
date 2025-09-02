@@ -148,8 +148,6 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
 
     avg_time = ((end_time - start_time) * 1000 / 10).round(2) # Average time in ms
 
-    puts "\nAST JSON Generation Performance (average per compile): #{avg_time}ms"
-
     # Verify performance is reasonable (arbitrary 500ms threshold for large content)
     assert avg_time < 500.0, "AST mode is too slow: #{avg_time}ms (should be < 500ms)"
   end

@@ -87,12 +87,6 @@ class TestRendererBuilderComparison < Test::Unit::TestCase
     assert_includes(renderer_output, '*italic*', 'Renderer should produce italic with *')
     assert_includes(renderer_output, '* First item', 'Renderer should produce unordered lists')
     assert_includes(renderer_output, '1. Ordered item one', 'Renderer should produce ordered lists')
-
-    puts "\n=== Markdown Comparison ==="
-    puts 'Builder output:'
-    puts builder_output
-    puts "\nRenderer output:"
-    puts renderer_output
   end
 
   def test_top_basic_elements_comparison
@@ -117,12 +111,6 @@ class TestRendererBuilderComparison < Test::Unit::TestCase
     assert_includes(renderer_output, '★bold☆', 'Renderer should produce bold markers')
     assert_includes(renderer_output, '▲italic☆', 'Renderer should produce italic markers')
     assert_includes(renderer_output, '●	First item', 'Renderer should produce unordered list markers')
-
-    puts "\n=== TOP Comparison ==="
-    puts 'Builder output:'
-    puts builder_output
-    puts "\nRenderer output:"
-    puts renderer_output
   end
 
   def test_markdown_code_block_comparison

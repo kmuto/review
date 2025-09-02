@@ -72,8 +72,6 @@ class TestMarkdownTopRenderers < Test::Unit::TestCase
     assert(markdown_result.include?('1. Ordered item one'), 'Should have ordered list items')
     assert(markdown_result.include?('```ruby'), 'Should have fenced code blocks')
     assert(markdown_result.include?('| Name | Age |'), 'Should have markdown table headers')
-
-    puts "Markdown Result:\n#{markdown_result}"
   end
 
   def test_top_renderer_basic_functionality
@@ -124,8 +122,6 @@ class TestMarkdownTopRenderers < Test::Unit::TestCase
     assert(top_result.include?('1	Ordered item one'), 'Should have ordered list markers')
     assert(top_result.include?('◆→開始:リスト←◆'), 'Should have list begin marker')
     assert(top_result.include?('◆→終了:リスト←◆'), 'Should have list end marker')
-
-    puts "TOP Result:\n#{top_result}"
   end
 
   def test_markdown_renderer_inline_elements

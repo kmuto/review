@@ -59,9 +59,5 @@ class TestCodeBlockOriginalText < Test::Unit::TestCase
     assert_equal 'puts @<b>{bold code}', processed[0]
     assert_equal '# Comment with @<fn>{code-fn}', processed[1]
     assert_equal 'normal line', processed[2]
-
-    puts "Original text: #{code_block.original_text.inspect}"
-    puts "Original lines: #{code_block.original_lines.inspect}"
-    puts "Processed lines: #{code_block.processed_lines.inspect}"
   end
 end
