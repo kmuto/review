@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'test_helper'
+require_relative 'test_helper'
 require 'review/webtocprinter'
-require 'book_test_helper'
+require_relative 'book_test_helper'
 
 class WEBTOCPrinterTest < Test::Unit::TestCase
   include ReVIEW

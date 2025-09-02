@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'test_helper'
-require 'book_test_helper'
+require_relative 'test_helper'
+require_relative 'book_test_helper'
 require 'review/compiler'
 require 'review/book'
 require 'review/idgxmlbuilder'

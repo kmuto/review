@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'test_helper'
+require_relative 'test_helper'
 require 'review/preprocessor'
 require 'stringio'
-require 'book_test_helper'
+require_relative 'book_test_helper'
 
 class PreprocessorTest < Test::Unit::TestCase
   include ReVIEW
