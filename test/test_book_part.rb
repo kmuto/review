@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'book_test_helper'
+require_relative 'book_test_helper'
 class PartTest < Test::Unit::TestCase
   include BookTestHelper
 
