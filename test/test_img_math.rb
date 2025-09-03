@@ -3,7 +3,7 @@
 require_relative 'test_helper'
 require 'review/htmlbuilder'
 require 'review/img_math'
-require 'mini_magick'
+require_relative 'image_comparator'
 
 class ImgMathTest < Test::Unit::TestCase
   def setup
@@ -90,16 +90,8 @@ class ImgMathTest < Test::Unit::TestCase
   private
 
   def compare_images(image1, image2)
-    MiniMagick.errors = false
-    compare = MiniMagick.compare
-    compare.metric('SSIM')
-    compare << image1
-    compare << image2
-    compare << File.join(@tmpdir, 'diff.jpg')
-
-    compare.call do |_, dist, _|
-      return dist.to_f
-    end
+    comparator = ImageComparator.new
+    comparator.compare(image1, image2)
   end
 
   def support_latex_in_tests?
