@@ -25,7 +25,7 @@ module ReVIEW
       n = level - 2
       @counter[n] += 1 if n >= 0
       if @counter.size > n
-        (n + 1..@counter.size).each do |i|
+        ((n + 1)..@counter.size).each do |i|
           @counter[i] = 0
         end
       end

@@ -630,7 +630,7 @@ module ReVIEW
     end
 
     def compile_block(syntax, args, lines)
-      @builder.__send__(syntax.name, (lines || default_block(syntax)), *args)
+      @builder.__send__(syntax.name, lines || default_block(syntax), *args)
     end
 
     def default_block(syntax)

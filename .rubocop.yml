@@ -204,6 +204,12 @@ Style/CombinableLoops:
 Style/FetchEnvVar:
   Enabled: false
 
+Style/MultipleComparison:
+  Enabled: false
+
+Style/EmptyStringInsideInterpolation:
+  Enabled: false
+
 ### Layout
 
 Layout/BlockAlignment:
@@ -291,6 +297,9 @@ Naming/FileName:
 Naming/HeredocDelimiterNaming:
   Enabled: false
 
+Naming/MethodName:
+  Enabled: false
+
 Naming/MethodParameterName:
   Enabled: false
 
@@ -299,6 +308,9 @@ Naming/VariableNumber:
   Enabled: true
   Exclude:
     - test/*
+
+Naming/PredicateMethod:
+  Enabled: false
 
 #### Security
 

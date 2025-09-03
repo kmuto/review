@@ -20,6 +20,7 @@ module ReVIEW
     #
     class ReVIEWHeaderListener
       include REXML::StreamListener
+
       def initialize(headlines)
         @level = nil
         @content = +''
