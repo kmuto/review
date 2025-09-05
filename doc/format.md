@@ -1191,6 +1191,7 @@ Output:
 @<eq>{emc2}:: `Equation 1.1`
 @<hd>{advanced|Other Topics}:: `7-3. Other Topics`
 @<column>{another-column}:: reference of column.
+@<ref>{labelid}:: alias for `@<labelref>` to reference a label
 ```
 
 ### Other inline commands
