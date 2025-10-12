@@ -280,7 +280,7 @@ module ReVIEW
     private
 
     def do_compile
-      f = LineInput.new(StringIO.new(@chapter.content))
+      f = LineInput.from_string(@chapter.content)
       @builder.bind(self, @chapter, Location.new(@chapter.basename, f))
       @previous_list_type = nil
 
