@@ -15,6 +15,8 @@ rescue StandardError
   require 'cgi/util'
 end
 
+require 'review/highlighter'
+
 module ReVIEW
   module HTMLUtils
     def escape(str)
@@ -40,94 +42,27 @@ module ReVIEW
     end
 
     def highlight?
-      @book.config['highlight'] &&
-        @book.config['highlight']['html']
+      highlighter.highlight?('html')
     end
 
     def highlight(ops)
       if @book.config['pygments'].present?
         raise ReVIEW::ConfigError, %Q('pygments:' in config.yml is obsoleted.)
       end
-      return ops[:body].to_s unless highlight?
 
-      if @book.config['highlight']['html'] == 'pygments'
-        highlight_pygments(ops)
-      elsif @book.config['highlight']['html'] == 'rouge'
-        highlight_rouge(ops)
-      else
-        raise ReVIEW::ConfigError, "unknown highlight method #{@book.config['highlight']['html']} in config.yml."
-      end
+      highlighter.highlight(
+        body: ops[:body],
+        lexer: ops[:lexer],
+        format: 'html',
+        linenum: ops[:linenum],
+        options: ops[:options] || {}
+      )
     end
 
-    def highlight_pygments(ops)
-      body = ops[:body] || ''
-      format = ops[:format] || ''
-      lexer = if ops[:lexer].present?
-                ops[:lexer]
-              elsif @book.config['highlight'] && @book.config['highlight']['lang']
-                @book.config['highlight']['lang'] # default setting
-              else
-                'text'
-              end
-      options = { nowrap: true, noclasses: true }
-      if ops[:linenum]
-        options[:nowrap] = false
-        options[:linenos] = 'inline'
-      end
-      if ops[:options] && ops[:options].is_a?(Hash)
-        options.merge!(ops[:options])
-      end
+    private
 
-      begin
-        require 'pygments'
-        begin
-          Pygments.highlight(body,
-                             options: options,
-                             formatter: format,
-                             lexer: lexer)
-        rescue MentosError
-          body
-        end
-      rescue LoadError
-        body
-      end
-    end
-
-    def highlight_rouge(ops)
-      body = ops[:body] || ''
-      lexer = if ops[:lexer].present?
-                ops[:lexer]
-              elsif @book.config['highlight'] && @book.config['highlight']['lang']
-                @book.config['highlight']['lang'] # default setting
-              else
-                'text'
-              end
-      # format = ops[:format] || ''
-
-      first_line_num = 1 ## default
-      if ops[:options] && ops[:options][:linenostart]
-        first_line_num = ops[:options][:linenostart]
-      end
-
-      require 'rouge'
-      lexer = Rouge::Lexer.find(lexer)
-
-      unless lexer
-        return body
-      end
-
-      formatter = Rouge::Formatters::HTML.new(css_class: 'highlight')
-      if ops[:linenum]
-        formatter = Rouge::Formatters::HTMLTable.new(formatter,
-                                                     table_class: 'highlight rouge-table',
-                                                     start_line: first_line_num)
-      end
-
-      unless formatter
-        return body
-      end
-
-      formatter.format(lexer.lex(body))
+    def highlighter
+      @highlighter ||= ReVIEW::Highlighter.new(@book.config)
     end
 
     def normalize_id(id)
