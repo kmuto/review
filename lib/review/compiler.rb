@@ -719,7 +719,7 @@ module ReVIEW
     end
 
     def location
-      @builder.location
+      @builder.location.snapshot
     end
 
     ## override
