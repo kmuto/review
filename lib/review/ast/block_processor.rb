@@ -700,17 +700,13 @@ module ReVIEW
       def process_nested_blocks(parent_node, block_data)
         return unless block_data.nested_blocks?
 
-        # Save current node context
-        saved_current_node = @ast_compiler.current_ast_node
-        @ast_compiler.instance_variable_set(:@current_ast_node, parent_node)
-
-        # Process nested blocks recursively
-        block_data.nested_blocks.each do |nested_block|
-          process_block_command(nested_block)
+        # Use public API to temporarily change current node
+        @ast_compiler.with_temporary_ast_node!(parent_node) do
+          # Process nested blocks recursively
+          block_data.nested_blocks.each do |nested_block|
+            process_block_command(nested_block)
+          end
         end
-
-        # Restore context
-        @ast_compiler.instance_variable_set(:@current_ast_node, saved_current_node)
       end
 
       # Process structured content including nested blocks
