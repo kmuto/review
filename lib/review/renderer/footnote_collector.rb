@@ -120,7 +120,7 @@ module ReVIEW
       # @return [FootnoteCollector] a new collector with copied footnotes
       def dup
         new_collector = FootnoteCollector.new
-        new_collector.instance_variable_set(:@footnotes, @footnotes.dup)
+        new_collector.merge!(self)
         new_collector
       end
     end
