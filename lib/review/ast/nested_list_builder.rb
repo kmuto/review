@@ -277,11 +277,6 @@ module ReVIEW
       # @param item_node [ListItemNode] Target item node
       # @param term_content [String] Term content to process
       def process_definition_term_content(item_node, term_content)
-        # Add term_children functionality to the item_node if it doesn't exist
-        unless item_node.respond_to?(:term_children)
-          add_term_children_functionality(item_node)
-        end
-
         if term_content.include?('@<') && @inline_processor
           # Create a temporary container to collect processed term elements
           temp_container = AST::ParagraphNode.new(location: current_location)
@@ -293,22 +288,6 @@ module ReVIEW
           # For plain text terms, create a simple text node
           text_node = AST::TextNode.new(location: current_location, content: term_content)
           item_node.term_children = [text_node]
-        end
-      end
-
-      # Add term_children functionality to a ListItemNode instance
-      # @param item_node [ListItemNode] Target item node
-      def add_term_children_functionality(item_node)
-        # Add instance variable
-        item_node.instance_variable_set(:@term_children, [])
-
-        # Add accessor methods
-        item_node.define_singleton_method(:term_children) do
-          @term_children
-        end
-
-        item_node.define_singleton_method(:term_children=) do |value|
-          @term_children = value
         end
       end
 
