@@ -519,6 +519,14 @@ module ReVIEW
       ''
     end
 
+    def inline_ref(_id)
+      ''
+    end
+
+    def inline_labelref(_id)
+      ''
+    end
+
     def inline_secref(_id)
       ''
     end
