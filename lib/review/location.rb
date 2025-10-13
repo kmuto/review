@@ -8,6 +8,8 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 #
 
+require 'review/snapshot_location'
+
 module ReVIEW
   class Location
     def initialize(filename, f)
@@ -30,5 +32,9 @@ module ReVIEW
     end
 
     alias_method :to_s, :string
+
+    def snapshot
+      SnapshotLocation.new(@filename, lineno)
+    end
   end
 end
