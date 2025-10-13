@@ -70,7 +70,7 @@ module ReVIEW
       end
 
       def find_first_header_option
-        f = LineInput.new(StringIO.new(@content))
+        f = LineInput.from_string(@content)
         begin
           while f.next?
             case f.peek

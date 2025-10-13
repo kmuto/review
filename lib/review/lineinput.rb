@@ -8,6 +8,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 #
 require 'review/exception'
+require 'stringio'
 
 module ReVIEW
   class LineInput
@@ -20,6 +21,11 @@ module ReVIEW
       @buf = []
       @lineno = 0
       @eof_p = false
+    end
+
+    # Create LineInput from a string directly
+    def self.from_string(string)
+      new(StringIO.new(string))
     end
 
     def inspect

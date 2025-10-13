@@ -43,25 +43,24 @@ class LineInputTest < Test::Unit::TestCase
   end
 
   def test_peek
-    li = ReVIEW::LineInput.new(StringIO.new)
+    li = ReVIEW::LineInput.from_string('')
     assert_equal nil, li.peek
 
-    li = ReVIEW::LineInput.new(StringIO.new('abc'))
+    li = ReVIEW::LineInput.from_string('abc')
     assert_equal 'abc', li.peek
   end
 
   def test_next?
-    li = ReVIEW::LineInput.new(StringIO.new)
+    li = ReVIEW::LineInput.from_string('')
     assert !li.next?
 
-    li = ReVIEW::LineInput.new(StringIO.new('abc'))
+    li = ReVIEW::LineInput.from_string('abc')
     assert li.next?
   end
 
   def test_each
     content = "abc\ndef\nghi"
-    io = StringIO.new(content)
-    li = ReVIEW::LineInput.new(io)
+    li = ReVIEW::LineInput.from_string(content)
 
     data = []
     li.each { |l| data << l } # rubocop:disable Style/MapIntoArray
@@ -69,8 +68,7 @@ class LineInputTest < Test::Unit::TestCase
   end
 
   def test_while_match
-    io = StringIO.new("abc\ndef\nghi")
-    li = ReVIEW::LineInput.new(io)
+    li = ReVIEW::LineInput.from_string("abc\ndef\nghi")
 
     li.while_match(/^[ad]/) do
       # skip
@@ -80,8 +78,7 @@ class LineInputTest < Test::Unit::TestCase
   end
 
   def test_until_match
-    io = StringIO.new("abc\ndef\nghi")
-    li = ReVIEW::LineInput.new(io)
+    li = ReVIEW::LineInput.from_string("abc\ndef\nghi")
 
     li.until_match(/^[^a]/) do
       # skip
@@ -93,8 +90,7 @@ class LineInputTest < Test::Unit::TestCase
   def test_invalid_control_sequence
     0.upto(31) do |n|
       content = n.chr
-      io = StringIO.new(content)
-      li = ReVIEW::LineInput.new(io)
+      li = ReVIEW::LineInput.from_string(content)
       if [9, 10, 13].include?(n) # TAB, LF, CR
         assert_equal content, li.gets
       else
