@@ -1212,22 +1212,6 @@ Output:
 @<balloon>{abc}:: inline balloon in code block. For example, `@<balloon>{ABC}` produces `←ABC`. This may seem too simple. To decorate it, modify the style sheet file or override a function by `review-ext.rb`
 ```
 
-### HTML Semantic Tags
-
-Re:VIEW supports HTML semantic tags for better semantic markup:
-
-```
-@<abbr>{HTML}:: abbreviation (HTML `<abbr>` tag)
-@<acronym>{NASA}:: acronym (HTML `<acronym>` tag)
-@<cite>{Book Title}:: citation (HTML `<cite>` tag)
-@<dfn>{term}:: definition (HTML `<dfn>` tag)
-@<kbd>{Ctrl+C}:: keyboard input (HTML `<kbd>` tag)
-@<samp>{output text}:: sample output (HTML `<samp>` tag)
-@<var>{variable_name}:: variable (HTML `<var>` tag)
-@<big>{emphasized text}:: larger text (HTML `<big>` tag)
-@<small>{fine print}:: smaller text (HTML `<small>` tag)
-```
-
 ## Commands for Authors (pre-processor commands)
 
 These commands are used in the output document. In contrast,
