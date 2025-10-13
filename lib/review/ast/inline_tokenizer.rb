@@ -307,7 +307,7 @@ module ReVIEW
         preview_end = [start_pos + max_preview_length, str.length].min
 
         # For fence elements, look for matching delimiters beyond the opening one
-        if str[start_pos..-1] =~ /\A@<[a-z]+>([\$|])/
+        if str[start_pos..-1] =~ /\A@<[a-z]+>([$|])/
           delimiter = $1
           delimiter_pos = start_pos + $~.end(0) - 1 # rubocop:disable Style/SpecialGlobalVars
 
@@ -331,7 +331,7 @@ module ReVIEW
         preview = str[preview_start...preview_end]
 
         # Add ellipsis if we truncated and don't end with a delimiter
-        if preview_end < str.length && !preview.match?(/[}\$|]\z/)
+        if preview_end < str.length && !preview.match?(/[}$|]\z/)
           preview += '...'
         end
 

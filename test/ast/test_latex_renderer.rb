@@ -56,7 +56,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_equal "This is a paragraph.\n\nNext paragraph.\n\n\n", result
   end
 
-  def test_visit_headline_level_1
+  def test_visit_headline_level1
     caption = AST::CaptionNode.new
     caption.add_child(AST::TextNode.new(content: 'Chapter Title'))
 
@@ -66,7 +66,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_equal "\\chapter{Chapter Title}\n\\label{chap:test}\n", result
   end
 
-  def test_visit_headline_level_2
+  def test_visit_headline_level2
     caption = AST::CaptionNode.new
     caption.add_child(AST::TextNode.new(content: 'Section Title'))
 
@@ -89,7 +89,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_equal expected, result
   end
 
-  def test_visit_headline_with_secnolevel_3
+  def test_visit_headline_with_secnolevel3
     # secnolevel 3, so level 3 should be normal subsection, level 4 should be subsubsection*
     @config['secnolevel'] = 3
 
@@ -109,7 +109,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_equal expected4, result4
   end
 
-  def test_visit_headline_with_secnolevel_1
+  def test_visit_headline_with_secnolevel1
     # secnolevel 1, so level 2 and above should be section*
     @config['secnolevel'] = 1
     caption = AST::CaptionNode.new
@@ -137,7 +137,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_equal expected, result
   end
 
-  def test_visit_headline_secnolevel_0
+  def test_visit_headline_secnolevel0
     # secnolevel 0 means all levels should be starred
     @config['secnolevel'] = 0
 
@@ -158,7 +158,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_equal expected2, result2
   end
 
-  def test_visit_headline_part_level_1
+  def test_visit_headline_part_level1
     # Test Part with level 1 - should use \part command
     part = ReVIEW::Book::Part.new(@book, 1, 'part1', 'part1.re', StringIO.new)
     part.generate_indexes
@@ -173,7 +173,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_equal expected, result
   end
 
-  def test_visit_headline_part_with_secnolevel_0
+  def test_visit_headline_part_with_secnolevel0
     # Test Part with secnolevel 0 - should use \part* command
     @config['secnolevel'] = 0
     part = ReVIEW::Book::Part.new(@book, 1, 'part1', 'part1.re', StringIO.new)
@@ -189,7 +189,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_equal expected, result
   end
 
-  def test_visit_headline_part_level_2
+  def test_visit_headline_part_level2
     # Test Part with level 2 - should use normal chapter/section commands
     part = ReVIEW::Book::Part.new(@book, 1, 'part1', 'part1.re', StringIO.new)
     part.generate_indexes
@@ -559,7 +559,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_equal expected, result
   end
 
-  def test_visit_headline_nonum_level_1
+  def test_visit_headline_nonum_level1
     # Test [nonum] option for level 1 (chapter)
     caption = AST::CaptionNode.new
     caption.add_child(AST::TextNode.new(content: 'Unnumbered Chapter'))
@@ -574,7 +574,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_equal expected, result
   end
 
-  def test_visit_headline_nonum_level_3
+  def test_visit_headline_nonum_level3
     # Test [nonum] option for level 3 (subsection)
     caption = AST::CaptionNode.new
     caption.add_child(AST::TextNode.new(content: 'Unnumbered Subsection'))

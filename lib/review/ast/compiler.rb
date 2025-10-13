@@ -151,9 +151,9 @@ module ReVIEW
           case line_content
           when /\A\#@/
             f.gets # skip preprocessor directives
-          when /\A=+[\[\s\{]/
+          when /\A=+[\[\s{]/
             compile_headline_to_ast(f.gets)
-          when /\A\s*\z/ # rubocop:disable Lint/DuplicateBranch # blank lines separate elements
+          when /\A\s*\z/ # rubocop:disable Lint/DuplicateBranch -- blank lines separate elements
             f.gets # consume blank line but don't create node
           when %r{\A//}
             compile_block_command_to_ast(f)

@@ -229,9 +229,9 @@ module ReVIEW
         case basename
         when /^ch(?:ap)?(\d+)$/i # ch01, ch1, chap01, chap1, etc.
           $1.to_i
-        when /^chapter(\d+)$/i # rubocop:disable Lint/DuplicateBranch # chapter01, chapter1, etc.
+        when /^chapter(\d+)$/i # rubocop:disable Lint/DuplicateBranch -- chapter01, chapter1, etc.
           $1.to_i
-        when /^(\d+)$/ # rubocop:disable Lint/DuplicateBranch # 01, 1, etc.
+        when /^(\d+)$/ # rubocop:disable Lint/DuplicateBranch -- 01, 1, etc.
           $1.to_i
         else
           log("Warning: Could not extract chapter number from filename '#{basename}', using fallback")

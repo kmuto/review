@@ -961,7 +961,7 @@ module ReVIEW
 
       private
 
-      HEADLINE = {
+      HEADLINE = { # rubocop:disable Lint/UselessConstantScoping
         1 => 'chapter',
         2 => 'section',
         3 => 'subsection',

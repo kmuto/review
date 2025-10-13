@@ -103,11 +103,6 @@ module ReVIEW
 
         "#{(time * 1000).round(2)}ms"
       end
-
-      # Check if any metrics have been recorded
-      def has_metrics? # rubocop:disable Naming/PredicateName
-        @stats.any?
-      end
     end
   end
 end

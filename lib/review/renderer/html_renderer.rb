@@ -1130,7 +1130,7 @@ module ReVIEW
       end
 
       def caption_top?(type)
-        @book&.config&.[]('caption_position')&.[](type) == 'top'
+        @book&.config&.[]('caption_position')&.[](type) == 'top' # rubocop:disable Style/SafeNavigationChainLength
       end
 
       # Generate list header like HTMLBuilder's list_header method

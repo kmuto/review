@@ -102,7 +102,7 @@ class TestRendererBuilderComparison < Test::Unit::TestCase
     EOB
 
     # Compare outputs
-    builder_output = compile_with_builder(content, ReVIEW::TOPBuilder)
+    compile_with_builder(content, ReVIEW::TOPBuilder)
     renderer_output = compile_with_renderer(content, ReVIEW::Renderer::TopRenderer)
 
     # Check key elements

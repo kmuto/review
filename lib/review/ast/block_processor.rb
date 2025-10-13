@@ -54,7 +54,7 @@ module ReVIEW
       end
 
       # Class-level storage for configuration blocks
-      @@configuration_blocks = []
+      @@configuration_blocks = [] # rubocop:disable Style/ClassVars
 
       class << self
         # Configure BlockProcessor with custom blocks and code blocks
@@ -81,7 +81,7 @@ module ReVIEW
         #     config.register_block_handler(:custom_box, :build_custom_box_ast)
         #   end
         def configure(&block)
-          @@configuration_blocks << block if block_given?
+          @@configuration_blocks << block if block
         end
 
         # Get all registered configuration blocks (for testing)
@@ -904,7 +904,7 @@ module ReVIEW
         end
       end
 
-      CODE_BLOCK_CONFIGS = {
+      CODE_BLOCK_CONFIGS = { # rubocop:disable Lint/UselessConstantScoping
         list: { id_index: 0, caption_index: 1, lang_index: 2 },
         listnum: { id_index: 0, caption_index: 1, lang_index: 2, line_numbers: true },
         emlist: { caption_index: 0, lang_index: 1 },
@@ -913,7 +913,7 @@ module ReVIEW
         source: { caption_index: 0, lang_index: 1 }
       }.freeze
 
-      BLOCK_COMMAND_TABLE = {
+      BLOCK_COMMAND_TABLE = { # rubocop:disable Lint/UselessConstantScoping
         # Code blocks
         list: :build_code_block_ast,
         listnum: :build_code_block_ast,
