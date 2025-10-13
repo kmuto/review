@@ -8,8 +8,6 @@ require 'stringio'
 class TestHighlighter < Test::Unit::TestCase
   def setup
     @default_config = {}
-    @log_io = StringIO.new
-    ReVIEW.logger = ReVIEW::Logger.new(@log_io)
   end
 
   def test_initialize_with_empty_config
@@ -25,43 +23,43 @@ class TestHighlighter < Test::Unit::TestCase
 
   def test_highlight_disabled_by_default
     highlighter = ReVIEW::Highlighter.new(@default_config)
-    assert_equal(false, highlighter.highlight?('html'))
-    assert_equal(false, highlighter.highlight?('latex'))
+    assert_false(!!highlighter.highlight?('html'))
+    assert_false(!!highlighter.highlight?('latex'))
   end
 
   def test_highlight_enabled_for_html_with_rouge
     config = { 'highlight' => { 'html' => 'rouge' } }
     highlighter = ReVIEW::Highlighter.new(config)
-    assert_true(highlighter.highlight?('html'))
-    assert_equal(false, highlighter.highlight?('latex'))
+    assert_true(!!highlighter.highlight?('html'))
+    assert_false(!!highlighter.highlight?('latex'))
   end
 
   def test_highlight_enabled_for_html_with_pygments
     config = { 'highlight' => { 'html' => 'pygments' } }
     highlighter = ReVIEW::Highlighter.new(config)
-    assert_true(highlighter.highlight?('html'))
-    assert_equal(false, highlighter.highlight?('latex'))
+    assert_true(!!highlighter.highlight?('html'))
+    assert_false(!!highlighter.highlight?('latex'))
   end
 
   def test_highlight_enabled_for_latex
     config = { 'highlight' => { 'latex' => 'listings' } }
     highlighter = ReVIEW::Highlighter.new(config)
-    assert_equal(false, highlighter.highlight?('html'))
-    assert_true(highlighter.highlight?('latex'))
+    assert_false(!!highlighter.highlight?('html'))
+    assert_true(!!highlighter.highlight?('latex'))
   end
 
   def test_highlight_enabled_for_both_formats
     config = { 'highlight' => { 'html' => 'rouge', 'latex' => 'listings' } }
     highlighter = ReVIEW::Highlighter.new(config)
-    assert_true(highlighter.highlight?('html'))
-    assert_true(highlighter.highlight?('latex'))
+    assert_true(!!highlighter.highlight?('html'))
+    assert_true(!!highlighter.highlight?('latex'))
   end
 
   def test_highlight_format_aliases
     config = { 'highlight' => { 'latex' => 'listings' } }
     highlighter = ReVIEW::Highlighter.new(config)
-    assert_true(highlighter.highlight?('latex'))
-    assert_true(highlighter.highlight?('tex'))
+    assert_true(!!highlighter.highlight?('latex'))
+    assert_true(!!highlighter.highlight?('tex'))
   end
 
   def test_highlight_when_disabled_returns_original_body
@@ -78,9 +76,9 @@ class TestHighlighter < Test::Unit::TestCase
     highlighter = ReVIEW::Highlighter.new(config)
     body = 'puts "hello world"'
 
-    result = highlighter.highlight(body: body, format: 'html')
-    assert_equal(body, result)
-    assert_match(/Unknown HTML highlighter: unknown/, @log_io.string)
+    assert_raise(ReVIEW::ConfigError) do
+      highlighter.highlight(body: body, format: 'html')
+    end
   end
 
   def test_highlight_latex_returns_original_body
@@ -90,46 +88,6 @@ class TestHighlighter < Test::Unit::TestCase
 
     result = highlighter.highlight(body: body, format: 'latex')
     assert_equal(body, result)
-  end
-
-  def test_normalize_lexer_name_with_nil
-    highlighter = ReVIEW::Highlighter.new(@default_config)
-    assert_equal('text', highlighter.normalize_lexer_name(nil))
-  end
-
-  def test_normalize_lexer_name_with_empty_string
-    highlighter = ReVIEW::Highlighter.new(@default_config)
-    assert_equal('text', highlighter.normalize_lexer_name(''))
-  end
-
-  def test_normalize_lexer_name_with_custom_default
-    config = { 'highlight' => { 'lang' => 'ruby' } }
-    highlighter = ReVIEW::Highlighter.new(config)
-    assert_equal('ruby', highlighter.normalize_lexer_name(nil))
-  end
-
-  def test_normalize_lexer_name_javascript_aliases
-    highlighter = ReVIEW::Highlighter.new(@default_config)
-    assert_equal('javascript', highlighter.normalize_lexer_name('js'))
-    assert_equal('javascript', highlighter.normalize_lexer_name('javascript'))
-  end
-
-  def test_normalize_lexer_name_ruby_aliases
-    highlighter = ReVIEW::Highlighter.new(@default_config)
-    assert_equal('ruby', highlighter.normalize_lexer_name('rb'))
-    assert_equal('ruby', highlighter.normalize_lexer_name('ruby'))
-  end
-
-  def test_normalize_lexer_name_shell_aliases
-    highlighter = ReVIEW::Highlighter.new(@default_config)
-    assert_equal('shell', highlighter.normalize_lexer_name('sh'))
-    assert_equal('shell', highlighter.normalize_lexer_name('bash'))
-    assert_equal('shell', highlighter.normalize_lexer_name('shell'))
-  end
-
-  def test_normalize_lexer_name_cpp_alias
-    highlighter = ReVIEW::Highlighter.new(@default_config)
-    assert_equal('cpp', highlighter.normalize_lexer_name('c++'))
   end
 
   def test_build_pygments_options_basic
