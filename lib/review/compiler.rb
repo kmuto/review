@@ -276,6 +276,8 @@ module ReVIEW
     definline :pageref
     definline :w
     definline :wb
+    definline :labelref
+    definline :ref
 
     private
 

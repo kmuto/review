@@ -18,7 +18,7 @@ module ReVIEW
     include TextUtils
     include HTMLUtils
 
-    %i[ttbold hint maru keytop labelref ref strong em].each do |e|
+    %i[ttbold hint maru keytop].each do |e|
       Compiler.definline(e)
     end
     Compiler.defsingle(:dtp, 1)

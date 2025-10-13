@@ -22,7 +22,7 @@ module ReVIEW
   class RSTBuilder < Builder
     include TextUtils
 
-    %i[ttbold hint maru keytop labelref ref balloon strong].each do |e|
+    %i[ttbold hint maru keytop balloon].each do |e|
       Compiler.definline(e)
     end
     Compiler.defsingle(:dtp, 1)
