@@ -13,8 +13,6 @@ class WEBTOCPrinterTest < Test::Unit::TestCase
   end
 
   def test_webtocprinter_null
-    pend('いったん無視')
-
     dummy_book = ReVIEW::Book::Base.new
     # chap = ReVIEW::Book::Chapter.new(dummy_book, 1, '-', nil, StringIO.new)
     str = WEBTOCPrinter.book_to_string(dummy_book)

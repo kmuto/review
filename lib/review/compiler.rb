@@ -55,7 +55,6 @@ module ReVIEW
     def compile(chap)
       @chapter = chap
       do_compile
-
       if @compile_errors
         raise ApplicationError, "#{location.filename} cannot be compiled."
       end
@@ -429,7 +428,6 @@ module ReVIEW
         end
         @headline_indexs[index] += 1
         close_current_tagged_section(level)
-
         @builder.headline(level, label, caption)
       end
     end
@@ -554,7 +552,6 @@ module ReVIEW
     end
 
     def compile_paragraph(f)
-      # Traditional processing with inline elements processed immediately
       buf = []
       f.until_match(%r{\A//|\A\#@}) do |line|
         break if line.strip.empty?
@@ -628,7 +625,6 @@ module ReVIEW
         error e.message, location: location
         args = ['(NoArgument)'] * syntax.min_argc
       end
-
       if syntax.block_allowed?
         compile_block(syntax, args, lines)
       else
@@ -704,7 +700,6 @@ module ReVIEW
     rescue StandardError => e
       error e.message, location: location
     end
-
     public :text # called from builder
 
     def compile_inline(str)

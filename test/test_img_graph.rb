@@ -9,7 +9,7 @@ class ImgGraphTest < Test::Unit::TestCase
     @config = ReVIEW::Configure.values
     @tmpdir = Dir.mktmpdir
 
-    @playwright_path = install_playwright if ENV['FULL_INTEGRATION_TEST']
+    @playwright_path = install_playwright
     @config['imagedir'] = @tmpdir
     @config['playwright_options']['playwright_path'] = @playwright_path
 
@@ -56,8 +56,6 @@ EOB
   end
 
   def test_make_mermaid_pdf
-    pend('playwright-ruby-clientが修正されるまでいったん無視')
-
     unless @playwright_path
       $stderr.puts 'skip test_make_mermaid_pdf (cannot find playwright)'
       return true
@@ -70,8 +68,6 @@ EOB
   end
 
   def test_make_mermaid_svg
-    pend('playwright-ruby-clientが修正されるまでいったん無視')
-
     unless @playwright_path
       $stderr.puts 'skip test_make_mermaid_svg (cannot find playwright)'
       return true

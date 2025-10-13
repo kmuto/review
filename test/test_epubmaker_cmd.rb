@@ -47,8 +47,6 @@ class EPUBMakerCmdTest < Test::Unit::TestCase
   end
 
   def test_epubmaker_cmd_samplebook
-    pend('いったん無視')
-
     common_buildepub('sample-book/src', 'config.yml', 'book.epub')
     check_filesize(File.join(@tmpdir1, 'book.epub'))
   end
