@@ -76,39 +76,25 @@ module ReVIEW
       end
 
       # Iterate over all entries (for compatibility with Book::Index)
-      def each
-        return enum_for(:each) unless block_given?
+      def each(&block)
+        return enum_for(:each) unless block
 
-        @entries.each_value do |entry|
-          # Convert to Book::Index::Item format for compatibility
-          item = ReVIEW::Book::Index::Item.new(entry.id, entry.number, entry.content)
-          # Store FootnoteNode for AST rendering
-          item.instance_variable_set(:@footnote_node, entry.footnote_node) if entry.footnote_node
-          yield item
-        end
+        @entries.each_value(&block)
       end
 
       # Map over all entries (for compatibility with Enumerable)
-      def map
-        return enum_for(:map) unless block_given?
+      def map(&block)
+        return enum_for(:map) unless block
 
-        @entries.values.map do |entry|
-          # Convert to Book::Index::Item format for compatibility
-          item = ReVIEW::Book::Index::Item.new(entry.id, entry.number, entry.content)
-          # Store FootnoteNode for AST rendering
-          item.instance_variable_set(:@footnote_node, entry.footnote_node) if entry.footnote_node
-          yield item
-        end
+        @entries.values.map(&block)
       end
 
       # Convert to traditional Book::FootnoteIndex for compatibility
       def to_book_index
         book_index = ReVIEW::Book::FootnoteIndex.new
         @entries.each_value do |entry|
-          item = ReVIEW::Book::Index::Item.new(entry.id, entry.number, entry.content)
-          # Store FootnoteNode for AST rendering
-          item.instance_variable_set(:@footnote_node, entry.footnote_node) if entry.footnote_node
-          book_index.add_item(item)
+          # Add Entry directly - it has all necessary methods (id, number, content, footnote_node, footnote_node?)
+          book_index.add_item(entry)
         end
         book_index
       end
