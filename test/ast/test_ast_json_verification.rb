@@ -44,7 +44,7 @@ end
 
 class ASTJSONVerificationTest < Test::Unit::TestCase
   def setup
-    @fixtures_dir = File.join(__dir__, '..', 'project')
+    @fixtures_dir = File.join(__dir__, '..', '..', 'fixtures', 'integration')
     @test_files = Dir.glob(File.join(@fixtures_dir, '*.re')).reject do |f|
       File.basename(f).start_with?('test_stage') ||
         File.basename(f) == 'test-project.re' ||

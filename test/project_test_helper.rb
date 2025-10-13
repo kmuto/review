@@ -6,7 +6,7 @@ require 'fileutils'
 
 class ProjectTestHelper
   def self.project_dir
-    File.join(File.dirname(__FILE__), 'project')
+    File.join(File.dirname(__FILE__), '..', 'fixtures', 'integration')
   end
 
   def self.config_file
