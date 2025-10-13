@@ -24,77 +24,99 @@ module ReVIEW
     # - Handle block-specific parsing (table structure, list items, etc.)
     # - Coordinate with inline processor for content within blocks
     class BlockProcessor
-      # Class-level registry for custom code block configurations
-      @custom_code_block_configs = {}
-
-      class << self
-        # Register a custom code block type with its configuration
-        # This is a convenient class method that allows users to register code blocks
-        # before instantiating BlockProcessor.
-        #
-        # @param command_name [Symbol] The code block command name (e.g., :python, :javascript)
-        # @param config [Hash] Configuration options
-        # @option config [Integer] :id_index Index of ID argument (optional, for //list-style blocks)
-        # @option config [Integer] :caption_index Index of caption argument (default: 0)
-        # @option config [Integer] :lang_index Index of language argument (optional)
-        # @option config [String] :default_lang Default language if lang_index not provided
-        # @option config [Boolean] :line_numbers Whether to show line numbers (default: false)
-        #
-        # @example Register a simple code block
-        #   ReVIEW::AST::BlockProcessor.register_code_block(:python)
-        #   # => caption_index: 0, lang_index: 1, default_lang: 'python'
-        #
-        # @example Register a code block with line numbers
-        #   ReVIEW::AST::BlockProcessor.register_code_block(:pythonnum,
-        #     line_numbers: true,
-        #     default_lang: 'python'
-        #   )
-        #
-        # @example Register a list-style code block with ID
-        #   ReVIEW::AST::BlockProcessor.register_code_block(:mylist,
-        #     id_index: 0,
-        #     caption_index: 1,
-        #     lang_index: 2
-        #   )
-        def register_code_block(command_name, config = {})
-          # Provide sensible defaults
-          default_config = {
-            caption_index: 0,
-            lang_index: 1,
-            default_lang: command_name.to_s
-          }
-          merged_config = default_config.merge(config)
-
-          # Store in class-level registry
-          @custom_code_block_configs[command_name] = merged_config
-
-          # Note: BLOCK_COMMAND_TABLE is frozen, so we can't modify it directly.
-          # Instead, we register it when BlockProcessor is initialized by merging
-          # custom configs. Users need to ensure this is called before instantiation.
-
-          merged_config
+      # Configuration object for BlockProcessor
+      # This provides a clean API for configuring custom blocks and code blocks
+      class Configuration
+        def initialize(processor)
+          @processor = processor
         end
 
-        # Get all custom code block configurations registered at class level
-        # @return [Hash] Hash of custom code block configurations
-        def custom_code_block_configs
-          @custom_code_block_configs.dup
+        # Register a custom block handler
+        # @param command_name [Symbol] The block command name
+        # @param handler_method [Symbol] The handler method name
+        # @see BlockProcessor#register_block_handler
+        # @example
+        #   config.register_block_handler(:custom_box, :build_custom_box_ast)
+        def register_block_handler(command_name, handler_method)
+          @processor.register_block_handler(command_name, handler_method)
+        end
+
+        # Register a custom code block type
+        # @param command_name [Symbol] The code block command name
+        # @param config [Hash] Configuration options
+        # @see BlockProcessor#register_code_block_handler
+        # @example
+        #   config.register_code_block(:python)
+        #   config.register_code_block(:pythonnum, line_numbers: true)
+        def register_code_block(command_name, config = {})
+          @processor.register_code_block_handler(command_name, config)
+        end
+      end
+
+      # Class-level storage for configuration blocks
+      @@configuration_blocks = []
+
+      class << self
+        # Configure BlockProcessor with custom blocks and code blocks
+        # This method allows users to register custom handlers in a clean,
+        # declarative way without needing to override initialize.
+        #
+        # @yield [config] Configuration block
+        # @yieldparam config [Configuration] Configuration object
+        #
+        # @example Register custom code blocks
+        #   ReVIEW::AST::BlockProcessor.configure do |config|
+        #     config.register_code_block(:python)
+        #     config.register_code_block(:pythonnum, line_numbers: true)
+        #   end
+        #
+        # @example Register custom block handlers
+        #   ReVIEW::AST::BlockProcessor.configure do |config|
+        #     config.register_block_handler(:custom_box, :build_custom_box_ast)
+        #   end
+        #
+        # @example Register both types
+        #   ReVIEW::AST::BlockProcessor.configure do |config|
+        #     config.register_code_block(:python)
+        #     config.register_block_handler(:custom_box, :build_custom_box_ast)
+        #   end
+        def configure(&block)
+          @@configuration_blocks << block if block_given?
+        end
+
+        # Get all registered configuration blocks (for testing)
+        # @return [Array<Proc>] Array of configuration blocks
+        def configuration_blocks
+          @@configuration_blocks.dup
+        end
+
+        # Clear all configuration blocks (for testing)
+        def clear_configuration
+          @@configuration_blocks.clear
         end
       end
 
       def initialize(ast_compiler)
         @ast_compiler = ast_compiler
-        # Copy the static table to allow runtime modifications
+        # Copy the static tables to allow runtime modifications
         @dynamic_command_table = BLOCK_COMMAND_TABLE.dup
-        # Copy the static code block configs to allow runtime modifications
         @dynamic_code_block_configs = CODE_BLOCK_CONFIGS.dup
-        # Merge class-level custom configs
-        @dynamic_code_block_configs.merge!(self.class.custom_code_block_configs)
-        # Register custom code blocks in dynamic command table
-        self.class.custom_code_block_configs.each_key do |command_name|
-          @dynamic_command_table[command_name] = :build_code_block_ast
+
+        # Apply configuration blocks
+        apply_configuration
+      end
+
+      private
+
+      # Apply all registered configuration blocks
+      def apply_configuration
+        config = Configuration.new(self)
+        self.class.class_variable_get(:@@configuration_blocks).each do |block|
+          block.call(config)
         end
       end
+
+      public
 
       # Register a new block command handler
       # @param command_name [Symbol] The block command name (e.g., :custom_block)
@@ -105,10 +127,53 @@ module ReVIEW
         @dynamic_command_table[command_name] = handler_method
       end
 
-      # Get all registered block commands
       # @return [Array<Symbol>] List of all registered command names
       def registered_commands
         @dynamic_command_table.keys
+      end
+
+      # Register a custom code block type with its configuration
+      #
+      # @param command_name [Symbol] The code block command name (e.g., :python, :javascript)
+      # @param config [Hash] Configuration options
+      # @option config [Integer] :id_index Index of ID argument (optional, for //list-style blocks)
+      # @option config [Integer] :caption_index Index of caption argument (default: 0)
+      # @option config [Integer] :lang_index Index of language argument (default: 1)
+      # @option config [String] :default_lang Default language if lang_index not provided (default: command_name)
+      # @option config [Boolean] :line_numbers Whether to show line numbers (default: false)
+      #
+      # @example Register a simple code block
+      #   register_code_block_handler(:python)
+      #   # => caption_index: 0, lang_index: 1, default_lang: 'python'
+      #
+      # @example Register a code block with line numbers
+      #   register_code_block_handler(:pythonnum,
+      #     line_numbers: true,
+      #     default_lang: 'python'
+      #   )
+      #
+      # @example Register a list-style code block with ID
+      #   register_code_block_handler(:mylist,
+      #     id_index: 0,
+      #     caption_index: 1,
+      #     lang_index: 2
+      #   )
+      def register_code_block_handler(command_name, config = {})
+        # Provide sensible defaults
+        default_config = {
+          caption_index: 0,
+          lang_index: 1,
+          default_lang: command_name.to_s
+        }
+        merged_config = default_config.merge(config)
+
+        # Register the configuration
+        @dynamic_code_block_configs[command_name] = merged_config
+
+        # Register the command handler to use build_code_block_ast
+        @dynamic_command_table[command_name] = :build_code_block_ast
+
+        merged_config
       end
 
       # Register a new code block configuration
@@ -120,7 +185,6 @@ module ReVIEW
         @dynamic_code_block_configs[command_name] = config
       end
 
-      # Get all registered code block configurations
       # @return [Hash] Hash of all registered code block configs
       def registered_code_block_configs
         @dynamic_code_block_configs.dup
