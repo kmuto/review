@@ -24,10 +24,76 @@ module ReVIEW
     # - Handle block-specific parsing (table structure, list items, etc.)
     # - Coordinate with inline processor for content within blocks
     class BlockProcessor
+      # Class-level registry for custom code block configurations
+      @custom_code_block_configs = {}
+
+      class << self
+        # Register a custom code block type with its configuration
+        # This is a convenient class method that allows users to register code blocks
+        # before instantiating BlockProcessor.
+        #
+        # @param command_name [Symbol] The code block command name (e.g., :python, :javascript)
+        # @param config [Hash] Configuration options
+        # @option config [Integer] :id_index Index of ID argument (optional, for //list-style blocks)
+        # @option config [Integer] :caption_index Index of caption argument (default: 0)
+        # @option config [Integer] :lang_index Index of language argument (optional)
+        # @option config [String] :default_lang Default language if lang_index not provided
+        # @option config [Boolean] :line_numbers Whether to show line numbers (default: false)
+        #
+        # @example Register a simple code block
+        #   ReVIEW::AST::BlockProcessor.register_code_block(:python)
+        #   # => caption_index: 0, lang_index: 1, default_lang: 'python'
+        #
+        # @example Register a code block with line numbers
+        #   ReVIEW::AST::BlockProcessor.register_code_block(:pythonnum,
+        #     line_numbers: true,
+        #     default_lang: 'python'
+        #   )
+        #
+        # @example Register a list-style code block with ID
+        #   ReVIEW::AST::BlockProcessor.register_code_block(:mylist,
+        #     id_index: 0,
+        #     caption_index: 1,
+        #     lang_index: 2
+        #   )
+        def register_code_block(command_name, config = {})
+          # Provide sensible defaults
+          default_config = {
+            caption_index: 0,
+            lang_index: 1,
+            default_lang: command_name.to_s
+          }
+          merged_config = default_config.merge(config)
+
+          # Store in class-level registry
+          @custom_code_block_configs[command_name] = merged_config
+
+          # Note: BLOCK_COMMAND_TABLE is frozen, so we can't modify it directly.
+          # Instead, we register it when BlockProcessor is initialized by merging
+          # custom configs. Users need to ensure this is called before instantiation.
+
+          merged_config
+        end
+
+        # Get all custom code block configurations registered at class level
+        # @return [Hash] Hash of custom code block configurations
+        def custom_code_block_configs
+          @custom_code_block_configs.dup
+        end
+      end
+
       def initialize(ast_compiler)
         @ast_compiler = ast_compiler
         # Copy the static table to allow runtime modifications
         @dynamic_command_table = BLOCK_COMMAND_TABLE.dup
+        # Copy the static code block configs to allow runtime modifications
+        @dynamic_code_block_configs = CODE_BLOCK_CONFIGS.dup
+        # Merge class-level custom configs
+        @dynamic_code_block_configs.merge!(self.class.custom_code_block_configs)
+        # Register custom code blocks in dynamic command table
+        self.class.custom_code_block_configs.each_key do |command_name|
+          @dynamic_command_table[command_name] = :build_code_block_ast
+        end
       end
 
       # Register a new block command handler
@@ -39,16 +105,25 @@ module ReVIEW
         @dynamic_command_table[command_name] = handler_method
       end
 
-      # Unregister a block command handler
-      # @param command_name [Symbol] The block command name to remove
-      def unregister_block_handler(command_name)
-        @dynamic_command_table.delete(command_name)
-      end
-
       # Get all registered block commands
       # @return [Array<Symbol>] List of all registered command names
       def registered_commands
         @dynamic_command_table.keys
+      end
+
+      # Register a new code block configuration
+      # @param command_name [Symbol] The code block command name (e.g., :python)
+      # @param config [Hash] The configuration hash with keys like :id_index, :caption_index, :lang_index, :line_numbers, :default_lang
+      # @example
+      #   register_code_block_config(:python, { id_index: 0, caption_index: 1, lang_index: 2 })
+      def register_code_block_config(command_name, config)
+        @dynamic_code_block_configs[command_name] = config
+      end
+
+      # Get all registered code block configurations
+      # @return [Hash] Hash of all registered code block configs
+      def registered_code_block_configs
+        @dynamic_code_block_configs.dup
       end
 
       # Unified entry point - table-driven block processing
@@ -207,7 +282,6 @@ module ReVIEW
         @ast_compiler.add_child_to_current_node(node)
       end
 
-      # Compile footnote to AST (entry point from compiler)
       def compile_footnote_to_ast(command_name, args, lines)
         build_footnote_ast(command_name, args, lines)
       end
@@ -216,10 +290,9 @@ module ReVIEW
 
       # New methods supporting BlockData
 
-      # Build code block (with nesting support)
       # Use BlockContext for consistent location information in AST construction
       def build_code_block_ast(context)
-        config = CODE_BLOCK_CONFIGS[context.name]
+        config = @dynamic_code_block_configs[context.name]
         unless config
           raise CompileError, "Unknown code block type: #{context.name}#{context.format_location_info}"
         end
@@ -263,7 +336,6 @@ module ReVIEW
         node
       end
 
-      # Build image block
       def build_image_ast(context)
         node = context.create_node(AST::ImageNode,
                                    id: context.arg(0),
@@ -274,7 +346,6 @@ module ReVIEW
         node
       end
 
-      # Build table block (with nesting support)
       def build_table_ast(context)
         node = case context.name
                when :table
@@ -433,7 +504,6 @@ module ReVIEW
         node
       end
 
-      # Build column block
       def build_column_ast(context)
         node = context.create_node(AST::ColumnNode,
                                    level: 2, # Default level for block columns
@@ -448,7 +518,6 @@ module ReVIEW
         node
       end
 
-      # Build quote block
       def build_quote_block_ast(context)
         node = context.create_node(AST::BlockNode, block_type: context.name)
 
@@ -468,7 +537,6 @@ module ReVIEW
         node
       end
 
-      # Build complex block
       def build_complex_block_ast(context)
         node = context.create_node(AST::BlockNode,
                                    block_type: context.name,
@@ -487,7 +555,6 @@ module ReVIEW
         node
       end
 
-      # Build control command
       def build_control_command_ast(context)
         case context.name
         when :texequation
@@ -509,7 +576,6 @@ module ReVIEW
         end
       end
 
-      # TeX数式構築
       def build_tex_equation_ast(context)
         require 'review/ast/tex_equation_node'
         node = context.create_node(AST::TexEquationNode,
@@ -524,7 +590,6 @@ module ReVIEW
         node
       end
 
-      # Raw AST構築
       def build_raw_ast(context)
         raw_content = context.arg(0) || ''
         target_builders, content = parse_raw_content(raw_content)
@@ -540,7 +605,6 @@ module ReVIEW
         node
       end
 
-      # Embed AST構築
       def build_embed_ast(context)
         node = context.create_node(AST::EmbedNode,
                                    embed_type: :block,
@@ -551,7 +615,6 @@ module ReVIEW
         node
       end
 
-      # Build footnote
       def build_footnote_ast(context)
         footnote_id = context.arg(0)
         footnote_content = context.arg(1) || ''
@@ -658,7 +721,7 @@ module ReVIEW
 
       # Unified factory method for creating code block nodes
       def create_code_block_node(command_type, args, lines)
-        config = CODE_BLOCK_CONFIGS[command_type]
+        config = @dynamic_code_block_configs[command_type]
         unless config
           raise ArgumentError, "Unknown code block type: #{command_type}#{format_location_info}"
         end
@@ -767,7 +830,6 @@ module ReVIEW
         row_node
       end
 
-      # Parse raw content for builder specification
       def parse_raw_content(content)
         return [nil, content] if content.nil? || content.empty?
 
@@ -782,7 +844,6 @@ module ReVIEW
         end
       end
 
-      # Configuration for different code block types
       CODE_BLOCK_CONFIGS = {
         list: { id_index: 0, caption_index: 1, lang_index: 2 },
         listnum: { id_index: 0, caption_index: 1, lang_index: 2, line_numbers: true },
@@ -792,9 +853,6 @@ module ReVIEW
         source: { caption_index: 0, lang_index: 1 }
       }.freeze
 
-      # Block command to handler method mapping table
-      # This table-driven approach makes it easy to add new block types
-      # and provides a clear overview of all supported commands
       BLOCK_COMMAND_TABLE = {
         # Code blocks
         list: :build_code_block_ast,

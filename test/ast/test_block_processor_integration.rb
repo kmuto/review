@@ -40,23 +40,19 @@ class TestBlockProcessorIntegration < Test::Unit::TestCase
     compiler = AST::Compiler.new
     ast = compiler.compile_to_ast(chapter)
 
-    # ASTの構造を確認
     assert_equal AST::DocumentNode, ast.class
     assert_equal 3, ast.children.size
 
-    # 見出し
     headline = ast.children[0]
     assert_equal AST::HeadlineNode, headline.class
     assert_equal 1, headline.level
 
-    # コードブロック
     code_block = ast.children[1]
     assert_equal AST::CodeBlockNode, code_block.class
     assert_equal 'example', code_block.id
     assert_equal :list, code_block.code_type
-    assert_equal 3, code_block.children.size # 3行のコード
+    assert_equal 3, code_block.children.size # 3 lines of code
 
-    # 段落
     paragraph = ast.children[2]
     assert_equal AST::ParagraphNode, paragraph.class
   end
@@ -84,24 +80,18 @@ class TestBlockProcessorIntegration < Test::Unit::TestCase
     compiler = AST::Compiler.new
     ast = compiler.compile_to_ast(chapter)
 
-    # ASTの構造を確認
     assert_equal AST::DocumentNode, ast.class
     assert_equal 2, ast.children.size
 
-    # 見出し
     headline = ast.children[0]
     assert_equal AST::HeadlineNode, headline.class
 
-    # ミニコラム（ネスト構造を含む）
     minicolumn = ast.children[1]
     assert_equal AST::MinicolumnNode, minicolumn.class
     assert_equal :note, minicolumn.minicolumn_type
 
-    # ミニコラム内にネストしたコードブロックが含まれることを確認
-    # 構造化コンテンツ処理により、段落とコードブロックが子要素として含まれる
     assert(minicolumn.children.any?(AST::CodeBlockNode))
 
-    # ネストしたコードブロックの確認
     nested_code = minicolumn.children.find { |child| child.is_a?(AST::CodeBlockNode) }
     assert_equal 'nested', nested_code.id
     assert_equal :list, nested_code.code_type
@@ -132,12 +122,10 @@ class TestBlockProcessorIntegration < Test::Unit::TestCase
     compiler = AST::Compiler.new
     ast = compiler.compile_to_ast(chapter)
 
-    # ボックスブロックの確認
     box_block = ast.children[0]
     assert_equal AST::BlockNode, box_block.class
     assert_equal :box, box_block.block_type
 
-    # ネストしたコードブロックが2つ含まれることを確認
     code_blocks = box_block.children.select { |child| child.is_a?(AST::CodeBlockNode) }
     assert_equal 2, code_blocks.size
     assert_equal 'code1', code_blocks[0].id
@@ -200,7 +188,6 @@ class TestBlockProcessorIntegration < Test::Unit::TestCase
       compiler.compile_to_ast(chapter)
     end
 
-    # ネストブロック内のエラーであることがメッセージに含まれる
     assert_include(error.message.downcase, 'unclosed')
   end
 
@@ -269,7 +256,6 @@ class TestBlockProcessorIntegration < Test::Unit::TestCase
     assert_equal AST::MinicolumnNode, tip_node.class
     assert_equal :tip, tip_node.minicolumn_type
 
-    # 構造化コンテンツ（段落、リスト、段落）が含まれることを確認
     assert(tip_node.children.any?(AST::ParagraphNode))
     assert(tip_node.children.any?(AST::ListNode))
   end

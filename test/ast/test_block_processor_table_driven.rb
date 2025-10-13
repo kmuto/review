@@ -51,18 +51,6 @@ class TestBlockProcessorTableDriven < Test::Unit::TestCase
     assert_equal :build_complex_block_ast, @processor.instance_variable_get(:@dynamic_command_table)[:custom_test]
   end
 
-  def test_dynamic_handler_unregistration
-    # デフォルトハンドラーの削除テスト
-    @processor.registered_commands.dup
-
-    @processor.unregister_block_handler(:note)
-    assert_not_include(@processor.registered_commands, :note)
-
-    # 元に戻す
-    @processor.register_block_handler(:note, :build_minicolumn_ast)
-    assert_include(@processor.registered_commands, :note)
-  end
-
   def test_custom_block_processing
     # カスタムブロックハンドラーのテスト
     # 既存のhandlerを使用してカスタムコマンドを登録
