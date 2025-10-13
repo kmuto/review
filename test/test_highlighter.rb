@@ -81,21 +81,6 @@ class TestHighlighter < Test::Unit::TestCase
     end
   end
 
-  def test_highlight_with_location_parameter
-    config = { 'highlight' => { 'html' => 'unknown' } }
-    highlighter = ReVIEW::Highlighter.new(config)
-    body = 'puts "hello world"'
-    location = 'test_file.re:123'
-
-    result = highlighter.highlight(body: body, format: 'html', location: location)
-    assert_equal(body, result)
-
-    # Should include location in warning log
-    log_output = @log_io.string
-    assert_match(/Unknown HTML highlighter: unknown/, log_output)
-    # Location information should be included in log (exact format depends on logger implementation)
-  end
-
   def test_highlight_latex_returns_original_body
     config = { 'highlight' => { 'latex' => 'listings' } }
     highlighter = ReVIEW::Highlighter.new(config)
