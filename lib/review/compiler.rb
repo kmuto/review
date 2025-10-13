@@ -278,7 +278,6 @@ module ReVIEW
     definline :wb
     definline :labelref
     definline :ref
-    definline :url
 
     private
 

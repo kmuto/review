@@ -130,7 +130,7 @@ class TestMarkdownTopRenderers < Test::Unit::TestCase
 
       Text with @<code>{code}, @<tt>{typewriter}, @<del>{deleted}, @<sup>{super}, @<sub>{sub}.
 
-      Links: @<href>{http://example.com,Example Link} and @<url>{http://direct.com}.
+      Links: @<href>{http://example.com,Example Link} and @<href>{http://direct.com}.
 
       Ruby: @<ruby>{漢字,かんじ} annotation.
 
@@ -165,7 +165,7 @@ class TestMarkdownTopRenderers < Test::Unit::TestCase
 
       Text with @<code>{code}, @<tt>{typewriter}, @<sup>{super}, @<sub>{sub}.
 
-      Links: @<href>{http://example.com,Example Link} and @<url>{http://direct.com}.
+      Links: @<href>{http://example.com,Example Link} and @<href>{http://direct.com}.
 
       Ruby: @<ruby>{漢字,かんじ} annotation.
 

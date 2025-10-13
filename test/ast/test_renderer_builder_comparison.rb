@@ -187,7 +187,7 @@ class TestRendererBuilderComparison < Test::Unit::TestCase
 
       Text with @<code>{code}, @<tt>{tt}, @<del>{strikethrough}.
 
-      Links: @<href>{http://example.com,Example} and @<url>{http://direct.com}.
+      Links: @<href>{http://example.com,Example} and @<href>{http://direct.com}.
     EOB
 
     compile_with_builder(content, ReVIEW::MARKDOWNBuilder)

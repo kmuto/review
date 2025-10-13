@@ -389,10 +389,6 @@ module ReVIEW
       "#{str}◆→DTP連絡:「#{str}」は下付き←◆"
     end
 
-    def inline_url(str)
-      "△#{str}☆"
-    end
-
     def inline_hint(str)
       "◆→ヒントスタイルここから←◆#{str}◆→ヒントスタイルここまで←◆"
     end

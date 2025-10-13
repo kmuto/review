@@ -186,10 +186,6 @@ module ReVIEW
           end
         end
 
-        def render_inline_url(_type, content, _node)
-          "[#{content}](#{content})"
-        end
-
         def render_inline_ruby(_type, content, node)
           if node.args && node.args.length >= 2
             base = node.args[0]
