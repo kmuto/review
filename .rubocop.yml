@@ -67,6 +67,10 @@ Style/DocumentDynamicEvalDefinition:
 Style/Documentation:
   Enabled: false
 
+Style/DoubleNegation:
+  Exclude:
+    - 'test/**/*'
+
 Style/FormatString:
   EnforcedStyle: sprintf
   Enabled: true

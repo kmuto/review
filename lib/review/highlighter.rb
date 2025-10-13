@@ -63,7 +63,7 @@ module ReVIEW
       body
     end
 
-    def highlight_rouge(body:, lexer: nil, linenum: false, options: {}, location: nil)
+    def highlight_rouge(body:, lexer: nil, linenum: false, options: {}, location: nil) # rubocop:disable Lint/UnusedMethodArgument
       require 'rouge'
       rouge_lexer = find_rouge_lexer(lexer)
       unless rouge_lexer
