@@ -110,28 +110,70 @@ module ReVIEW
 
       # Resolve image references
       def resolve_image_ref(id)
-        if @chapter.image_index && @chapter.image_index.number(id)
-          "図#{@chapter.number}.#{@chapter.image_index.number(id)}"
+        if id.include?('|')
+          # Cross-chapter reference
+          chapter_id, item_id = split_cross_chapter_ref(id)
+          target_chapter = find_chapter_by_id(chapter_id)
+          raise CompileError, "Chapter not found for image reference: #{chapter_id}" unless target_chapter
+
+          if target_chapter.image_index && target_chapter.image_index.number(item_id)
+            format_chapter_item_number('図', target_chapter.number, target_chapter.image_index.number(item_id))
+          else
+            raise CompileError, "Image reference not found: #{id}"
+          end
         else
-          raise CompileError, "Image reference not found: #{id}"
+          # Same-chapter reference
+          if @chapter.image_index && @chapter.image_index.number(id)
+            format_chapter_item_number('図', @chapter.number, @chapter.image_index.number(id))
+          else
+            raise CompileError, "Image reference not found: #{id}"
+          end
         end
       end
 
       # Resolve table references
       def resolve_table_ref(id)
-        if @chapter.table_index && @chapter.table_index.number(id)
-          "表#{@chapter.number}.#{@chapter.table_index.number(id)}"
+        if id.include?('|')
+          # Cross-chapter reference
+          chapter_id, item_id = split_cross_chapter_ref(id)
+          target_chapter = find_chapter_by_id(chapter_id)
+          raise CompileError, "Chapter not found for table reference: #{chapter_id}" unless target_chapter
+
+          if target_chapter.table_index && target_chapter.table_index.number(item_id)
+            format_chapter_item_number('表', target_chapter.number, target_chapter.table_index.number(item_id))
+          else
+            raise CompileError, "Table reference not found: #{id}"
+          end
         else
-          raise CompileError, "Table reference not found: #{id}"
+          # Same-chapter reference
+          if @chapter.table_index && @chapter.table_index.number(id)
+            format_chapter_item_number('表', @chapter.number, @chapter.table_index.number(id))
+          else
+            raise CompileError, "Table reference not found: #{id}"
+          end
         end
       end
 
       # Resolve list references
       def resolve_list_ref(id)
-        if @chapter.list_index && @chapter.list_index.number(id)
-          "リスト#{@chapter.number}.#{@chapter.list_index.number(id)}"
+        if id.include?('|')
+          # Cross-chapter reference
+          chapter_id, item_id = split_cross_chapter_ref(id)
+          target_chapter = find_chapter_by_id(chapter_id)
+          raise CompileError, "Chapter not found for list reference: #{chapter_id}" unless target_chapter
+
+          if target_chapter.list_index && target_chapter.list_index.number(item_id)
+            format_chapter_item_number('リスト', target_chapter.number, target_chapter.list_index.number(item_id))
+          else
+            raise CompileError, "List reference not found: #{id}"
+          end
         else
-          raise CompileError, "List reference not found: #{id}"
+          # Same-chapter reference
+          if @chapter.list_index && @chapter.list_index.number(id)
+            format_chapter_item_number('リスト', @chapter.number, @chapter.list_index.number(id))
+          else
+            raise CompileError, "List reference not found: #{id}"
+          end
         end
       end
 
@@ -336,9 +378,21 @@ module ReVIEW
         end
       end
 
+      # Split cross-chapter reference ID into chapter_id and item_id
+      def split_cross_chapter_ref(id)
+        id.split('|', 2).map(&:strip)
+      end
+
+      # Format chapter item number (e.g., "図1.2", "表3.4")
+      def format_chapter_item_number(prefix, chapter_num, item_num)
+        "#{prefix}#{chapter_num || ''}.#{item_num}"
+      end
+
       # Find chapter by ID from book's chapter_index
       def find_chapter_by_id(id)
         @book.chapter_index[id]&.content
+      rescue KeyError
+        nil
       end
     end
   end
