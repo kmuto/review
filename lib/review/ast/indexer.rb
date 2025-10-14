@@ -447,8 +447,6 @@ module ReVIEW
 
       # Process inline elements in caption nodes
       def process_caption_inline_elements(caption)
-        return unless caption.respond_to?(:children)
-
         caption.children.each { |child| visit_node(child) }
       end
 
@@ -474,11 +472,7 @@ module ReVIEW
 
       # Extract text content from inline nodes
       def extract_inline_text(inline_node)
-        if inline_node.respond_to?(:children)
-          inline_node.children.map { |child| child.respond_to?(:content) ? child.content : child.to_s }.join
-        else
-          inline_node.to_s
-        end
+        inline_node.children.map { |child| child.respond_to?(:content) ? child.content : child.to_s }.join
       end
 
       # ID validation (same as IndexBuilder)

@@ -25,7 +25,7 @@ module ReVIEW
       # Count total number of nodes in the AST
       def self.count_nodes(node)
         count = 1
-        if node.respond_to?(:children) && node.children
+        if node.children
           node.children.each { |child| count += count_nodes(child) }
         end
         count
@@ -34,7 +34,7 @@ module ReVIEW
       # Calculate maximum depth of the AST
       def self.calculate_depth(node, current_depth = 0)
         max_depth = current_depth
-        if node.respond_to?(:children) && node.children
+        if node.children
           node.children.each do |child|
             child_depth = calculate_depth(child, current_depth + 1)
             max_depth = [max_depth, child_depth].max
@@ -46,7 +46,7 @@ module ReVIEW
       # Collect all node types in the AST
       def self.collect_node_types(node)
         types = [node.class.name.split('::').last]
-        if node.respond_to?(:children) && node.children
+        if node.children
           node.children.each { |child| types += collect_node_types(child) }
         end
         types

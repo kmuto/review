@@ -105,7 +105,7 @@ module ReVIEW
       def visit_all_nodes(node, &block)
         yield node if block
 
-        if node.respond_to?(:children) && node.children
+        if node.children
           node.children.each { |child| visit_all_nodes(child, &block) }
         end
       end
