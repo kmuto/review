@@ -861,19 +861,6 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     # First definition item: : Alpha \n    RISC CPU made by DEC.
     item1 = AST::ListItemNode.new(content: 'Alpha', level: 1)
-    # Add term_children functionality if not available
-    unless item1.respond_to?(:term_children)
-      item1.instance_eval do
-        @term_children = []
-        def term_children
-          @term_children
-        end
-
-        def term_children=(children)
-          @term_children = children
-        end
-      end
-    end
     # Set term as term_children (not regular children)
     term1 = AST::TextNode.new(content: 'Alpha')
     item1.term_children = [term1]
@@ -883,18 +870,6 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     # Second definition item with brackets in term
     item2 = AST::ListItemNode.new(content: 'POWER [IBM]', level: 1)
-    unless item2.respond_to?(:term_children)
-      item2.instance_eval do
-        @term_children = []
-        def term_children
-          @term_children
-        end
-
-        def term_children=(children)
-          @term_children = children
-        end
-      end
-    end
     term2 = AST::TextNode.new(content: 'POWER [IBM]')
     item2.term_children = [term2]
     def2 = AST::TextNode.new(content: 'RISC CPU made by IBM and Motorola.')
@@ -920,19 +895,6 @@ class TestLatexRenderer < Test::Unit::TestCase
     list = AST::ListNode.new(list_type: :dl)
 
     item = AST::ListItemNode.new(content: 'Term Only', level: 1)
-    # Add term_children functionality if not available
-    unless item.respond_to?(:term_children)
-      item.instance_eval do
-        @term_children = []
-        def term_children
-          @term_children
-        end
-
-        def term_children=(children)
-          @term_children = children
-        end
-      end
-    end
     # Set term as term_children, no regular children (no definition)
     term = AST::TextNode.new(content: 'Term Only')
     item.term_children = [term]
