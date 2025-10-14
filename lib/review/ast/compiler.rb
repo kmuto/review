@@ -7,7 +7,6 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/ast'
-require 'review/ast/performance_tracker'
 require 'review/loggable'
 require 'review/lineinput'
 require 'review/ast/inline_processor'
@@ -64,17 +63,6 @@ module ReVIEW
 
         # Get config for debug output
         @config = {}
-
-        # Performance measurement - check if enabled via environment or config
-        performance_enabled = ENV['REVIEW_AST_PERFORMANCE'] == 'true' ||
-                              (defined?(ReVIEW::Configure.values) &&
-                               ReVIEW::Configure.values.dig('ast', 'performance') == true)
-        @performance_tracker = PerformanceTracker.new(enabled: performance_enabled, logger: @logger)
-
-        # Debug output if debug is enabled
-        if ENV['REVIEW_DEBUG_AST'] == 'true'
-          @logger.info("DEBUG: AST::Compiler initialized with performance_enabled: #{performance_enabled}")
-        end
       end
 
       attr_reader :ast_root, :current_ast_node
@@ -115,27 +103,18 @@ module ReVIEW
         )
         @current_ast_node = @ast_root
 
-        @performance_tracker.start_timing(:total_compilation_time)
-
         # Full AST mode: build complete AST
         do_compile_with_ast_building
 
         # Resolve references after AST building but before post-processing
         # Skip if explicitly requested (e.g., during index building)
         if reference_resolution
-          @performance_tracker.start_timing(:reference_resolution_time)
           resolve_references
-          @performance_tracker.end_timing(:reference_resolution_time)
         end
-
-        # Record performance statistics
-        @performance_tracker.end_timing(:total_compilation_time)
 
         # Post-process AST for noindent and olnum commands
         process_noindent_commands
         process_olnum_commands
-
-        @performance_tracker.log_statistics
 
         # Return the compiled AST
         @ast_root
@@ -339,9 +318,6 @@ module ReVIEW
 
         node
       end
-
-      # Expose performance tracker for external access
-      attr_reader :performance_tracker
 
       # Block-Scoped Compilation Support
 
