@@ -194,6 +194,7 @@ EOS
 【注1】bar
 
 ★foo【注1】[]<>&◆→TeX式ここから←◆\\alpha[]◆→TeX式ここまで←◆☆
+	
 
 EOS
     assert_equal expected, actual

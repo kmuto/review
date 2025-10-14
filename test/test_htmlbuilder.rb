@@ -1008,6 +1008,7 @@ EOS
 <div class="footnote" epub:type="footnote" id="fn-bar"><p class="footnote">[*1] bar</p></div>
 <dl>
 <dt>foo<a id="fnb-bar" href="#fn-bar" class="noteref" epub:type="noteref">*1</a>[]&lt;&gt;&amp;<span class="equation">\\alpha[]</span></dt>
+<dd></dd>
 </dl>
 EOS
     assert_equal expected, actual

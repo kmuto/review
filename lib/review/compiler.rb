@@ -540,10 +540,7 @@ module ReVIEW
         f.until_match(/\A(\S|\s*:|\s+\d+\.\s|\s+\*\s)/) do |line|
           desc << text(line.strip)
         end
-        # Only output dd if there's actual content, or if beginchild follows
-        desc_content = desc.reject(&:empty?)
-        has_beginchild = f.next? && f.peek.start_with?('//beginchild')
-        @builder.dd(desc_content) if desc_content.any? || has_beginchild
+        @builder.dd(desc)
         f.skip_blank_lines
         f.skip_comment_lines
       end
