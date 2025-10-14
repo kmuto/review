@@ -22,7 +22,6 @@ module ReVIEW
       attr_reader :basedir
       attr_accessor :bibpaper_index
       attr_reader :cache
-      attr_accessor :ast_book_indexer
 
       def self.load(basedir = '.', config: nil)
         new(basedir, config: config)

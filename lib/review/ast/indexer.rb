@@ -43,16 +43,11 @@ module ReVIEW
       def self.build_book_indexes(book)
         return unless book
 
-        # Skip if already built
-        return if book.ast_book_indexer
-
         require 'review/ast/book_indexer'
 
         # Create BookIndexer and build all indexes
         book_indexer = AST::BookIndexer.new(book)
         book_indexer.build_all_chapter_indexes
-
-        book.ast_book_indexer = book_indexer
 
         # Build chapter index for compatibility
         build_chapter_index(book)
