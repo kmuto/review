@@ -82,9 +82,6 @@ module ReVIEW
         @headline_index = indexes[:headline_index] if indexes[:headline_index]
         @column_index = indexes[:column_index] if indexes[:column_index]
         @bibpaper_index = indexes[:bibpaper_index] if indexes[:bibpaper_index]
-
-        # Mark that AST indexes have been set
-        @ast_indexes_built = true
       end
 
       # Set book-wide indexes for cross-chapter references
@@ -99,11 +96,6 @@ module ReVIEW
       def book_index(type)
         @book_indexes ||= {}
         @book_indexes[type.to_sym]
-      end
-
-      # Check if AST indexes have been built
-      def ast_indexes_built?
-        @ast_indexes_built || false
       end
 
       def dirname

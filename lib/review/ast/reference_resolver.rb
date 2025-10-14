@@ -68,14 +68,12 @@ module ReVIEW
 
       # Build indexes if not already built
       def build_indexes_if_needed(ast)
-        # Check if indexes are already built
-        # Chapter objects always have footnote_index and ast_indexes_built? methods
-        has_indexes = @chapter.footnote_index || @chapter.ast_indexes_built?
+        # Check if indexes are already built by checking if any index exists
+        # If footnote_index exists, all indexes should have been built together
+        return if @chapter.footnote_index
 
-        unless has_indexes
-          indexer = Indexer.new(@chapter)
-          indexer.build_indexes(ast)
-        end
+        indexer = Indexer.new(@chapter)
+        indexer.build_indexes(ast)
       end
 
       # Resolve ReferenceNode (ref_type taken from parent InlineNode)
