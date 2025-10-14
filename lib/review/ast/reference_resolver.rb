@@ -165,7 +165,7 @@ module ReVIEW
       # Resolve chapter references
       def resolve_chapter_ref(id)
         if @book
-          chapter = @book.chapter_by_id(id)
+          chapter = find_chapter_by_id(id)
           if chapter
             "第#{chapter.number}章"
           else
@@ -179,7 +179,7 @@ module ReVIEW
       # Resolve chapter references with title
       def resolve_chapter_ref_with_title(id)
         if @book
-          chapter = @book.chapter_by_id(id)
+          chapter = find_chapter_by_id(id)
           if chapter
             "第#{chapter.number}章「#{chapter.title}」"
           else
@@ -198,7 +198,7 @@ module ReVIEW
 
           # Search for specified chapter
           if @book
-            target_chapter = @book.chapter_by_id(chapter_id)
+            target_chapter = find_chapter_by_id(chapter_id)
             unless target_chapter
               raise CompileError, "Chapter not found for headline reference: #{chapter_id}"
             end
@@ -251,7 +251,7 @@ module ReVIEW
 
           # Search for specified chapter
           if @book
-            target_chapter = @book.chapter_by_id(chapter_id)
+            target_chapter = find_chapter_by_id(chapter_id)
             unless target_chapter
               raise CompileError, "Chapter not found for section reference: #{chapter_id}"
             end
@@ -334,6 +334,11 @@ module ReVIEW
         else
           raise CompileError, "word not bound: #{id}"
         end
+      end
+
+      # Find chapter by ID from book's chapter_index
+      def find_chapter_by_id(id)
+        @book.chapter_index[id]&.content
       end
     end
   end

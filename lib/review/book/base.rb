@@ -190,10 +190,6 @@ module ReVIEW
         chapter_index[id].content
       end
 
-      def chapter_by_id(id)
-        chapter_index[id]&.content
-      end
-
       def next_chapter(chapter)
         finded = false
         each_chapter do |c|
