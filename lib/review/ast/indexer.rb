@@ -51,7 +51,6 @@ module ReVIEW
         # Create BookIndexer and build all indexes
         book_indexer = AST::BookIndexer.new(book)
         book_indexer.build_all_chapter_indexes
-        book_indexer.build_book_indexes
 
         book.ast_book_indexer = book_indexer
 

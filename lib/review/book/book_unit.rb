@@ -84,20 +84,6 @@ module ReVIEW
         @bibpaper_index = indexes[:bibpaper_index] if indexes[:bibpaper_index]
       end
 
-      # Set book-wide indexes for cross-chapter references
-      def set_book_indexes(book_indexes)
-        @book_indexes ||= {}
-        book_indexes.each do |type, index|
-          @book_indexes[type] = index
-        end
-      end
-
-      # Get book-wide index by type
-      def book_index(type)
-        @book_indexes ||= {}
-        @book_indexes[type.to_sym]
-      end
-
       def dirname
         @path && File.dirname(@path)
       end

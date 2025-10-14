@@ -30,7 +30,6 @@ module ReVIEW
       def initialize(book)
         @book = book
         @chapter_indexers = {}
-        @book_wide_indexes = {}
       end
 
       # Build indexes for all chapters in the book
@@ -57,29 +56,6 @@ module ReVIEW
         rescue StandardError => e
           warn "Failed to build index for chapter #{chapter.id}: #{e.message}" if $DEBUG
         end
-      end
-
-      # Build book-wide indexes from all chapter indexers
-      def build_book_indexes
-        return if @chapter_indexers.empty?
-
-        indexers = @chapter_indexers.values
-
-        # Use Indexer's logic to combine indexes
-        @book_wide_indexes = {}
-        indexers.first.available_index_types.each do |type|
-          @book_wide_indexes[type] = AST::Indexer.combine_indexes(indexers, type)
-        end
-
-        # Make book-wide indexes available to each chapter
-        @chapter_indexers.each_key do |chapter|
-          make_book_wide_indexes_on_chapter(chapter)
-        end
-      end
-
-      # Get book-wide index for a specific type
-      def book_index(type)
-        @book_wide_indexes[type]
       end
 
       # Get indexer for a specific chapter
@@ -118,26 +94,12 @@ module ReVIEW
         nil
       end
 
-      # Get statistics about indexes
-      def index_stats
-        stats = {}
-        @book_wide_indexes.each do |type, index|
-          stats[type] = index ? index.size : 0
-        end
-        stats
-      end
-
       private
 
       # Compile chapter to AST using appropriate compiler
       def compile_chapter_to_ast(chapter)
         compiler = AST::Compiler.for_chapter(chapter)
         compiler.compile_to_ast(chapter)
-      end
-
-      # Set book-wide indexes on a chapter for cross-chapter references
-      def make_book_wide_indexes_on_chapter(chapter)
-        chapter.set_book_indexes(@book_wide_indexes)
       end
     end
   end
