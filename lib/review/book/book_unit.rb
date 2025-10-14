@@ -24,7 +24,7 @@ module ReVIEW
       attr_reader :list_index, :table_index, :equation_index,
                   :footnote_index, :endnote_index,
                   :numberless_image_index, :image_index, :icon_index, :indepimage_index,
-                  :headline_index, :column_index
+                  :headline_index, :column_index, :bibpaper_index
 
       def initialize(file_content: nil, book: nil)
         if book
@@ -66,6 +66,44 @@ module ReVIEW
         if use_bib
           @book.bibpaper_index = @indexes.bibpaper_index
         end
+      end
+
+      # Set indexes using AST-based indexing
+      def set_ast_indexes(indexes)
+        @footnote_index = indexes[:footnote_index] if indexes[:footnote_index]
+        @endnote_index = indexes[:endnote_index] if indexes[:endnote_index]
+        @list_index = indexes[:list_index] if indexes[:list_index]
+        @table_index = indexes[:table_index] if indexes[:table_index]
+        @equation_index = indexes[:equation_index] if indexes[:equation_index]
+        @image_index = indexes[:image_index] if indexes[:image_index]
+        @icon_index = indexes[:icon_index] if indexes[:icon_index]
+        @numberless_image_index = indexes[:numberless_image_index] if indexes[:numberless_image_index]
+        @indepimage_index = indexes[:indepimage_index] if indexes[:indepimage_index]
+        @headline_index = indexes[:headline_index] if indexes[:headline_index]
+        @column_index = indexes[:column_index] if indexes[:column_index]
+        @bibpaper_index = indexes[:bibpaper_index] if indexes[:bibpaper_index]
+
+        # Mark that AST indexes have been set
+        @ast_indexes_built = true
+      end
+
+      # Set book-wide indexes for cross-chapter references
+      def set_book_indexes(book_indexes)
+        @book_indexes ||= {}
+        book_indexes.each do |type, index|
+          @book_indexes[type] = index
+        end
+      end
+
+      # Get book-wide index by type
+      def book_index(type)
+        @book_indexes ||= {}
+        @book_indexes[type.to_sym]
+      end
+
+      # Check if AST indexes have been built
+      def ast_indexes_built?
+        @ast_indexes_built || false
       end
 
       def dirname

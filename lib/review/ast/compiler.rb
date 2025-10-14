@@ -106,7 +106,8 @@ module ReVIEW
         f = LineInput.from_string(@chapter.content)
 
         # Initialize title from chapter
-        title = @chapter.respond_to?(:title) ? @chapter.title : ''
+        # Chapter objects always have title method (from BookUnit)
+        title = @chapter.title || ''
         @ast_root = AST::DocumentNode.new(
           location: SnapshotLocation.new(@chapter.basename, f.lineno + 1),
           title: title,
@@ -686,7 +687,8 @@ module ReVIEW
         return unless @ast_root
 
         # Skip reference resolution in test environments or when chapter lacks book context
-        return unless @chapter.respond_to?(:book) && @chapter.book
+        # Chapter objects always have book method (from BookUnit/Chapter)
+        return unless @chapter.book
 
         # Skip reference resolution if explicitly disabled
         return if @chapter.book.config && @chapter.book.config['disable_reference_resolution']

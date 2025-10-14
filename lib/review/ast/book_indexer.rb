@@ -140,26 +140,25 @@ module ReVIEW
 
       # Set indexes on chapter for compatibility with existing code
       def set_indexes_on_chapter(chapter, indexer)
-        chapter.instance_variable_set(:@footnote_index, indexer.footnote_index)
-        chapter.instance_variable_set(:@endnote_index, indexer.endnote_index)
-        chapter.instance_variable_set(:@list_index, indexer.list_index)
-        chapter.instance_variable_set(:@table_index, indexer.table_index)
-        chapter.instance_variable_set(:@equation_index, indexer.equation_index)
-        chapter.instance_variable_set(:@image_index, indexer.image_index)
-        chapter.instance_variable_set(:@icon_index, indexer.icon_index)
-        chapter.instance_variable_set(:@numberless_image_index, indexer.numberless_image_index)
-        chapter.instance_variable_set(:@indepimage_index, indexer.indepimage_index)
-        chapter.instance_variable_set(:@headline_index, indexer.headline_index)
-        chapter.instance_variable_set(:@column_index, indexer.column_index)
-        chapter.instance_variable_set(:@bibpaper_index, indexer.bibpaper_index)
+        chapter.set_ast_indexes(
+          footnote_index: indexer.footnote_index,
+          endnote_index: indexer.endnote_index,
+          list_index: indexer.list_index,
+          table_index: indexer.table_index,
+          equation_index: indexer.equation_index,
+          image_index: indexer.image_index,
+          icon_index: indexer.icon_index,
+          numberless_image_index: indexer.numberless_image_index,
+          indepimage_index: indexer.indepimage_index,
+          headline_index: indexer.headline_index,
+          column_index: indexer.column_index,
+          bibpaper_index: indexer.bibpaper_index
+        )
       end
 
       # Set book-wide indexes on a chapter for cross-chapter references
       def make_book_wide_indexes_on_chapter(chapter)
-        @book_wide_indexes.each do |type, index|
-          instance_var = "@book_#{type}_index"
-          chapter.instance_variable_set(instance_var, index)
-        end
+        chapter.set_book_indexes(@book_wide_indexes)
       end
     end
   end

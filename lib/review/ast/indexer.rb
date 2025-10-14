@@ -33,7 +33,7 @@ module ReVIEW
 
       def initialize(chapter)
         @chapter = chapter
-        @book = chapter.book if chapter.respond_to?(:book)
+        @book = chapter.book
         initialize_indexes
         initialize_counters
       end
@@ -44,7 +44,7 @@ module ReVIEW
         return unless book
 
         # Skip if already built
-        return if book.instance_variable_get(:@ast_book_indexer)
+        return if book.ast_book_indexer
 
         require 'review/ast/book_indexer'
 
@@ -53,8 +53,7 @@ module ReVIEW
         book_indexer.build_all_chapter_indexes
         book_indexer.build_book_indexes
 
-        # Store book indexer on book for reuse
-        book.instance_variable_set(:@ast_book_indexer, book_indexer)
+        book.ast_book_indexer = book_indexer
 
         # Build chapter index for compatibility
         build_chapter_index(book)
@@ -62,24 +61,9 @@ module ReVIEW
 
       # Build chapter index for compatibility with existing Book class expectations
       def self.build_chapter_index(book)
-        return if book.instance_variable_get(:@chapter_index)
-
-        chapter_index = ReVIEW::Book::ChapterIndex.new
-
-        # Process all chapters and add to chapter index
-        book.each_chapter do |chapter|
-          chapter_index.add_item(ReVIEW::Book::Index::Item.new(chapter.id, chapter.number, chapter))
-        end
-
-        # Add parts to chapter index
-        book.parts.each do |part|
-          if part.id.present?
-            chapter_index.add_item(ReVIEW::Book::Index::Item.new(part.id, part.number, part))
-          end
-        end
-
-        # Set chapter index on book
-        book.instance_variable_set(:@chapter_index, chapter_index)
+        # The book.chapter_index method has lazy initialization
+        # Calling it will trigger creation if not already set
+        book.chapter_index
       end
 
       # Main index building method

@@ -68,31 +68,29 @@ module ReVIEW
 
       # Build indexes if not already built
       def build_indexes_if_needed(ast)
-        # Check if indexes are already built (multiple ways to check for compatibility)
-        has_indexes = @chapter.instance_variable_get(:@footnote_index) ||
-                      (@chapter.respond_to?(:footnote_index) && @chapter.footnote_index) ||
-                      @chapter.instance_variable_get(:@ast_indexes_built)
+        # Check if indexes are already built
+        # Chapter objects always have footnote_index and ast_indexes_built? methods
+        has_indexes = @chapter.footnote_index || @chapter.ast_indexes_built?
 
         unless has_indexes
           indexer = Indexer.new(@chapter)
           indexer.build_indexes(ast)
 
-          # Set indexes on chapter
-          @chapter.instance_variable_set(:@footnote_index, indexer.footnote_index)
-          @chapter.instance_variable_set(:@endnote_index, indexer.endnote_index)
-          @chapter.instance_variable_set(:@list_index, indexer.list_index)
-          @chapter.instance_variable_set(:@table_index, indexer.table_index)
-          @chapter.instance_variable_set(:@equation_index, indexer.equation_index)
-          @chapter.instance_variable_set(:@image_index, indexer.image_index)
-          @chapter.instance_variable_set(:@icon_index, indexer.icon_index)
-          @chapter.instance_variable_set(:@numberless_image_index, indexer.numberless_image_index)
-          @chapter.instance_variable_set(:@indepimage_index, indexer.indepimage_index)
-          @chapter.instance_variable_set(:@headline_index, indexer.headline_index)
-          @chapter.instance_variable_set(:@column_index, indexer.column_index)
-          @chapter.instance_variable_set(:@bibpaper_index, indexer.bibpaper_index)
-
-          # Mark that AST indexes have been built
-          @chapter.instance_variable_set(:@ast_indexes_built, true)
+          # Set indexes on chapter using public API
+          @chapter.set_ast_indexes(
+            footnote_index: indexer.footnote_index,
+            endnote_index: indexer.endnote_index,
+            list_index: indexer.list_index,
+            table_index: indexer.table_index,
+            equation_index: indexer.equation_index,
+            image_index: indexer.image_index,
+            icon_index: indexer.icon_index,
+            numberless_image_index: indexer.numberless_image_index,
+            indepimage_index: indexer.indepimage_index,
+            headline_index: indexer.headline_index,
+            column_index: indexer.column_index,
+            bibpaper_index: indexer.bibpaper_index
+          )
         end
       end
 

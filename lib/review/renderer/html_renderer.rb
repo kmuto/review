@@ -1219,20 +1219,21 @@ module ReVIEW
           @ast_indexer = ReVIEW::AST::Indexer.new(@chapter)
           @ast_indexer.build_indexes(ast_node)
 
-          # Set indexes on chapter object for compatibility
-          # (using instance variable access since there are no setter methods)
-          @chapter.instance_variable_set(:@list_index, @ast_indexer.list_index)
-          @chapter.instance_variable_set(:@table_index, @ast_indexer.table_index)
-          @chapter.instance_variable_set(:@equation_index, @ast_indexer.equation_index)
-          @chapter.instance_variable_set(:@footnote_index, @ast_indexer.footnote_index)
-          @chapter.instance_variable_set(:@endnote_index, @ast_indexer.endnote_index)
-          @chapter.instance_variable_set(:@headline_index, @ast_indexer.headline_index)
-          @chapter.instance_variable_set(:@column_index, @ast_indexer.column_index)
-          @chapter.instance_variable_set(:@numberless_image_index, @ast_indexer.numberless_image_index)
-          @chapter.instance_variable_set(:@image_index, @ast_indexer.image_index)
-          @chapter.instance_variable_set(:@icon_index, @ast_indexer.icon_index)
-          @chapter.instance_variable_set(:@indepimage_index, @ast_indexer.indepimage_index)
-          @chapter.instance_variable_set(:@bibpaper_index, @ast_indexer.bibpaper_index)
+          # Set indexes on chapter object using public API
+          @chapter.set_ast_indexes(
+            list_index: @ast_indexer.list_index,
+            table_index: @ast_indexer.table_index,
+            equation_index: @ast_indexer.equation_index,
+            footnote_index: @ast_indexer.footnote_index,
+            endnote_index: @ast_indexer.endnote_index,
+            headline_index: @ast_indexer.headline_index,
+            column_index: @ast_indexer.column_index,
+            numberless_image_index: @ast_indexer.numberless_image_index,
+            image_index: @ast_indexer.image_index,
+            icon_index: @ast_indexer.icon_index,
+            indepimage_index: @ast_indexer.indepimage_index,
+            bibpaper_index: @ast_indexer.bibpaper_index
+          )
         end
 
         # Generate book-level indexes if book is available
