@@ -58,22 +58,6 @@ module ReVIEW
           @ast_indexer = ReVIEW::AST::Indexer.new(@chapter)
           @ast_indexer.build_indexes(node)
 
-          # Set indexes on chapter object using public API
-          @chapter.set_ast_indexes(
-            footnote_index: @ast_indexer.footnote_index,
-            endnote_index: @ast_indexer.endnote_index,
-            list_index: @ast_indexer.list_index,
-            table_index: @ast_indexer.table_index,
-            equation_index: @ast_indexer.equation_index,
-            image_index: @ast_indexer.image_index,
-            icon_index: @ast_indexer.icon_index,
-            numberless_image_index: @ast_indexer.numberless_image_index,
-            indepimage_index: @ast_indexer.indepimage_index,
-            headline_index: @ast_indexer.headline_index,
-            column_index: @ast_indexer.column_index,
-            bibpaper_index: @ast_indexer.bibpaper_index
-          )
-
           # Build book-wide indexes for cross-chapter references if book is available
           ReVIEW::AST::Indexer.build_book_indexes(@book) if @book
         end

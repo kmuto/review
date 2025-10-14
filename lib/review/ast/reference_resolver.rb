@@ -75,22 +75,6 @@ module ReVIEW
         unless has_indexes
           indexer = Indexer.new(@chapter)
           indexer.build_indexes(ast)
-
-          # Set indexes on chapter using public API
-          @chapter.set_ast_indexes(
-            footnote_index: indexer.footnote_index,
-            endnote_index: indexer.endnote_index,
-            list_index: indexer.list_index,
-            table_index: indexer.table_index,
-            equation_index: indexer.equation_index,
-            image_index: indexer.image_index,
-            icon_index: indexer.icon_index,
-            numberless_image_index: indexer.numberless_image_index,
-            indepimage_index: indexer.indepimage_index,
-            headline_index: indexer.headline_index,
-            column_index: indexer.column_index,
-            bibpaper_index: indexer.bibpaper_index
-          )
         end
       end
 

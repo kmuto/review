@@ -72,6 +72,9 @@ module ReVIEW
         return self unless ast_root
 
         visit_node(ast_root)
+
+        set_indexes_on_chapter
+
         self
       end
 
@@ -141,6 +144,24 @@ module ReVIEW
       end
 
       private
+
+      # Set indexes on chapter using public API
+      def set_indexes_on_chapter
+        @chapter.set_ast_indexes(
+          footnote_index: @footnote_index,
+          endnote_index: @endnote_index,
+          list_index: @list_index,
+          table_index: @table_index,
+          equation_index: @equation_index,
+          image_index: @image_index,
+          icon_index: @icon_index,
+          numberless_image_index: @numberless_image_index,
+          indepimage_index: @indepimage_index,
+          headline_index: @headline_index,
+          column_index: @column_index,
+          bibpaper_index: @bibpaper_index
+        )
+      end
 
       # Extract footnote content from FootnoteNode
       def extract_footnote_content(node)

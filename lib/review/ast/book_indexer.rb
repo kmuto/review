@@ -54,9 +54,6 @@ module ReVIEW
 
           # Store the indexer
           @chapter_indexers[chapter] = indexer
-
-          # Set indexes on the chapter for compatibility
-          set_indexes_on_chapter(chapter, indexer)
         rescue StandardError => e
           warn "Failed to build index for chapter #{chapter.id}: #{e.message}" if $DEBUG
         end
@@ -136,24 +133,6 @@ module ReVIEW
       def compile_chapter_to_ast(chapter)
         compiler = AST::Compiler.for_chapter(chapter)
         compiler.compile_to_ast(chapter)
-      end
-
-      # Set indexes on chapter for compatibility with existing code
-      def set_indexes_on_chapter(chapter, indexer)
-        chapter.set_ast_indexes(
-          footnote_index: indexer.footnote_index,
-          endnote_index: indexer.endnote_index,
-          list_index: indexer.list_index,
-          table_index: indexer.table_index,
-          equation_index: indexer.equation_index,
-          image_index: indexer.image_index,
-          icon_index: indexer.icon_index,
-          numberless_image_index: indexer.numberless_image_index,
-          indepimage_index: indexer.indepimage_index,
-          headline_index: indexer.headline_index,
-          column_index: indexer.column_index,
-          bibpaper_index: indexer.bibpaper_index
-        )
       end
 
       # Set book-wide indexes on a chapter for cross-chapter references
