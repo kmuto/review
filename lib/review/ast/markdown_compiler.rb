@@ -48,7 +48,7 @@ module ReVIEW
         )
 
         # Convert Markly AST to Re:VIEW AST
-        @adapter.convert(markly_doc, @ast_root)
+        @adapter.convert(markly_doc, @ast_root, @chapter)
 
         @ast_root
       end

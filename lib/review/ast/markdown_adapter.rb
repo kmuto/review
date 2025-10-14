@@ -30,9 +30,11 @@ module ReVIEW
       #
       # @param markly_doc [Markly::Node] Markly document root
       # @param ast_root [DocumentNode] Re:VIEW AST root
-      def convert(markly_doc, ast_root)
+      # @param chapter [ReVIEW::Book::Chapter] Chapter context (required)
+      def convert(markly_doc, ast_root, chapter)
         @ast_root = ast_root
         @current_node = ast_root
+        @chapter = chapter
 
         # Walk the Markly AST
         walk_node(markly_doc)
@@ -463,7 +465,7 @@ module ReVIEW
                  @current_line + line_offset
                end
 
-        SnapshotLocation.new(@compiler.instance_variable_get(:@chapter).basename, line)
+        SnapshotLocation.new(@chapter.basename, line)
       end
 
       # Detect HTML type from content
