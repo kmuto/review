@@ -37,8 +37,6 @@ module ReVIEW
       private
 
       def process_node(node)
-        return unless node.children
-
         node.children.each_with_index do |child, idx|
           # Check if this is a noindent block command
           if noindent_block?(child)
@@ -55,7 +53,7 @@ module ReVIEW
           end
 
           # Recursively process child nodes
-          process_node(child) if child.children
+          process_node(child)
         end
       end
 

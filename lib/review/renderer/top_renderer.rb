@@ -100,15 +100,13 @@ module ReVIEW
         text_content = +''
         nested_lists = +''
 
-        if node.children
-          node.children.each do |child|
-            if child.class.name.include?('ListNode')
-              # This is a nested list - render it separately
-              nested_lists += visit(child)
-            else
-              # This is regular content
-              text_content += visit(child)
-            end
+        node.children.each do |child|
+          if child.class.name.include?('ListNode')
+            # This is a nested list - render it separately
+            nested_lists += visit(child)
+          else
+            # This is regular content
+            text_content += visit(child)
           end
         end
 
@@ -130,15 +128,13 @@ module ReVIEW
         text_content = +''
         nested_lists = +''
 
-        if node.children
-          node.children.each do |child|
-            if child.class.name.include?('ListNode')
-              # This is a nested list - render it separately
-              nested_lists += visit(child)
-            else
-              # This is regular content
-              text_content += visit(child)
-            end
+        node.children.each do |child|
+          if child.class.name.include?('ListNode')
+            # This is a nested list - render it separately
+            nested_lists += visit(child)
+          else
+            # This is regular content
+            text_content += visit(child)
           end
         end
 

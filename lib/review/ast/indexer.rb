@@ -235,8 +235,6 @@ module ReVIEW
       end
 
       def visit_children(node)
-        return unless node.children
-
         node.children.each { |child| visit_node(child) }
       end
 

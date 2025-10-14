@@ -14,8 +14,8 @@ module ReVIEW
     # Abstract base class for all AST nodes
     # This class should not be instantiated directly - use specific subclasses instead
     class Node
-      attr_reader :location, :type, :id, :content, :original_text
-      attr_accessor :parent, :children
+      attr_reader :location, :type, :id, :content, :original_text, :children
+      attr_accessor :parent
 
       def initialize(location: nil, type: nil, id: nil, content: nil, original_text: nil, **_kwargs)
         # Prevent direct instantiation of abstract base class (except in tests)

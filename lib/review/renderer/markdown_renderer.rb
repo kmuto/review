@@ -89,15 +89,13 @@ module ReVIEW
         text_content = +''
         nested_lists = +''
 
-        if node.children
-          node.children.each do |child|
-            if child.class.name.include?('ListNode')
-              # This is a nested list - render it separately
-              nested_lists += visit(child)
-            else
-              # This is regular content
-              text_content += visit(child)
-            end
+        node.children.each do |child|
+          if child.class.name.include?('ListNode')
+            # This is a nested list - render it separately
+            nested_lists += visit(child)
+          else
+            # This is regular content
+            text_content += visit(child)
           end
         end
 
@@ -142,12 +140,10 @@ module ReVIEW
         end
 
         # Handle definition content (all children are definition content)
-        if node.children
-          definition_parts = node.children.map do |child|
-            visit(child) # Use visit instead of render_children for individual nodes
-          end
-          definition = definition_parts.join(' ').strip
+        definition_parts = node.children.map do |child|
+          visit(child) # Use visit instead of render_children for individual nodes
         end
+        definition = definition_parts.join(' ').strip
 
         "<dt>#{term}</dt>\n<dd>#{definition}</dd>\n"
       end
