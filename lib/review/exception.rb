@@ -21,8 +21,6 @@ module ReVIEW
 
   class SyntaxError < CompileError; end
 
-  class InlineTokenizeError < SyntaxError; end
-
   class FileNotFound < ApplicationError; end
 
   class KeyError < CompileError; end

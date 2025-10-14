@@ -319,7 +319,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     )
 
     # Unclosed brace should cause an InlineTokenizeError
-    assert_raises(ReVIEW::InlineTokenizeError) do
+    assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements('Bad @<b>{unclosed text', parent)
     end
   end
@@ -330,7 +330,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     )
 
     # Unclosed fence should cause an InlineTokenizeError
-    assert_raises(ReVIEW::InlineTokenizeError) do
+    assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements('Code @<code>$unclosed fence', parent)
     end
   end
@@ -358,7 +358,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     )
 
     # Line breaks within inline elements should cause an InlineTokenizeError
-    assert_raises(ReVIEW::InlineTokenizeError) do
+    assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements("Text @<b>{bold\ntext} more", parent)
     end
   end
@@ -409,7 +409,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     )
 
     # Command names starting with numbers should cause an error
-    assert_raises(ReVIEW::InlineTokenizeError) do
+    assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements('Invalid @<123>{content} command', parent)
     end
   end
@@ -420,7 +420,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     )
 
     # Command names with uppercase letters should cause an error
-    assert_raises(ReVIEW::InlineTokenizeError) do
+    assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements('Invalid @<Bold>{content} command', parent)
     end
   end
@@ -431,7 +431,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     )
 
     # Command names with symbols should cause an error
-    assert_raises(ReVIEW::InlineTokenizeError) do
+    assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements('Invalid @<b-old>{content} command', parent)
     end
   end
@@ -442,7 +442,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     )
 
     # Command names with underscores should cause an error
-    assert_raises(ReVIEW::InlineTokenizeError) do
+    assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements('Invalid @<code_block>{content} command', parent)
     end
   end
@@ -453,7 +453,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     )
 
     # Empty command names should cause an error
-    assert_raises(ReVIEW::InlineTokenizeError) do
+    assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements('Invalid @<>{content} command', parent)
     end
   end
@@ -464,7 +464,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     )
 
     # Nested fence syntax should cause an error for clarity
-    assert_raises(ReVIEW::InlineTokenizeError) do
+    assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements('Code @<code>$outer @<m>|inner| text$ end', parent)
     end
   end
@@ -481,7 +481,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     location = ReVIEW::Location.new('sample.re', file_mock)
     @ast_compiler.force_override_location!(location)
 
-    error = assert_raises(ReVIEW::InlineTokenizeError) do
+    error = assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements('Text @<b>{unclosed brace content', parent)
     end
 
@@ -503,7 +503,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     location = ReVIEW::Location.new('chapter01.re', file_mock)
     @ast_compiler.force_override_location!(location)
 
-    error = assert_raises(ReVIEW::InlineTokenizeError) do
+    error = assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements("Text @<b>{content with\nline break}", parent)
     end
 
@@ -525,7 +525,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     location = ReVIEW::Location.new('appendix.re', file_mock)
     @ast_compiler.force_override_location!(location)
 
-    error = assert_raises(ReVIEW::InlineTokenizeError) do
+    error = assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements('Code @<tt>$unclosed fence content', parent)
     end
 
@@ -547,7 +547,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     location = ReVIEW::Location.new('intro.re', file_mock)
     @ast_compiler.force_override_location!(location)
 
-    error = assert_raises(ReVIEW::InlineTokenizeError) do
+    error = assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements("Code @<tt>$content with\nline break$", parent)
     end
 
@@ -569,7 +569,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     location = ReVIEW::Location.new('references.re', file_mock)
     @ast_compiler.force_override_location!(location)
 
-    error = assert_raises(ReVIEW::InlineTokenizeError) do
+    error = assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements('Invalid @<B0LD>{content} command', parent)
     end
 
@@ -589,7 +589,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     location = ReVIEW::Location.new('complex.re', file_mock)
     @ast_compiler.force_override_location!(location)
 
-    error = assert_raises(ReVIEW::InlineTokenizeError) do
+    error = assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements('Code @<code>$outer @<m>|inner| text$ end', parent)
     end
 
@@ -608,7 +608,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     # Set location to nil to test error messages without location context
     @ast_compiler.force_override_location!(nil)
 
-    error = assert_raises(ReVIEW::InlineTokenizeError) do
+    error = assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements('Text @<b>{unclosed content', parent)
     end
 

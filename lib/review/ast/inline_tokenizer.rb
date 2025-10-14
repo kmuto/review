@@ -124,9 +124,9 @@ module ReVIEW
             # Validate command name - only ASCII lowercase letters allowed
             command = match[1]
             if command.empty?
-              raise ReVIEW::InlineTokenizeError, "Invalid command name '#{command}': command name cannot be empty"
+              raise ReVIEW::AST::InlineTokenizeError, "Invalid command name '#{command}': command name cannot be empty"
             elsif !command.match(/\A[a-z]+\z/)
-              raise ReVIEW::InlineTokenizeError, "Invalid command name '#{command}': only ASCII lowercase letters are allowed"
+              raise ReVIEW::AST::InlineTokenizeError, "Invalid command name '#{command}': only ASCII lowercase letters are allowed"
             end
 
             # Parse the inline element
@@ -223,7 +223,7 @@ module ReVIEW
             # Line breaks are not allowed within inline elements
             error_msg = 'Line breaks are not allowed within inline elements'
             error_msg += format_location_info_simple(str, element_start)
-            raise ReVIEW::InlineTokenizeError, error_msg
+            raise ReVIEW::AST::InlineTokenizeError, error_msg
           when '\\'
             # Handle escaped character - implements consistent escape rules
             if pos + 1 < str.length
@@ -263,7 +263,7 @@ module ReVIEW
         # If we reach here, no closing brace was found (reached end of string)
         error_msg = 'Unclosed inline element braces'
         error_msg += format_location_info_simple(str, element_start)
-        raise ReVIEW::InlineTokenizeError, error_msg
+        raise ReVIEW::AST::InlineTokenizeError, error_msg
       end
 
       # Parse content within fence delimiters
@@ -275,7 +275,7 @@ module ReVIEW
         unless end_pos
           error_msg = 'Unclosed inline element fence'
           error_msg += format_location_info_simple(str, element_start)
-          raise ReVIEW::InlineTokenizeError, error_msg
+          raise ReVIEW::AST::InlineTokenizeError, error_msg
         end
 
         content = str[start_pos...end_pos]
@@ -284,14 +284,14 @@ module ReVIEW
         if content.include?("\n") || content.include?("\r")
           error_msg = 'Line breaks are not allowed within inline elements'
           error_msg += format_location_info_simple(str, element_start)
-          raise ReVIEW::InlineTokenizeError, error_msg
+          raise ReVIEW::AST::InlineTokenizeError, error_msg
         end
 
         # Check for nested fence syntax which can be confusing
         if /@<[a-z]+>[{$|]/.match?(content)
           error_msg = 'Nested inline elements within fence syntax are not allowed'
           error_msg += format_location_info_simple(str, element_start)
-          raise ReVIEW::InlineTokenizeError, error_msg
+          raise ReVIEW::AST::InlineTokenizeError, error_msg
         end
 
         [content, end_pos + 1]

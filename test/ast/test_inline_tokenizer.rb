@@ -118,7 +118,7 @@ class TestInlineTokenizer < Test::Unit::TestCase
 
   def test_malformed_inline_element
     # Unclosed brace should cause an InlineTokenizeError
-    assert_raises(ReVIEW::InlineTokenizeError) do
+    assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @tokenizer.tokenize('Bad @<b>{unclosed text')
     end
   end

@@ -35,6 +35,7 @@ require 'review/ast/block_processor'
 require 'review/ast/inline_processor'
 
 # AST Utility classes
+require 'review/ast/exception'
 require 'review/ast/json_serializer'
 require 'review/ast/list_processor'
 require 'review/ast/list_parser'

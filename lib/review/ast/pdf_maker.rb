@@ -124,7 +124,7 @@ module ReVIEW
           File.write(output_path, latex_output)
 
           true
-        rescue ReVIEW::CompileError, ReVIEW::SyntaxError, ReVIEW::InlineTokenizeError => e
+        rescue ReVIEW::CompileError, ReVIEW::SyntaxError, ReVIEW::AST::InlineTokenizeError => e
           # These are known ReVIEW compilation errors - handle them specifically
           error_message = "#{filename}: #{e.class.name} - #{e.message}"
           @compile_errors_list << error_message
