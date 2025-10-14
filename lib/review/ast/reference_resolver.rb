@@ -78,21 +78,28 @@ module ReVIEW
 
       # Resolve ReferenceNode (ref_type taken from parent InlineNode)
       def resolve_node(node, ref_type)
+        # Build full reference ID from context_id and ref_id if context_id exists
+        full_ref_id = if node.context_id
+                        "#{node.context_id}|#{node.ref_id}"
+                      else
+                        node.ref_id
+                      end
+
         content = case ref_type
-                  when 'img' then resolve_image_ref(node.ref_id)
-                  when 'table' then resolve_table_ref(node.ref_id)
-                  when 'list' then resolve_list_ref(node.ref_id)
-                  when 'eq' then resolve_equation_ref(node.ref_id)
-                  when 'fn' then resolve_footnote_ref(node.ref_id)
-                  when 'endnote' then resolve_endnote_ref(node.ref_id)
-                  when 'chap' then resolve_chapter_ref(node.ref_id)
-                  when 'chapref' then resolve_chapter_ref_with_title(node.ref_id)
-                  when 'hd' then resolve_headline_ref(node.ref_id)
-                  when 'sec' then resolve_section_ref(node.ref_id)
-                  when 'secref' then "#{resolve_section_ref(node.ref_id)}節"
-                  when 'labelref', 'ref' then resolve_label_ref(node.ref_id)
-                  when 'w' then resolve_word_ref(node.ref_id)
-                  when 'wb' then resolve_word_ref(node.ref_id) # rubocop:disable Lint/DuplicateBranch
+                  when 'img' then resolve_image_ref(full_ref_id)
+                  when 'table' then resolve_table_ref(full_ref_id)
+                  when 'list' then resolve_list_ref(full_ref_id)
+                  when 'eq' then resolve_equation_ref(full_ref_id)
+                  when 'fn' then resolve_footnote_ref(full_ref_id)
+                  when 'endnote' then resolve_endnote_ref(full_ref_id)
+                  when 'chap' then resolve_chapter_ref(full_ref_id)
+                  when 'chapref' then resolve_chapter_ref_with_title(full_ref_id)
+                  when 'hd' then resolve_headline_ref(full_ref_id)
+                  when 'sec' then resolve_section_ref(full_ref_id)
+                  when 'secref' then "#{resolve_section_ref(full_ref_id)}節"
+                  when 'labelref', 'ref' then resolve_label_ref(full_ref_id)
+                  when 'w' then resolve_word_ref(full_ref_id)
+                  when 'wb' then resolve_word_ref(full_ref_id) # rubocop:disable Lint/DuplicateBranch
                   else
                     raise CompileError, "Unknown reference type: #{ref_type}"
                   end

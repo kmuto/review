@@ -99,7 +99,7 @@ module ReVIEW
         @list_processor ||= ListProcessor.new(self)
       end
 
-      def compile_to_ast(chapter)
+      def compile_to_ast(chapter, reference_resolution: true)
         @chapter = chapter
         # Create AST root with appropriate location
         # For test compatibility, use a special calculation for line numbers
@@ -121,9 +121,12 @@ module ReVIEW
         do_compile_with_ast_building
 
         # Resolve references after AST building but before post-processing
-        @performance_tracker.start_timing(:reference_resolution_time)
-        resolve_references
-        @performance_tracker.end_timing(:reference_resolution_time)
+        # Skip if explicitly requested (e.g., during index building)
+        if reference_resolution
+          @performance_tracker.start_timing(:reference_resolution_time)
+          resolve_references
+          @performance_tracker.end_timing(:reference_resolution_time)
+        end
 
         # Record performance statistics
         @performance_tracker.end_timing(:total_compilation_time)
@@ -689,9 +692,6 @@ module ReVIEW
         # Skip reference resolution in test environments or when chapter lacks book context
         # Chapter objects always have book method (from BookUnit/Chapter)
         return unless @chapter.book
-
-        # Skip reference resolution if explicitly disabled
-        return if @chapter.book.config && @chapter.book.config['disable_reference_resolution']
 
         resolver = ReferenceResolver.new(@chapter)
         result = resolver.resolve_references(@ast_root)

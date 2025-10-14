@@ -37,7 +37,7 @@ class TestCodeBlockDebug < Test::Unit::TestCase
 
     # Build AST without builder rendering
     ast_compiler = ReVIEW::AST::Compiler.new
-    ast_root = ast_compiler.compile_to_ast(@chapter)
+    ast_root = ast_compiler.compile_to_ast(@chapter, reference_resolution: false)
 
     # Serialize AST to examine structure
     json_str = ReVIEW::AST::JSONSerializer.serialize(ast_root)

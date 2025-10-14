@@ -99,7 +99,7 @@ module ReVIEW
       # Compile chapter to AST using appropriate compiler
       def compile_chapter_to_ast(chapter)
         compiler = AST::Compiler.for_chapter(chapter)
-        compiler.compile_to_ast(chapter)
+        compiler.compile_to_ast(chapter, reference_resolution: false)
       end
     end
   end
