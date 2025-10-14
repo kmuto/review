@@ -69,7 +69,7 @@ module ReVIEW
       end
 
       # Set indexes using AST-based indexing
-      def set_ast_indexes(indexes)
+      def ast_indexes=(indexes)
         @footnote_index = indexes[:footnote_index] if indexes[:footnote_index]
         @endnote_index = indexes[:endnote_index] if indexes[:endnote_index]
         @list_index = indexes[:list_index] if indexes[:list_index]

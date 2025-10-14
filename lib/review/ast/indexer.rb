@@ -146,7 +146,7 @@ module ReVIEW
 
       # Set indexes on chapter using public API
       def set_indexes_on_chapter
-        @chapter.set_ast_indexes(
+        @chapter.ast_indexes = {
           footnote_index: @footnote_index,
           endnote_index: @endnote_index,
           list_index: @list_index,
@@ -159,7 +159,7 @@ module ReVIEW
           headline_index: @headline_index,
           column_index: @column_index,
           bibpaper_index: @bibpaper_index
-        )
+        }
       end
 
       # Extract footnote content from FootnoteNode

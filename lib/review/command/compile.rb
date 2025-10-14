@@ -188,13 +188,19 @@ module ReVIEW
         # Final fallback to 1 if all else fails
         chapter_number ||= 1
 
-        ReVIEW::Book::Chapter.new(
+        chapter = ReVIEW::Book::Chapter.new(
           book,
           chapter_number,
           basename,
           @input_file,
           StringIO.new(content)
         )
+
+        # Initialize book-wide indexes early for cross-chapter references
+        require 'review/ast/indexer'
+        ReVIEW::AST::Indexer.build_book_indexes(book)
+
+        chapter
       end
 
       def find_chapter_number(book, basename)

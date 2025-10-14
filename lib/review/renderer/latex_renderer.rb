@@ -57,9 +57,6 @@ module ReVIEW
           require 'review/ast/indexer'
           @ast_indexer = ReVIEW::AST::Indexer.new(@chapter)
           @ast_indexer.build_indexes(node)
-
-          # Build book-wide indexes for cross-chapter references if book is available
-          ReVIEW::AST::Indexer.build_book_indexes(@book) if @book
         end
 
         # Generate content with proper separation between document-level elements
