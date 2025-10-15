@@ -205,6 +205,10 @@ module ReVIEW
           current_node.add_child(node)
           # Set column as current node so subsequent content becomes its children
           @current_ast_node = node
+        elsif tag == '/column'
+          # Column end tag - reset current node to parent (exiting column context)
+          @current_ast_node = @current_ast_node.parent || @ast_root
+          # Don't create any node for column end tag
         else
           # Regular headline or headline with options (nonum, notoc, nodisp)
           node = AST::HeadlineNode.new(

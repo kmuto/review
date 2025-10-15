@@ -26,7 +26,7 @@ module ReVIEW
       attr_reader :context_type, :parent_context, :footnote_collector
 
       # Context types that require footnotetext instead of direct footnote
-      FOOTNOTETEXT_REQUIRED_CONTEXTS = %i[table caption minicolumn dt].freeze
+      FOOTNOTETEXT_REQUIRED_CONTEXTS = %i[table caption minicolumn column dt].freeze
 
       def initialize(context_type, parent_context = nil)
         @context_type = context_type

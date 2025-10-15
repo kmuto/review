@@ -816,7 +816,6 @@ module ReVIEW
       end
 
       def visit_column(node)
-        content = render_children(node)
         caption = render_children(node.caption) if node.caption
 
         # Increment column counter for this chapter
@@ -825,6 +824,21 @@ module ReVIEW
         # Generate column label for hypertarget
         column_label = generate_column_label(node, caption)
         hypertarget = "\\hypertarget{#{column_label}}{}"
+
+        # Process column content with :column context to collect footnotes
+        column_context = nil
+        content = @rendering_context.with_child_context(:column) do |ctx|
+          column_context = ctx
+          # Temporarily set the renderer's context to the column context
+          old_context = @rendering_context
+          @rendering_context = column_context
+
+          result = render_children(node)
+
+          # Restore the previous context
+          @rendering_context = old_context
+          result
+        end
 
         result = []
         result << '' # blank line before column
@@ -856,7 +870,15 @@ module ReVIEW
         result << '\\end{reviewcolumn}'
         result << ''  # blank line after column
 
-        result.join("\n") + "\n"
+        output = result.join("\n") + "\n"
+
+        # Add collected footnotetext commands from column context
+        if column_context && column_context.footnote_collector.any?
+          output += generate_footnotetext_from_collector(column_context.footnote_collector)
+          column_context.footnote_collector.clear
+        end
+
+        output
       end
 
       def visit_embed(node)
