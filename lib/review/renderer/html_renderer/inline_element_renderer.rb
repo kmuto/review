@@ -60,6 +60,14 @@ module ReVIEW
           %Q(<code class="tt">#{escape_content(content)}</code>)
         end
 
+        def render_inline_ttb(_type, content, _node)
+          %Q(<code class="tt"><b>#{escape_content(content)}</b></code>)
+        end
+
+        def render_inline_tti(_type, content, _node)
+          %Q(<code class="tt"><i>#{escape_content(content)}</i></code>)
+        end
+
         def render_inline_kbd(_type, content, _node)
           %Q(<kbd>#{escape_content(content)}</kbd>)
         end
@@ -198,7 +206,7 @@ module ReVIEW
         end
 
         def render_inline_comment(_type, content, _node)
-          if @book&.config&.[]('draft')
+          if @book.config['draft']
             %Q(<span class="draft-comment">#{escape_content(content)}</span>)
           else
             ''
@@ -235,9 +243,232 @@ module ReVIEW
           %Q(<b>#{escape_content(content)}</b>)
         end
 
+        def render_inline_abbr(_type, content, _node)
+          %Q(<abbr>#{escape_content(content)}</abbr>)
+        end
+
+        def render_inline_acronym(_type, content, _node)
+          %Q(<acronym>#{escape_content(content)}</acronym>)
+        end
+
+        def render_inline_cite(_type, content, _node)
+          %Q(<cite>#{escape_content(content)}</cite>)
+        end
+
+        def render_inline_dfn(_type, content, _node)
+          %Q(<dfn>#{escape_content(content)}</dfn>)
+        end
+
+        def render_inline_big(_type, content, _node)
+          %Q(<big>#{escape_content(content)}</big>)
+        end
+
+        def render_inline_small(_type, content, _node)
+          %Q(<small>#{escape_content(content)}</small>)
+        end
+
+        def render_inline_dtp(_type, content, _node)
+          "<?dtp #{content} ?>"
+        end
+
+        def render_inline_recipe(_type, content, _node)
+          %Q(<span class="recipe">「#{escape_content(content)}」</span>)
+        end
+
+        def render_inline_icon(_type, content, node)
+          # Icon is an image reference
+          id = node.args&.first || content
+          begin
+            %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="[#{id}]" />)
+          rescue StandardError
+            %Q(<pre>missing image: #{id}</pre>)
+          end
+        end
+
+        def render_inline_uchar(_type, content, _node)
+          %Q(&#x#{content};)
+        end
+
+        def render_inline_tcy(_type, content, _node)
+          # 縦中横用のtcy、uprightのCSSスタイルについては電書協ガイドラインを参照
+          style = 'tcy'
+          if content.size == 1 && content.match(/[[:ascii:]]/)
+            style = 'upright'
+          end
+          %Q(<span class="#{style}">#{escape_content(content)}</span>)
+        end
+
+        def render_inline_balloon(_type, content, _node)
+          %Q(<span class="balloon">#{escape_content(content)}</span>)
+        end
+
+        def render_inline_bib(_type, content, node)
+          # Bibliography reference
+          id = node.args&.first || content
+          begin
+            bib_file = @book.bib_file.gsub(/\.re\Z/, ".#{@book.config['htmlext'] || 'html'}")
+            number = @chapter.bibpaper(id).number
+            %Q(<a href="#{bib_file}#bib-#{normalize_id(id)}">[#{number}]</a>)
+          rescue KeyError, StandardError
+            %Q([#{id}])
+          end
+        end
+
+        def render_inline_endnote(_type, content, node)
+          # Endnote reference
+          id = node.args&.first || content
+          begin
+            number = @chapter.endnote(id).number
+            %Q(<a id="endnoteb-#{normalize_id(id)}" href="#endnote-#{normalize_id(id)}" class="noteref" epub:type="noteref">#{I18n.t('html_endnote_refmark', number)}</a>)
+          rescue KeyError, StandardError
+            %Q(<a href="#endnote-#{normalize_id(id)}" class="noteref">#{content}</a>)
+          end
+        end
+
+        def render_inline_eq(_type, content, node)
+          # Equation reference
+          id = node.args&.first || content
+          begin
+            chapter, extracted_id = extract_chapter_id(id)
+            equation_number = if get_chap(chapter)
+                                %Q(#{I18n.t('equation')}#{I18n.t('format_number', [get_chap(chapter), chapter.equation(extracted_id).number])})
+                              else
+                                %Q(#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [chapter.equation(extracted_id).number])})
+                              end
+
+            if @book.config['chapterlink']
+              %Q(<span class="eqref"><a href="./#{chapter.id}#{extname}##{normalize_id(extracted_id)}">#{equation_number}</a></span>)
+            else
+              %Q(<span class="eqref">#{equation_number}</span>)
+            end
+          rescue KeyError, StandardError
+            %Q(<span class="eqref">#{content}</span>)
+          end
+        end
+
+        def render_inline_hd(_type, content, node)
+          # Headline reference: @<hd>{id} or @<hd>{chapter|id}
+          id = node.args&.first || content
+          m = /\A([^|]+)\|(.+)/.match(id)
+
+          chapter = if m && m[1]
+                      @book.contents.detect { |chap| chap.id == m[1] }
+                    else
+                      @chapter
+                    end
+
+          headline_id = m ? m[2] : id
+
+          begin
+            return '' unless chapter
+
+            n = chapter.headline_index.number(headline_id)
+            caption = chapter.headline(headline_id).caption
+
+            str = if n.present? && chapter.number && over_secnolevel?(n, chapter)
+                    I18n.t('hd_quote', [n, escape_content(caption)])
+                  else
+                    I18n.t('hd_quote_without_number', escape_content(caption))
+                  end
+
+            if @book.config['chapterlink']
+              anchor = 'h' + n.tr('.', '-')
+              %Q(<a href="#{chapter.id}#{extname}##{anchor}">#{str}</a>)
+            else
+              str
+            end
+          rescue KeyError, StandardError
+            escape_content(content)
+          end
+        end
+
+        def render_inline_column(_type, content, node)
+          # Column reference: @<column>{id} or @<column>{chapter|id}
+          id = node.args&.first || content
+          m = /\A([^|]+)\|(.+)/.match(id)
+
+          chapter = if m && m[1]
+                      @book.chapters.detect { |chap| chap.id == m[1] }
+                    else
+                      @chapter
+                    end
+
+          column_id = m ? m[2] : id
+
+          begin
+            return '' unless chapter
+
+            column_caption = chapter.column(column_id).caption
+            column_number = chapter.column(column_id).number
+
+            if @book.config['chapterlink']
+              %Q(<a href="#{chapter.id}#{extname}#column-#{column_number}" class="columnref">#{I18n.t('column', escape_content(column_caption))}</a>)
+            else
+              I18n.t('column', escape_content(column_caption))
+            end
+          rescue KeyError, StandardError
+            escape_content(content)
+          end
+        end
+
+        def render_inline_sectitle(_type, content, node)
+          # Section title reference
+          id = node.args&.first || content
+          begin
+            if @book.config['chapterlink']
+              chap, id2 = extract_chapter_id(id)
+              anchor = 'h' + chap.headline_index.number(id2).tr('.', '-')
+              title = chap.headline(id2).caption
+              %Q(<a href="#{chap.id}#{extname}##{anchor}">#{escape_content(title)}</a>)
+            else
+              escape_content(content)
+            end
+          rescue KeyError, StandardError
+            escape_content(content)
+          end
+        end
+
+        def render_inline_pageref(_type, content, _node)
+          # Page reference is unsupported in HTML
+          escape_content(content)
+        end
+
         # Helper method to escape content
         def escape_content(str)
           escape(str)
+        end
+
+        # Helper methods for references
+        def extract_chapter_id(chap_ref)
+          m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
+          if m
+            ch = @book.contents.detect { |chap| chap.id == m[1] }
+            raise KeyError unless ch
+
+            return [ch, m[2]]
+          end
+          [@chapter, chap_ref]
+        end
+
+        def get_chap(chapter = @chapter)
+          if @book.config['secnolevel'] && @book.config['secnolevel'] > 0 &&
+             !chapter.number.nil? && !chapter.number.to_s.empty?
+            if chapter.is_a?(ReVIEW::Book::Part)
+              return I18n.t('part_short', chapter.number)
+            else
+              return chapter.format_number(nil)
+            end
+          end
+          nil
+        end
+
+        def extname
+          ".#{@book.config['htmlext'] || 'html'}"
+        end
+
+        def over_secnolevel?(n, chapter = @chapter)
+          secnolevel = @book.config['secnolevel'] || 0
+          secnolevel >= n.to_s.split('.').size
         end
       end
     end
