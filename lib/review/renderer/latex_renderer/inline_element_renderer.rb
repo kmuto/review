@@ -201,7 +201,8 @@ module ReVIEW
             begin
               equation_item = @chapter.equation_index.number(equation_id)
               if @chapter.number
-                "\\reviewequationref{#{@chapter.number}.#{equation_item}}"
+                chapter_num = @chapter.format_number(false)
+                "\\reviewequationref{#{chapter_num}.#{equation_item}}"
               else
                 "\\reviewequationref{#{equation_item}}"
               end
@@ -225,7 +226,8 @@ module ReVIEW
             begin
               list_item = @chapter.list_index.number(list_ref)
               if @chapter.number
-                "\\reviewlistref{#{@chapter.number}.#{list_item}}"
+                chapter_num = @chapter.format_number(false)
+                "\\reviewlistref{#{chapter_num}.#{list_item}}"
               else
                 "\\reviewlistref{#{list_item}}"
               end
@@ -259,7 +261,8 @@ module ReVIEW
               table_item = @chapter.table_index.number(table_ref)
               table_label = "table:#{@chapter.id}:#{table_ref}"
               if @chapter.number
-                "\\reviewtableref{#{@chapter.number}.#{table_item}}{#{table_label}}"
+                chapter_num = @chapter.format_number(false)
+                "\\reviewtableref{#{chapter_num}.#{table_item}}{#{table_label}}"
               else
                 "\\reviewtableref{#{table_item}}{#{table_label}}"
               end
@@ -279,7 +282,8 @@ module ReVIEW
               image_item = @chapter.image_index.number(image_ref)
               image_label = "image:#{@chapter.id}:#{image_ref}"
               if @chapter.number
-                "\\reviewimageref{#{@chapter.number}.#{image_item}}{#{image_label}}"
+                chapter_num = @chapter.format_number(false)
+                "\\reviewimageref{#{chapter_num}.#{image_item}}{#{image_label}}"
               else
                 "\\reviewimageref{#{image_item}}{#{image_label}}"
               end
@@ -310,7 +314,8 @@ module ReVIEW
           begin
             list_item = target_chapter.list_index.number(list_id)
             if target_chapter.number
-              "\\reviewlistref{#{target_chapter.number}.#{list_item}}"
+              chapter_num = target_chapter.format_number(false)
+              "\\reviewlistref{#{chapter_num}.#{list_item}}"
             else
               "\\reviewlistref{#{list_item}}"
             end
@@ -338,7 +343,8 @@ module ReVIEW
             table_item = target_chapter.table_index.number(table_id)
             table_label = "table:#{chapter_id}:#{table_id}"
             if target_chapter.number
-              "\\reviewtableref{#{target_chapter.number}.#{table_item}}{#{table_label}}"
+              chapter_num = target_chapter.format_number(false)
+              "\\reviewtableref{#{chapter_num}.#{table_item}}{#{table_label}}"
             else
               "\\reviewtableref{#{table_item}}{#{table_label}}"
             end
@@ -366,7 +372,8 @@ module ReVIEW
             image_item = target_chapter.image_index.number(image_id)
             image_label = "image:#{chapter_id}:#{image_id}"
             if target_chapter.number
-              "\\reviewimageref{#{target_chapter.number}.#{image_item}}{#{image_label}}"
+              chapter_num = target_chapter.format_number(false)
+              "\\reviewimageref{#{chapter_num}.#{image_item}}{#{image_label}}"
             else
               "\\reviewimageref{#{image_item}}{#{image_label}}"
             end
