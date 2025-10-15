@@ -399,6 +399,21 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_equal '\\href{http://example.com}{Example}', result
   end
 
+  def test_render_inline_element_href_internal_reference_with_label
+    inline = AST::InlineNode.new(inline_type: 'href', args: ['#anchor', 'Jump to anchor'])
+
+    result = @renderer.visit(inline)
+    assert_equal '\\hyperref[anchor]{Jump to anchor}', result
+  end
+
+  def test_render_inline_element_href_internal_reference_without_label
+    inline = AST::InlineNode.new(inline_type: 'href', args: ['#anchor'])
+    inline.add_child(AST::TextNode.new(content: '#anchor'))
+
+    result = @renderer.visit(inline)
+    assert_equal '\\hyperref[anchor]{\\#anchor}', result
+  end
+
   def test_generic_visitor_error
     # Create an unknown node type by using a BlockNode with unknown type
     unknown_node = AST::BlockNode.new(block_type: :UnknownNode)
@@ -1238,5 +1253,70 @@ class TestLatexRenderer < Test::Unit::TestCase
     ]
 
     assert_equal expected_lines.join("\n") + "\n", result
+  end
+
+  def test_inline_bib_reference
+    # Test @<bib> inline reference
+    # Setup a bibpaper index
+    bibpaper_index = ReVIEW::Book::BibpaperIndex.new
+    item = ReVIEW::Book::Index::Item.new('lins', 1, 'Lins, 1992')
+    bibpaper_index.add_item(item)
+    @chapter.instance_variable_set(:@bibpaper_index, bibpaper_index)
+
+    inline = AST::InlineNode.new(inline_type: 'bib', args: ['lins'])
+    result = @renderer.visit(inline)
+    assert_equal '\\reviewbibref{[1]}{bib:lins}', result
+  end
+
+  def test_inline_bib_reference_multiple
+    # Test @<bib> with multiple bibliography entries
+    bibpaper_index = ReVIEW::Book::BibpaperIndex.new
+    item1 = ReVIEW::Book::Index::Item.new('lins', 1, 'Lins, 1992')
+    item2 = ReVIEW::Book::Index::Item.new('knuth', 2, 'Knuth, 1997')
+    bibpaper_index.add_item(item1)
+    bibpaper_index.add_item(item2)
+    @chapter.instance_variable_set(:@bibpaper_index, bibpaper_index)
+
+    inline1 = AST::InlineNode.new(inline_type: 'bib', args: ['lins'])
+    result1 = @renderer.visit(inline1)
+    assert_equal '\\reviewbibref{[1]}{bib:lins}', result1
+
+    inline2 = AST::InlineNode.new(inline_type: 'bib', args: ['knuth'])
+    result2 = @renderer.visit(inline2)
+    assert_equal '\\reviewbibref{[2]}{bib:knuth}', result2
+  end
+
+  def test_inline_bibref_alias
+    # Test @<bibref> (alias for @<bib>)
+    bibpaper_index = ReVIEW::Book::BibpaperIndex.new
+    item = ReVIEW::Book::Index::Item.new('lins', 1, 'Lins, 1992')
+    bibpaper_index.add_item(item)
+    @chapter.instance_variable_set(:@bibpaper_index, bibpaper_index)
+
+    inline = AST::InlineNode.new(inline_type: 'bibref', args: ['lins'])
+    result = @renderer.visit(inline)
+    assert_equal '\\reviewbibref{[1]}{bib:lins}', result
+  end
+
+  def test_inline_bib_no_index
+    # Test @<bib> when there's no bibpaper_index (should fallback to \cite)
+    @chapter.instance_variable_set(:@bibpaper_index, nil)
+
+    inline = AST::InlineNode.new(inline_type: 'bib', args: ['lins'])
+    result = @renderer.visit(inline)
+    assert_equal '\\cite{lins}', result
+  end
+
+  def test_inline_bib_not_found_in_index
+    # Test @<bib> when the ID is not found in index (should fallback to \cite)
+    bibpaper_index = ReVIEW::Book::BibpaperIndex.new
+    item = ReVIEW::Book::Index::Item.new('knuth', 1, 'Knuth, 1997')
+    bibpaper_index.add_item(item)
+    @chapter.instance_variable_set(:@bibpaper_index, bibpaper_index)
+
+    inline = AST::InlineNode.new(inline_type: 'bib', args: ['lins'])
+    result = @renderer.visit(inline)
+    # Should fallback to \cite when not found
+    assert_equal '\\cite{lins}', result
   end
 end

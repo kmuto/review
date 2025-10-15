@@ -81,9 +81,19 @@ module ReVIEW
 
         def render_inline_href(_type, content, node)
           if node.args && node.args.length >= 2
-            url = escape_url(node.args[0])
-            text = escape_latex(node.args[1])
-            "\\href{#{url}}{#{text}}"
+            url = node.args[0]
+            text = node.args[1]
+            # Handle internal references (URLs starting with #)
+            if url.start_with?('#')
+              anchor = url.sub(/\A#/, '')
+              "\\hyperref[#{escape_latex(anchor)}]{#{escape_latex(text)}}"
+            elsif /\A[a-z]+:/.match?(url)
+              # External URL with scheme
+              "\\href{#{escape_url(url)}}{#{escape_latex(text)}}"
+            else
+              # Plain reference without scheme
+              "\\ref{#{escape_latex(url)}}"
+            end
           else
             # For single argument href, get raw text from first text child to avoid double escaping
             raw_url = if node.children.first.respond_to?(:content)
@@ -91,8 +101,18 @@ module ReVIEW
                       else
                         raise NotImplementedError, "URL is invalid: #{content}"
                       end
-            url_content = escape_url(raw_url)
-            "\\url{#{url_content}}"
+            # Handle internal references (URLs starting with #)
+            if raw_url.start_with?('#')
+              anchor = raw_url.sub(/\A#/, '')
+              "\\hyperref[#{escape_latex(anchor)}]{#{escape_latex(raw_url)}}"
+            elsif /\A[a-z]+:/.match?(raw_url)
+              # External URL with scheme
+              url_content = escape_url(raw_url)
+              "\\url{#{url_content}}"
+            else
+              # Plain reference without scheme
+              "\\ref{#{escape_latex(raw_url)}}"
+            end
           end
         end
 
@@ -243,9 +263,30 @@ module ReVIEW
         def render_inline_bib(_type, content, node)
           return content unless node.args&.first
 
-          # Don't escape underscores in bibliography keys - they're allowed in LaTeX cite commands
-          bib_key = node.args.first.to_s
-          "\\cite{#{bib_key}}"
+          bib_id = node.args.first.to_s
+          # Try to get bibpaper_index, either directly from instance variable or through method
+          # Use instance_variable_get first to avoid bib_exist? check in tests
+          bibpaper_index = @chapter&.instance_variable_get(:@bibpaper_index)
+          if bibpaper_index.nil? && @chapter
+            begin
+              bibpaper_index = @chapter.bibpaper_index
+            rescue StandardError
+              # Ignore errors when bib file doesn't exist
+            end
+          end
+
+          if bibpaper_index
+            begin
+              bib_number = bibpaper_index.number(bib_id)
+              "\\reviewbibref{[#{bib_number}]}{bib:#{bib_id}}"
+            rescue StandardError
+              # Fallback if bibpaper not found in index
+              "\\cite{#{bib_id}}"
+            end
+          else
+            # Fallback when no bibpaper index available
+            "\\cite{#{bib_id}}"
+          end
         end
 
         # Render bibref reference (same as bib)

@@ -177,11 +177,23 @@ module ReVIEW
         def render_inline_href(_type, content, node)
           args = node.args || []
           if args.length >= 2
-            url = escape_content(args[0])
+            url = args[0]
             text = args[1]
-            %Q(<a href="#{url}" class="link">#{text}</a>)
+            # Handle internal references (URLs starting with #)
+            if url.start_with?('#')
+              anchor = url.sub(/\A#/, '')
+              %Q(<a href="##{escape_content(anchor)}" class="link">#{escape_content(text)}</a>)
+            else
+              %Q(<a href="#{escape_content(url)}" class="link">#{escape_content(text)}</a>)
+            end
           else
-            %Q(<a href="#{content}" class="link">#{content}</a>)
+            # Handle internal references (URLs starting with #)
+            if content.start_with?('#')
+              anchor = content.sub(/\A#/, '')
+              %Q(<a href="##{escape_content(anchor)}" class="link">#{escape_content(content)}</a>)
+            else
+              %Q(<a href="#{escape_content(content)}" class="link">#{escape_content(content)}</a>)
+            end
           end
         end
 

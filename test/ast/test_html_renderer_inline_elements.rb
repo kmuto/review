@@ -200,6 +200,18 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
     assert_match(%r{<a href="https://example\.com" class="link">https://example\.com</a>}, output)
   end
 
+  def test_inline_href_internal_reference_with_label
+    content = "= Chapter\n\n@<href>{#anchor,Jump to anchor}\n"
+    output = render_inline(content)
+    assert_match(%r{<a href="#anchor" class="link">Jump to anchor</a>}, output)
+  end
+
+  def test_inline_href_internal_reference_without_label
+    content = "= Chapter\n\n@<href>{#anchor}\n"
+    output = render_inline(content)
+    assert_match(%r{<a href="#anchor" class="link">#anchor</a>}, output)
+  end
+
   # Special characters
   def test_inline_br
     content = "= Chapter\n\nLine1@<br>{}Line2\n"
