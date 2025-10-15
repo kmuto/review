@@ -93,7 +93,7 @@ module ReVIEW
 
       # Convert a chapter using the AST Renderer
       def convert(filename, output_path)
-        chapter = find_chapter(filename)
+        chapter = find_chapter_or_part(filename)
         return false unless chapter
 
         begin
@@ -126,10 +126,19 @@ module ReVIEW
 
       private
 
-      # Find chapter object by filename
-      def find_chapter(filename)
+      def find_chapter_or_part(filename)
         basename = File.basename(filename, '.*')
-        @book.chapters.find { |ch| File.basename(ch.path, '.*') == basename }
+
+        chapter = @book.chapters.find { |ch| File.basename(ch.path, '.*') == basename }
+        return chapter if chapter
+
+        @book.parts.each do |part|
+          if part.file? && File.basename(part.path, '.*') == basename
+            return part
+          end
+        end
+
+        nil
       end
     end
   end
