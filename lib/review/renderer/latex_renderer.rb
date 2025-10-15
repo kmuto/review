@@ -116,19 +116,6 @@ module ReVIEW
         # Regular headline processing
         section_command = headline_name(level)
 
-        # Generate labels like LATEXBuilder
-        label_part = if level == 1 && @chapter
-                       "\\label{chap:#{@chapter.id}}"
-                     elsif @sec_counter && level >= 2
-                       # Generate section labels like LATEXBuilder (sec:x-y format)
-                       anchor = @sec_counter.anchor(level)
-                       "\\label{sec:#{anchor}}"
-                     elsif node.label
-                       "\\label{#{escape(node.label)}}"
-                     else
-                       ''
-                     end
-
         # Format with exact newlines like LATEXBuilder to match expected format
         result = []
         result << "\\#{section_command}{#{caption}}"
@@ -138,8 +125,18 @@ module ReVIEW
           result << "\\addcontentsline{toc}{subsection}{#{caption}}"
         end
 
-        unless label_part.empty?
-          result << label_part
+        # Generate labels like LATEXBuilder - add both automatic and custom labels
+        if level == 1 && @chapter
+          result << "\\label{chap:#{@chapter.id}}"
+        elsif @sec_counter && level >= 2
+          # Generate section labels like LATEXBuilder (sec:x-y format)
+          anchor = @sec_counter.anchor(level)
+          result << "\\label{sec:#{anchor}}"
+        end
+
+        # Add custom label if specified (in addition to automatic label)
+        if node.label && !node.label.empty?
+          result << "\\label{#{escape(node.label)}}"
         end
 
         prefix + result.join("\n") + "\n"
