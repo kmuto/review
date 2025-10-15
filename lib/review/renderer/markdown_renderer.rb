@@ -323,7 +323,7 @@ module ReVIEW
 
       def visit_footnote(node)
         footnote_id = node.id
-        content = node.content || ''
+        content = render_children(node)
 
         "[^#{footnote_id}]: #{content}\n\n"
       end

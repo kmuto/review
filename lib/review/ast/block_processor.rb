@@ -685,7 +685,6 @@ module ReVIEW
 
         node = context.create_node(AST::FootnoteNode,
                                    id: footnote_id,
-                                   content: footnote_content,
                                    footnote_type: context.name)
 
         if footnote_content && !footnote_content.empty?

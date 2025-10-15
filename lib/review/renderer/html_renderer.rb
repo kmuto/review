@@ -545,11 +545,7 @@ module ReVIEW
       # Render footnote content (must be protected for InlineElementRenderer access)
       # This method is called with explicit receiver from InlineElementRenderer
       def render_footnote_content(footnote_node)
-        if footnote_node && footnote_node.respond_to?(:children)
-          render_children(footnote_node)
-        else
-          escape(footnote_node&.content || '')
-        end
+        render_children(footnote_node)
       end
 
       private

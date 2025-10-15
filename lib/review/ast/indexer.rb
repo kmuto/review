@@ -159,12 +159,7 @@ module ReVIEW
 
       # Extract footnote content from FootnoteNode
       def extract_footnote_content(node)
-        # Use the original content from FootnoteNode
-        # Inline processing will be handled later by the renderer
-        return node.content if node.content && !node.content.empty?
-
-        # Fallback to empty string to avoid nil issues
-        ''
+        node.to_text
       end
 
       def initialize_indexes

@@ -946,12 +946,7 @@ module ReVIEW
       # This method processes the footnote node's children to properly handle
       # inline markup like @<b>{text} within footnotes
       def render_footnote_content(footnote_node)
-        if footnote_node.children&.any?
-          render_children(footnote_node)
-        else
-          # Fallback for nodes without children (shouldn't happen in normal cases)
-          escape(footnote_node&.content || '')
-        end
+        render_children(footnote_node)
       end
 
       private
