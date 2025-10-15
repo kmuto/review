@@ -404,7 +404,79 @@ module ReVIEW
         end
       end
 
+      # Store AST root for template rendering (must be public for external access)
+      def store_ast_root(ast_root)
+        @ast_root = ast_root
+      end
+
+      # Template generation methods like HTMLBuilder (must be public for external access)
+      def result
+        # Generate complete HTML document using ERB template
+        @title = strip_html(compile_inline(@chapter&.title || ''))
+        @body = render(@ast_root) if @ast_root
+        @language = @config['language'] || 'ja'
+        @stylesheets = @config['stylesheet'] || []
+        @next = @chapter&.next_chapter
+        @prev = @chapter&.prev_chapter
+        @next_title = @next ? compile_inline(@next.title) : ''
+        @prev_title = @prev ? compile_inline(@prev.title) : ''
+
+        # Handle MathJax configuration like HTMLBuilder
+        if @config['math_format'] == 'mathjax'
+          @javascripts.push(%Q(<script>MathJax = { tex: { inlineMath: [['\\\\(', '\\\\)']] }, svg: { fontCache: 'global' } };</script>))
+          @javascripts.push(%Q(<script type="text/javascript" id="MathJax-script" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>))
+        end
+
+        # Render template
+        ReVIEW::Template.load(layoutfile).result(binding)
+      end
+
+      def layoutfile
+        # Determine layout file like HTMLBuilder
+        if @config.maker == 'webmaker'
+          htmldir = 'web/html'
+          localfilename = 'layout-web.html.erb'
+        else
+          htmldir = 'html'
+          localfilename = 'layout.html.erb'
+        end
+
+        htmlfilename = if @config['htmlversion'] == 5 || @config['htmlversion'].nil?
+                         File.join(htmldir, 'layout-html5.html.erb')
+                       else
+                         File.join(htmldir, 'layout-xhtml1.html.erb')
+                       end
+
+        layout_file = File.join(@book&.basedir || '.', 'layouts', localfilename)
+
+        # Check for custom layout file
+        if File.exist?(layout_file)
+          # Respect safe mode like HTMLBuilder
+          if ENV['REVIEW_SAFE_MODE'].to_i & 4 > 0
+            warn 'user\'s layout is prohibited in safe mode. ignored.'
+            layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
+          end
+        else
+          # Use default template
+          layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
+        end
+
+        layout_file
+      end
+
       protected
+
+      # Render footnote content (must be protected for InlineElementRenderer access)
+      # This method is called with explicit receiver from InlineElementRenderer
+      def render_footnote_content(footnote_node)
+        if footnote_node && footnote_node.respond_to?(:children)
+          render_children(footnote_node)
+        else
+          escape(footnote_node&.content || '')
+        end
+      end
+
+      private
 
       def render_children(node)
         return '' unless node.children
@@ -919,8 +991,6 @@ module ReVIEW
         )
       end
 
-      public
-
       # Generate headline prefix and anchor like HTMLBuilder
       def headline_prefix(level)
         return [nil, nil] unless @sec_counter
@@ -1139,66 +1209,6 @@ module ReVIEW
         raise NotImplementedError, "no such list: #{id}"
       end
 
-      # Template generation methods like HTMLBuilder
-      def result
-        # Generate complete HTML document using ERB template
-        @title = strip_html(compile_inline(@chapter&.title || ''))
-        @body = render(@ast_root) if @ast_root
-        @language = @config['language'] || 'ja'
-        @stylesheets = @config['stylesheet'] || []
-        @next = @chapter&.next_chapter
-        @prev = @chapter&.prev_chapter
-        @next_title = @next ? compile_inline(@next.title) : ''
-        @prev_title = @prev ? compile_inline(@prev.title) : ''
-
-        # Handle MathJax configuration like HTMLBuilder
-        if @config['math_format'] == 'mathjax'
-          @javascripts.push(%Q(<script>MathJax = { tex: { inlineMath: [['\\\\(', '\\\\)']] }, svg: { fontCache: 'global' } };</script>))
-          @javascripts.push(%Q(<script type="text/javascript" id="MathJax-script" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>))
-        end
-
-        # Render template
-        ReVIEW::Template.load(layoutfile).result(binding)
-      end
-
-      def layoutfile
-        # Determine layout file like HTMLBuilder
-        if @config.maker == 'webmaker'
-          htmldir = 'web/html'
-          localfilename = 'layout-web.html.erb'
-        else
-          htmldir = 'html'
-          localfilename = 'layout.html.erb'
-        end
-
-        htmlfilename = if @config['htmlversion'] == 5 || @config['htmlversion'].nil?
-                         File.join(htmldir, 'layout-html5.html.erb')
-                       else
-                         File.join(htmldir, 'layout-xhtml1.html.erb')
-                       end
-
-        layout_file = File.join(@book&.basedir || '.', 'layouts', localfilename)
-
-        # Check for custom layout file
-        if File.exist?(layout_file)
-          # Respect safe mode like HTMLBuilder
-          if ENV['REVIEW_SAFE_MODE'].to_i & 4 > 0
-            warn 'user\'s layout is prohibited in safe mode. ignored.'
-            layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
-          end
-        else
-          # Use default template
-          layout_file = File.expand_path(htmlfilename, ReVIEW::Template::TEMPLATE_DIR)
-        end
-
-        layout_file
-      end
-
-      # Store AST root for template rendering
-      def store_ast_root(ast_root)
-        @ast_root = ast_root
-      end
-
       private
 
       # Generate indexes using AST::Indexer for Renderer (builder-independent)
@@ -1309,15 +1319,6 @@ module ReVIEW
         result = visit(node)
         @rendering_context = old_context
         result
-      end
-
-      # Render footnote content (consistent with LatexRenderer)
-      def render_footnote_content(footnote_node)
-        if footnote_node && footnote_node.respond_to?(:children)
-          render_children(footnote_node)
-        else
-          escape(footnote_node&.content || '')
-        end
       end
 
       # Generate HTML footnotes from collected footnotes
