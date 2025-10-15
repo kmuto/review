@@ -593,9 +593,16 @@ module ReVIEW
         # Render unicode character
         def render_inline_uchar(_type, content, node)
           # Unicode character handling like LATEXBuilder
-          if node.args && node.args.first
+          if node.args&.first
             char_code = node.args.first
-            "\\UTF{#{escape(char_code)}}"
+            texcompiler = @book.config['texcommand']
+            if texcompiler&.start_with?('platex')
+              # with otf package - use \UTF macro
+              "\\UTF{#{escape(char_code)}}"
+            else
+              # upLaTeX or other - convert to actual Unicode character
+              [char_code.to_i(16)].pack('U')
+            end
           else
             content
           end
