@@ -337,27 +337,16 @@ module ReVIEW
         result = []
 
         # Check if image is bound like LATEXBuilder does
-        unless node.id? && @chapter
-          # No ID or chapter - cannot process
-          return "\\begin{reviewdummyimage}\n\\end{reviewdummyimage}\n"
-        end
-
-        # Check if image is bound
-        image_path = nil
-
-        begin
-          image_path = @chapter.image(node.id).path
-        rescue KeyError
-          # Image not bound - use dummy
-        end
-
-        unless image_path
-          # Return early with warning - like LATEXBuilder line 903-905
+        unless node.id? && @chapter && @chapter.image_bound?(node.id)
+          # No ID or chapter, or image not bound - return dummy
           result << '\\begin{reviewdummyimage}'
-          result << "% image not bound: #{node.id}"
+          result << "% image not bound: #{node.id}" if node.id?
           result << '\\end{reviewdummyimage}'
           return result.join("\n") + "\n"
         end
+
+        # Get image path - image is bound, so this should succeed
+        image_path = @chapter.image(node.id).path
 
         # Generate table structure with image like LATEXBuilder
         # Start table environment if caption exists (line 911)

@@ -295,6 +295,12 @@ module ReVIEW
         item = ReVIEW::Book::Index::Item.new(node.id, @table_index.size + 1, caption_text)
         @table_index.add_item(item)
 
+        # For imgtable, also add to indepimage_index (like IndexBuilder does)
+        if node.table_type == :imgtable
+          image_item = ReVIEW::Book::Index::Item.new(node.id, @indepimage_index.size + 1)
+          @indepimage_index.add_item(image_item)
+        end
+
         # Process caption inline elements
         process_caption_inline_elements(node.caption) if node.caption
 
