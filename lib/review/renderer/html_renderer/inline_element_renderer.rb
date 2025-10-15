@@ -17,12 +17,14 @@ module ReVIEW
       class InlineElementRenderer
         include ReVIEW::HTMLUtils
         include ReVIEW::TextUtils
+        include ReVIEW::Loggable
 
         def initialize(renderer, book:, chapter:, rendering_context:)
           @renderer = renderer
           @book = book
           @chapter = chapter
           @rendering_context = rendering_context
+          @logger = ReVIEW.logger
         end
 
         def render(type, content, node)
@@ -276,7 +278,8 @@ module ReVIEW
           id = node.args&.first || content
           begin
             %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="[#{id}]" />)
-          rescue StandardError
+          rescue KeyError, NoMethodError
+            warn "image not bound: #{id}"
             %Q(<pre>missing image: #{id}</pre>)
           end
         end
