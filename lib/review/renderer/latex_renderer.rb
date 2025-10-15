@@ -185,7 +185,7 @@ module ReVIEW
 
         # Process children to get properly escaped content while preserving structure
         content = render_children(node)
-        code_type = node.code_type.to_s if node.respond_to?(:code_type)
+        code_type = node.code_type.to_s
 
         result = case code_type
                  when 'list'
@@ -235,7 +235,7 @@ module ReVIEW
           end
         end
 
-        table_type = node.respond_to?(:table_type) ? node.table_type : :table
+        table_type = node.table_type
 
         # Handle imgtable specially - it should be rendered as an image
         if table_type == :imgtable
@@ -440,7 +440,7 @@ module ReVIEW
           end
         end
 
-        image_type = node.respond_to?(:image_type) ? node.image_type : :image
+        image_type = node.image_type
 
         result = case image_type
                  when :indepimage, :numberlessimage
@@ -581,7 +581,7 @@ module ReVIEW
           # Definition list - generate LaTeX description environment like LATEXBuilder
           items = node.children.map do |item|
             # Handle definition term - use term_children if available (new AST structure)
-            term = if item.respond_to?(:term_children) && item.term_children && !item.term_children.empty?
+            term = if item.term_children&.any?
                      # Render term children (which contain inline elements)
                      item.term_children.map { |child| visit(child) }.join
                    elsif item.content
@@ -849,15 +849,15 @@ module ReVIEW
 
       def visit_embed(node)
         # Handle different embed types
-        if node.respond_to?(:embed_type) && (node.embed_type == :raw || node.embed_type == :inline)
+        if node.embed_type == :raw || node.embed_type == :inline
           # Handle //raw command or inline @<raw> command
           return process_raw_embed(node)
         end
 
         # Default embed processing for other types
-        if node.respond_to?(:lines) && node.lines
+        if node.lines
           node.lines.join("\n") + "\n"
-        elsif node.respond_to?(:arg) && node.arg
+        elsif node.arg
           # Single line embed
           "#{node.arg}\n"
         else
@@ -1161,7 +1161,7 @@ module ReVIEW
           next if result.nil? || result.empty?
 
           # Add proper separation after raw embeds
-          if child.respond_to?(:embed_type) && child.embed_type == :raw && !result.end_with?("\n")
+          if child.is_a?(ReVIEW::AST::EmbedNode) && child.embed_type == :raw && !result.end_with?("\n")
             result += "\n"
           end
 
