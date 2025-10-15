@@ -118,13 +118,6 @@ module ReVIEW
         # Base Node implementation
         hash[:children] = [] if children.none? && options.include_empty_arrays
 
-        # Handle generic Node instances (used for read, minicolumn, etc.)
-        if instance_of?(ReVIEW::AST::Node)
-          hash[:node_type] = type if type && !type.empty?
-          hash[:id] = id if id && !id.empty?
-          hash[:content] = content if content && !content.empty?
-        end
-
         hash
       end
     end

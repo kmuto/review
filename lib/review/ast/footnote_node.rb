@@ -24,14 +24,6 @@ module ReVIEW
         @footnote_type = footnote_type # :footnote or :endnote
       end
 
-      def to_doc
-        result = { 'type' => node_type, 'id' => @id }
-        result['footnote_type'] = @footnote_type.to_s if @footnote_type != :footnote
-        result['content'] = @content if @content
-        result['children'] = children_to_doc if children.any?
-        result
-      end
-
       def self.from_doc(doc, location)
         node = new(
           location: location,
