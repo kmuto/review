@@ -181,10 +181,28 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
     assert_match(%r{<a id="idx-索引項目"></a>}, output)
   end
 
+  def test_inline_idx_hierarchical
+    content = "= Chapter\n\n@<idx>{親項目<<>>子項目}\n"
+    output = render_inline(content)
+    assert_match(/子項目/, output)
+    # <<>> should be replaced with - in ID
+    assert_match(%r{<a id="idx-親項目-子項目"></a>}, output)
+  end
+
   def test_inline_hidx
     content = "= Chapter\n\n@<hidx>{隠し索引}\n"
     output = render_inline(content)
     assert_match(%r{<a id="hidx-隠し索引"></a>}, output)
+  end
+
+  def test_inline_hidx_hierarchical
+    content = "= Chapter\n\n@<hidx>{索引<<>>項目}\n"
+    output = render_inline(content)
+    # <<>> should be replaced with - in ID
+    assert_match(%r{<a id="hidx-索引-項目"></a>}, output)
+    # hidx content should not be displayed (only the anchor tag)
+    # Check that there's no text content after the anchor
+    assert_match(%r{<a id="hidx-索引-項目"></a></p>}, output)
   end
 
   # Links

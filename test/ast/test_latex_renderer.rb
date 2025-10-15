@@ -1319,4 +1319,57 @@ class TestLatexRenderer < Test::Unit::TestCase
     # Should fallback to \cite when not found
     assert_equal '\\cite{lins}', result
   end
+
+  def test_inline_idx_simple
+    # Test @<idx>{term} - simple index entry
+    inline = AST::InlineNode.new(inline_type: 'idx', args: ['keyword'])
+    inline.add_child(AST::TextNode.new(content: 'keyword'))
+    result = @renderer.visit(inline)
+    assert_equal '\\index{keyword}keyword', result
+  end
+
+  def test_inline_idx_hierarchical
+    # Test @<idx>{親項目<<>>子項目} - hierarchical index entry
+    inline = AST::InlineNode.new(inline_type: 'idx', args: ['親項目<<>>子項目'])
+    inline.add_child(AST::TextNode.new(content: '子項目'))
+    result = @renderer.visit(inline)
+    # Should process hierarchical index: split by <<>>, escape, and join with !
+    # Japanese text should get yomi conversion
+    assert_match(/\\index\{.+!.+\}子項目/, result)
+  end
+
+  def test_inline_idx_ascii
+    # Test @<idx>{term} with ASCII characters
+    inline = AST::InlineNode.new(inline_type: 'idx', args: ['Ruby'])
+    inline.add_child(AST::TextNode.new(content: 'Ruby'))
+    result = @renderer.visit(inline)
+    assert_equal '\\index{Ruby}Ruby', result
+  end
+
+  def test_inline_hidx_simple
+    # Test @<hidx>{term} - hidden index entry
+    inline = AST::InlineNode.new(inline_type: 'hidx', args: ['keyword'])
+    result = @renderer.visit(inline)
+    assert_equal '\\index{keyword}', result
+  end
+
+  def test_inline_hidx_hierarchical
+    # Test @<hidx>{索引<<>>idx} - hierarchical hidden index entry
+    inline = AST::InlineNode.new(inline_type: 'hidx', args: ['索引<<>>idx'])
+    result = @renderer.visit(inline)
+    # Should process hierarchical index: split by <<>>, escape, and join with !
+    # Japanese text should get yomi conversion, ASCII should not
+    assert_match(/\\index\{.+!idx\}/, result)
+  end
+
+  def test_inline_idx_with_special_chars
+    # Test @<idx> with special characters that need escaping
+    inline = AST::InlineNode.new(inline_type: 'idx', args: ['term@example'])
+    inline.add_child(AST::TextNode.new(content: 'term@example'))
+    result = @renderer.visit(inline)
+    # @ should be escaped as "@ by escape_index
+    # Format: key@display where key is used for sorting, display is shown
+    # Both key and display should have @ escaped
+    assert_match(/\\index\{term"@example@term"@example\}term@example/, result)
+  end
 end

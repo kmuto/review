@@ -517,18 +517,77 @@ module ReVIEW
         def render_inline_idx(_type, content, node)
           return content unless node.args&.first
 
-          index_text = escape(node.args.first)
+          index_str = node.args.first
+          # Process hierarchical index like LATEXBuilder's index method
+          index_entry = process_index(index_str)
           # Index entry like LATEXBuilder
-          "\\index{#{index_text}}"
+          "\\index{#{index_entry}}#{content}"
         end
 
         # Render hidden index entry
         def render_inline_hidx(_type, content, node)
           return content unless node.args&.first
 
-          index_text = escape(node.args.first)
-          # Hidden index entry like LATEXBuilder
-          "\\index{#{index_text}}#{content}"
+          index_str = node.args.first
+          # Process hierarchical index like LATEXBuilder's index method
+          index_entry = process_index(index_str)
+          # Hidden index entry like LATEXBuilder - just output index, content is already rendered
+          "\\index{#{index_entry}}"
+        end
+
+        # Process index string for hierarchical index entries (mendex/upmendex)
+        # This is a simplified version of LATEXBuilder's index method (latexbuilder.rb:1406-1427)
+        def process_index(str)
+          # Split by <<>> delimiter for hierarchical index entries
+          parts = str.split('<<>>')
+
+          # Process each part and format for mendex
+          formatted_parts = parts.map { |item| format_index_item(item) }
+
+          # Join hierarchical parts with '!' for mendex/upmendex
+          formatted_parts.join('!')
+        end
+
+        # Format a single index item for mendex/upmendex
+        def format_index_item(item)
+          if ascii_only?(item)
+            format_ascii_index_item(item)
+          else
+            format_japanese_index_item(item)
+          end
+        end
+
+        # Check if string contains only ASCII characters
+        def ascii_only?(str)
+          str =~ /\A[[:ascii:]]+\Z/
+        end
+
+        # Format ASCII-only index item
+        def format_ascii_index_item(item)
+          escaped_item = escape(item)
+          mendex_escaped = escape_index(escaped_item)
+
+          # If no escaping was needed, just return the item
+          return item if mendex_escaped == item
+
+          # Generate key@display format for proper sorting
+          "#{escape_index(item)}@#{mendex_escaped}"
+        end
+
+        # Format Japanese (non-ASCII) index item with yomi reading
+        def format_japanese_index_item(item)
+          yomi = generate_yomi(item)
+          escaped_item = escape(item)
+          "#{escape_index(yomi)}@#{escape_index(escaped_item)}"
+        end
+
+        # Generate yomi (reading) for Japanese text using NKF
+        def generate_yomi(text)
+          require 'nkf'
+          NKF.nkf('-w --hiragana', text).force_encoding('UTF-8').chomp
+        rescue LoadError, StandardError
+          # Fallback: use the original text as-is if NKF is unavailable
+          text
         end
 
         # Render keyword notation

@@ -186,14 +186,12 @@ module ReVIEW
             else
               %Q(<a href="#{escape_content(url)}" class="link">#{escape_content(text)}</a>)
             end
-          else
+          elsif content.start_with?('#')
             # Handle internal references (URLs starting with #)
-            if content.start_with?('#')
-              anchor = content.sub(/\A#/, '')
-              %Q(<a href="##{escape_content(anchor)}" class="link">#{escape_content(content)}</a>)
-            else
-              %Q(<a href="#{escape_content(content)}" class="link">#{escape_content(content)}</a>)
-            end
+            anchor = content.sub(/\A#/, '')
+            %Q(<a href="##{escape_content(anchor)}" class="link">#{escape_content(content)}</a>)
+          else
+            %Q(<a href="#{escape_content(content)}" class="link">#{escape_content(content)}</a>)
           end
         end
 
@@ -211,12 +209,20 @@ module ReVIEW
           %Q(<span class="math">#{escape_content(content)}</span>)
         end
 
-        def render_inline_idx(_type, content, _node)
-          %Q(<a id="idx-#{content.tr(' ', '-')}"></a>#{escape_content(content)})
+        def render_inline_idx(_type, content, node)
+          # Get the raw index string from args (before any processing)
+          index_str = node.args&.first || content
+          # Create ID from the hierarchical index path (replace <<>> with -)
+          index_id = index_str.gsub('<<>>', '-').tr(' ', '-')
+          %Q(<a id="idx-#{index_id}"></a>#{escape_content(content)})
         end
 
-        def render_inline_hidx(_type, content, _node)
-          %Q(<a id="hidx-#{content.tr(' ', '-')}"></a>)
+        def render_inline_hidx(_type, content, node)
+          # Get the raw index string from args (before any processing)
+          index_str = node.args&.first || content
+          # Create ID from the hierarchical index path (replace <<>> with -)
+          index_id = index_str.gsub('<<>>', '-').tr(' ', '-')
+          %Q(<a id="hidx-#{index_id}"></a>)
         end
 
         def render_inline_comment(_type, content, _node)
