@@ -31,11 +31,55 @@ module ReVIEW
         HtmlRendererConverterAdapter.new(book)
       end
 
-      # Override the converter creation point in build_epub
-      # This method replaces the direct Converter.new call in the parent class
+      # Override build_body to use AST Renderer instead of traditional Builder
+      # This is a complete override of the parent's build_body method,
+      # replacing only the converter creation part
       def build_body(basetmpdir, yamlfile)
-        @converter = create_converter(@book)
-        super
+        @precount = 0
+        @bodycount = 0
+        @postcount = 0
+
+        @manifeststr = ''
+        @ncxstr = ''
+        @tocdesc = []
+        @img_graph = ReVIEW::ImgGraph.new(@config, 'html', path_name: '_review_graph')
+
+        basedir = File.dirname(yamlfile)
+        base_path = Pathname.new(basedir)
+        book = ReVIEW::Book::Base.new(basedir, config: @config)
+
+        # Use AST Renderer instead of traditional Builder
+        @converter = create_converter(book)
+        @compile_errors = nil
+
+        book.parts.each do |part|
+          if part.name.present?
+            if part.file?
+              build_chap(part, base_path, basetmpdir, true)
+            else
+              htmlfile = "part_#{part.number}.#{@config['htmlext']}"
+              build_part(part, basetmpdir, htmlfile)
+              title = ReVIEW::I18n.t('part', part.number)
+              if part.name.strip.present?
+                title += ReVIEW::I18n.t('chapter_postfix') + part.name.strip
+              end
+              @htmltoc.add_item(0, htmlfile, title, chaptype: 'part')
+              write_buildlogtxt(basetmpdir, htmlfile, '')
+            end
+          end
+
+          part.chapters.each do |chap|
+            build_chap(chap, base_path, basetmpdir, false)
+          end
+        end
+        check_compile_status
+
+        begin
+          @img_graph.make_mermaid_images
+        rescue ApplicationError => e
+          error! e.message
+        end
+        @img_graph.cleanup_graphimg
       end
     end
 
