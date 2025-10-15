@@ -574,11 +574,10 @@ module ReVIEW
 
       def visit_footnote(node)
         # Handle FootnoteNode - render as footnote definition
-        if node.id && node.content
-          %Q(<div class="footnote" id="fn-#{node.id}">#{node.content}</div>)
-        else
-          ''
-        end
+        # Note: This renders the footnote definition block at document level.
+        # For inline footnote references (@<fn>{id}), see render_footnote method.
+        footnote_content = render_children(node)
+        %Q(<div class="footnote" id="fn-#{node.id}">#{footnote_content}</div>)
       end
 
       def visit_embed(node)
