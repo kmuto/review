@@ -52,6 +52,9 @@ module ReVIEW
 
         # Initialize Part environment tracking for reviewpart wrapper
         @part_env_opened = false
+
+        # Initialize column counter for tracking column numbers
+        @column_counter = 0
       end
 
       def visit_document(node)
@@ -812,6 +815,9 @@ module ReVIEW
         content = render_children(node)
         caption = render_children(node.caption) if node.caption
 
+        # Increment column counter for this chapter
+        @column_counter += 1
+
         # Generate column label for hypertarget
         column_label = generate_column_label(node, caption)
         hypertarget = "\\hypertarget{#{column_label}}{}"
@@ -1340,21 +1346,10 @@ module ReVIEW
       end
 
       # Generate column label for hypertarget (matches LATEXBuilder behavior)
-      def generate_column_label(node, caption)
-        # Use explicit label if provided, otherwise use caption
-        id = node.label || caption || 'column'
-
-        # Get column number from chapter's column index
-        if @chapter && @chapter.respond_to?(:column_index) && @chapter.column_index
-          begin
-            column_item = @chapter.column_index[id]
-            num = column_item ? column_item.number : 1
-          rescue StandardError
-            num = 1
-          end
-        else
-          num = 1
-        end
+      def generate_column_label(_node, _caption)
+        # Use the column counter to track column numbers in order of appearance
+        # This ensures that all columns (with or without IDs) get unique sequential numbers
+        num = @column_counter
 
         "column:#{@chapter&.id || 'unknown'}:#{num}"
       end

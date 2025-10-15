@@ -755,8 +755,10 @@ module ReVIEW
           begin
             column_item = chapter.column_index[id]
             caption = column_item.caption
-            column_label = "column:#{chapter.id}:#{id}"
-            "\\reviewcolumnref{#{escape(caption)}}{#{column_label}}"
+            # Get column number like LatexRenderer#generate_column_label does
+            num = column_item.number
+            column_label = "column:#{chapter.id}:#{num}"
+            "\\reviewcolumnref{#{I18n.t('column', escape(caption))}}{#{column_label}}"
           rescue StandardError => e
             raise NotImplementedError, "Unknown column: #{id} in chapter #{chapter.id} - #{e.message}"
           end

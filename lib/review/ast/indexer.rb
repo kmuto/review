@@ -255,16 +255,16 @@ module ReVIEW
 
       # Process column nodes
       def process_column(node)
-        # Check if column has a label (ID)
-        return unless node.label
-
-        check_id(node.label)
-
         # Extract caption text like IndexBuilder does
         caption_text = extract_caption_text(node.caption)
 
-        # Create index item - use label as ID and caption text
-        item = ReVIEW::Book::Index::Item.new(node.label, @column_index.size + 1, caption_text)
+        # Use label if available, otherwise use caption as ID (like IndexBuilder does)
+        item_id = node.label || caption_text
+
+        check_id(node.label) if node.label
+
+        # Create index item - use item_id as ID and caption text
+        item = ReVIEW::Book::Index::Item.new(item_id, @column_index.size + 1, caption_text)
         @column_index.add_item(item)
 
         # Process caption inline elements
