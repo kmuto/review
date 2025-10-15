@@ -109,10 +109,13 @@ class TestListProcessor < Test::Unit::TestCase
 
     # Check that items have proper numbering
     items = list_node.children
-    assert_equal '1', items[0].content
     assert_equal 1, items[0].number
-    assert_equal '2', items[1].content
     assert_equal 2, items[1].number
+    # ListItemNode has children (TextNode with content)
+    first_text = items[0].children.find { |c| c.is_a?(ReVIEW::AST::TextNode) }
+    assert_equal 'First item', first_text.content
+    second_text = items[1].children.find { |c| c.is_a?(ReVIEW::AST::TextNode) }
+    assert_equal 'Second item', second_text.content
   end
 
   def test_process_ordered_list_nested
@@ -153,7 +156,8 @@ class TestListProcessor < Test::Unit::TestCase
     assert_equal 2, list_node.children.size
 
     first_item = list_node.children[0]
-    assert_equal 'Term 1', first_item.content
+    term_text = first_item.term_children.find { |c| c.is_a?(ReVIEW::AST::TextNode) }
+    assert_equal 'Term 1', term_text.content
   end
 
   def test_process_definition_list_multiline
@@ -168,7 +172,8 @@ class TestListProcessor < Test::Unit::TestCase
 
     list_node = @mock_compiler.added_nodes[0]
     item = list_node.children[0]
-    assert_equal 'Complex Term', item.content
+    term_text = item.term_children.find { |c| c.is_a?(ReVIEW::AST::TextNode) }
+    assert_equal 'Complex Term', term_text.content
     # Should have multiple children for definition content
     assert_operator(item.children.size, :>=, 2)
   end

@@ -310,10 +310,10 @@ module ReVIEW
         # Add type-specific attributes
         case item_data.type
         when :ol
-          node_attributes[:content] = item_data.metadata[:number_string]
           node_attributes[:number] = item_data.metadata[:number]
         when :dl
-          node_attributes[:content] = item_data.content
+          # For definition lists, term content is processed separately via term_children
+          # Definition content is added as children nodes
         end
 
         AST::ListItemNode.new(**node_attributes)

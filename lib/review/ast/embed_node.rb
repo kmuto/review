@@ -1,19 +1,20 @@
 # frozen_string_literal: true
 
-require 'review/ast/node'
+require 'review/ast/leaf_node'
 
 module ReVIEW
   module AST
-    class EmbedNode < Node
-      attr_accessor :lines, :arg, :embed_type, :target_builders, :content
+    # EmbedNode is a leaf node that contains embedded content that should be
+    # passed through to specific builders. It cannot have children.
+    class EmbedNode < LeafNode
+      attr_accessor :lines, :arg, :embed_type, :target_builders
 
       def initialize(location: nil, lines: [], arg: nil, embed_type: :block, target_builders: nil, content: nil, **kwargs)
-        super(location: location, **kwargs)
+        super(location: location, content: content, **kwargs)
         @lines = lines
         @arg = arg
         @embed_type = embed_type # :block, :inline, or :raw
         @target_builders = target_builders # Array of builder names, nil means all builders
-        @content = content # Processed content (for raw commands)
       end
 
       # Check if this embed is targeted for a specific builder

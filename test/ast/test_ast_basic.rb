@@ -39,11 +39,15 @@ class TestASTBasic < Test::Unit::TestCase
   end
 
   def test_paragraph_node
-    node = ReVIEW::AST::ParagraphNode.new(content: 'This is a test paragraph.')
+    node = ReVIEW::AST::ParagraphNode.new
+    text_node = ReVIEW::AST::TextNode.new(content: 'This is a test paragraph.')
+    node.add_child(text_node)
 
     hash = node.to_h
     assert_equal 'ParagraphNode', hash[:type]
-    assert_equal 'This is a test paragraph.', hash[:content]
+    # Check that the text content is in the children
+    assert_equal 1, hash[:children].size
+    assert_equal 'This is a test paragraph.', hash[:children][0][:content]
   end
 
   def test_ast_compilation_basic

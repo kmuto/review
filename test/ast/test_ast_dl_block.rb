@@ -239,10 +239,13 @@ class TestASTDlBlock < Test::Unit::TestCase
     assert_equal 4, list_node.children.size
 
     # All items are simple text items (no proper term/definition structure)
+    # When using simple text lines instead of //dt and //dd blocks,
+    # empty ListItemNodes are created (without proper content parsing)
     list_node.children.each do |item|
       assert_equal ReVIEW::AST::ListItemNode, item.class
-      # Each line becomes a content string, not structured children
-      assert item.content.is_a?(String)
+      # Simple text lines in //dl blocks are not properly parsed into content,
+      # resulting in empty ListItemNodes. This demonstrates why //dt and //dd
+      # blocks are required for proper definition list structure.
       # None of them have dt or dd type
       assert_nil(item.item_type)
     end

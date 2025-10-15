@@ -49,8 +49,8 @@ module ReVIEW
     class ListItemNode < Node
       attr_accessor :level, :number, :term_children, :item_type
 
-      def initialize(location: nil, content: nil, level: 1, number: nil, item_type: nil, **kwargs)
-        super(location: location, content: content, **kwargs)
+      def initialize(location: nil, level: 1, number: nil, item_type: nil, **kwargs)
+        super(location: location, **kwargs)
         @level = level
         @number = number
         @item_type = item_type # :dt, :dd, or nil for regular list items

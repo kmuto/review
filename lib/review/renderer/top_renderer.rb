@@ -158,11 +158,11 @@ module ReVIEW
       end
 
       def visit_definition_item(node)
-        # Handle definition term - use term_children if available (new AST structure)
+        # Handle definition term - use term_children (AST structure)
         term = if node.term_children && !node.term_children.empty?
                  node.term_children.map { |child| visit(child) }.join
-               elsif node.content
-                 node.content.to_s
+               else
+                 '' # No term available
                end
 
         # Handle definition content (all children are definition content)
@@ -414,7 +414,7 @@ module ReVIEW
 
       def visit_footnote(node)
         footnote_id = node.id
-        content = node.content || ''
+        content = render_children(node).chomp
         footnote_number = get_footnote_number(footnote_id)
 
         "【注#{footnote_number}】#{content}\n"

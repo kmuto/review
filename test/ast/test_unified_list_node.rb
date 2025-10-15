@@ -2,6 +2,7 @@
 
 require_relative '../test_helper'
 require 'review/ast/list_node'
+require 'review/ast/text_node'
 require 'review/snapshot_location'
 require 'stringio'
 
@@ -129,13 +130,16 @@ class TestUnifiedListNode < Test::Unit::TestCase
   def test_list_item_compatibility
     # Test that ListItemNode still works with unified ListNode
     list_node = ReVIEW::AST::ListNode.new(location: @location, list_type: :ul)
-    item_node = ReVIEW::AST::ListItemNode.new(location: @location, content: 'Test item')
+    item_node = ReVIEW::AST::ListItemNode.new(location: @location)
+    text_node = ReVIEW::AST::TextNode.new(location: @location, content: 'Test item')
+    item_node.add_child(text_node)
 
     list_node.add_child(item_node)
 
     assert_equal 1, list_node.children.size
     assert_kind_of(ReVIEW::AST::ListItemNode, list_node.children.first)
-    assert_equal 'Test item', list_node.children.first.content
+    text_child = list_node.children.first.children.find { |c| c.is_a?(ReVIEW::AST::TextNode) }
+    assert_equal 'Test item', text_child.content
   end
 
   def test_backwards_compatibility_type_checking

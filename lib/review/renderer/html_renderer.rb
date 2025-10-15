@@ -156,8 +156,8 @@ module ReVIEW
             term = visit(node.children[0])
             "<dt>#{term}</dt>"
           else
-            # Fallback to content
-            "<dt>#{escape_content(node.content.to_s)}</dt>"
+            # No content available
+            '<dt></dt>'
           end
         else
           # Regular list item

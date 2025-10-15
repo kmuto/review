@@ -89,10 +89,16 @@ module ReVIEW
           size: size,
           numbers: numbers,
           footnotes: @footnotes.map do |entry|
+            # Get text preview from footnote node children
+            preview_text = if entry.node.respond_to?(:to_text)
+                             entry.node.to_text
+                           else
+                             ''
+                           end
             {
               number: entry.number,
               id: entry.node.id,
-              content_preview: entry.node.content&.slice(0, 50)
+              content_preview: preview_text.slice(0, 50)
             }
           end
         }

@@ -92,7 +92,6 @@ class TestNestedListBuilder < Test::Unit::TestCase
 
     # Check for nested list
     nested_list = first_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
-    assert_not_nil(nested_list)
     assert_equal :ul, nested_list.list_type
     assert_equal 1, nested_list.children.size
 
@@ -102,7 +101,6 @@ class TestNestedListBuilder < Test::Unit::TestCase
 
     # Check for deeper nesting
     deeper_nested = second_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
-    assert_not_nil(deeper_nested)
     third_item = deeper_nested.children[0]
     assert_equal 3, third_item.level
   end
@@ -120,8 +118,10 @@ class TestNestedListBuilder < Test::Unit::TestCase
     assert_equal 2, list_node.children.size
 
     first_item = list_node.children[0]
-    assert_equal '1', first_item.content
     assert_equal 1, first_item.number
+    # Verify content through children
+    first_text = first_item.children.find { |c| c.is_a?(ReVIEW::AST::TextNode) }
+    assert_equal 'First', first_text.content
   end
 
   def test_build_nested_ordered_list
@@ -138,13 +138,14 @@ class TestNestedListBuilder < Test::Unit::TestCase
     # Check nested structure
     first_item = list_node.children[0]
     nested_list = first_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
-    assert_not_nil(nested_list)
     assert_equal :ol, nested_list.list_type
 
     nested_item = nested_list.children[0]
     assert_equal 2, nested_item.level
-    assert_equal '11', nested_item.content
     assert_equal 11, nested_item.number
+    # Verify content through children
+    nested_text = nested_item.children.find { |c| c.is_a?(ReVIEW::AST::TextNode) }
+    assert_equal 'Nested', nested_text.content
   end
 
   # Test definition list building
@@ -159,13 +160,44 @@ class TestNestedListBuilder < Test::Unit::TestCase
     assert_equal :dl, list_node.list_type
     assert_equal 2, list_node.children.size
 
+    # Test first item in detail
     first_item = list_node.children[0]
     assert_equal 1, first_item.level
-    assert_equal 'Term 1', first_item.content
 
-    # Check that definition content is added as children
-    # Should have term content plus definition content
-    assert_operator(first_item.children.size, :>=, 1)
+    # Verify term is stored in term_children (plain text)
+    assert_equal 1, first_item.term_children.size
+    term_text = first_item.term_children.find { |c| c.is_a?(ReVIEW::AST::TextNode) }
+    assert_equal 'Term 1', term_text.content
+
+    # Verify definition content is added as children
+    assert_equal 1, first_item.children.size
+    definition_text = first_item.children.find { |c| c.is_a?(ReVIEW::AST::TextNode) }
+    assert_equal 'Definition 1', definition_text.content
+  end
+
+  def test_build_definition_list_with_inline_elements
+    # Test that inline elements in both term and definition are properly processed
+    items = [
+      create_list_item_data(:dl, 1, 'Term with @<b>{bold}', ['Definition with @<code>{some code}'])
+    ]
+
+    list_node = @builder.build_definition_list(items)
+
+    item = list_node.children[0]
+
+    # Find the inline bold element in term
+    bold_in_term = item.term_children.find { |c| c.is_a?(ReVIEW::AST::InlineNode) && c.inline_type == 'b' }
+    assert_equal 'bold', bold_in_term.children.first.content
+
+    # Verify definition children has processed inline elements
+    # Definition with inline elements should be wrapped in ParagraphNode
+    assert_equal 1, item.children.size
+    definition_para = item.children.first
+    assert_instance_of(ReVIEW::AST::ParagraphNode, definition_para)
+
+    # The paragraph should contain inline code element
+    code_in_def = definition_para.children.find { |c| c.is_a?(ReVIEW::AST::InlineNode) && c.inline_type == 'code' }
+    assert_equal 'some code', code_in_def.children.first.content
   end
 
   def test_build_definition_list_with_multiline_definitions
@@ -248,39 +280,14 @@ class TestNestedListBuilder < Test::Unit::TestCase
     # Verify nested structure exists
     first_item = list_node.children[0]
     nested_list = first_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
-    assert_not_nil(nested_list)
+    assert_equal 'Level 2a', nested_list.children[0].children[0].content
+    assert_equal 'Level 2b', nested_list.children[1].children[0].content
+    assert_equal 'Level 3', nested_list.children[1].children[1].children[0].children[0].content
 
     # Second top-level item should also have nesting
     second_item = list_node.children[1]
     second_nested = second_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
-    assert_not_nil(second_nested)
-  end
-
-  # Test node creation methods
-  def test_create_list_node
-    node = @builder.send(:create_list_node, :test_type)
-    assert_instance_of(ReVIEW::AST::ListNode, node)
-    assert_equal :test_type, node.list_type
-  end
-
-  def test_create_list_item_node
-    item_data = create_list_item_data(:ul, 2, 'Test content')
-    node = @builder.send(:create_list_item_node, item_data)
-    assert_instance_of(ReVIEW::AST::ListItemNode, node)
-    assert_equal 2, node.level
-  end
-
-  def test_create_ordered_list_item_node
-    item_data = create_list_item_data(:ol, 1, 'Test', [], { number: 5, number_string: '5' })
-    node = @builder.send(:create_list_item_node, item_data)
-    assert_equal '5', node.content
-    assert_equal 5, node.number
-  end
-
-  def test_create_definition_list_item_node
-    item_data = create_list_item_data(:dl, 1, 'Term content')
-    node = @builder.send(:create_list_item_node, item_data)
-    assert_equal 'Term content', node.content
+    assert_equal 'Level 2c', second_nested.children[0].children[0].content
   end
 
   def test_build_extremely_deep_nesting
@@ -309,7 +316,6 @@ class TestNestedListBuilder < Test::Unit::TestCase
       nested_list = current_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
       next unless current_level < 6
 
-      assert_not_nil(nested_list, "Should have nested list at level #{current_level}")
       current_item = nested_list.children[0]
       current_level += 1
     end
@@ -340,12 +346,12 @@ class TestNestedListBuilder < Test::Unit::TestCase
 
     # Should handle irregular nesting gracefully
     nested_list = first_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
-    assert_not_nil(nested_list, 'Should create nested structure even with irregular levels')
+    assert_equal 'Back to Level 2', nested_list.children[0].children[0].content
 
     # Verify second level-1 item also has nesting
     second_item = list_node.children[1]
     assert_equal 1, second_item.level
     second_nested = second_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
-    assert_not_nil(second_nested, 'Second item should also have nested structure')
+    assert_equal 'Level 2 again', second_nested.children[0].children[0].content
   end
 end

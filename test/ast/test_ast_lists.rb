@@ -83,12 +83,12 @@ class TestASTLists < Test::Unit::TestCase
     assert_equal :ol, list_node.list_type
     assert_equal 3, list_node.children.size
 
-    # Check that numbers are preserved
+    # Check that numbers are preserved in item metadata
     first_item = list_node.children[0]
-    assert_equal '1', first_item.content
+    assert_equal 1, first_item.number
 
     third_item = list_node.children[2]
-    assert_equal '3', third_item.content
+    assert_equal 3, third_item.number
     # Should have inline code element
     code_node = third_item.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'code' }
     assert_not_nil(code_node)

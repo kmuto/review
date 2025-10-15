@@ -127,16 +127,13 @@ module ReVIEW
       end
 
       def visit_definition_item(node)
-        term = ''
-
-        # Handle definition term - use term_children if available (new AST structure)
-        if node.term_children
-          # Render term children (which contain inline elements)
-          term = node.term_children.map { |child| visit(child) }.join
-        elsif node.content
-          # Fallback to item content (raw text)
-          term = node.content.to_s
-        end
+        # Handle definition term - use term_children (AST structure)
+        term = if node.term_children && !node.term_children.empty?
+                 # Render term children (which contain inline elements)
+                 node.term_children.map { |child| visit(child) }.join
+               else
+                 '' # No term available
+               end
 
         # Handle definition content (all children are definition content)
         definition_parts = node.children.map do |child|

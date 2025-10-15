@@ -204,16 +204,18 @@ class TestASTJSONSerialization < Test::Unit::TestCase
 
     item1 = AST::ListItemNode.new(
       location: @location,
-      content: 'First item',
       level: 1
     )
+    text1 = AST::TextNode.new(location: @location, content: 'First item')
+    item1.add_child(text1)
     list.add_child(item1)
 
     item2 = AST::ListItemNode.new(
       location: @location,
-      content: 'Second item',
       level: 1
     )
+    text2 = AST::TextNode.new(location: @location, content: 'Second item')
+    item2.add_child(text2)
     list.add_child(item2)
 
     json = list.to_json
@@ -222,8 +224,11 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     assert_equal 'ListNode', parsed['type']
     assert_equal 'ul', parsed['list_type']
     assert_equal 2, parsed['children'].size
-    assert_equal 'First item', parsed['children'][0]['content']
-    assert_equal 'Second item', parsed['children'][1]['content']
+    # Check that text content is in the children of each list item
+    assert_equal 1, parsed['children'][0]['children'].size
+    assert_equal 'First item', parsed['children'][0]['children'][0]['content']
+    assert_equal 1, parsed['children'][1]['children'].size
+    assert_equal 'Second item', parsed['children'][1]['children'][0]['content']
   end
 
   def test_embed_node_serialization
@@ -257,9 +262,10 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     doc.add_child(headline)
 
     para = AST::ParagraphNode.new(
-      location: @location,
-      content: 'Test paragraph'
+      location: @location
     )
+    para_text = AST::TextNode.new(location: @location, content: 'Test paragraph')
+    para.add_child(para_text)
     doc.add_child(para)
 
     json = doc.to_json

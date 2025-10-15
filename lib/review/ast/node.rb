@@ -13,11 +13,16 @@ module ReVIEW
   module AST
     # Abstract base class for all AST nodes
     # This class should not be instantiated directly - use specific subclasses instead
+    #
+    # Design principles:
+    # - Branch nodes (like ParagraphNode, InlineNode) inherit from Node and use children
+    # - Leaf nodes (like TextNode, EmbedNode) inherit from LeafNode and use content
+    # - Never mix content and children in the same node
     class Node
-      attr_reader :location, :type, :id, :content, :original_text, :children
+      attr_reader :location, :type, :id, :original_text, :children
       attr_accessor :parent
 
-      def initialize(location: nil, type: nil, id: nil, content: nil, original_text: nil, **_kwargs)
+      def initialize(location: nil, type: nil, id: nil, original_text: nil, **_kwargs)
         # Prevent direct instantiation of abstract base class (except in tests)
         if self.instance_of?(ReVIEW::AST::Node)
           raise StandardError, 'AST::Node is an abstract class and cannot be instantiated directly. Use a specific subclass instead.'
@@ -28,9 +33,12 @@ module ReVIEW
         @parent = nil
         @type = type
         @id = id
-        @content = content
         @original_text = original_text
         @attributes = {}
+      end
+
+      def leaf_node?
+        false
       end
 
       def accept(visitor)
@@ -78,7 +86,6 @@ module ReVIEW
         }
         result[:node_type] = @type if @type && !@type.empty?
         result[:id] = @id if @id && !@id.empty?
-        result[:content] = @content if @content && !@content.empty?
         result
       end
 

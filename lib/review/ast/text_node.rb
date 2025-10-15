@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require 'review/ast/node'
+require 'review/ast/leaf_node'
 
 module ReVIEW
   module AST
-    class TextNode < Node
+    class TextNode < LeafNode
       def initialize(location: nil, content: '', **kwargs)
         super
       end
