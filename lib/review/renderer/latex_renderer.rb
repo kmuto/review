@@ -580,36 +580,7 @@ module ReVIEW
           end
         when :dl
           # Definition list - generate LaTeX description environment like LATEXBuilder
-          items = node.children.map do |item|
-            # Handle definition term - use term_children if available (new AST structure)
-            term = if item.term_children&.any?
-                     # Render term children (which contain inline elements)
-                     item.term_children.map { |child| visit(child) }.join
-                   elsif item.content
-                     # Fallback to item content (raw text)
-                     item.content.to_s
-                   else
-                     ''
-                   end
-
-            # Escape square brackets in terms like LATEXBuilder does
-            term = term.gsub('[', '\\lbrack{}').gsub(']', '\\rbrack{}')
-
-            # Handle definition content (all children are definition content)
-            if item.children && !item.children.empty?
-              definition_parts = item.children.map do |child|
-                visit(child) # Use visit instead of render_children for individual nodes
-              end
-              definition = definition_parts.join(' ').strip
-
-              # Use exact LATEXBuilder format: \item[term] \mbox{} \\
-              "\\item[#{term}] \\mbox{} \\\\\n#{definition}"
-            else
-              # No definition content - term only
-              "\\item[#{term}] \\mbox{} \\\\"
-            end
-          end.join("\n")
-          "\n\\begin{description}\n#{items}\n\\end{description}\n"
+          visit_definition_list(node)
         else
           raise NotImplementedError, "Unsupported list type: #{node.list_type}"
         end
@@ -1122,6 +1093,99 @@ module ReVIEW
       end
 
       private
+
+      # Render definition list with proper footnote handling
+      # Footnotes in definition terms require special handling in LaTeX:
+      # they must use \protect\footnotemark{} in the term and \footnotetext
+      # after the description environment
+      def visit_definition_list(node)
+        dl_context = nil
+        items_content = @rendering_context.with_child_context(:dl) do |ctx|
+          dl_context = ctx
+          # Temporarily set the renderer's context to the dl context
+          old_context = @rendering_context
+          @rendering_context = dl_context
+
+          items = node.children.map do |item|
+            render_definition_item(item, dl_context)
+          end.join("\n")
+
+          # Restore the previous context
+          @rendering_context = old_context
+          items
+        end
+
+        # Build output
+        result = "\n\\begin{description}\n#{items_content}\n\\end{description}\n"
+
+        # Add collected footnotetext commands from dt contexts (transferred to dl_context)
+        if dl_context && dl_context.footnote_collector.any?
+          result += generate_footnotetext_from_collector(dl_context.footnote_collector)
+          dl_context.footnote_collector.clear
+        end
+
+        result
+      end
+
+      # Render a single definition list item
+      def render_definition_item(item, dl_context)
+        # Render term with :dt context like LATEXBuilder does (latexbuilder.rb:361-382)
+        term = render_definition_term(item, dl_context)
+
+        # Escape square brackets in terms like LATEXBuilder does
+        term = term.gsub('[', '\\lbrack{}').gsub(']', '\\rbrack{}')
+
+        # Handle definition content (all children are definition content)
+        if item.children && !item.children.empty?
+          definition_parts = item.children.map do |child|
+            visit(child) # Use visit instead of render_children for individual nodes
+          end
+          definition = definition_parts.join(' ').strip
+
+          # Use exact LATEXBuilder format: \item[term] \mbox{} \\
+          "\\item[#{term}] \\mbox{} \\\\\n#{definition}"
+        else
+          # No definition content - term only
+          "\\item[#{term}] \\mbox{} \\\\"
+        end
+      end
+
+      # Render definition term with proper footnote collection
+      def render_definition_term(item, dl_context)
+        term = nil
+        dt_footnote_collector = nil
+
+        @rendering_context.with_child_context(:dt) do |dt_context|
+          # Temporarily set renderer's context to dt context for term rendering
+          old_dt_context = @rendering_context
+          @rendering_context = dt_context
+
+          term = if item.term_children&.any?
+                   # Render term children (which contain inline elements)
+                   item.term_children.map { |child| visit(child) }.join
+                 elsif item.content
+                   # Fallback to item content (raw text)
+                   item.content.to_s
+                 else
+                   ''
+                 end
+
+          @rendering_context = old_dt_context
+
+          # Save dt_context's footnote collector to transfer footnotes to dl_context
+          dt_footnote_collector = dt_context.footnote_collector
+        end
+
+        # Transfer footnotes from dt_context to dl_context
+        if dt_footnote_collector && dt_footnote_collector.any?
+          dt_footnote_collector.each do |entry|
+            dl_context.collect_footnote(entry.node, entry.number)
+          end
+          dt_footnote_collector.clear
+        end
+
+        term
+      end
 
       # Generate LaTeX footnotetext commands from collected footnotes
       # @param collector [FootnoteCollector] the footnote collector
