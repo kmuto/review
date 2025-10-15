@@ -146,7 +146,7 @@ module ReVIEW
           end
         end
 
-        prefix + result.join("\n") + "\n"
+        prefix + result.join("\n") + "\n\n"
       end
 
       def visit_paragraph(node)
@@ -333,7 +333,7 @@ module ReVIEW
           table_context.footnote_collector.clear
         end
 
-        table_content
+        table_content.chomp + "\n\n"
       end
 
       def visit_imgtable(node, caption)
@@ -396,7 +396,7 @@ module ReVIEW
           result << '\\end{table}'
         end
 
-        result.join("\n") + "\n"
+        result.join("\n") + "\n\n"
       end
 
       def visit_table_row(node)
@@ -565,7 +565,7 @@ module ReVIEW
         when :ul
           # Unordered list - generate LaTeX itemize environment
           items = node.children.map { |item| "\\item #{render_children(item)}" }.join("\n")
-          "\n\\begin{itemize}\n#{items}\n\\end{itemize}\n"
+          "\n\\begin{itemize}\n#{items}\n\\end{itemize}\n\n"
         when :ol
           # Ordered list - generate LaTeX enumerate environment
           items = node.children.map { |item| "\\item #{render_children(item)}" }.join("\n")
@@ -574,9 +574,9 @@ module ReVIEW
           if node.attribute?(:start_number)
             # Generate enumerate with setcounter for olnum
             start_num = node.fetch_attribute(:start_number) - 1 # LaTeX counter is 0-based
-            "\n\\begin{enumerate}\n\\setcounter{enumi}{#{start_num}}\n#{items}\n\\end{enumerate}\n"
+            "\n\\begin{enumerate}\n\\setcounter{enumi}{#{start_num}}\n#{items}\n\\end{enumerate}\n\n"
           else
-            "\n\\begin{enumerate}\n#{items}\n\\end{enumerate}\n"
+            "\n\\begin{enumerate}\n#{items}\n\\end{enumerate}\n\n"
           end
         when :dl
           # Definition list - generate LaTeX description environment like LATEXBuilder
@@ -596,14 +596,17 @@ module ReVIEW
 
         case block_type
         when 'quote'
-          result = "\n\\begin{quote}\n#{content}\\end{quote}\n"
+          # LATEXBuilder adds blank line before and after via blank() method
+          result = "\n\\begin{quote}\n#{content}\\end{quote}\n\n"
           apply_noindent_if_needed(node, result)
         when 'source'
           # Source code block without caption
+          # LATEXBuilder adds blank line before and after via blank() method
           "\\begin{reviewcmd}\n#{content}\\end{reviewcmd}\n"
         when 'lead'
           # Lead paragraph - use standard quotation environment like LATEXBuilder
-          result = "\\begin{quotation}\n#{content}\\end{quotation}\n"
+          # LATEXBuilder adds blank line before and after via blank() method
+          result = "\n\\begin{quotation}\n#{content}\\end{quotation}\n\n"
           apply_noindent_if_needed(node, result)
         when 'olnum'
           # olnum is now handled as metadata in list processing
@@ -653,7 +656,7 @@ module ReVIEW
         when 'texequation'
           # Handle mathematical equation blocks - output content directly
           # without LaTeX environment wrapping since content is raw LaTeX math
-          content.strip.empty? ? '' : "#{content}\n"
+          content.strip.empty? ? '' : "\n#{content}\n\n"
         when 'comment'
           # Handle comment blocks - only output in draft mode
           visit_comment_block(node)
@@ -662,22 +665,22 @@ module ReVIEW
           ''
         when 'centering'
           # Center alignment
-          "\\begin{center}\n#{content}\\end{center}\n"
+          "\n\\begin{center}\n#{content}\\end{center}\n\n"
         when 'flushright'
           # Right alignment
-          "\\begin{flushright}\n#{content}\\end{flushright}\n"
+          "\n\\begin{flushright}\n#{content}\\end{flushright}\n\n"
         when 'address' # rubocop:disable Lint/DuplicateBranch
           # Address block - similar to flushright
-          "\\begin{flushright}\n#{content}\\end{flushright}\n"
+          "\n\\begin{flushright}\n#{content}\\end{flushright}\n\n"
         when 'talk'
           # Dialog/conversation block
           "#{content}\n"
         when 'read'
           # Reading material block - use quotation environment
-          "\\begin{quotation}\n#{content}\\end{quotation}\n"
+          "\n\\begin{quotation}\n#{content}\\end{quotation}\n\n"
         when 'blockquote'
           # Block quotation - same as quote but different semantic meaning
-          "\\begin{quote}\n#{content}\\end{quote}\n"
+          "\n\\begin{quote}\n#{content}\\end{quote}\n\n"
         when 'printendnotes'
           # Print collected endnotes
           "\n\\theendnotes\n\n"
@@ -907,8 +910,7 @@ module ReVIEW
         result << content.chomp
         result << '\\end{reviewlist}'
         result << '\\end{reviewlistblock}'
-
-        result.join("\n") + "\n"
+        result.join("\n") + "\n\n"
       end
 
       def visit_emlist_block(_node, content, caption)
@@ -924,7 +926,7 @@ module ReVIEW
         result << '\\end{reviewemlist}'
 
         result << '\\end{reviewlistblock}'
-        result.join("\n") + "\n"
+        result.join("\n") + "\n\n"
       end
 
       def visit_cmd_block(_node, content, caption)
@@ -939,8 +941,7 @@ module ReVIEW
         result << content.chomp
         result << '\\end{reviewcmd}'
         result << '\\end{reviewlistblock}'
-
-        result.join("\n") + "\n"
+        result.join("\n") + "\n\n"
       end
 
       def visit_source_block(_node, content, caption)
@@ -955,8 +956,7 @@ module ReVIEW
         result << content.chomp
         result << '\\end{reviewsource}'
         result << '\\end{reviewlistblock}'
-
-        result.join("\n") + "\n"
+        result.join("\n") + "\n\n"
       end
 
       def visit_tex_equation(node)
@@ -991,8 +991,7 @@ module ReVIEW
           result << content
           result << '\\end{equation*}'
         end
-
-        result.join("\n") + "\n"
+        result.join("\n") + "\n\n"
       end
 
       # Get equation number for texequation blocks
@@ -1116,7 +1115,7 @@ module ReVIEW
         end
 
         # Build output
-        result = "\n\\begin{description}\n#{items_content}\n\\end{description}\n"
+        result = "\n\\begin{description}\n#{items_content}\n\\end{description}\n\n"
 
         # Add collected footnotetext commands from dt contexts (transferred to dl_context)
         if dl_context && dl_context.footnote_collector.any?
