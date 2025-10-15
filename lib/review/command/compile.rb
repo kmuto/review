@@ -258,15 +258,7 @@ module ReVIEW
 
         renderer_class = load_renderer(@options[:target])
         renderer = renderer_class.new(chapter)
-
-        # For HTML, use result method to get complete HTML document
-        # For other formats, use render method directly
-        if @options[:target] == 'html'
-          renderer.store_ast_root(ast)
-          renderer.result
-        else
-          renderer.render(ast)
-        end
+        renderer.render(ast)
       rescue StandardError => e
         raise CompileError, "Rendering failed: #{e.message}"
       end

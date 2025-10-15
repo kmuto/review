@@ -404,16 +404,14 @@ module ReVIEW
         end
       end
 
-      # Store AST root for template rendering (must be public for external access)
-      def store_ast_root(ast_root)
-        @ast_root = ast_root
-      end
+      # Overrides Base#render to generate a complete HTML document with template.
+      #
+      # @return [String] Complete HTML document with template applied
+      def render(ast_root)
+        @body = visit(ast_root)
 
-      # Template generation methods like HTMLBuilder (must be public for external access)
-      def result
-        # Generate complete HTML document using ERB template
+        # Set up template variables like HTMLBuilder
         @title = strip_html(compile_inline(@chapter&.title || ''))
-        @body = render(@ast_root) if @ast_root
         @language = @config['language'] || 'ja'
         @stylesheets = @config['stylesheet'] || []
         @next = @chapter&.next_chapter
