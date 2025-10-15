@@ -128,7 +128,6 @@ module ReVIEW
 
       def visit_definition_item(node)
         term = ''
-        definition = ''
 
         # Handle definition term - use term_children if available (new AST structure)
         if node.term_children

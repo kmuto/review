@@ -444,11 +444,11 @@ module ReVIEW
                     # TODO: MathML support would require math_ml gem
                     # For now, fallback to plain text
                     %Q(<pre>#{escape(content)}\n</pre>\n)
-                  when 'imgmath'
+                  when 'imgmath' # rubocop:disable Lint/DuplicateBranch
                     # TODO: Image-based math would require imgmath support
                     # For now, fallback to plain text
                     %Q(<pre>#{escape(content)}\n</pre>\n)
-                  else
+                  else # rubocop:disable Lint/DuplicateBranch
                     # Fallback: render as preformatted text
                     %Q(<pre>#{escape(content)}\n</pre>\n)
                   end

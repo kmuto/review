@@ -49,8 +49,6 @@ module ReVIEW
         hash
       end
 
-      private
-
       def location_to_h
         return nil unless location
 

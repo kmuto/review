@@ -128,13 +128,11 @@ module ReVIEW
           else
             raise CompileError, "Image reference not found: #{id}"
           end
-        else
+        elsif @chapter.image_index && @chapter.image_index.number(id)
           # Same-chapter reference
-          if @chapter.image_index && @chapter.image_index.number(id)
-            format_chapter_item_number('図', @chapter.number, @chapter.image_index.number(id))
-          else
-            raise CompileError, "Image reference not found: #{id}"
-          end
+          format_chapter_item_number('図', @chapter.number, @chapter.image_index.number(id))
+        else
+          raise CompileError, "Image reference not found: #{id}"
         end
       end
 
@@ -151,13 +149,11 @@ module ReVIEW
           else
             raise CompileError, "Table reference not found: #{id}"
           end
-        else
+        elsif @chapter.table_index && @chapter.table_index.number(id)
           # Same-chapter reference
-          if @chapter.table_index && @chapter.table_index.number(id)
-            format_chapter_item_number('表', @chapter.number, @chapter.table_index.number(id))
-          else
-            raise CompileError, "Table reference not found: #{id}"
-          end
+          format_chapter_item_number('表', @chapter.number, @chapter.table_index.number(id))
+        else
+          raise CompileError, "Table reference not found: #{id}"
         end
       end
 
@@ -174,13 +170,11 @@ module ReVIEW
           else
             raise CompileError, "List reference not found: #{id}"
           end
-        else
+        elsif @chapter.list_index && @chapter.list_index.number(id)
           # Same-chapter reference
-          if @chapter.list_index && @chapter.list_index.number(id)
-            format_chapter_item_number('リスト', @chapter.number, @chapter.list_index.number(id))
-          else
-            raise CompileError, "List reference not found: #{id}"
-          end
+          format_chapter_item_number('リスト', @chapter.number, @chapter.list_index.number(id))
+        else
+          raise CompileError, "List reference not found: #{id}"
         end
       end
 

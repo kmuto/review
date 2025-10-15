@@ -213,10 +213,6 @@ module ReVIEW
           end
         end
 
-        def render_inline_hd(_type, content, _node)
-          %Q(<span class="headline-ref">#{escape_content(content)}</span>)
-        end
-
         def render_inline_sec(_type, content, _node)
           %Q(<span class="section-ref">#{escape_content(content)}</span>)
         end
@@ -309,7 +305,7 @@ module ReVIEW
             bib_file = @book.bib_file.gsub(/\.re\Z/, ".#{@book.config['htmlext'] || 'html'}")
             number = @chapter.bibpaper(id).number
             %Q(<a href="#{bib_file}#bib-#{normalize_id(id)}">[#{number}]</a>)
-          rescue KeyError, StandardError
+          rescue KeyError
             %Q([#{id}])
           end
         end
@@ -320,7 +316,7 @@ module ReVIEW
           begin
             number = @chapter.endnote(id).number
             %Q(<a id="endnoteb-#{normalize_id(id)}" href="#endnote-#{normalize_id(id)}" class="noteref" epub:type="noteref">#{I18n.t('html_endnote_refmark', number)}</a>)
-          rescue KeyError, StandardError
+          rescue KeyError
             %Q(<a href="#endnote-#{normalize_id(id)}" class="noteref">#{content}</a>)
           end
         end
@@ -341,7 +337,7 @@ module ReVIEW
             else
               %Q(<span class="eqref">#{equation_number}</span>)
             end
-          rescue KeyError, StandardError
+          rescue KeyError
             %Q(<span class="eqref">#{content}</span>)
           end
         end
@@ -377,7 +373,7 @@ module ReVIEW
             else
               str
             end
-          rescue KeyError, StandardError
+          rescue KeyError
             escape_content(content)
           end
         end
@@ -406,7 +402,7 @@ module ReVIEW
             else
               I18n.t('column', escape_content(column_caption))
             end
-          rescue KeyError, StandardError
+          rescue KeyError
             escape_content(content)
           end
         end
@@ -423,7 +419,7 @@ module ReVIEW
             else
               escape_content(content)
             end
-          rescue KeyError, StandardError
+          rescue KeyError
             escape_content(content)
           end
         end
@@ -466,7 +462,7 @@ module ReVIEW
           ".#{@book.config['htmlext'] || 'html'}"
         end
 
-        def over_secnolevel?(n, chapter = @chapter)
+        def over_secnolevel?(n, _chapter = @chapter)
           secnolevel = @book.config['secnolevel'] || 0
           secnolevel >= n.to_s.split('.').size
         end

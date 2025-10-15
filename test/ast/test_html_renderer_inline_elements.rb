@@ -36,99 +36,99 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
   def test_inline_b
     content = "= Chapter\n\nThis is @<b>{bold} text.\n"
     output = render_inline(content)
-    assert_match(/<b>bold<\/b>/, output)
+    assert_match(%r{<b>bold</b>}, output)
   end
 
   def test_inline_strong
     content = "= Chapter\n\nThis is @<strong>{strong} text.\n"
     output = render_inline(content)
-    assert_match(/<strong>strong<\/strong>/, output)
+    assert_match(%r{<strong>strong</strong>}, output)
   end
 
   def test_inline_i
     content = "= Chapter\n\nThis is @<i>{italic} text.\n"
     output = render_inline(content)
-    assert_match(/<i>italic<\/i>/, output)
+    assert_match(%r{<i>italic</i>}, output)
   end
 
   def test_inline_em
     content = "= Chapter\n\nThis is @<em>{emphasized} text.\n"
     output = render_inline(content)
-    assert_match(/<em>emphasized<\/em>/, output)
+    assert_match(%r{<em>emphasized</em>}, output)
   end
 
   def test_inline_u
     content = "= Chapter\n\nThis is @<u>{underlined} text.\n"
     output = render_inline(content)
-    assert_match(/<u>underlined<\/u>/, output)
+    assert_match(%r{<u>underlined</u>}, output)
   end
 
   def test_inline_del
     content = "= Chapter\n\nThis is @<del>{deleted} text.\n"
     output = render_inline(content)
-    assert_match(/<del>deleted<\/del>/, output)
+    assert_match(%r{<del>deleted</del>}, output)
   end
 
   def test_inline_ins
     content = "= Chapter\n\nThis is @<ins>{inserted} text.\n"
     output = render_inline(content)
-    assert_match(/<ins>inserted<\/ins>/, output)
+    assert_match(%r{<ins>inserted</ins>}, output)
   end
 
   # Code and monospace formatting
   def test_inline_code
     content = "= Chapter\n\nInline code: @<code>{var x = 10}\n"
     output = render_inline(content)
-    assert_match(/<code class="inline-code tt">var x = 10<\/code>/, output)
+    assert_match(%r{<code class="inline-code tt">var x = 10</code>}, output)
   end
 
   def test_inline_tt
     content = "= Chapter\n\nMonospace: @<tt>{monospace}\n"
     output = render_inline(content)
-    assert_match(/<code class="tt">monospace<\/code>/, output)
+    assert_match(%r{<code class="tt">monospace</code>}, output)
   end
 
   def test_inline_ttb
     content = "= Chapter\n\nBold monospace: @<ttb>{bold mono}\n"
     output = render_inline(content)
-    assert_match(/<code class="tt"><b>bold mono<\/b><\/code>/, output)
+    assert_match(%r{<code class="tt"><b>bold mono</b></code>}, output)
   end
 
   def test_inline_tti
     content = "= Chapter\n\nItalic monospace: @<tti>{italic mono}\n"
     output = render_inline(content)
-    assert_match(/<code class="tt"><i>italic mono<\/i><\/code>/, output)
+    assert_match(%r{<code class="tt"><i>italic mono</i></code>}, output)
   end
 
   def test_inline_kbd
     content = "= Chapter\n\nPress @<kbd>{Enter} key.\n"
     output = render_inline(content)
-    assert_match(/<kbd>Enter<\/kbd>/, output)
+    assert_match(%r{<kbd>Enter</kbd>}, output)
   end
 
   def test_inline_samp
     content = "= Chapter\n\nOutput: @<samp>{sample output}\n"
     output = render_inline(content)
-    assert_match(/<samp>sample output<\/samp>/, output)
+    assert_match(%r{<samp>sample output</samp>}, output)
   end
 
   def test_inline_var
     content = "= Chapter\n\nVariable: @<var>{variableName}\n"
     output = render_inline(content)
-    assert_match(/<var>variableName<\/var>/, output)
+    assert_match(%r{<var>variableName</var>}, output)
   end
 
   # Superscript and subscript
   def test_inline_sup
     content = "= Chapter\n\nE = mc@<sup>{2}\n"
     output = render_inline(content)
-    assert_match(/mc<sup>2<\/sup>/, output)
+    assert_match(%r{mc<sup>2</sup>}, output)
   end
 
   def test_inline_sub
     content = "= Chapter\n\nH@<sub>{2}O\n"
     output = render_inline(content)
-    assert_match(/H<sub>2<\/sub>O/, output)
+    assert_match(%r{H<sub>2</sub>O}, output)
   end
 
   # Ruby annotation
@@ -136,72 +136,72 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
     content = "= Chapter\n\n@<ruby>{漢字, かんじ}\n"
     output = render_inline(content)
     # InlineElementRenderer outputs simple ruby without rp tags
-    assert_match(/<ruby>漢字<rt>かんじ<\/rt><\/ruby>/, output)
+    assert_match(%r{<ruby>漢字<rt>かんじ</rt></ruby>}, output)
   end
 
   # Special Japanese formatting
   def test_inline_bou
     content = "= Chapter\n\n@<bou>{傍点}\n"
     output = render_inline(content)
-    assert_match(/<span class="bou">傍点<\/span>/, output)
+    assert_match(%r{<span class="bou">傍点</span>}, output)
   end
 
   def test_inline_ami
     content = "= Chapter\n\n@<ami>{網掛け}\n"
     output = render_inline(content)
-    assert_match(/<span class="ami">網掛け<\/span>/, output)
+    assert_match(%r{<span class="ami">網掛け</span>}, output)
   end
 
   def test_inline_tcy
     content = "= Chapter\n\n縦中横@<tcy>{10}文字\n"
     output = render_inline(content)
-    assert_match(/<span class="tcy">10<\/span>/, output)
+    assert_match(%r{<span class="tcy">10</span>}, output)
   end
 
   def test_inline_tcy_single_ascii
     content = "= Chapter\n\n@<tcy>{A}文字\n"
     output = render_inline(content)
-    assert_match(/<span class="upright">A<\/span>/, output)
+    assert_match(%r{<span class="upright">A</span>}, output)
   end
 
   # Keywords and index
   def test_inline_kw
     content = "= Chapter\n\n@<kw>{キーワード, keyword}\n"
     output = render_inline(content)
-    assert_match(/<b class="kw">キーワード<\/b>（keyword）/, output)
+    assert_match(%r{<b class="kw">キーワード</b>（keyword）}, output)
   end
 
   def test_inline_idx
     content = "= Chapter\n\n@<idx>{索引項目}\n"
     output = render_inline(content)
     assert_match(/索引項目/, output)
-    assert_match(/<a id="idx-索引項目"><\/a>/, output)
+    assert_match(%r{<a id="idx-索引項目"></a>}, output)
   end
 
   def test_inline_hidx
     content = "= Chapter\n\n@<hidx>{隠し索引}\n"
     output = render_inline(content)
-    assert_match(/<a id="hidx-隠し索引"><\/a>/, output)
+    assert_match(%r{<a id="hidx-隠し索引"></a>}, output)
   end
 
   # Links
   def test_inline_href
     content = "= Chapter\n\n@<href>{https://example.com, Example}\n"
     output = render_inline(content)
-    assert_match(/<a href="https:\/\/example\.com" class="link">Example<\/a>/, output)
+    assert_match(%r{<a href="https://example\.com" class="link">Example</a>}, output)
   end
 
   def test_inline_href_url_only
     content = "= Chapter\n\n@<href>{https://example.com}\n"
     output = render_inline(content)
-    assert_match(/<a href="https:\/\/example\.com" class="link">https:\/\/example\.com<\/a>/, output)
+    assert_match(%r{<a href="https://example\.com" class="link">https://example\.com</a>}, output)
   end
 
   # Special characters
   def test_inline_br
     content = "= Chapter\n\nLine1@<br>{}Line2\n"
     output = render_inline(content)
-    assert_match(/Line1<br \/>Line2/, output)
+    assert_match(%r{Line1<br />Line2}, output)
   end
 
   def test_inline_uchar
@@ -214,50 +214,50 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
   def test_inline_abbr
     content = "= Chapter\n\n@<abbr>{HTML}\n"
     output = render_inline(content)
-    assert_match(/<abbr>HTML<\/abbr>/, output)
+    assert_match(%r{<abbr>HTML</abbr>}, output)
   end
 
   def test_inline_acronym
     content = "= Chapter\n\n@<acronym>{NATO}\n"
     output = render_inline(content)
-    assert_match(/<acronym>NATO<\/acronym>/, output)
+    assert_match(%r{<acronym>NATO</acronym>}, output)
   end
 
   def test_inline_cite
     content = "= Chapter\n\n@<cite>{Book Title}\n"
     output = render_inline(content)
-    assert_match(/<cite>Book Title<\/cite>/, output)
+    assert_match(%r{<cite>Book Title</cite>}, output)
   end
 
   def test_inline_dfn
     content = "= Chapter\n\n@<dfn>{definition}\n"
     output = render_inline(content)
-    assert_match(/<dfn>definition<\/dfn>/, output)
+    assert_match(%r{<dfn>definition</dfn>}, output)
   end
 
   def test_inline_big
     content = "= Chapter\n\n@<big>{large text}\n"
     output = render_inline(content)
-    assert_match(/<big>large text<\/big>/, output)
+    assert_match(%r{<big>large text</big>}, output)
   end
 
   def test_inline_small
     content = "= Chapter\n\n@<small>{small text}\n"
     output = render_inline(content)
-    assert_match(/<small>small text<\/small>/, output)
+    assert_match(%r{<small>small text</small>}, output)
   end
 
   # Special formatting
   def test_inline_recipe
     content = "= Chapter\n\n@<recipe>{レシピ名}\n"
     output = render_inline(content)
-    assert_match(/<span class="recipe">「レシピ名」<\/span>/, output)
+    assert_match(%r{<span class="recipe">「レシピ名」</span>}, output)
   end
 
   def test_inline_balloon
     content = "= Chapter\n\n@<balloon>{吹き出し}\n"
     output = render_inline(content)
-    assert_match(/<span class="balloon">吹き出し<\/span>/, output)
+    assert_match(%r{<span class="balloon">吹き出し</span>}, output)
   end
 
   def test_inline_dtp
@@ -271,7 +271,7 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
     content = "= Chapter\n\n@<m>{E = mc^2}\n"
     output = render_inline(content)
     # InlineElementRenderer uses class="math" instead of "equation"
-    assert_match(/<span class="math">E = mc\^2<\/span>/, output)
+    assert_match(%r{<span class="math">E = mc\^2</span>}, output)
   end
 
   # Comments (draft mode)
@@ -279,7 +279,7 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
     @config['draft'] = true
     content = "= Chapter\n\nText @<comment>{draft comment} here.\n"
     output = render_inline(content)
-    assert_match(/<span class="draft-comment">draft comment<\/span>/, output)
+    assert_match(%r{<span class="draft-comment">draft comment</span>}, output)
   end
 
   def test_inline_comment_non_draft_mode
@@ -433,14 +433,14 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
     content = "= Chapter\n\n@<b>{text with <html> & \"quotes\"}\n"
     output = render_inline(content)
     # Content is already escaped by InlineNode processing, resulting in double-escaping
-    assert_match(/<b>text with &amp;lt;html&amp;gt; &amp;amp; &amp;quot;quotes&amp;quot;<\/b>/, output)
+    assert_match(%r{<b>text with &amp;lt;html&amp;gt; &amp;amp; &amp;quot;quotes&amp;quot;</b>}, output)
   end
 
   # Raw inline content
   def test_inline_raw_html
     content = "= Chapter\n\nText @<raw>{|html|<span class=\"custom\">HTML</span>} here.\n"
     output = render_inline(content)
-    assert_match(/<span class="custom">HTML<\/span>/, output)
+    assert_match(%r{<span class="custom">HTML</span>}, output)
   end
 
   def test_inline_raw_other_format
@@ -462,7 +462,7 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
     content = "= Chapter\n\n@<code>{<tag> & \"value\"}\n"
     output = render_inline(content)
     # Content is already escaped by InlineNode processing, so we get double-escaped output
-    assert_match(/<code class="inline-code tt">&amp;lt;tag&amp;gt; &amp;amp; &amp;quot;value&amp;quot;<\/code>/, output)
+    assert_match(%r{<code class="inline-code tt">&amp;lt;tag&amp;gt; &amp;amp; &amp;quot;value&amp;quot;</code>}, output)
   end
 
   # Bibliography reference (requires bib file setup)

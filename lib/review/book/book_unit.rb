@@ -24,7 +24,7 @@ module ReVIEW
       attr_reader :list_index, :table_index, :equation_index,
                   :footnote_index, :endnote_index,
                   :numberless_image_index, :image_index, :icon_index, :indepimage_index,
-                  :headline_index, :column_index, :bibpaper_index
+                  :headline_index, :column_index
 
       def initialize(file_content: nil, book: nil)
         if book
