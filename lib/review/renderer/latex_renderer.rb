@@ -135,11 +135,10 @@ module ReVIEW
           # Generate section labels like LATEXBuilder (sec:x-y format)
           anchor = @sec_counter.anchor(level)
           result << "\\label{sec:#{anchor}}"
-        end
-
-        # Add custom label if specified (in addition to automatic label)
-        if node.label && !node.label.empty?
-          result << "\\label{#{escape(node.label)}}"
+          # Add custom label if specified (only for level > 1, matching LATEXBuilder)
+          if node.label && !node.label.empty?
+            result << "\\label{#{escape(node.label)}}"
+          end
         end
 
         prefix + result.join("\n") + "\n"
@@ -1333,16 +1332,18 @@ module ReVIEW
 
       # Generate label for headline node
       def generate_label_for_node(level, node)
+        result = []
         if level == 1 && @chapter
-          "\\label{chap:#{@chapter.id}}"
+          result << "\\label{chap:#{@chapter.id}}"
         elsif @sec_counter && level >= 2
           anchor = @sec_counter.anchor(level)
-          "\\label{sec:#{anchor}}"
-        elsif node.label
-          "\\label{#{escape(node.label)}}"
-        else
-          ''
+          result << "\\label{sec:#{anchor}}"
+          # Add custom label if specified (only for level > 1, matching LATEXBuilder)
+          if node.label && !node.label.empty?
+            result << "\\label{#{escape(node.label)}}"
+          end
         end
+        result.join("\n")
       end
 
       # Generate column label for hypertarget (matches LATEXBuilder behavior)
