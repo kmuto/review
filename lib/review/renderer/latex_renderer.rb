@@ -44,6 +44,9 @@ module ReVIEW
         # Initialize first line number state like LATEXBuilder
         @first_line_num = nil
 
+        # Initialize table column width state like Builder
+        @tsize = nil
+
         # Initialize RenderingContext for cleaner state management
         @rendering_context = RenderingContext.new(:document)
 
@@ -258,7 +261,11 @@ module ReVIEW
           col_count = all_rows.first ? all_rows.first.children.length : 1
 
           # Generate column specification with borders (like LATEXBuilder)
-          col_spec = '|' + ('l|' * col_count)
+          # Use @tsize if available, otherwise default to left-aligned columns
+          col_spec = @tsize || ('|' + ('l|' * col_count))
+
+          # Clear @tsize after use like Builder does
+          @tsize = nil
 
           result = []
           # Use Re:VIEW table structure like LATEXBuilder
@@ -630,7 +637,7 @@ module ReVIEW
           # olnum is now handled as metadata in list processing
           # If we encounter it here, it means there was no following ordered list
           # In this case, we should still generate the setcounter command for compatibility
-          if node.respond_to?(:args) && node.args && node.args.first
+          if node.args&.first
             num = node.args.first.to_i
             "\\setcounter{enumi}{#{num - 1}}\n"
           else
@@ -638,7 +645,7 @@ module ReVIEW
           end
         when 'footnote'
           # Handle footnote blocks - generate \footnotetext LaTeX command
-          if node.respond_to?(:args) && node.args && node.args.length >= 2
+          if node.args && node.args.length >= 2
             footnote_id = node.args[0]
             footnote_content = escape(node.args[1])
             # Generate footnote number like LaTeXBuilder does
@@ -658,10 +665,18 @@ module ReVIEW
         when 'firstlinenum'
           # firstlinenum sets the starting line number for subsequent listnum blocks
           # Store the value in @first_line_num like LaTeXBuilder does
-          if node.respond_to?(:args) && node.args && node.args.first
+          if node.args&.first
             @first_line_num = node.args.first.to_i
           end
           # firstlinenum itself produces no output
+          ''
+        when 'tsize'
+          # tsize sets table column widths for subsequent tables
+          # Parse and store the value in @tsize like Builder does
+          if node.args&.first
+            process_tsize_command(node.args.first)
+          end
+          # tsize itself produces no output
           ''
         when 'texequation'
           # Handle mathematical equation blocks - output content directly
@@ -694,7 +709,7 @@ module ReVIEW
         when 'printendnotes'
           # Print collected endnotes - like LATEXBuilder
           "\n\\theendnotes\n\n"
-        when 'blankline', 'noindent', 'pagebreak', 'tsize', 'endnote', 'label', 'hr', 'bpo', 'parasep' # rubocop:disable Lint/DuplicateBranch
+        when 'blankline', 'noindent', 'pagebreak', 'endnote', 'label', 'hr', 'bpo', 'parasep' # rubocop:disable Lint/DuplicateBranch
           # Control commands that should not generate LaTeX environment blocks
           ''
         when 'bibpaper'
@@ -774,7 +789,7 @@ module ReVIEW
         content_lines = []
 
         # add argument if it exists
-        if node.args && node.args.first && !node.args.first.empty?
+        if node.args&.first&.then { |arg| !arg.empty? }
           content_lines << escape(node.args.first)
         end
 
@@ -1365,6 +1380,20 @@ module ReVIEW
 
         # Convert \n to actual newlines
         content.gsub('\\n', "\n")
+      end
+
+      # Process tsize command - set table column widths for subsequent tables
+      # This implements the same logic as Builder#tsize
+      def process_tsize_command(str)
+        if matched = str.match(/\A\|(.*?)\|(.*)/)
+          builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }
+          # Check if latex builder is in the target list
+          if builders.include?('latex')
+            @tsize = matched[2]
+          end
+        else
+          @tsize = str
+        end
       end
     end
   end
