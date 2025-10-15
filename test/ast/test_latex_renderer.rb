@@ -1054,4 +1054,100 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     assert_match(/\\footnote\{This is a plain footnote\}/, result)
   end
+
+  # Tests for parse_metric method
+  def test_parse_metric_latex_prefix
+    # Test parsing metric with latex:: prefix
+    result = @renderer.send(:parse_metric, 'latex', 'latex::width=80mm')
+    assert_equal 'width=80mm', result
+  end
+
+  def test_parse_metric_no_prefix
+    # Test parsing metric without prefix
+    result = @renderer.send(:parse_metric, 'latex', 'width=80mm')
+    assert_equal 'width=80mm', result
+  end
+
+  def test_parse_metric_multiple_values
+    # Test parsing metric with multiple comma-separated values
+    result = @renderer.send(:parse_metric, 'latex', 'latex::width=80mm,height=60mm')
+    assert_equal 'width=80mm,height=60mm', result
+  end
+
+  def test_parse_metric_mixed_prefix
+    # Test parsing metric with mixed prefix and non-prefix values
+    result = @renderer.send(:parse_metric, 'latex', 'latex::width=80mm,height=60mm')
+    assert_equal 'width=80mm,height=60mm', result
+  end
+
+  def test_parse_metric_wrong_prefix
+    # Test parsing metric with wrong builder prefix (should be ignored)
+    result = @renderer.send(:parse_metric, 'latex', 'html::width=80mm')
+    assert_equal '', result
+  end
+
+  def test_parse_metric_multiple_prefixes
+    # Test parsing metric with multiple builder prefixes
+    result = @renderer.send(:parse_metric, 'latex', 'html::width=100px,latex::width=80mm')
+    assert_equal 'width=80mm', result
+  end
+
+  def test_parse_metric_nil
+    # Test parsing nil metric
+    result = @renderer.send(:parse_metric, 'latex', nil)
+    assert_equal '', result
+  end
+
+  def test_parse_metric_empty
+    # Test parsing empty metric
+    result = @renderer.send(:parse_metric, 'latex', '')
+    assert_equal '', result
+  end
+
+  def test_parse_metric_scale_conversion
+    # Test scale to width conversion when image_scale2width is enabled
+    @config['pdfmaker'] = { 'image_scale2width' => true }
+    result = @renderer.send(:parse_metric, 'latex', 'scale=0.5')
+    assert_equal 'width=0.5\\maxwidth', result
+  end
+
+  def test_parse_metric_scale_no_conversion
+    # Test scale without conversion when image_scale2width is disabled
+    @config['pdfmaker'] = {}
+    result = @renderer.send(:parse_metric, 'latex', 'scale=0.5')
+    assert_equal 'scale=0.5', result
+  end
+
+  def test_parse_metric_use_original_image_size
+    # Test use_original_image_size config
+    @config['pdfmaker'] = { 'use_original_image_size' => true }
+    result = @renderer.send(:parse_metric, 'latex', nil)
+    assert_equal ' ', result # Should return space to use original size
+  end
+
+  def test_parse_metric_use_original_image_size_with_metric
+    # Test use_original_image_size config with metric provided (should use provided metric)
+    @config['pdfmaker'] = { 'use_original_image_size' => true }
+    result = @renderer.send(:parse_metric, 'latex', 'width=80mm')
+    assert_equal 'width=80mm', result
+  end
+
+  # Integration test for image with metric
+  def test_visit_image_with_metric
+    caption = AST::CaptionNode.new
+    caption.add_child(AST::TextNode.new(content: 'Test Image'))
+
+    # Create an image node with metric
+    image = AST::ImageNode.new(id: 'image1', caption: caption, metric: 'latex::width=80mm')
+    result = @renderer.visit(image)
+
+    expected_lines = [
+      '\\begin{reviewimage}%%image1',
+      '\\reviewimagecaption{Test Image}',
+      '\\label{image:test:image1}',
+      '\\end{reviewimage}'
+    ]
+
+    assert_equal expected_lines.join("\n") + "\n", result
+  end
 end

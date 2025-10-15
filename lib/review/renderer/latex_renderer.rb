@@ -298,23 +298,59 @@ module ReVIEW
       def visit_imgtable(node, caption)
         # imgtable should be rendered as an image, not as a table (like LATEXBuilder)
         result = []
-        result << '\\begin{reviewdummyimage}'
 
-        if node.id?
-          # Generate label like LATEXBuilder: image:chapter:id
-          # Don't escape underscores in labels - they're allowed in LaTeX label names
-          result << if @chapter
-                      "\\label{image:#{@chapter.id}:#{node.id}}"
+        # Get image path
+        image_path = @chapter&.image(node.id)&.path if node.id?
+
+        if image_path
+          result << "\\begin{reviewimage}%%#{node.id}"
+
+          # Parse metric option like LATEXBuilder
+          metrics = parse_metric('latex', node.metric)
+          command = 'reviewincludegraphics'
+
+          # Use metric if provided, otherwise use default width
+          result << if metrics && !metrics.empty?
+                      "\\#{command}[#{metrics}]{#{image_path}}"
                     else
-                      "\\label{image:test:#{node.id}}"
+                      "\\#{command}[width=\\maxwidth]{#{image_path}}"
                     end
-        end
 
-        if caption && !caption.empty?
-          result << "\\reviewimagecaption{#{caption}}"
-        end
+          if caption && !caption.empty?
+            result << "\\reviewimagecaption{#{caption}}"
+          end
 
-        result << '\\end{reviewdummyimage}'
+          if node.id?
+            # Generate label like LATEXBuilder: image:chapter:id
+            # Don't escape underscores in labels - they're allowed in LaTeX label names
+            result << if @chapter
+                        "\\label{image:#{@chapter.id}:#{node.id}}"
+                      else
+                        "\\label{image:test:#{node.id}}"
+                      end
+          end
+
+          result << '\\end{reviewimage}'
+        else
+          # Fallback for missing image
+          result << '\\begin{reviewdummyimage}'
+
+          if node.id?
+            # Generate label like LATEXBuilder: image:chapter:id
+            # Don't escape underscores in labels - they're allowed in LaTeX label names
+            result << if @chapter
+                        "\\label{image:#{@chapter.id}:#{node.id}}"
+                      else
+                        "\\label{image:test:#{node.id}}"
+                      end
+          end
+
+          if caption && !caption.empty?
+            result << "\\reviewimagecaption{#{caption}}"
+          end
+
+          result << '\\end{reviewdummyimage}'
+        end
 
         result.join("\n") + "\n"
       end
@@ -369,8 +405,18 @@ module ReVIEW
         if node.id? && @chapter
           begin
             image_path = @chapter.image(node.id).path
-            # Use reviewincludegraphics with default width like LATEXBuilder
-            result << "\\reviewincludegraphics[width=\\maxwidth]{#{image_path}}"
+            # Parse metric option like LATEXBuilder
+            metrics = parse_metric('latex', node.metric)
+
+            # Determine command based on book version
+            command = 'reviewincludegraphics'
+
+            # Use metric if provided, otherwise use default width
+            result << if metrics && !metrics.empty?
+                        "\\#{command}[#{metrics}]{#{image_path}}"
+                      else
+                        "\\#{command}[width=\\maxwidth]{#{image_path}}"
+                      end
           rescue KeyError
             # Image not found - skip includegraphics command like LATEXBuilder would use image_dummy
             # But for regular image nodes, we still generate the structure without the includegraphics
@@ -420,13 +466,17 @@ module ReVIEW
           end
 
           # Add image
-          command = @book&.config&.check_version('2', exception: false) ? 'includegraphics' : 'reviewincludegraphics'
+          command = 'reviewincludegraphics'
 
-          # Apply metrics if available
-          metrics_str = build_metrics_string(node.metrics) if node.respond_to?(:metrics) && node.metrics
-          options = metrics_str ? "[#{metrics_str}]" : ''
+          # Parse metric option like LATEXBuilder
+          metrics = parse_metric('latex', node.metric)
 
-          result << "\\#{command}#{options}{#{image_path}}"
+          # Use metric if provided, otherwise use default width
+          result << if metrics && !metrics.empty?
+                      "\\#{command}[#{metrics}]{#{image_path}}"
+                    else
+                      "\\#{command}[width=\\maxwidth]{#{image_path}}"
+                    end
 
           # Add caption at bottom if not at top
           if !caption_top?('image') && caption && !caption.empty?
@@ -1084,22 +1134,25 @@ module ReVIEW
         @book.config['caption_position'][type] != 'bottom'
       end
 
-      # Build metrics string for images (width, height, etc.)
-      def build_metrics_string(metrics)
-        return nil unless metrics && metrics.is_a?(Hash)
-
-        parts = []
-        if metrics['scale']
-          parts << "scale=#{metrics['scale']}"
-        end
-        if metrics['width']
-          parts << "width=#{metrics['width']}"
-        end
-        if metrics['height']
-          parts << "height=#{metrics['height']}"
+      # This method calls super to use the base implementation, then applies LaTeX-specific logic
+      def parse_metric(type, metric)
+        s = super
+        # If use_original_image_size is enabled and result is empty and no metric provided
+        if @book.config&.dig('pdfmaker', 'use_original_image_size') && s.empty? && !metric&.present?
+          return ' ' # pass empty space to \reviewincludegraphics to use original size
         end
 
-        parts.empty? ? nil : parts.join(',')
+        s
+      end
+
+      # Handle individual metric transformations (like scale to width conversion)
+      def handle_metric(str)
+        # Check if image_scale2width is enabled and metric is scale
+        if @book.config&.dig('pdfmaker', 'image_scale2width') && str =~ /\Ascale=([\d.]+)\Z/
+          return "width=#{$1}\\maxwidth"
+        end
+
+        str
       end
 
       # Apply noindent if the node has the noindent attribute

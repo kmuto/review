@@ -123,7 +123,6 @@ module ReVIEW
       end
 
       # Render a specific inline element.
-      # Subclasses should override this to provide format-specific inline rendering.
       #
       # @param type [String] The inline element type (e.g., 'b', 'i', 'code')
       # @param content [String] The content of the inline element
@@ -132,6 +131,53 @@ module ReVIEW
       def render_inline_element(_type, content, _node = nil)
         # Default implementation just returns the content
         content
+      end
+
+      # Parse metric option for images and tables
+      #
+      # @param type [String] Builder type (e.g., 'latex', 'html')
+      # @param metric [String] Metric string (e.g., 'latex::width=80mm,scale=0.5')
+      # @return [String] Processed metric string
+      #
+      # @example
+      #   parse_metric('latex', 'latex::width=80mm') # => 'width=80mm'
+      #   parse_metric('latex', 'scale=0.5') # => 'scale=0.5'
+      #   parse_metric('html', 'latex::width=80mm') # => ''
+      def parse_metric(type, metric)
+        return '' if metric.nil? || metric.empty?
+
+        params = metric.split(/,\s*/)
+        results = []
+        params.each do |param|
+          # Check if param has builder prefix (e.g., "latex::")
+          if /\A.+?::/.match?(param)
+            # Skip if not for this builder type
+            next unless /\A#{type}::/.match?(param)
+
+            # Remove the builder prefix
+            param = param.sub(/\A#{type}::/, '')
+          end
+          # Handle metric transformations if needed
+          param2 = handle_metric(param)
+          results.push(param2)
+        end
+        result_metric(results)
+      end
+
+      # Handle individual metric transformations
+      #
+      # @param str [String] Metric string (e.g., 'scale=0.5')
+      # @return [String] Transformed metric string
+      def handle_metric(str)
+        str
+      end
+
+      # Combine metric results into final string
+      #
+      # @param array [Array<String>] Array of metric strings
+      # @return [String] Combined metric string
+      def result_metric(array)
+        array.join(',')
       end
     end
   end
