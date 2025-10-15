@@ -411,16 +411,17 @@ module ReVIEW
 
         # Render heading reference
         def render_inline_hd(_type, content, node)
-          # Use resolved content from ReferenceResolver if available,
-          # otherwise fall back to legacy behavior
-          if content && !content.empty?
-            "\\reviewsecref{「#{escape(content)}」}{}"
-          elsif node.args && node.args.first
+          # Always use node.args to properly handle chapter numbers
+          # (ReferenceResolver doesn't know about secnolevel and chapter numbers)
+          if node.args&.first
             heading_ref = node.args.first
             # Heading reference - handle both simple and chapter|heading format
             handle_heading_reference(heading_ref) do |section_number, section_label, section_title|
               "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
             end
+          elsif content && !content.empty?
+            # Fallback to resolved content if no args
+            "\\reviewsecref{「#{escape(content)}」}{}"
           else
             ''
           end
@@ -428,16 +429,16 @@ module ReVIEW
 
         # Render section reference
         def render_inline_sec(_type, content, node)
-          # Use resolved content from ReferenceResolver if available,
-          # otherwise fall back to legacy behavior
-          if content && !content.empty?
-            "\\reviewsecref{#{escape(content)}}{}"
-          elsif node.args && node.args.first
+          # Always use node.args to properly handle chapter numbers
+          if node.args&.first
             heading_ref = node.args.first
             # Section reference - use Re:VIEW section reference like LATEXBuilder
             handle_heading_reference(heading_ref) do |section_number, section_label, _section_title|
               "\\reviewsecref{#{section_number}}{#{section_label}}"
             end
+          elsif content && !content.empty?
+            # Fallback to resolved content if no args
+            "\\reviewsecref{#{escape(content)}}{}"
           else
             ''
           end
@@ -445,16 +446,16 @@ module ReVIEW
 
         # Render section reference with full title
         def render_inline_secref(_type, content, node)
-          # Use resolved content from ReferenceResolver if available,
-          # otherwise fall back to legacy behavior
-          if content && !content.empty?
-            "\\reviewsecref{#{escape(content)}}{}"
-          elsif node.args && node.args.first
+          # Always use node.args to properly handle chapter numbers
+          if node.args&.first
             heading_ref = node.args.first
             # Section reference with full title - use Re:VIEW section reference like LATEXBuilder
             handle_heading_reference(heading_ref) do |section_number, section_label, section_title|
               "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
             end
+          elsif content && !content.empty?
+            # Fallback to resolved content if no args
+            "\\reviewsecref{#{escape(content)}}{}"
           else
             ''
           end
@@ -779,9 +780,21 @@ module ReVIEW
               begin
                 headline_item = target_chapter.headline_index[heading_id]
                 if headline_item
-                  # Get the section number from the target chapter
-                  section_number = target_chapter.headline_index.number(heading_id)
-                  section_label = "sec:#{chapter_id}-#{section_number.tr('.', '-')}"
+                  # Get the full section number from headline_index (already includes chapter number)
+                  full_number = target_chapter.headline_index.number(heading_id)
+
+                  # Check if we should show the number based on secnolevel (like LATEXBuilder line 1095-1100)
+                  section_number = if full_number.present? && target_chapter.number && over_secnolevel?(full_number)
+                                     # Show full number with chapter: "2.1", "2.1.2", etc.
+                                     full_number
+                                   else
+                                     # Without chapter number - extract relative part only
+                                     # headline_index.number returns "2.1" but we want "1"
+                                     headline_item.number.join('.')
+                                   end
+
+                  # Label uses the full number for consistency
+                  section_label = "sec:#{chapter_id}-#{full_number.tr('.', '-')}"
                   yield(section_number, section_label, headline_item.caption || heading_id)
                 else
                   # Fallback when heading not found in target chapter
@@ -800,9 +813,20 @@ module ReVIEW
             begin
               headline_item = @chapter.headline_index[heading_ref]
               if headline_item
-                # Generate section number and label like LATEXBuilder
-                section_number = @chapter.headline_index.number(heading_ref)
-                section_label = "sec:#{section_number.tr('.', '-')}"
+                # Get the full section number from headline_index (already includes chapter number)
+                full_number = @chapter.headline_index.number(heading_ref)
+
+                # Check if we should show the number based on secnolevel
+                section_number = if full_number.present? && @chapter.number && over_secnolevel?(full_number)
+                                   # Show full number with chapter: "2.1", "2.1.2", etc.
+                                   full_number
+                                 else
+                                   # Without chapter number - extract relative part only
+                                   headline_item.number.join('.')
+                                 end
+
+                # Label uses the full number for consistency
+                section_label = "sec:#{full_number.tr('.', '-')}"
                 yield(section_number, section_label, headline_item.caption || heading_ref)
               else
                 # Fallback if headline not found in index
@@ -816,6 +840,11 @@ module ReVIEW
             # Fallback when no headline index available
             fallback_format % escape(heading_ref)
           end
+        end
+
+        # Check if section number level is within secnolevel
+        def over_secnolevel?(num)
+          @book.config['secnolevel'] >= num.to_s.split('.').size
         end
       end
     end
