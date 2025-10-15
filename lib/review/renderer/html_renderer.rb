@@ -542,8 +542,6 @@ module ReVIEW
         layout_file
       end
 
-      protected
-
       # Render footnote content (must be protected for InlineElementRenderer access)
       # This method is called with explicit receiver from InlineElementRenderer
       def render_footnote_content(footnote_node)

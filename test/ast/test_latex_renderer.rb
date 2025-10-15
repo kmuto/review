@@ -909,4 +909,149 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     assert_equal expected, result
   end
+
+  def test_footnote_with_inline_markup
+    # Test that footnote content with inline markup is properly rendered
+    content = <<~EOB
+      = Test Chapter
+
+      Text with footnote@<fn>{note1}.
+
+      //footnote[note1][This is a footnote with @<b>{bold}, @<i>{italic}, and @<code>{code}]
+    EOB
+
+    @chapter.content = content
+    compiler = ReVIEW::AST::Compiler.new
+    ast_root = compiler.compile_to_ast(@chapter)
+
+    renderer = Renderer::LatexRenderer.new(@chapter)
+    result = renderer.visit(ast_root)
+
+    # Check that inline markup in footnote is properly rendered
+    assert_match(/\\footnote\{This is a footnote with \\reviewbold\{bold\}, \\reviewit\{italic\}, and \\reviewcode\{code\}\}/, result)
+  end
+
+  def test_footnote_with_bold_markup
+    # Test footnote with bold text
+    content = <<~EOB
+      = Test Chapter
+
+      Text with footnote@<fn>{note1}.
+
+      //footnote[note1][Footnote with @<b>{bold text}]
+    EOB
+
+    @chapter.content = content
+    compiler = ReVIEW::AST::Compiler.new
+    ast_root = compiler.compile_to_ast(@chapter)
+
+    renderer = Renderer::LatexRenderer.new(@chapter)
+    result = renderer.visit(ast_root)
+
+    assert_match(/\\footnote\{Footnote with \\reviewbold\{bold text\}\}/, result)
+  end
+
+  def test_footnote_with_italic_markup
+    # Test footnote with italic text
+    content = <<~EOB
+      = Test Chapter
+
+      Text with footnote@<fn>{note1}.
+
+      //footnote[note1][Footnote with @<i>{italic text}]
+    EOB
+
+    @chapter.content = content
+    compiler = ReVIEW::AST::Compiler.new
+    ast_root = compiler.compile_to_ast(@chapter)
+
+    renderer = Renderer::LatexRenderer.new(@chapter)
+    result = renderer.visit(ast_root)
+
+    assert_match(/\\footnote\{Footnote with \\reviewit\{italic text\}\}/, result)
+  end
+
+  def test_footnote_with_code_markup
+    # Test footnote with code text
+    content = <<~EOB
+      = Test Chapter
+
+      Text with footnote@<fn>{note1}.
+
+      //footnote[note1][Footnote with @<code>{code_example}]
+    EOB
+
+    @chapter.content = content
+    compiler = ReVIEW::AST::Compiler.new
+    ast_root = compiler.compile_to_ast(@chapter)
+
+    renderer = Renderer::LatexRenderer.new(@chapter)
+    result = renderer.visit(ast_root)
+
+    # NOTE: underscore is escaped as \textunderscore{} in LaTeX
+    assert_match(/\\footnote\{Footnote with \\reviewcode\{code(\\textunderscore\{\}|_)example\}\}/, result)
+  end
+
+  def test_footnote_with_href_markup
+    # Test footnote with hyperlink
+    content = <<~EOB
+      = Test Chapter
+
+      Text with footnote@<fn>{note1}.
+
+      //footnote[note1][See @<href>{http://example.com, Example Site}]
+    EOB
+
+    @chapter.content = content
+    compiler = ReVIEW::AST::Compiler.new
+    ast_root = compiler.compile_to_ast(@chapter)
+
+    renderer = Renderer::LatexRenderer.new(@chapter)
+    result = renderer.visit(ast_root)
+
+    assert_match(%r{\\footnote\{See \\href\{http://example\.com\}\{Example Site\}\}}, result)
+  end
+
+  def test_footnote_with_multiple_inline_elements
+    # Test footnote with multiple types of inline markup
+    content = <<~EOB
+      = Test Chapter
+
+      Text with footnote@<fn>{note1}.
+
+      //footnote[note1][This has @<b>{bold}, @<i>{italic}, @<tt>{typewriter}, and @<code>{code}]
+    EOB
+
+    @chapter.content = content
+    compiler = ReVIEW::AST::Compiler.new
+    ast_root = compiler.compile_to_ast(@chapter)
+
+    renderer = Renderer::LatexRenderer.new(@chapter)
+    result = renderer.visit(ast_root)
+
+    assert_match(/\\reviewbold\{bold\}/, result)
+    assert_match(/\\reviewit\{italic\}/, result)
+    assert_match(/\\reviewtt\{typewriter\}/, result)
+    assert_match(/\\reviewcode\{code\}/, result)
+  end
+
+  def test_footnote_plain_text
+    # Test footnote with plain text (no inline markup)
+    content = <<~EOB
+      = Test Chapter
+
+      Text with footnote@<fn>{note1}.
+
+      //footnote[note1][This is a plain footnote]
+    EOB
+
+    @chapter.content = content
+    compiler = ReVIEW::AST::Compiler.new
+    ast_root = compiler.compile_to_ast(@chapter)
+
+    renderer = Renderer::LatexRenderer.new(@chapter)
+    result = renderer.visit(ast_root)
+
+    assert_match(/\\footnote\{This is a plain footnote\}/, result)
+  end
 end

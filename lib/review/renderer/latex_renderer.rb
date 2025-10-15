@@ -942,7 +942,34 @@ module ReVIEW
         numbered_lines.join("\n")
       end
 
+      # Render footnote content for footnotetext
+      # This method processes the footnote node's children to properly handle
+      # inline markup like @<b>{text} within footnotes
+      def render_footnote_content(footnote_node)
+        if footnote_node.children&.any?
+          render_children(footnote_node)
+        else
+          # Fallback for nodes without children (shouldn't happen in normal cases)
+          escape(footnote_node&.content || '')
+        end
+      end
+
       private
+
+      # Generate LaTeX footnotetext commands from collected footnotes
+      # @param collector [FootnoteCollector] the footnote collector
+      # @return [String] LaTeX footnotetext commands
+      def generate_footnotetext_from_collector(collector)
+        return '' unless collector.any?
+
+        footnotetext_commands = []
+        collector.each do |entry|
+          content = render_footnote_content(entry.node)
+          footnotetext_commands << "\\footnotetext[#{entry.number}]{#{content}}"
+        end
+
+        footnotetext_commands.join("\n") + "\n"
+      end
 
       HEADLINE = { # rubocop:disable Lint/UselessConstantScoping
         1 => 'chapter',
@@ -1027,30 +1054,6 @@ module ReVIEW
         result = visit(node)
         @rendering_context = old_context
         result
-      end
-
-      # Render footnote content for footnotetext
-      def render_footnote_content(footnote_node)
-        if footnote_node && footnote_node.respond_to?(:children)
-          render_children(footnote_node)
-        else
-          escape(footnote_node&.content || '')
-        end
-      end
-
-      # Generate LaTeX footnotetext commands from collected footnotes
-      # @param collector [FootnoteCollector] the footnote collector
-      # @return [String] LaTeX footnotetext commands
-      def generate_footnotetext_from_collector(collector)
-        return '' unless collector.any?
-
-        footnotetext_commands = []
-        collector.each do |entry|
-          content = render_footnote_content(entry.node)
-          footnotetext_commands << "\\footnotetext[#{entry.number}]{#{content}}"
-        end
-
-        footnotetext_commands.join("\n") + "\n"
       end
 
       def normalize_id(id)
