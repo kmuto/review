@@ -99,12 +99,8 @@ module ReVIEW
           prefix = "\\begin{reviewpart}\n"
         end
 
-        # Update section counter like LATEXBuilder
-        if @sec_counter
-          @sec_counter.inc(level)
-        end
-
         # Handle special headline options (nonum, notoc, nodisp)
+        # These do NOT increment the section counter (matching LATEXBuilder behavior)
         if node.nodisp?
           # nodisp: Only add TOC entry, no visible heading
           return prefix + generate_toc_entry(level, caption)
@@ -116,6 +112,11 @@ module ReVIEW
           return prefix + generate_notoc_headline(level, caption, node)
         end
 
+        # Update section counter like LATEXBuilder (only for regular numbered headlines)
+        if @sec_counter
+          @sec_counter.inc(level)
+        end
+
         # Regular headline processing
         section_command = headline_name(level)
 
@@ -123,9 +124,13 @@ module ReVIEW
         result = []
         result << "\\#{section_command}{#{caption}}"
 
-        # Add \addcontentsline for subsection* (level 3)
-        if level > @book.config['secnolevel'] || (@chapter.number.to_s.empty? && level > 1)
-          result << "\\addcontentsline{toc}{subsection}{#{caption}}"
+        # Add \addcontentsline for unnumbered sections within toclevel
+        # Match LATEXBuilder logic: only add to TOC if level is within toclevel
+        if (level > @book.config['secnolevel'] || (@chapter.number.to_s.empty? && level > 1)) &&
+           level <= @book.config['toclevel'].to_i
+          # Get the base section name for TOC entry
+          toc_section_name = get_base_section_name(level)
+          result << "\\addcontentsline{toc}{#{toc_section_name}}{#{caption}}"
         end
 
         # Generate labels like LATEXBuilder - add both automatic and custom labels
@@ -1281,12 +1286,8 @@ module ReVIEW
       end
 
       # Generate unnumbered headline with TOC entry (for nonum headlines)
-      def generate_nonum_headline(level, caption, node)
+      def generate_nonum_headline(level, caption, _node)
         section_command = get_base_section_name(level) + '*'
-        label_part = generate_label_for_node(level, node)
-
-        result = []
-        result << "\\#{section_command}{#{caption}}"
 
         # Add TOC entry
         toc_type = case level
@@ -1297,28 +1298,15 @@ module ReVIEW
                    else
                      'subsection'
                    end
-        result << "\\addcontentsline{toc}{#{toc_type}}{#{caption}}"
 
-        unless label_part.empty?
-          result << label_part
-        end
-
-        result.join("\n") + "\n"
+        "\\#{section_command}{#{caption}}\n\\addcontentsline{toc}{#{toc_type}}{#{caption}}\n"
       end
 
       # Generate unnumbered headline without TOC entry (for notoc headlines)
-      def generate_notoc_headline(level, caption, node)
+      def generate_notoc_headline(level, caption, _node)
         section_command = get_base_section_name(level) + '*'
-        label_part = generate_label_for_node(level, node)
 
-        result = []
-        result << "\\#{section_command}{#{caption}}"
-
-        unless label_part.empty?
-          result << label_part
-        end
-
-        result.join("\n") + "\n"
+        "\\#{section_command}{#{caption}}\n"
       end
 
       # Get base section name without star
