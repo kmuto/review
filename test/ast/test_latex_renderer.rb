@@ -1150,4 +1150,93 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     assert_equal expected_lines.join("\n") + "\n", result
   end
+
+  def test_visit_table_without_caption
+    # Test table without caption (should not output \begin{table} and \end{table})
+    table = AST::TableNode.new(id: 'table1')
+
+    # Header row
+    header_row = AST::TableRowNode.new(location: nil)
+    header_cell1 = AST::TableCellNode.new(location: nil, cell_type: :th)
+    header_cell1.add_child(AST::TextNode.new(content: 'Header 1'))
+    header_cell2 = AST::TableCellNode.new(location: nil, cell_type: :th)
+    header_cell2.add_child(AST::TextNode.new(content: 'Header 2'))
+    header_row.add_child(header_cell1)
+    header_row.add_child(header_cell2)
+    table.add_header_row(header_row)
+
+    # Body row
+    body_row = AST::TableRowNode.new(location: nil)
+    body_cell1 = AST::TableCellNode.new(location: nil)
+    body_cell1.add_child(AST::TextNode.new(content: 'Data 1'))
+    body_cell2 = AST::TableCellNode.new(location: nil)
+    body_cell2.add_child(AST::TextNode.new(content: 'Data 2'))
+    body_row.add_child(body_cell1)
+    body_row.add_child(body_cell2)
+    table.add_body_row(body_row)
+
+    result = @renderer.visit(table)
+
+    # Should not contain \begin{table} and \end{table} without caption
+    assert_false(result.include?('\\begin{table}'), 'Should not include \\begin{table} without caption')
+    assert_false(result.include?('\\end{table}'), 'Should not include \\end{table} without caption')
+
+    # Should contain table structure with label (label is output regardless of caption)
+    expected_lines = [
+      '\\label{table:test:table1}',
+      '\\begin{reviewtable}{|l|l|}',
+      '\\hline',
+      '\\reviewth{Header 1} & \\reviewth{Header 2} \\\\  \\hline',
+      'Data 1 & Data 2 \\\\  \\hline',
+      '\\end{reviewtable}'
+    ]
+
+    assert_equal expected_lines.join("\n") + "\n", result
+  end
+
+  def test_visit_table_with_empty_caption_node
+    # Test table with empty caption node (should not output \begin{table} and \end{table})
+    empty_caption = AST::CaptionNode.new
+    # Empty caption node with no children
+
+    table = AST::TableNode.new(id: 'table1', caption: empty_caption)
+
+    # Header row
+    header_row = AST::TableRowNode.new(location: nil)
+    header_cell1 = AST::TableCellNode.new(location: nil, cell_type: :th)
+    header_cell1.add_child(AST::TextNode.new(content: 'Header 1'))
+    header_cell2 = AST::TableCellNode.new(location: nil, cell_type: :th)
+    header_cell2.add_child(AST::TextNode.new(content: 'Header 2'))
+    header_row.add_child(header_cell1)
+    header_row.add_child(header_cell2)
+    table.add_header_row(header_row)
+
+    # Body row
+    body_row = AST::TableRowNode.new(location: nil)
+    body_cell1 = AST::TableCellNode.new(location: nil)
+    body_cell1.add_child(AST::TextNode.new(content: 'Data 1'))
+    body_cell2 = AST::TableCellNode.new(location: nil)
+    body_cell2.add_child(AST::TextNode.new(content: 'Data 2'))
+    body_row.add_child(body_cell1)
+    body_row.add_child(body_cell2)
+    table.add_body_row(body_row)
+
+    result = @renderer.visit(table)
+
+    # Empty caption should be treated as no caption (should not output \begin{table} and \end{table})
+    assert_false(result.include?('\\begin{table}'), 'Should not include \\begin{table} with empty caption')
+    assert_false(result.include?('\\end{table}'), 'Should not include \\end{table} with empty caption')
+
+    # Should contain table structure with label
+    expected_lines = [
+      '\\label{table:test:table1}',
+      '\\begin{reviewtable}{|l|l|}',
+      '\\hline',
+      '\\reviewth{Header 1} & \\reviewth{Header 2} \\\\  \\hline',
+      'Data 1 & Data 2 \\\\  \\hline',
+      '\\end{reviewtable}'
+    ]
+
+    assert_equal expected_lines.join("\n") + "\n", result
+  end
 end

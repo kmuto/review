@@ -268,14 +268,18 @@ module ReVIEW
           @tsize = nil
 
           result = []
-          # Use Re:VIEW table structure like LATEXBuilder
-          result << if node.id?
-                      "\\begin{table}%%#{node.id}"
-                    else
-                      '\\begin{table}%%'
-                    end
 
-          if caption && !caption.empty?
+          # Only output \begin{table} if caption is present (like LATEXBuilder)
+          if caption.present?
+            result << if node.id?
+                        "\\begin{table}%%#{node.id}"
+                      else
+                        '\\begin{table}%%'
+                      end
+          end
+
+          # Process caption and label
+          if caption.present?
             # emtable uses reviewtablecaption* (with asterisk)
             caption_command = table_type == :emtable ? 'reviewtablecaption*' : 'reviewtablecaption'
             result << "\\#{caption_command}{#{caption}}"
@@ -302,7 +306,11 @@ module ReVIEW
           end
 
           result << '\\end{reviewtable}'
-          result << '\\end{table}'
+
+          # Only output \end{table} if caption is present (like LATEXBuilder)
+          if caption.present?
+            result << '\\end{table}'
+          end
 
           # Restore the previous context
           @rendering_context = old_context
