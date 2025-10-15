@@ -168,12 +168,17 @@ module ReVIEW
       end
 
       def visit_code_block(node)
-        # Process caption with proper context management
-        caption = if node.caption
-                    @rendering_context.with_child_context(:caption) do |caption_context|
-                      render_children_with_context(node.caption, caption_context)
-                    end
-                  end
+        # Process caption with proper context management and collect footnotes
+        caption = nil
+        caption_collector = nil
+
+        if node.caption
+          @rendering_context.with_child_context(:caption) do |caption_context|
+            caption = render_children_with_context(node.caption, caption_context)
+            # Save the collector for later processing
+            caption_collector = caption_context.footnote_collector
+          end
+        end
 
         # Process children to get properly escaped content while preserving structure
         content = render_children(node)
@@ -198,10 +203,10 @@ module ReVIEW
                    raise NotImplementedError, "Unknown code block type: #{code_type}"
                  end
 
-        # Add collected footnotetext commands
-        if @rendering_context.footnote_collector.any?
-          result += generate_footnotetext_from_collector(@rendering_context.footnote_collector)
-          @rendering_context.footnote_collector.clear
+        # Add collected footnotetext commands from caption context
+        if caption_collector && caption_collector.any?
+          result += generate_footnotetext_from_collector(caption_collector)
+          caption_collector.clear
         end
 
         result
@@ -215,18 +220,29 @@ module ReVIEW
       end
 
       def visit_table(node)
-        # Process caption with proper context management
-        caption = if node.caption
-                    @rendering_context.with_child_context(:caption) do |caption_context|
-                      render_children_with_context(node.caption, caption_context)
-                    end
-                  end
+        # Process caption with proper context management and collect footnotes
+        caption = nil
+        caption_collector = nil
+
+        if node.caption
+          @rendering_context.with_child_context(:caption) do |caption_context|
+            caption = render_children_with_context(node.caption, caption_context)
+            # Save the collector for later processing
+            caption_collector = caption_context.footnote_collector
+          end
+        end
 
         table_type = node.respond_to?(:table_type) ? node.table_type : :table
 
         # Handle imgtable specially - it should be rendered as an image
         if table_type == :imgtable
-          return visit_imgtable(node, caption)
+          result = visit_imgtable(node, caption)
+          # Add collected footnotetext commands from caption context for imgtable
+          if caption_collector && caption_collector.any?
+            result += generate_footnotetext_from_collector(caption_collector)
+            caption_collector.clear
+          end
+          return result
         end
 
         # Process table content with table context
@@ -284,6 +300,12 @@ module ReVIEW
           # Restore the previous context
           @rendering_context = old_context
           result.join("\n") + "\n"
+        end
+
+        # Add collected footnotetext commands from caption context
+        if caption_collector && caption_collector.any?
+          table_content += generate_footnotetext_from_collector(caption_collector)
+          caption_collector.clear
         end
 
         # Add collected footnotetext commands from table context
@@ -380,8 +402,18 @@ module ReVIEW
         # Process cell content while maintaining table context to collect footnotes
         # Note: table context should already be set by visit_table
         content = render_children(node)
-        # Use cell_type to determine LaTeX formatting
-        if node.cell_type == :th
+
+        # Check if content contains line breaks (from @<br>{})
+        # If so, wrap with \shortstack[l] like LATEXBuilder does
+        if /\\\\/.match?(content)
+          # Use cell_type to determine LaTeX formatting
+          if node.cell_type == :th
+            "\\reviewth{\\shortstack[l]{#{content}}}"
+          else
+            "\\shortstack[l]{#{content}}"
+          end
+        elsif node.cell_type == :th
+          # No line breaks - standard formatting
           "\\reviewth{#{content}}"
         else
           content
@@ -659,7 +691,10 @@ module ReVIEW
         when 'blockquote'
           # Block quotation - same as quote but different semantic meaning
           "\\begin{quote}\n#{content}\\end{quote}\n"
-        when 'blankline', 'noindent', 'pagebreak', 'tsize', 'endnote', 'label', 'printendnotes', 'hr', 'bpo', 'parasep' # rubocop:disable Lint/DuplicateBranch
+        when 'printendnotes'
+          # Print collected endnotes - like LATEXBuilder
+          "\n\\theendnotes\n\n"
+        when 'blankline', 'noindent', 'pagebreak', 'tsize', 'endnote', 'label', 'hr', 'bpo', 'parasep' # rubocop:disable Lint/DuplicateBranch
           # Control commands that should not generate LaTeX environment blocks
           ''
         when 'bibpaper'
@@ -671,7 +706,18 @@ module ReVIEW
       end
 
       def visit_minicolumn(node)
-        caption = render_children(node.caption) if node.caption
+        # Process caption with proper context management and collect footnotes
+        caption = nil
+        caption_collector = nil
+
+        if node.caption
+          @rendering_context.with_child_context(:caption) do |caption_context|
+            caption = render_children_with_context(node.caption, caption_context)
+            # Save the collector for later processing
+            caption_collector = caption_context.footnote_collector
+          end
+        end
+
         content = render_children(node)
 
         env_name = case node.minicolumn_type.to_s
@@ -706,7 +752,15 @@ module ReVIEW
         result << ''  # blank line
         result << "\\end{#{env_name}}"
 
-        result.join("\n") + "\n"
+        output = result.join("\n") + "\n"
+
+        # Add collected footnotetext commands from caption context
+        if caption_collector && caption_collector.any?
+          output += generate_footnotetext_from_collector(caption_collector)
+          caption_collector.clear
+        end
+
+        output
       end
 
       def visit_caption(node)
@@ -1138,8 +1192,11 @@ module ReVIEW
 
       def visit_footnote(_node)
         # FootnoteNode represents a footnote definition (//footnote[id][content])
-        # These should not be rendered in the output - they only define the content
-        # Footnotes are rendered when referenced via @<fn>{id} (InlineNode)
+        # In AST rendering, footnote definitions do not produce direct output.
+        # Instead, footnotes are rendered via:
+        # 1. @<fn>{id} inline references produce \footnotemark or \footnote
+        # 2. Collected footnotes (from captions/tables) are output as \footnotetext
+        #    by the parent node (code_block, table, image) after processing
         ''
       end
 

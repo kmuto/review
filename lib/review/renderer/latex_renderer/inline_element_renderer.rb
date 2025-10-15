@@ -99,42 +99,39 @@ module ReVIEW
         def render_inline_fn(_type, content, node)
           if node.args && node.args.first
             footnote_id = node.args.first.to_s
-            # Check if we need to use footnotetext based on context
-            footnotetext_config = @book&.config&.key?('footnotetext') && @book.config['footnotetext']
-            context_requires = @rendering_context.requires_footnotetext?
-            use_footnotetext = footnotetext_config || context_requires
 
-            if use_footnotetext
-              if @chapter && @chapter.footnote_index
-                begin
-                  footnote_number = @chapter.footnote_index.number(footnote_id)
-                  index_item = @chapter.footnote_index[footnote_id]
-                  # Add footnote to context collector
-                  if index_item.footnote_node?
-                    @rendering_context.collect_footnote(index_item.footnote_node, footnote_number)
-                  end
-                  '\\protect\\footnotemark'
-                rescue StandardError => e
-                  raise NotImplementedError, "Footnote inline processing failed for #{footnote_id}: #{e.message}"
-                end
-              else
-                '\\protect\\footnotemark'
+            # Get footnote info from chapter index
+            unless @chapter && @chapter.footnote_index
+              return "\\footnote{#{footnote_id}}"
+            end
+
+            begin
+              footnote_number = @chapter.footnote_index.number(footnote_id)
+              index_item = @chapter.footnote_index[footnote_id]
+            rescue StandardError
+              return "\\footnote{#{footnote_id}}"
+            end
+
+            # Check if we need to use footnotetext mode (like LATEXBuilder line 1143)
+            if @book.config['footnotetext']
+              # footnotetext config is enabled - always use footnotemark (like LATEXBuilder line 1144)
+              "\\footnotemark[#{footnote_number}]"
+            elsif @rendering_context.requires_footnotetext?
+              # We're in a context that requires footnotetext (caption/table/column/dt)
+              # Collect the footnote for later output (like LATEXBuilder line 1146)
+              if index_item.footnote_node?
+                @rendering_context.collect_footnote(index_item.footnote_node, footnote_number)
               end
-            elsif @chapter && @chapter.footnote_index
-              # Get footnote content from index for direct footnote
-              begin
-                index_item = @chapter.footnote_index[footnote_id]
-                footnote_content = if index_item.footnote_node?
-                                     @renderer.render_footnote_content(index_item.footnote_node)
-                                   else
-                                     escape(index_item.content || '')
-                                   end
-                "\\footnote{#{footnote_content}}"
-              rescue StandardError => _e
-                "\\footnote{#{footnote_id}}"
-              end
+              # Use protected footnotemark (like LATEXBuilder line 1147)
+              '\\protect\\footnotemark{}'
             else
-              "\\footnote{#{footnote_id}}"
+              # Normal context - use direct footnote (like LATEXBuilder line 1149)
+              footnote_content = if index_item.footnote_node?
+                                   @renderer.render_footnote_content(index_item.footnote_node)
+                                 else
+                                   escape(index_item.content || '')
+                                 end
+              "\\footnote{#{footnote_content}}"
             end
           else
             "\\footnote{#{content}}"
@@ -701,8 +698,10 @@ module ReVIEW
             ref_id = node.args.first
             if @chapter && @chapter.endnote_index
               begin
-                endnote_number = @chapter.endnote_index.number(ref_id)
-                "\\endnotemark[#{endnote_number}]"
+                index_item = @chapter.endnote_index[ref_id]
+                # Use content directly from index item (no endnote_node in traditional index)
+                endnote_content = escape(index_item.content || '')
+                "\\endnote{#{endnote_content}}"
               rescue StandardError => _e
                 "\\endnote{#{escape(ref_id)}}"
               end
