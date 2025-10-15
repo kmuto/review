@@ -362,4 +362,106 @@ class TestHtmlRenderer < Test::Unit::TestCase
 
     assert_equal expected, result
   end
+
+  def test_tex_equation_without_id_mathjax
+    # Test TexEquationNode without ID using MathJax
+    @config['math_format'] = 'mathjax'
+    @book.config = @config
+
+    require 'review/ast/tex_equation_node'
+    equation = ReVIEW::AST::TexEquationNode.new(
+      location: nil,
+      id: nil,
+      caption: nil,
+      latex_content: 'E = mc^2'
+    )
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(''))
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    result = renderer.visit(equation)
+
+    # HTMLBuilder uses $$ for display mode
+    expected = "<div class=\"equation\">\n$$E = mc^2$$\n</div>\n"
+
+    assert_equal expected, result
+  end
+
+  def test_tex_equation_without_id_plain
+    # Test TexEquationNode without ID using plain text
+    @config['math_format'] = nil
+    @book.config = @config
+
+    require 'review/ast/tex_equation_node'
+    equation = ReVIEW::AST::TexEquationNode.new(
+      location: nil,
+      id: nil,
+      caption: nil,
+      latex_content: 'E = mc^2'
+    )
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(''))
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    result = renderer.visit(equation)
+
+    # Fallback format wraps in div.equation and pre tags
+    expected = "<div class=\"equation\">\n<pre>E = mc^2\n</pre>\n</div>\n"
+
+    assert_equal expected, result
+  end
+
+  def test_tex_equation_with_id_and_caption_mathjax
+    # Test TexEquationNode with ID and caption using MathJax
+    @config['math_format'] = 'mathjax'
+    @book.config = @config
+
+    content = <<~REVIEW
+      = Chapter
+
+      //texequation[eq1][Einstein's Mass-Energy Equivalence]{
+      E = mc^2
+      //}
+    REVIEW
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
+    chapter.generate_indexes
+    @book.generate_indexes
+    ast_root = @compiler.compile_to_ast(chapter)
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    html_output = renderer.render(ast_root)
+
+    # Use caption-equation class like HTMLBuilder
+    assert_match(/<div id="eq1" class="caption-equation">/, html_output)
+    # Caption should use I18n.t('equation') and proper formatting
+    assert_match(%r{<p class="caption">式1\.1: Einstein&#39;s Mass-Energy Equivalence</p>}, html_output)
+    # MathJax uses $$ delimiters
+    assert_match(/\$\$E = mc\^2\$\$/, html_output)
+  end
+
+  def test_tex_equation_with_id_only_mathjax
+    # Test TexEquationNode with ID only (no caption) using MathJax
+    @config['math_format'] = 'mathjax'
+    @book.config = @config
+
+    content = <<~REVIEW
+      = Chapter
+
+      //texequation[eq1]{
+      \\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}
+      //}
+    REVIEW
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
+    chapter.generate_indexes
+    @book.generate_indexes
+    ast_root = @compiler.compile_to_ast(chapter)
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    html_output = renderer.render(ast_root)
+
+    # Use caption-equation class like HTMLBuilder
+    assert_match(/<div id="eq1" class="caption-equation">/, html_output)
+    # Caption should show equation number only (with colon from format_number_header)
+    assert_match(%r{<p class="caption">式1\.1:</p>}, html_output)
+    # Check that equation content is present
+    assert_match(/\\int_/, html_output)
+  end
 end

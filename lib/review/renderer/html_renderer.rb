@@ -404,6 +404,77 @@ module ReVIEW
         end
       end
 
+      def visit_tex_equation(node)
+        content = node.content
+
+        math_format = @book.config['math_format']
+
+        return render_texequation_body(content, math_format) unless node.id?
+
+        id_attr = %Q( id="#{normalize_id(node.id)}")
+        caption_html = if get_chap
+                         if node.caption?
+                           %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(node.id).number])}#{I18n.t('caption_prefix')}#{escape(node.caption)}</p>\n)
+                         else
+                           %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(node.id).number])}</p>\n)
+                         end
+                       elsif node.caption?
+                         %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(node.id).number])}#{I18n.t('caption_prefix')}#{escape(node.caption)}</p>\n)
+                       else
+                         %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(node.id).number])}</p>\n)
+                       end
+
+        caption_top_html = caption_top?('equation') ? caption_html : ''
+        caption_bottom_html = caption_top?('equation') ? '' : caption_html
+
+        equation_body_html = render_texequation_body(content, math_format)
+
+        %Q(<div#{id_attr} class="caption-equation">\n#{caption_top_html}#{equation_body_html}#{caption_bottom_html}</div>\n)
+      end
+
+      # Render equation body with appropriate format (matches HTMLBuilder's texequation_body)
+      def render_texequation_body(content, math_format)
+        result = %Q(<div class="equation">\n)
+
+        result += case math_format
+                  when 'mathjax'
+                    # Use $$ for display mode like HTMLBuilder
+                    "$$#{content.gsub('<', '\lt{}').gsub('>', '\gt{}').gsub('&', '&amp;')}$$\n"
+                  when 'mathml'
+                    # TODO: MathML support would require math_ml gem
+                    # For now, fallback to plain text
+                    %Q(<pre>#{escape(content)}\n</pre>\n)
+                  when 'imgmath'
+                    # TODO: Image-based math would require imgmath support
+                    # For now, fallback to plain text
+                    %Q(<pre>#{escape(content)}\n</pre>\n)
+                  else
+                    # Fallback: render as preformatted text
+                    %Q(<pre>#{escape(content)}\n</pre>\n)
+                  end
+
+        result + "</div>\n"
+      end
+
+      # Get equation number for texequation blocks
+      def get_equation_number(equation_id)
+        if @chapter && @chapter.equation_index
+          begin
+            equation_number = @chapter.equation_index.number(equation_id)
+            if @chapter.number
+              "#{@chapter.number}.#{equation_number}"
+            else
+              equation_number.to_s
+            end
+          rescue StandardError
+            # Fallback if equation not found in index
+            '??'
+          end
+        else
+          '??'
+        end
+      end
+
       # Render AST to HTML body content only (without template).
       # This method is useful for testing and comparison purposes.
       #
@@ -1215,8 +1286,6 @@ module ReVIEW
       rescue KeyError
         raise NotImplementedError, "no such list: #{id}"
       end
-
-      private
 
       # Generate indexes using AST::Indexer for Renderer (builder-independent)
       def generate_ast_indexes(ast_node)
