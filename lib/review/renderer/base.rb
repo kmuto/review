@@ -61,7 +61,7 @@ module ReVIEW
         post_process(result)
       end
 
-      protected
+      private
 
       # Post-process the rendered result.
       # Subclasses can override this to perform final formatting,

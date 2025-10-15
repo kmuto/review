@@ -28,7 +28,7 @@ module ReVIEW
         result
       end
 
-      protected
+      private
 
       def serialize_properties(hash, options)
         hash[:minicolumn_type] = minicolumn_type

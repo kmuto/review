@@ -41,7 +41,7 @@ module ReVIEW
         hash
       end
 
-      protected
+      private
 
       def serialize_properties(hash, _options)
         # Add content property explicitly for TextNode

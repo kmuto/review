@@ -337,13 +337,11 @@ module ReVIEW
         node.content || ''
       end
 
-      protected
+      private
 
       def render_children(node)
         node.children.map { |child| visit(child) }.join
       end
-
-      private
 
       def generate_markdown_table
         return '' if @table_rows.empty?

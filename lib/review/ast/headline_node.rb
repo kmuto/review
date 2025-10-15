@@ -48,7 +48,7 @@ module ReVIEW
         )
       end
 
-      protected
+      private
 
       def serialize_properties(hash, options)
         hash[:level] = level

@@ -34,7 +34,7 @@ module ReVIEW
         result
       end
 
-      protected
+      private
 
       def serialize_properties(hash, options)
         hash[:list_type] = list_type
@@ -76,7 +76,7 @@ module ReVIEW
         item_type == :dd
       end
 
-      protected
+      private
 
       def serialize_properties(hash, options)
         hash[:children] = children.map { |child| child.serialize_to_hash(options) } if children.any?

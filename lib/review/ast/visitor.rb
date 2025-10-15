@@ -53,7 +53,7 @@ module ReVIEW
         nodes.map { |node| visit(node) }
       end
 
-      protected
+      private
 
       # Generic visit method is disabled - all visitors must implement specific handlers
       def visit_generic(node)
@@ -116,8 +116,6 @@ module ReVIEW
 
         "visit_#{method_name}"
       end
-
-      private
 
       # Derive the visit method name from a node's class name.
       # Converts class names like 'HeadlineNode' to 'visit_headline'.

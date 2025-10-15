@@ -34,6 +34,8 @@ module ReVIEW
         visitor.visit_table_cell(self)
       end
 
+      private
+
       def serialize_properties(hash, options)
         super
         hash[:cell_type] = @cell_type if @cell_type != :td

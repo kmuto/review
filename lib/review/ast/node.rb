@@ -111,7 +111,7 @@ module ReVIEW
         hash
       end
 
-      protected
+      private
 
       # Override this method in subclasses to add node-specific properties
       def serialize_properties(hash, options)

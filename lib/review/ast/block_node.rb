@@ -25,7 +25,7 @@ module ReVIEW
         result
       end
 
-      protected
+      private
 
       def serialize_properties(hash, options)
         hash[:block_type] = block_type

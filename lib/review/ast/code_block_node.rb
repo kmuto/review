@@ -73,7 +73,7 @@ module ReVIEW
         result
       end
 
-      protected
+      private
 
       def serialize_properties(hash, options)
         hash[:id] = id if id && !id.empty?
