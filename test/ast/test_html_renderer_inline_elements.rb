@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
+require_relative '../book_test_helper'
 require 'review/ast/compiler'
 require 'review/ast/node'
 require 'review/renderer/html_renderer'
@@ -10,6 +11,8 @@ require 'review/configure'
 require 'review/i18n'
 
 class TestHtmlRendererInlineElements < Test::Unit::TestCase
+  include BookTestHelper
+
   def setup
     @config = ReVIEW::Configure.values
     @config['language'] = 'ja'
@@ -467,10 +470,16 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
 
   # Bibliography reference (requires bib file setup)
   def test_inline_bib_basic
-    content = "= Chapter\n\nReference @<bib>{ref1}.\n"
-    output = render_inline(content)
-    # Should contain reference markup even if not resolved
-    assert_match(/ref1/, output)
+    mktmpbookdir('bib.re' => '//bibpaper[ref1][Reference Title]{Author Name, Publisher, 2020}') do |_dir, book|
+      chapter = ReVIEW::Book::Chapter.new(book, 1, 'test', 'test.re', StringIO.new("= Chapter\n\nReference @<bib>{ref1}.\n"))
+      chapter.generate_indexes
+      book.generate_indexes
+      ast_root = @compiler.compile_to_ast(chapter)
+      renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+      output = renderer.render(ast_root)
+      # Should contain reference markup with the bibliography reference
+      assert_match(/ref1/, output)
+    end
   end
 
   # Equation reference
