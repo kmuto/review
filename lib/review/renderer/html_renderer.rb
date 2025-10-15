@@ -404,11 +404,20 @@ module ReVIEW
         end
       end
 
+      # Render AST to HTML body content only (without template).
+      # This method is useful for testing and comparison purposes.
+      #
+      # @param ast_root [Object] The root AST node to render
+      # @return [String] HTML body content only
+      def render_body(ast_root)
+        visit(ast_root)
+      end
+
       # Overrides Base#render to generate a complete HTML document with template.
       #
       # @return [String] Complete HTML document with template applied
       def render(ast_root)
-        @body = visit(ast_root)
+        @body = render_body(ast_root)
 
         # Set up template variables like HTMLBuilder
         @title = strip_html(compile_inline(@chapter&.title || ''))

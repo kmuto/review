@@ -68,7 +68,9 @@ module ReVIEW
       # Render with HtmlRenderer
       renderer = Renderer::HtmlRenderer.new(chapter)
 
-      renderer.render(ast)
+      # Use render_body to get body content only (without template)
+      # This matches HTMLBuilder's raw_result output for comparison
+      renderer.render_body(ast)
     end
 
     # Convert a *.re file to HTML using HTMLBuilder
