@@ -704,9 +704,17 @@ module ReVIEW
           # Block quotation - same as quote but different semantic meaning
           "\\begin{quote}\n#{content}\\end{quote}\n"
         when 'printendnotes'
-          # Print collected endnotes - like LATEXBuilder
+          # Print collected endnotes
           "\n\\theendnotes\n\n"
-        when 'blankline', 'noindent', 'pagebreak', 'endnote', 'label', 'hr', 'bpo', 'parasep' # rubocop:disable Lint/DuplicateBranch
+        when 'label'
+          # Label command - output \label{id}
+          if node.args&.first
+            label_id = node.args.first
+            "\\label{#{escape(label_id)}}\n"
+          else
+            ''
+          end
+        when 'blankline', 'noindent', 'pagebreak', 'endnote', 'hr', 'bpo', 'parasep' # rubocop:disable Lint/DuplicateBranch
           # Control commands that should not generate LaTeX environment blocks
           ''
         when 'bibpaper'
