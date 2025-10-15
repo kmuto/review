@@ -931,15 +931,6 @@ module ReVIEW
         [prefix, anchor]
       end
 
-      def normalize_id(id)
-        # Remove # prefix if present (common in Re:VIEW syntax)
-        id = id.gsub(/^#/, '') if id.start_with?('#')
-
-        # HTML-safe ID normalization
-        # Replace non-alphanumeric characters with dashes
-        id.gsub(/[^a-zA-Z0-9_-]/, '-')
-      end
-
       # Builder-compatible methods for list reference handling
       def extract_chapter_id(chap_ref)
         m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
