@@ -793,8 +793,11 @@ module ReVIEW
                                      headline_item.number.join('.')
                                    end
 
-                  # Label uses the full number for consistency
-                  section_label = "sec:#{chapter_id}-#{full_number.tr('.', '-')}"
+                  # Generate label using chapter number and relative section number (like SecCounter.anchor does)
+                  # Use target_chapter.format_number(false) to get the chapter number prefix
+                  chapter_prefix = target_chapter.format_number(false)
+                  relative_parts = headline_item.number.join('-')
+                  section_label = "sec:#{chapter_prefix}-#{relative_parts}"
                   yield(section_number, section_label, headline_item.caption || heading_id)
                 else
                   # Fallback when heading not found in target chapter
@@ -825,8 +828,11 @@ module ReVIEW
                                    headline_item.number.join('.')
                                  end
 
-                # Label uses the full number for consistency
-                section_label = "sec:#{full_number.tr('.', '-')}"
+                # Generate label using chapter ID and relative section number (like SecCounter.anchor does)
+                # Use chapter format_number to get chapter ID prefix, then add relative section parts
+                chapter_prefix = @chapter.format_number(false)
+                relative_parts = headline_item.number.join('-')
+                section_label = "sec:#{chapter_prefix}-#{relative_parts}"
                 yield(section_number, section_label, headline_item.caption || heading_ref)
               else
                 # Fallback if headline not found in index
