@@ -296,60 +296,74 @@ module ReVIEW
       end
 
       def visit_imgtable(node, caption)
-        # imgtable should be rendered as an image, not as a table (like LATEXBuilder)
+        # imgtable is rendered as table with image inside (like LATEXBuilder)
         result = []
 
-        # Get image path
-        image_path = @chapter&.image(node.id)&.path if node.id?
+        # Check if image is bound like LATEXBuilder does
+        unless node.id? && @chapter
+          # No ID or chapter - cannot process
+          return "\\begin{reviewdummyimage}\n\\end{reviewdummyimage}\n"
+        end
 
-        if image_path
-          result << "\\begin{reviewimage}%%#{node.id}"
+        # Check if image is bound
+        image_path = nil
 
-          # Parse metric option like LATEXBuilder
-          metrics = parse_metric('latex', node.metric)
-          command = 'reviewincludegraphics'
+        begin
+          image_path = @chapter.image(node.id).path
+        rescue KeyError
+          # Image not bound - use dummy
+        end
 
-          # Use metric if provided, otherwise use default width
-          result << if metrics && !metrics.empty?
-                      "\\#{command}[#{metrics}]{#{image_path}}"
-                    else
-                      "\\#{command}[width=\\maxwidth]{#{image_path}}"
-                    end
-
-          if caption && !caption.empty?
-            result << "\\reviewimagecaption{#{caption}}"
-          end
-
-          if node.id?
-            # Generate label like LATEXBuilder: image:chapter:id
-            # Don't escape underscores in labels - they're allowed in LaTeX label names
-            result << if @chapter
-                        "\\label{image:#{@chapter.id}:#{node.id}}"
-                      else
-                        "\\label{image:test:#{node.id}}"
-                      end
-          end
-
-          result << '\\end{reviewimage}'
-        else
-          # Fallback for missing image
+        unless image_path
+          # Return early with warning - like LATEXBuilder line 903-905
           result << '\\begin{reviewdummyimage}'
-
-          if node.id?
-            # Generate label like LATEXBuilder: image:chapter:id
-            # Don't escape underscores in labels - they're allowed in LaTeX label names
-            result << if @chapter
-                        "\\label{image:#{@chapter.id}:#{node.id}}"
-                      else
-                        "\\label{image:test:#{node.id}}"
-                      end
-          end
-
-          if caption && !caption.empty?
-            result << "\\reviewimagecaption{#{caption}}"
-          end
-
+          result << "% image not bound: #{node.id}"
           result << '\\end{reviewdummyimage}'
+          return result.join("\n") + "\n"
+        end
+
+        # Generate table structure with image like LATEXBuilder
+        # Start table environment if caption exists (line 911)
+        if caption && !caption.empty?
+          result << "\\begin{table}[h]%%#{node.id}"
+
+          # Add caption and label at top if caption_top?
+          if caption_top?('table')
+            result << "\\reviewimgtablecaption{#{caption}}"
+          end
+
+          # Add table label (line 919) - this needs table index
+          begin
+            result << "\\label{table:#{@chapter.id}:#{node.id}}"
+          rescue KeyError
+            # If table lookup fails, still continue
+          end
+        end
+
+        # Add image inside reviewimage environment (lines 937-949)
+        result << "\\begin{reviewimage}%%#{node.id}"
+
+        # Parse metric option like LATEXBuilder
+        metrics = parse_metric('latex', node.metric)
+        command = 'reviewincludegraphics'
+
+        # Use metric if provided, otherwise use default width
+        result << if metrics.present?
+                    "\\#{command}[#{metrics}]{#{image_path}}"
+                  else
+                    "\\#{command}[width=\\maxwidth]{#{image_path}}"
+                  end
+
+        result << '\\end{reviewimage}'
+
+        # Close table if caption exists
+        if caption.present?
+          # Add caption at bottom if not caption_top?
+          unless caption_top?('table')
+            result << "\\reviewimgtablecaption{#{caption}}"
+          end
+
+          result << '\\end{table}'
         end
 
         result.join("\n") + "\n"
@@ -376,20 +390,33 @@ module ReVIEW
 
       def visit_image(node)
         # Process caption with proper context management
-        caption = if node.caption
-                    @rendering_context.with_child_context(:caption) do |caption_context|
-                      render_children_with_context(node.caption, caption_context)
-                    end
-                  end
+        caption = nil
+        caption_collector = nil
+
+        if node.caption
+          @rendering_context.with_child_context(:caption) do |caption_context|
+            caption = render_children_with_context(node.caption, caption_context)
+            # Save the collector for later processing
+            caption_collector = caption_context.footnote_collector
+          end
+        end
 
         image_type = node.respond_to?(:image_type) ? node.image_type : :image
 
-        case image_type
-        when :indepimage, :numberlessimage
-          visit_indepimage(node, caption)
-        else
-          visit_regular_image(node, caption)
+        result = case image_type
+                 when :indepimage, :numberlessimage
+                   visit_indepimage(node, caption)
+                 else
+                   visit_regular_image(node, caption)
+                 end
+
+        # Add collected footnotetext commands from caption context
+        if caption_collector && caption_collector.any?
+          result += generate_footnotetext_from_collector(caption_collector)
+          caption_collector.clear
         end
+
+        result
       end
 
       def visit_regular_image(node, caption)
@@ -439,15 +466,7 @@ module ReVIEW
 
         result << '\\end{reviewimage}'
 
-        image_result = result.join("\n") + "\n"
-
-        # Add collected footnotetext commands from caption context
-        if @rendering_context.footnote_collector.any?
-          image_result += generate_footnotetext_from_collector(@rendering_context.footnote_collector)
-          @rendering_context.footnote_collector.clear
-        end
-
-        image_result
+        result.join("\n") + "\n"
       end
 
       def visit_indepimage(node, caption)
