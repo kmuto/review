@@ -207,7 +207,7 @@ EOS
 
     actual = compile_block(src)
     assert_includes actual, "<span type='endnoteref' idref='endnoteb-note1'>(1)</span>"
-    assert_includes actual, "<endnotes>\n<endnote id='endnoteb-note1'><span type='endnotenumber'>(1)</span>\t後注その1です。</endnote>\n</endnotes>\n"
+    assert_includes actual, "<endnotes>\n<endnote id='endnoteb-note1'><span type='endnotenumber'>(1)</span>\t後注その1です。</endnote>\n</endnotes>"
   end
 
   def test_inline_maru

@@ -19,6 +19,8 @@
 #
 # - IDGXML_LISTINFO_NEWLINE: Protects newlines inside <listinfo> tags
 #
+# - IDGXML_ENDNOTE_NEWLINE: Protects newlines inside <endnotes> blocks
+#
 # The markers are restored to actual newlines at the end of visit_document.
 require 'review/renderer/base'
 require 'review/renderer/rendering_context'
@@ -149,9 +151,10 @@ module ReVIEW
           result = result.gsub("\x01IDGXML_PRE_NEWLINE\x01", "\n")
         end
 
-        # Restore protected newlines from listinfo and inline elements
+        # Restore protected newlines from listinfo, inline elements, and endnotes
         result = result.gsub("\x01IDGXML_LISTINFO_NEWLINE\x01", "\n")
-        result.gsub("\x01IDGXML_INLINE_NEWLINE\x01", "\n")
+        result = result.gsub("\x01IDGXML_INLINE_NEWLINE\x01", "\n")
+        result.gsub("\x01IDGXML_ENDNOTE_NEWLINE\x01", "\n")
       end
 
       def visit_headline(node)
@@ -582,7 +585,8 @@ module ReVIEW
         end
 
         result << '</endnotes>'
-        result.join("\n") + "\n"
+        # Protect newlines inside endnotes block from nolf processing
+        result.join("\x01IDGXML_ENDNOTE_NEWLINE\x01") + "\x01IDGXML_ENDNOTE_NEWLINE\x01"
       end
 
       def visit_bibpaper(node)
