@@ -197,6 +197,19 @@ EOS
     assert_equal %Q(<keyword>ISO（International Organization for Standardization）</keyword><index value="ISO" /><index value="International Organization for Standardization" /> <keyword>Ruby&lt;&gt;</keyword><index value="Ruby&lt;&gt;" />), actual
   end
 
+  def test_printendnotes
+    src = <<~'REVIEW'
+      本文@<endnote>{note1}
+
+      //endnote[note1][後注その1です。]
+      //printendnotes
+    REVIEW
+
+    actual = compile_block(src)
+    assert_includes actual, "<span type='endnoteref' idref='endnoteb-note1'>(1)</span>"
+    assert_includes actual, "<endnotes>\n<endnote id='endnoteb-note1'><span type='endnotenumber'>(1)</span>\t後注その1です。</endnote>\n</endnotes>\n"
+  end
+
   def test_inline_maru
     actual = compile_inline('@<maru>{1}@<maru>{20}@<maru>{A}@<maru>{z}')
     assert_equal '&#x2460;&#x2473;&#x24b6;&#x24e9;', actual

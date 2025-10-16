@@ -432,6 +432,10 @@ module ReVIEW
         when 'bpo'
           content = render_children(node)
           %Q(<bpo>#{content.chomp}</bpo>\n)
+        when 'printendnotes'
+          visit_printendnotes(node)
+        when 'bibpaper'
+          visit_bibpaper(node)
         when 'olnum'
           # Set ordered list start number
           @ol_num = node.args&.first&.to_i
@@ -559,6 +563,49 @@ module ReVIEW
         result << '</img>'
 
         result.join("\n") + "\n"
+      end
+
+      def visit_printendnotes(_node)
+        return '' unless @chapter && @chapter.endnotes
+
+        endnotes = @chapter.endnotes
+        return '' if endnotes.size == 0
+
+        result = []
+        result << '<endnotes>'
+
+        endnotes.each do |endnote_item|
+          id = endnote_item.id
+          number = endnote_item.number
+          content = render_inline_text(endnote_item.content)
+          result << %Q(<endnote id='endnoteb-#{normalize_id(id)}'><span type='endnotenumber'>(#{number})</span>\t#{content}</endnote>)
+        end
+
+        result << '</endnotes>'
+        result.join("\n") + "\n"
+      end
+
+      def visit_bibpaper(node)
+        args = node.args || []
+        raise NotImplementedError, 'Malformed bibpaper block: insufficient arguments' if args.length < 2
+
+        bib_id = args[0]
+        caption_text = args[1]
+
+        result = []
+        result << %Q(<bibitem id="bib-#{bib_id}">)
+
+        unless caption_text.nil? || caption_text.empty?
+          caption_inline = render_inline_in_caption(caption_text)
+          bib_number = resolve_bibpaper_number(bib_id)
+          result << %Q(<caption><span type='bibno'>[#{bib_number}] </span>#{caption_inline}</caption>)
+        end
+
+        content = render_children(node)
+        result << content unless content.empty?
+
+        result << "</bibitem>\n"
+        result.join("\n")
       end
 
       def visit_tex_equation(node)
@@ -1714,17 +1761,39 @@ module ReVIEW
 
       # Render inline elements in caption
       def render_inline_in_caption(caption_text)
+        render_inline_text(caption_text)
+      end
+
+      def render_inline_text(text)
         # Create a temporary paragraph node and parse inline elements
         require 'review/ast/compiler'
         require 'review/lineinput'
 
-        # Use the inline processor to parse inline elements
         temp_node = ReVIEW::AST::ParagraphNode.new(location: nil)
         @ast_compiler ||= ReVIEW::AST::Compiler.for_chapter(@chapter)
-        @ast_compiler.inline_processor.parse_inline_elements(caption_text, temp_node)
+        @ast_compiler.inline_processor.parse_inline_elements(text.to_s, temp_node)
 
-        # Render the inline elements
         render_children(temp_node)
+      end
+
+      def resolve_bibpaper_number(bib_id)
+        if @chapter
+          begin
+            return @chapter.bibpaper(bib_id).number
+          rescue StandardError
+            # Fallback to AST indexer if chapter lookup fails
+          end
+        end
+
+        if @ast_indexer&.bibpaper_index
+          begin
+            return @ast_indexer.bibpaper_index.number(bib_id)
+          rescue StandardError
+            # fall through
+          end
+        end
+
+        '??'
       end
 
       # Parse tsize target specification like |idgxml|2 or |idgxml,html|2
