@@ -7,13 +7,14 @@ module ReVIEW
     # BlockNode - Generic block container node
     # Used for various block-level constructs like quote, read, etc.
     class BlockNode < Node
-      attr_accessor :block_type, :args, :caption
+      attr_accessor :block_type, :args, :caption, :lines
 
-      def initialize(location: nil, block_type: nil, args: nil, caption: nil, **kwargs)
+      def initialize(location: nil, block_type: nil, args: nil, caption: nil, lines: nil, **kwargs)
         super(location: location, **kwargs)
         @block_type = block_type # :quote, :read, etc.
         @args = args
         @caption = caption
+        @lines = lines # Optional: original lines for blocks like box, insn
       end
 
       def to_h

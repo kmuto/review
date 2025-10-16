@@ -30,14 +30,17 @@ class IdgxmlRendererTest < Test::Unit::TestCase
     renderer = ReVIEW::Renderer::IdgxmlRenderer.new(@chapter)
     result = renderer.render(ast)
     # Strip XML declaration and root doc tags to match expected output format
-    result = result.sub(/\A<\?xml[^>]+\?><doc[^>]*>/, '').sub(/<\/doc>\s*\z/, '').strip
+    # Remove leading/trailing newlines but preserve spaces (for //raw blocks)
+    result = result.sub(/\A<\?xml[^>]+\?><doc[^>]*>/, '').sub(/<\/doc>\s*\z/, '')
+    result = result.gsub(/\A\n+/, '').gsub(/\n+\z/, '')
     result
   end
 
   def compile_inline(src)
     result = compile_block(src)
     # For inline tests, also strip the paragraph tags if present
-    result = result.sub(/\A<p>/, '').sub(/<\/p>\z/, '').strip if result.start_with?('<p>')
+    # Don't use .strip as it removes important whitespace like newlines from @<br>{}
+    result = result.sub(/\A<p>/, '').sub(/<\/p>\z/, '') if result.start_with?('<p>')
     result
   end
 
@@ -414,5 +417,940 @@ EOS
     actual = compile_block(%Q(//raw[|idgxml <>!"\\n& ]\n))
     expected = %Q(|idgxml <>!"\n& )
     assert_equal expected.chomp, actual
+  end
+
+  def test_cmd
+    actual = compile_block("//cmd{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS.chomp
+<list type='cmd'><pre>lineA
+lineB
+</pre></list>
+EOS
+    assert_equal expected, actual
+
+    actual = compile_block("//cmd[cap1]{\nlineA\nlineB\n//}\n")
+    expected = <<-EOS.chomp
+<list type='cmd'><caption aid:pstyle='cmd-title'>cap1</caption><pre>lineA
+lineB
+</pre></list>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_emlistnum
+    actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q(<list type='emlistnum'><caption aid:pstyle='emlistnum-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre><span type='lineno'> 1: </span>test1\n<span type='lineno'> 2: </span>test1.5\n<span type='lineno'> 3: </span>\n<span type='lineno'> 4: </span>test<i>2</i>\n</pre></list>), actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//emlistnum[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q(<list type='emlistnum'><pre><span type='lineno'> 1: </span>test1\n<span type='lineno'> 2: </span>test1.5\n<span type='lineno'> 3: </span>\n<span type='lineno'> 4: </span>test<i>2</i>\n</pre><caption aid:pstyle='emlistnum-title'>this is <b>test</b>&lt;&amp;&gt;_</caption></list>), actual
+  end
+
+  def test_list
+    def @chapter.list(_id)
+      Book::Index::Item.new('samplelist', 1)
+    end
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre>test1
+test1.5
+
+test<i>2</i>
+</pre></codelist>
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<codelist><pre>test1
+test1.5
+
+test<i>2</i>
+</pre><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption></codelist>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_listnum
+    def @chapter.list(_id)
+      Book::Index::Item.new('samplelist', 1)
+    end
+    actual = compile_block("//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><span type='lineno'> 1: </span>test1
+<span type='lineno'> 2: </span>test1.5
+<span type='lineno'> 3: </span>
+<span type='lineno'> 4: </span>test<i>2</i>
+</pre></codelist>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_source
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS.chomp
+<source><caption>foo/bar/test.rb</caption><pre>foo
+bar
+
+buz
+</pre></source>
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//source[foo/bar/test.rb]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS.chomp
+<source><pre>foo
+bar
+
+buz
+</pre><caption>foo/bar/test.rb</caption></source>
+EOS
+    assert_equal expected, actual
+  end
+
+  # Nested list tests - IMPORTANT
+  def test_ul_nest2
+    src = <<-EOS
+  * AAA
+  ** AA
+  * BBB
+  ** BB
+EOS
+
+    expected = <<-EOS.chomp
+<ul><li aid:pstyle="ul-item">AAA<ul2><li aid:pstyle="ul-item">AA</li></ul2></li><li aid:pstyle="ul-item">BBB<ul2><li aid:pstyle="ul-item">BB</li></ul2></li></ul>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_ul_nest4
+    src = <<-EOS
+  * A
+  ** B
+  ** C
+  *** D
+  ** E
+  * F
+  ** G
+EOS
+
+    expected = <<-EOS.chomp
+<ul><li aid:pstyle="ul-item">A<ul2><li aid:pstyle="ul-item">B</li><li aid:pstyle="ul-item">C<ul3><li aid:pstyle="ul-item">D</li></ul3></li><li aid:pstyle="ul-item">E</li></ul2></li><li aid:pstyle="ul-item">F<ul2><li aid:pstyle="ul-item">G</li></ul2></li></ul>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  # Minicolumn tests - IMPORTANT
+  def test_box
+    @config['listinfo'] = true
+    actual = compile_block("//box[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<box><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption><listinfo line="1" begin="1">test1
+</listinfo><listinfo line="2">test1.5
+</listinfo><listinfo line="3">
+</listinfo><listinfo line="4" end="4">test<i>2</i>
+</listinfo></box>
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//box[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<box><listinfo line="1" begin="1">test1
+</listinfo><listinfo line="2">test1.5
+</listinfo><listinfo line="3">
+</listinfo><listinfo line="4" end="4">test<i>2</i>
+</listinfo><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption></box>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_insn
+    @config['listinfo'] = true
+    actual = compile_block("//insn[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<insn><floattitle type="insn">this is <b>test</b>&lt;&amp;&gt;_</floattitle><listinfo line="1" begin="1">test1
+</listinfo><listinfo line="2">test1.5
+</listinfo><listinfo line="3">
+</listinfo><listinfo line="4" end="4">test<i>2</i>
+</listinfo></insn>
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//insn[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<insn><listinfo line="1" begin="1">test1
+</listinfo><listinfo line="2">test1.5
+</listinfo><listinfo line="3">
+</listinfo><listinfo line="4" end="4">test<i>2</i>
+</listinfo><floattitle type="insn">this is <b>test</b>&lt;&amp;&gt;_</floattitle></insn>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_point
+    actual = compile_block("//point[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q(<point-t><title aid:pstyle='point-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1test1.5</p><p>test<i>2</i></p></point-t>), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//point[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal %Q(<point-t><title aid:pstyle='point-title'>this is <b>test</b>&lt;&amp;&gt;_</title><p>test1 test1.5</p><p>test<i>2</i></p></point-t>), actual
+  end
+
+  def test_term
+    actual = compile_block("//term{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal '<term><p>test1test1.5</p><p>test<i>2</i></p></term>', actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//term{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal '<term><p>test1 test1.5</p><p>test<i>2</i></p></term>', actual
+  end
+
+  # Additional tests - now implemented
+  def test_emlist_listinfo
+    @config['listinfo'] = true
+    actual = compile_block("//emlist[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre><listinfo line="1" begin="1">test1
+</listinfo><listinfo line="2">test1.5
+</listinfo><listinfo line="3">
+</listinfo><listinfo line="4" end="4">test<i>2</i>
+</listinfo></pre></list>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_emlist_with_tab
+    actual = compile_block("//emlist[this is @<b>{test}<&>_]{\n\ttest1\n\t\ttest1.5\n\n\ttest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre>        test1
+                test1.5
+
+        test<i>2</i>
+</pre></list>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_emlist_with_4tab
+    @config['tabwidth'] = 4
+    actual = compile_block("//emlist[this is @<b>{test}<&>_]{\n\ttest1\n\t\ttest1.5\n\n\ttest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<list type='emlist'><caption aid:pstyle='emlist-title'>this is <b>test</b>&lt;&amp;&gt;_</caption><pre>    test1
+        test1.5
+
+    test<i>2</i>
+</pre></list>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_list_listinfo
+    def @chapter.list(_id)
+      Book::Index::Item.new('samplelist', 1)
+    end
+    @config['listinfo'] = true
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><listinfo line="1" begin="1">test1
+</listinfo><listinfo line="2">test1.5
+</listinfo><listinfo line="3">
+</listinfo><listinfo line="4" end="4">test<i>2</i>
+</listinfo></pre></codelist>
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//list[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<codelist><pre><listinfo line="1" begin="1">test1
+</listinfo><listinfo line="2">test1.5
+</listinfo><listinfo line="3">
+</listinfo><listinfo line="4" end="4">test<i>2</i>
+</listinfo></pre><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption></codelist>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_listnum_linenum
+    def @chapter.list(_id)
+      Book::Index::Item.new('samplelist', 1)
+    end
+    actual = compile_block("//firstlinenum[100]\n//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<codelist><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption><pre><span type='lineno'>100: </span>test1
+<span type='lineno'>101: </span>test1.5
+<span type='lineno'>102: </span>
+<span type='lineno'>103: </span>test<i>2</i>
+</pre></codelist>
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//firstlinenum[100]\n//listnum[samplelist][this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<codelist><pre><span type='lineno'>100: </span>test1
+<span type='lineno'>101: </span>test1.5
+<span type='lineno'>102: </span>
+<span type='lineno'>103: </span>test<i>2</i>
+</pre><caption>リスト1.1　this is <b>test</b>&lt;&amp;&gt;_</caption></codelist>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_customize_cellwidth
+    actual = compile_block("//tsize[2,3,5]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q(<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="3"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">A</td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="8.503">B</td><td xyh="3,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">C</td></tbody></table>), actual
+
+    actual = compile_block("//tsize[2,3]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q(<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="3"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">A</td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="8.503">B</td><td xyh="3,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">C</td></tbody></table>), actual
+
+    actual = compile_block("//tsize[2]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q(<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="3"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">A</td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="11.338">B</td><td xyh="3,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="11.338">C</td></tbody></table>), actual
+
+    actual = compile_block("//tsize[|idgxml|2]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q(<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="3"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">A</td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="11.338">B</td><td xyh="3,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="11.338">C</td></tbody></table>), actual
+
+    actual = compile_block("//tsize[|idgxml,html|2]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q(<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="3"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="5.669">A</td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="11.338">B</td><td xyh="3,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="11.338">C</td></tbody></table>), actual
+
+    actual = compile_block("//tsize[|html|2]\n//table{\nA\tB\tC\n//}\n")
+    assert_equal %Q(<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="3"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">A</td><td xyh="2,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">B</td><td xyh="3,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">C</td></tbody></table>), actual
+  end
+
+  def test_customize_mmtopt
+    actual = compile_block("//table{\nA\n//}\n")
+    assert_equal %Q(<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table>), actual
+
+    @config['pt_to_mm_unit'] = 0.3514
+    actual = compile_block("//table{\nA\n//}\n")
+    assert_equal %Q(<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.458">A</td></tbody></table>), actual
+
+    @config['pt_to_mm_unit'] = '0.3514'
+    actual = compile_block("//table{\nA\n//}\n")
+    assert_equal %Q(<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.458">A</td></tbody></table>), actual
+  end
+
+  def test_empty_table
+    pend 'Empty table error handling - requires error handling in AST/Renderer'
+  end
+
+  def test_emtable
+    actual = compile_block("//emtable[foo]{\nA\n//}\n//emtable{\nA\n//}")
+    assert_equal %Q(<table><caption>foo</caption><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table><table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table>), actual
+
+    @config['caption_position']['table'] = 'bottom'
+    actual = compile_block("//emtable[foo]{\nA\n//}\n//emtable{\nA\n//}")
+    assert_equal %Q(<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody><caption>foo</caption></table><table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="1" aid:tcols="1"><td xyh="1,1,0" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="28.345">A</td></tbody></table>), actual
+  end
+
+  def test_table_row_separator
+    pend 'Table row separator options - requires custom separator support'
+  end
+
+  def test_dlist_beforeulol
+    actual = compile_block(" : foo\n  foo.\n\npara\n\n : foo\n  foo.\n\n 1. bar\n\n : foo\n  foo.\n\n * bar\n")
+    assert_equal %Q(<dl><dt>foo</dt><dd>foo.</dd></dl><p>para</p><dl><dt>foo</dt><dd>foo.</dd></dl><ol><li aid:pstyle="ol-item" olnum="1" num="1">bar</li></ol><dl><dt>foo</dt><dd>foo.</dd></dl><ul><li aid:pstyle="ul-item">bar</li></ul>), actual
+  end
+
+  def test_dt_inline
+    actual = compile_block("//footnote[bar][bar]\n\n : foo@<fn>{bar}[]<>&@<m>$\\alpha[]$\n")
+
+    expected = <<-EOS.chomp
+<dl><dt>foo<footnote>bar</footnote>[]&lt;&gt;&amp;<replace idref="texinline-1"><pre>\\alpha[]</pre></replace></dt><dd></dd></dl>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_ul_cont
+    src = <<-EOS
+  * AAA
+    -AA
+  * BBB
+    -BB
+EOS
+    expected = <<-EOS.chomp
+<ul><li aid:pstyle="ul-item">AAA-AA</li><li aid:pstyle="ul-item">BBB-BB</li></ul>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @book.config['join_lines_by_lang'] = true
+    expected = <<-EOS.chomp
+<ul><li aid:pstyle="ul-item">AAA -AA</li><li aid:pstyle="ul-item">BBB -BB</li></ul>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_ul_nest3
+    pend 'List nesting validation - requires error handling in AST/Renderer'
+  end
+
+  def test_inline_unknown
+    pend 'Unknown reference error handling - requires error handling in AST/Renderer'
+  end
+
+  def test_inline_imgref
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('sampleimg', 1, 'sample photo')
+      item.instance_eval { @path = './images/chap1-sampleimg.png' }
+      item
+    end
+
+    actual = compile_block("@<imgref>{sampleimg}\n")
+    expected = %Q(<p><span type='image'>図1.1「sample photo」</span></p>)
+    assert_equal expected, actual
+  end
+
+  def test_inline_imgref2
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('sampleimg', 1)
+      item.instance_eval { @path = './images/chap1-sampleimg.png' }
+      item
+    end
+
+    actual = compile_block("@<imgref>{sampleimg}\n")
+    expected = %Q(<p><span type='image'>図1.1</span></p>)
+    assert_equal expected, actual
+  end
+
+  def test_comment_block
+    actual = compile_block("//comment{\nA<>\nB&\n//}")
+    assert_equal '', actual
+  end
+
+  def test_inline_m
+    actual = compile_inline('@<m>{\\sin} @<m>{\\frac{1\\}{2\\}}')
+    assert_equal %Q(<replace idref="texinline-1"><pre>\\sin</pre></replace> <replace idref="texinline-2"><pre>\\frac{1}{2}</pre></replace>), actual
+  end
+
+  def test_inline_m_imgmath
+    @config['math_format'] = 'imgmath'
+    actual = compile_inline('@<m>{\\sin} @<m>{\\frac{1\\}{2\\}}')
+    assert_equal %Q(<inlineequation><Image href="file://images/_review_math/_gen_5fded382aa33f0f0652092d41e05c743f7453c26ca1433038a4883234975a9b0.png" type="inline" /></inlineequation> <inlineequation><Image href="file://images/_review_math/_gen_e7e9536310cdba7ff948771f791cefe32f99b73c608778c9660db79e4926e9f9.png" type="inline" /></inlineequation>), actual
+  end
+
+  def test_column_1
+    src = <<-EOS
+===[column] prev column
+
+inside prev column
+
+===[column] test
+
+inside column
+
+===[/column]
+EOS
+    expected = <<-EOS.chomp
+<column id="column-1"><title aid:pstyle="column-title">prev column</title><?dtp level="9" section="prev column"?><p>inside prev column</p></column><column id="column-2"><title aid:pstyle="column-title">test</title><?dtp level="9" section="test"?><p>inside column</p></column>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_column_2
+    src = <<-EOS
+===[column] test
+
+inside column
+
+=== next level
+EOS
+    expected = <<-EOS.chomp
+<column id="column-1"><title aid:pstyle="column-title">test</title><?dtp level="9" section="test"?><p>inside column</p></column><title aid:pstyle="h3">next level</title><?dtp level="3" section="next level"?>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_column_3
+    pend 'Column error handling - not critical for basic functionality'
+  end
+
+  def test_column_ref
+    src = <<-EOS
+===[column]{foo} test
+
+inside column
+
+=== next level
+
+this is @<column>{foo}.
+EOS
+    expected = <<-EOS.chomp
+<column id="column-1"><title aid:pstyle="column-title">test</title><?dtp level="9" section="test"?><p>inside column</p></column><title aid:pstyle="h3">next level</title><?dtp level="3" section="next level"?><p>this is <link href="column-1">コラム「test」</link>.</p>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_column_in_aother_chapter_ref
+    # Create a mock chapter with the column
+    chap1 = Book::Chapter.new(@book, 1, 'chap1', nil, StringIO.new)
+
+    def chap1.column(id)
+      Book::Index::Item.new(id, 1, 'column_cap')
+    end
+
+    # Override the book's contents method to include chap1
+    def @book.contents
+      @mock_contents ||= []
+    end
+    @book.contents << chap1
+
+    actual = compile_inline('test @<column>{chap1|column} test2')
+    expected = 'test <link href="column-1">コラム「column_cap」</link> test2'
+    assert_equal expected, actual
+
+    @config['chapterlink'] = nil
+    actual = compile_inline('test @<column>{chap1|column} test2')
+    expected = 'test コラム「column_cap」 test2'
+    assert_equal expected, actual
+  end
+
+  def test_flushright
+    actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q(<p align='right'>foobar</p><p align='right'>buz</p>), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//flushright{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q(<p align='right'>foo bar</p><p align='right'>buz</p>), actual
+  end
+
+  def test_centering
+    actual = compile_block("//centering{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q(<p align='center'>foobar</p><p align='center'>buz</p>), actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//centering{\nfoo\nbar\n\nbuz\n//}\n")
+    assert_equal %Q(<p align='center'>foo bar</p><p align='center'>buz</p>), actual
+  end
+
+  def test_image_with_metric2
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('sampleimg', 1)
+      item.instance_eval { @path = './images/chap1-sampleimg.png' }
+      item
+    end
+
+    actual = compile_block("//image[sampleimg][sample photo][scale=1.2, html::class=sample, latex::ignore=params, idgxml::ostyle=object]{\n//}\n")
+    assert_equal %Q(<img><Image href="file://images/chap1-sampleimg.png" scale="1.2" ostyle="object" /><caption>図1.1　sample photo</caption></img>), actual
+  end
+
+  def test_indepimage_with_metric
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('sampleimg', 1)
+      item.instance_eval { @path = './images/chap1-sampleimg.png' }
+      item
+    end
+
+    actual = compile_block("//indepimage[sampleimg][sample photo][scale=1.2]\n")
+    assert_equal %Q(<img><Image href="file://images/chap1-sampleimg.png" scale="1.2" /><caption>sample photo</caption></img>), actual
+  end
+
+  def test_indepimage_with_metric2
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('sampleimg', 1)
+      item.instance_eval { @path = './images/chap1-sampleimg.png' }
+      item
+    end
+
+    actual = compile_block(%Q(//indepimage[sampleimg][sample photo][scale=1.2, html::class="sample", latex::ignore=params, idgxml::ostyle="object"]\n))
+    assert_equal %Q(<img><Image href="file://images/chap1-sampleimg.png" scale="1.2" ostyle="object" /><caption>sample photo</caption></img>), actual
+  end
+
+  def test_indepimage_without_caption_but_with_metric
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('sampleimg', 1)
+      item.instance_eval { @path = './images/chap1-sampleimg.png' }
+      item
+    end
+
+    actual = compile_block("//indepimage[sampleimg][][scale=1.2]\n")
+    assert_equal %Q(<img><Image href="file://images/chap1-sampleimg.png" scale="1.2" /></img>), actual
+  end
+
+  def test_major_blocks
+    actual = compile_block("//note{\nA\n\nB\n//}\n//note[caption]{\nA\n//}")
+    expected = %Q(<note><p>A</p><p>B</p></note><note><title aid:pstyle='note-title'>caption</title><p>A</p></note>)
+    assert_equal expected, actual
+
+    actual = compile_block("//memo{\nA\n\nB\n//}\n//memo[caption]{\nA\n//}")
+    expected = %Q(<memo><p>A</p><p>B</p></memo><memo><title aid:pstyle='memo-title'>caption</title><p>A</p></memo>)
+    assert_equal expected, actual
+
+    actual = compile_block("//info{\nA\n\nB\n//}\n//info[caption]{\nA\n//}")
+    expected = %Q(<info><p>A</p><p>B</p></info><info><title aid:pstyle='info-title'>caption</title><p>A</p></info>)
+    assert_equal expected, actual
+
+    actual = compile_block("//important{\nA\n\nB\n//}\n//important[caption]{\nA\n//}")
+    expected = %Q(<important><p>A</p><p>B</p></important><important><title aid:pstyle='important-title'>caption</title><p>A</p></important>)
+    assert_equal expected, actual
+
+    actual = compile_block("//caution{\nA\n\nB\n//}\n//caution[caption]{\nA\n//}")
+    expected = %Q(<caution><p>A</p><p>B</p></caution><caution><title aid:pstyle='caution-title'>caption</title><p>A</p></caution>)
+    assert_equal expected, actual
+
+    # notice uses special tag notice-t if it includes caption
+    actual = compile_block("//notice{\nA\n\nB\n//}\n//notice[caption]{\nA\n//}")
+    expected = %Q(<notice><p>A</p><p>B</p></notice><notice-t><title aid:pstyle='notice-title'>caption</title><p>A</p></notice-t>)
+    assert_equal expected, actual
+
+    actual = compile_block("//warning{\nA\n\nB\n//}\n//warning[caption]{\nA\n//}")
+    expected = %Q(<warning><p>A</p><p>B</p></warning><warning><title aid:pstyle='warning-title'>caption</title><p>A</p></warning>)
+    assert_equal expected, actual
+
+    actual = compile_block("//tip{\nA\n\nB\n//}\n//tip[caption]{\nA\n//}")
+    expected = %Q(<tip><p>A</p><p>B</p></tip><tip><title aid:pstyle='tip-title'>caption</title><p>A</p></tip>)
+    assert_equal expected, actual
+  end
+
+  def test_minicolumn_blocks
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+//#{type}[#{type}1]{
+
+//}
+
+//#{type}[#{type}2]{
+//}
+EOS
+
+      expected = if type == 'notice' # exception pattern
+                   <<-EOS.chomp
+<#{type}-t><title aid:pstyle='#{type}-title'>#{type}1</title></#{type}-t><#{type}-t><title aid:pstyle='#{type}-title'>#{type}2</title></#{type}-t>
+EOS
+                 else
+                   <<-EOS.chomp
+<#{type}><title aid:pstyle='#{type}-title'>#{type}1</title></#{type}><#{type}><title aid:pstyle='#{type}-title'>#{type}2</title></#{type}>
+EOS
+                 end
+      actual = compile_block(src)
+      assert_equal expected, actual
+    end
+  end
+
+  def test_minicolumn_blocks_nest_error1
+    pend 'Minicolumn nesting error - not critical for basic functionality'
+  end
+
+  def test_minicolumn_blocks_nest_error2
+    pend 'Minicolumn nesting error variant - not critical for basic functionality'
+  end
+
+  def test_minicolumn_blocks_nest_error3
+    pend 'Minicolumn nesting error variant - not critical for basic functionality'
+  end
+
+  def test_point_without_caption
+    actual = compile_block("//point{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal '<point><p>test1test1.5</p><p>test<i>2</i></p></point>', actual
+
+    @book.config['join_lines_by_lang'] = true
+    actual = compile_block("//point{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    assert_equal '<point><p>test1 test1.5</p><p>test<i>2</i></p></point>', actual
+  end
+
+  def test_box_non_listinfo
+    @config['listinfo'] = nil
+    actual = compile_block("//box[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<box><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption>test1
+test1.5
+
+test<i>2</i></box>
+EOS
+    assert_equal expected, actual
+
+    @config['caption_position']['list'] = 'bottom'
+    actual = compile_block("//box[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")
+    expected = <<-EOS.chomp
+<box>test1
+test1.5
+
+test<i>2</i><caption aid:pstyle="box-title">this is <b>test</b>&lt;&amp;&gt;_</caption></box>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_source_empty_caption
+    actual = compile_block("//source[]{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS.chomp
+<source><pre>foo
+bar
+
+buz
+</pre></source>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_source_nil_caption
+    actual = compile_block("//source{\nfoo\nbar\n\nbuz\n//}\n")
+    expected = <<-EOS.chomp
+<source><pre>foo
+bar
+
+buz
+</pre></source>
+EOS
+    assert_equal expected, actual
+  end
+
+  def test_nest_error_close1
+    pend 'Nesting error handling - not critical for basic functionality'
+  end
+
+  def test_nest_error_close2
+    pend 'Nesting error handling variant - not critical for basic functionality'
+  end
+
+  def test_nest_error_close3
+    pend 'Nesting error handling variant - not critical for basic functionality'
+  end
+
+  def test_nest_ul
+    src = <<-EOS
+ * UL1
+
+//beginchild
+
+ 1. UL1-OL1
+ 2. UL1-OL2
+
+ * UL1-UL1
+ * UL1-UL2
+
+ : UL1-DL1
+\tUL1-DD1
+ : UL1-DL2
+\tUL1-DD2
+
+//endchild
+
+ * UL2
+
+//beginchild
+
+UL2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS.chomp
+<ul><li aid:pstyle="ul-item">UL1<ol><li aid:pstyle="ol-item" olnum="1" num="1">UL1-OL1</li><li aid:pstyle="ol-item" olnum="2" num="2">UL1-OL2</li></ol><ul><li aid:pstyle="ul-item">UL1-UL1</li><li aid:pstyle="ul-item">UL1-UL2</li></ul><dl><dt>UL1-DL1</dt><dd>UL1-DD1</dd><dt>UL1-DL2</dt><dd>UL1-DD2</dd></dl></li><li aid:pstyle="ul-item">UL2<p>UL2-PARA</p></li></ul>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_ol
+    src = <<-EOS
+ 1. OL1
+
+//beginchild
+
+ 1. OL1-OL1
+ 2. OL1-OL2
+
+ * OL1-UL1
+ * OL1-UL2
+
+ : OL1-DL1
+\tOL1-DD1
+ : OL1-DL2
+\tOL1-DD2
+
+//endchild
+
+ 2. OL2
+
+//beginchild
+
+OL2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS.chomp
+<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1-OL1</li><li aid:pstyle="ol-item" olnum="2" num="2">OL1-OL2</li></ol><ul><li aid:pstyle="ul-item">OL1-UL1</li><li aid:pstyle="ul-item">OL1-UL2</li></ul><dl><dt>OL1-DL1</dt><dd>OL1-DD1</dd><dt>OL1-DL2</dt><dd>OL1-DD2</dd></dl></li><li aid:pstyle="ol-item" olnum="1" num="2">OL2<p>OL2-PARA</p></li></ol>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_dl
+    src = <<-EOS
+ : DL1
+
+//beginchild
+
+ 1. DL1-OL1
+ 2. DL1-OL2
+
+ * DL1-UL1
+ * DL1-UL2
+
+ : DL1-DL1
+\tDL1-DD1
+ : DL1-DL2
+\tDL1-DD2
+
+//endchild
+
+ : DL2
+\tDD2
+
+//beginchild
+
+ * DD2-UL1
+ * DD2-UL2
+
+DD2-PARA
+
+//endchild
+EOS
+
+    expected = <<-EOS.chomp
+<dl><dt>DL1</dt><dd><ol><li aid:pstyle="ol-item" olnum="1" num="1">DL1-OL1</li><li aid:pstyle="ol-item" olnum="2" num="2">DL1-OL2</li></ol><ul><li aid:pstyle="ul-item">DL1-UL1</li><li aid:pstyle="ul-item">DL1-UL2</li></ul><dl><dt>DL1-DL1</dt><dd>DL1-DD1</dd><dt>DL1-DL2</dt><dd>DL1-DD2</dd></dl></dd><dt>DL2</dt><dd>DD2<ul><li aid:pstyle="ul-item">DD2-UL1</li><li aid:pstyle="ul-item">DD2-UL2</li></ul><p>DD2-PARA</p></dd></dl>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_nest_multi
+    src = <<-EOS
+ 1. OL1
+
+//beginchild
+
+ 1. OL1-OL1
+
+//beginchild
+
+ * OL1-OL1-UL1
+
+OL1-OL1-PARA
+
+//endchild
+
+ 2. OL1-OL2
+
+ * OL1-UL1
+
+//beginchild
+
+ : OL1-UL1-DL1
+\tOL1-UL1-DD1
+
+OL1-UL1-PARA
+
+//endchild
+
+ * OL1-UL2
+
+//endchild
+EOS
+
+    expected = <<-EOS.chomp
+<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1-OL1<ul><li aid:pstyle="ul-item">OL1-OL1-UL1</li></ul><p>OL1-OL1-PARA</p></li><li aid:pstyle="ol-item" olnum="1" num="2">OL1-OL2</li></ol><ul><li aid:pstyle="ul-item">OL1-UL1<dl><dt>OL1-UL1-DL1</dt><dd>OL1-UL1-DD1</dd></dl><p>OL1-UL1-PARA</p></li><li aid:pstyle="ul-item">OL1-UL2</li></ul></li></ol>
+EOS
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_texequation
+    src = <<-EOS
+//texequation{
+e=mc^2
+//}
+EOS
+    expected = %Q(<replace idref="texblock-1"><pre>e=mc^2</pre></replace>)
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_texequation_with_caption
+    def @chapter.equation(_id)
+      Book::Index::Item.new('emc2', 1, 'The Equivalence of Mass and Energy')
+    end
+
+    src = <<-EOS
+@<eq>{emc2}
+
+//texequation[emc2][The Equivalence of Mass @<i>{and} Energy]{
+e=mc^2
+//}
+EOS
+    expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption><replace idref="texblock-1"><pre>e=mc^2</pre></replace></equationblock>)
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['caption_position']['equation'] = 'bottom'
+    expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><replace idref="texblock-1"><pre>e=mc^2</pre></replace><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption></equationblock>)
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_texequation_imgmath
+    @config['math_format'] = 'imgmath'
+    src = <<-EOS
+//texequation{
+p \\land \\bm{P} q
+//}
+EOS
+    expected = %Q(<equationimage><Image href="file://images/_review_math/_gen_84291054a12d278ea05694c20fbbc8e974ec66fc13be801c01dca764faeecccb.png" /></equationimage>)
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_texequation_with_caption_imgmath
+    def @chapter.equation(_id)
+      Book::Index::Item.new('emc2', 1, 'The Equivalence of Mass and Energy')
+    end
+
+    @config['math_format'] = 'imgmath'
+    src = <<-EOS
+@<eq>{emc2}
+
+//texequation[emc2][The Equivalence of Mass @<i>{and} Energy]{
+e=mc^2
+//}
+EOS
+    expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption><equationimage><Image href="file://images/_review_math/_gen_882e99d99b276a2118a3894895b6da815a03261f4150148c99b932bec5355f25.png" /></equationimage></equationblock>)
+    actual = compile_block(src)
+    assert_equal expected, actual
+
+    @config['caption_position']['equation'] = 'bottom'
+    expected = %Q(<p><span type='eq'>式1.1</span></p><equationblock><equationimage><Image href="file://images/_review_math/_gen_882e99d99b276a2118a3894895b6da815a03261f4150148c99b932bec5355f25.png" /></equationimage><caption>式1.1　The Equivalence of Mass <i>and</i> Energy</caption></equationblock>)
+    actual = compile_block(src)
+    assert_equal expected, actual
+  end
+
+  def test_graph_mermaid
+    def @chapter.image(_id)
+      item = Book::Index::Item.new('id', 1, 'id')
+      item.instance_eval { @path = './images/idgxml/id.pdf' }
+      item
+    end
+
+    begin
+      require 'playwrightrunner'
+    rescue LoadError
+      return true
+    end
+
+    actual = compile_block("//graph[id][mermaid][foo]{\ngraph LR; B --> C\n//}")
+    expected = <<-EOS.chomp
+<img><Image href="file://images/idgxml/id.pdf" /><caption>図1.1　foo</caption></img>
+EOS
+    assert_equal expected, actual
   end
 end

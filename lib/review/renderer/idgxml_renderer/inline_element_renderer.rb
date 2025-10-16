@@ -193,11 +193,11 @@ module ReVIEW
         # Links
         def render_href(content, node)
           if node.args && node.args.length >= 2
-            url = node.args[0]
-            label = node.args[1]
+            url = node.args[0].gsub('\,', ',').strip
+            label = node.args[1].gsub('\,', ',').strip
             %Q(<a linkurl='#{escape(url)}'>#{escape(label)}</a>)
           elsif node.args && node.args.length >= 1
-            url = node.args[0]
+            url = node.args[0].gsub('\,', ',').strip
             %Q(<a linkurl='#{escape(url)}'>#{escape(url)}</a>)
           else
             %Q(<a linkurl='#{escape(content)}'>#{escape(content)}</a>)
@@ -266,21 +266,26 @@ module ReVIEW
 
         # Column reference
         def render_column(content, node)
-          if node.args && node.args.length >= 2
-            chapter_id = node.args[0]
-            column_id = node.args[1]
+          id = node.args&.first || content
 
-            chapter = @book.contents.detect { |chap| chap.id == chapter_id }
-            if chapter && @book.config['chapterlink']
-              num = chapter.column(column_id).number
-              %Q(<link href="column-#{num}">#{I18n.t('column', chapter.column(column_id).caption)}</link>)
-            elsif chapter
-              I18n.t('column', chapter.column(column_id).caption)
-            else
-              escape(content)
-            end
+          # Parse chapter|id format
+          m = /\A([^|]+)\|(.+)/.match(id)
+          if m && m[1]
+            chapter = @book.contents.detect { |chap| chap.id == m[1] }
+            column_id = m[2]
           else
-            escape(content)
+            chapter = @chapter
+            column_id = id
+          end
+
+          return escape(content) unless chapter
+
+          # Render column reference
+          if @book.config['chapterlink']
+            num = chapter.column(column_id).number
+            %Q(<link href="column-#{num}">#{I18n.t('column', chapter.column(column_id).caption)}</link>)
+          else
+            I18n.t('column', chapter.column(column_id).caption)
           end
         rescue StandardError
           escape(content)
@@ -485,8 +490,10 @@ module ReVIEW
         end
 
         # Break
+        # Returns a protected newline marker that will be preserved through paragraph
+        # and nolf processing, then restored to an actual newline in visit_document
         def render_br(content, _node)
-          "\n"
+          "\x01IDGXML_INLINE_NEWLINE\x01"
         end
 
         # Raw

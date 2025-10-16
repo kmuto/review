@@ -5,6 +5,32 @@
 # This program is free software.
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
+#
+# == Newline Protection Markers
+#
+# This renderer uses special markers to protect certain newlines from being
+# removed during paragraph joining and nolf (no-line-feed) processing:
+#
+# - IDGXML_INLINE_NEWLINE: Protects newlines from inline elements (@<br>{}, @<raw>{\n})
+#   These newlines must be preserved in the final output as they are intentionally
+#   inserted by the user for formatting purposes.
+#
+# - IDGXML_PRE_NEWLINE: Protects newlines inside <pre> tags during nolf processing
+#
+# - IDGXML_LISTINFO_NEWLINE: Protects newlines inside <listinfo> tags
+#
+# The markers are restored to actual newlines at the end of visit_document.
+#
+# == List Nesting Markers
+#
+# This renderer uses special markers to handle nested list structures. These markers
+# are used by solve_nest to properly merge consecutive lists of the same type while
+# maintaining correct nesting levels (ul, ul2, ul3, etc.):
+#
+# - IDGXML_LIST_NEST_START: Marks the start of a nested list structure
+# - IDGXML_LIST_NEST_END: Marks the end of a nested list structure
+#
+# These markers are processed and removed by solve_nest at the end of visit_document.
 
 require 'review/renderer/base'
 require 'review/renderer/rendering_context'
@@ -16,11 +42,96 @@ require 'digest/sha2'
 
 module ReVIEW
   module Renderer
+    # Context for managing list rendering with proper encapsulation
+    class ListContext
+      attr_reader :list_type, :depth
+      attr_accessor :needs_close_tag, :has_nested_content
+
+      def initialize(list_type, depth)
+        @list_type = list_type  # :ul, :ol, :dl (as symbol)
+        @depth = depth
+        @needs_close_tag = false
+        @has_nested_content = false
+      end
+
+      # Generate appropriate tag name with depth suffix
+      def tag_name
+        @depth == 1 ? @list_type.to_s : "#{@list_type}#{@depth}"
+      end
+
+      # Generate opening marker for nested lists (used by solve_nest)
+      def opening_marker
+        return '' if @depth == 1
+        case @list_type
+        when :ul then IdgxmlRenderer::IDGXML_LIST_NEST_UL_START
+        when :ol then IdgxmlRenderer::IDGXML_LIST_NEST_OL_START
+        when :dl then IdgxmlRenderer::IDGXML_LIST_NEST_DL_START
+        else ''
+        end
+      end
+
+      # Generate closing marker for nested lists (used by solve_nest)
+      def closing_marker
+        return '' if @depth == 1
+        case @list_type
+        when :ul then IdgxmlRenderer::IDGXML_LIST_NEST_UL_END
+        when :ol then IdgxmlRenderer::IDGXML_LIST_NEST_OL_END
+        when :dl then IdgxmlRenderer::IDGXML_LIST_NEST_DL_END
+        else ''
+        end
+      end
+
+      # Get appropriate item closing tag
+      def item_close_tag
+        case @list_type
+        when :ul, :ol then '</li>'
+        when :dl then '</dd>'
+        else ''
+        end
+      end
+
+      def mark_nested_content
+        @has_nested_content = true
+      end
+    end
+
+    # Legacy context for beginchild/endchild compatibility
+    class NestContext
+      attr_accessor :list_type, :needs_close_tag
+
+      def initialize(list_type)
+        @list_type = list_type  # 'ul', 'ol', 'dl' (as string for legacy)
+        @needs_close_tag = false
+      end
+
+      def close_tag
+        return '' unless @needs_close_tag
+
+        case @list_type
+        when 'ul', 'ol'
+          '</li>'
+        when 'dl'
+          '</dd>'
+        else
+          ''
+        end
+      end
+    end
+
     class IdgxmlRenderer < Base
       include ReVIEW::HTMLUtils
       include ReVIEW::TextUtils
 
       attr_reader :chapter, :book
+
+      # Marker constants for list nesting
+      IDGXML_LIST_NEST_UL_START = "\x01IDGXML_LIST_NEST_UL_START\x01"
+      IDGXML_LIST_NEST_UL_END = "\x01IDGXML_LIST_NEST_UL_END\x01"
+      IDGXML_LIST_NEST_OL_START = "\x01IDGXML_LIST_NEST_OL_START\x01"
+      IDGXML_LIST_NEST_OL_END = "\x01IDGXML_LIST_NEST_OL_END\x01"
+      IDGXML_LIST_NEST_DL_START = "\x01IDGXML_LIST_NEST_DL_START\x01"
+      IDGXML_LIST_NEST_DL_END = "\x01IDGXML_LIST_NEST_DL_END\x01"
+      IDGXML_LIST_MERGE_MARKER = "\x01IDGXML_LIST_MERGE_MARKER\x01"
 
       def initialize(chapter)
         super
@@ -57,6 +168,25 @@ module ReVIEW
         @texblockequation = 0
         @texinlineequation = 0
 
+        # Initialize ImgMath for math rendering
+        @img_math = nil
+
+        # Initialize ImgGraph for graph rendering
+        @img_graph = nil
+
+        # Initialize list nesting tracking with stack-based approach
+        @nest_stack = []  # Stack of NestContext objects
+        @previous_list_type = nil
+        @pending_close_tag = nil  # Pending closing tag (e.g., '</li>' or '</dd>')
+
+        # Initialize list depth tracking for solve_nest markers
+        @ul_depth = 0
+        @ol_depth = 0
+        @dl_depth = 0
+
+        # Initialize current list context for improved list management
+        @current_list_context = nil
+
         # Initialize root element name
         @rootelement = 'doc'
 
@@ -78,8 +208,9 @@ module ReVIEW
           @ast_indexer.build_indexes(node)
         end
 
-        # Check nolf mode (default is nolf=true, meaning no newlines)
-        @nolf = @book.config['nolf'].nil? ? true : @book.config['nolf']
+        # Check nolf mode (enabled by default for IDGXML)
+        # IDGXML format removes newlines between tags by default
+        nolf = @book.config.key?('nolf') ? @book.config['nolf'] : true
 
         # Output XML declaration and root element
         output = []
@@ -99,7 +230,8 @@ module ReVIEW
           closing_tags += '</chapter>'
         end
 
-        # Apply solve_nest to optimize list nesting
+        # Apply solve_nest to merge consecutive lists of the same type
+        # This is still needed even with the new nest_stack approach
         content = solve_nest(content)
 
         # Combine all parts
@@ -109,10 +241,25 @@ module ReVIEW
 
         result = output.join
 
-        # Remove all newlines if nolf mode is enabled (default)
-        if @nolf
-          result = result.gsub(/>\n+</, '><')
+        # Remove newlines between tags if nolf mode is enabled (default)
+        # But preserve newlines inside <pre> tags and listinfo tags
+        if nolf
+          # Protect newlines inside <pre> tags
+          result = result.gsub(/<pre>(.*?)<\/pre>/m) do |match|
+            match.gsub("\n", "\x01IDGXML_PRE_NEWLINE\x01")
+          end
+
+          # Remove all newlines between tags and before closing tags
+          # This handles both >\n< and text\n< patterns
+          result = result.gsub(/\n+</, '<')
+
+          # Restore newlines inside <pre> tags
+          result = result.gsub("\x01IDGXML_PRE_NEWLINE\x01", "\n")
         end
+
+        # Restore protected newlines from listinfo and inline elements
+        result = result.gsub("\x01IDGXML_LISTINFO_NEWLINE\x01", "\n")
+        result = result.gsub("\x01IDGXML_INLINE_NEWLINE\x01", "\n")
 
         result
       end
@@ -122,10 +269,11 @@ module ReVIEW
         label = node.label
         caption = render_children(node.caption) if node.caption
 
-        # Close section tags as needed
-        output_close_sect_tags(level)
-
         result = []
+
+        # Close section tags as needed
+        closing = output_close_sect_tags(level)
+        result << closing if closing && !closing.empty?
 
         # Handle section tag opening for structuredxml mode
         case level
@@ -178,6 +326,7 @@ module ReVIEW
         content = render_children(node)
 
         # Join lines in paragraph by removing newlines (like join_lines in IDGXMLBuilder)
+        # Inline elements like @<br>{} and @<raw>{} use protected markers that are preserved
         # unless join_lines_by_lang is explicitly enabled
         unless @book.config['join_lines_by_lang']
           content = content.gsub(/\n/, '')
@@ -257,7 +406,7 @@ module ReVIEW
       def visit_code_line(node)
         # Render children and detab
         content = render_children(node)
-        detab(content)
+        detab(content, tabwidth)
       end
 
       def visit_table(node)
@@ -296,8 +445,13 @@ module ReVIEW
         caption = render_children(node.caption) if node.caption
         content = render_children(node)
 
-        # Use captionblock helper
-        captionblock(type, content, caption)
+        # notice uses -t suffix when caption is present
+        if type == 'notice' && caption && !caption.empty?
+          captionblock_with_content('notice-t', content, caption, 'notice-title')
+        else
+          # Content already contains <p> tags from paragraphs
+          captionblock_with_content(type, content, caption)
+        end
       end
 
       def visit_column(node)
@@ -334,18 +488,30 @@ module ReVIEW
           content = render_children(node)
           # Content already contains <p> tags from paragraphs
           "<lead>#{content}</lead>\n"
-        when 'note', 'memo', 'tip', 'info', 'warning', 'important', 'caution', 'notice'
+        when 'note', 'memo', 'tip', 'info', 'warning', 'important', 'caution'
           caption = node.args&.first
           content = render_children(node)
           captionblock(block_type, content, caption)
-        when 'planning', 'best', 'security', 'point', 'shoot', 'reference', 'term', 'link', 'practice', 'expert'
+        when 'planning', 'best', 'security', 'reference', 'link', 'practice', 'expert'
           caption = node.args&.first
           content = render_children(node)
           captionblock(block_type, content, caption)
+        when 'point', 'shoot', 'notice'
+          caption = node.args&.first
+          # Convert children to paragraph-grouped content
+          content = render_block_content_with_paragraphs(node)
+          # These blocks use -t suffix when caption is present
+          if caption && !caption.empty?
+            caption_with_inline = render_inline_in_caption(caption)
+            captionblock("#{block_type}-t", content, caption_with_inline, "#{block_type}-title")
+          else
+            captionblock(block_type, content, nil)
+          end
+        when 'term'
+          content = render_block_content_with_paragraphs(node)
+          captionblock('term', content, nil)
         when 'insn', 'box'
-          caption = node.args&.first
-          content = render_children(node)
-          syntaxblock(block_type, content, caption)
+          visit_syntaxblock(node)
         when 'flushright'
           content = render_children(node)
           # Content already contains <p> tags, just add align attribute
@@ -386,11 +552,176 @@ module ReVIEW
           ''
         when 'tsize'
           # Set table size for next table
-          @tsize = node.args&.first
+          # Handle target specification like //tsize[|idgxml|2]
+          tsize_arg = node.args&.first
+          if tsize_arg && tsize_arg.start_with?('|')
+            # Parse target specification
+            targets, value = parse_tsize_target(tsize_arg)
+            if targets.nil? || targets.include?('idgxml')
+              @tsize = value
+            end
+          else
+            @tsize = tsize_arg
+          end
           ''
+        when 'graph'
+          visit_graph(node)
+        when 'beginchild'
+          visit_beginchild(node)
+        when 'endchild'
+          visit_endchild(node)
         else
           raise NotImplementedError, "Unknown block type: #{block_type}"
         end
+      end
+
+      def visit_beginchild(node)
+        # beginchild marks the start of nested content within a list item
+        # Validate that we're in a list context
+        unless @previous_list_type
+          raise ReVIEW::ApplicationError, "//beginchild is shown, but previous element isn't ul, ol, or dl"
+        end
+
+        # Mark current context as having nested content
+        @current_list_context&.mark_nested_content if @current_list_context
+
+        # Clear pending close tag (it will be handled by endchild)
+        @pending_close_tag = nil
+
+        # Push context for tracking
+        @nest_stack.push(NestContext.new(@previous_list_type))
+
+        ''  # No output - just state management
+      end
+
+      def visit_endchild(node)
+        # endchild marks the end of nested content
+        # Validate stack state
+        if @nest_stack.empty?
+          raise ReVIEW::ApplicationError, "//endchild is shown, but any opened //beginchild doesn't exist"
+        end
+
+        context = @nest_stack.pop
+
+        # Generate appropriate closing tags based on list type
+        item_close = case context.list_type
+                     when 'ul', 'ol' then '</li>'
+                     when 'dl' then '</dd>'
+                     else ''
+                     end
+
+        # Determine list closing tag with proper depth suffix
+        list_close = generate_list_closing_tag(context.list_type)
+
+        "#{item_close}#{list_close}"
+      end
+
+      # Generate list closing tag with proper depth suffix
+      # Note: This is called during endchild processing after the list has been closed,
+      # so depth counters may have already been decremented. We need to use the actual
+      # current depth or infer from context.
+      def generate_list_closing_tag(list_type)
+        # Get current depth for the list type
+        depth = case list_type
+                when 'ul' then @ul_depth
+                when 'ol' then @ol_depth
+                when 'dl' then @dl_depth
+                else 1
+                end
+
+        # If depth is 0 or negative, default to 1 (shouldn't happen in well-formed documents)
+        depth = 1 if depth <= 0
+
+        tag_name = depth == 1 ? list_type : "#{list_type}#{depth}"
+        "</#{tag_name}>"
+      end
+
+      def visit_graph(node)
+        # Graph block generates an image file and then renders it as an image
+        # Args: [id, command, caption]
+        id = node.args[0]
+        command = node.args[1]
+        caption_text = node.args[2]
+
+        # Get graph content from lines
+        lines = node.lines || []
+        content = lines.join("\n") + "\n"
+
+        # Initialize ImgGraph if needed and command is mermaid
+        if command == 'mermaid'
+          begin
+            require 'playwrightrunner'
+            unless @img_graph
+              require 'review/img_graph'
+              @img_graph = ReVIEW::ImgGraph.new(@book.config, 'idgxml')
+            end
+            # Defer mermaid image generation
+            file_path = @img_graph.defer_mermaid_image(content, id)
+          rescue LoadError
+            # Playwright not available, skip graph generation
+            # But we still need a file path for rendering
+            c = 'idgxml'
+            dir = File.join(@book.imagedir, c)
+            file_path = File.join(dir, "#{id}.pdf")
+          end
+        else
+          # For other graph types, generate directly
+          c = 'idgxml'  # target_name
+          dir = File.join(@book.imagedir, c)
+          FileUtils.mkdir_p(dir) unless File.directory?(dir)
+
+          # Determine image extension based on format
+          image_ext = 'pdf'  # IDGXML typically uses PDF
+          file = "#{id}.#{image_ext}"
+          file_path = File.join(dir, file)
+
+          # Create temporary file and generate graph
+          require 'tempfile'
+          tf = Tempfile.new('review_graph')
+          tf.puts content
+          tf.close
+
+          begin
+            if command == 'graphviz' || command == 'dot'
+              system_graph_graphviz(id, file_path, tf.path)
+            elsif command == 'gnuplot'
+              system_graph_gnuplot(id, file_path, content, tf.path)
+            elsif command == 'blockdiag'
+              system_graph_blockdiag(id, file_path, tf.path, 'blockdiag')
+            elsif command == 'seqdiag'
+              system_graph_blockdiag(id, file_path, tf.path, 'seqdiag')
+            elsif command == 'actdiag'
+              system_graph_blockdiag(id, file_path, tf.path, 'actdiag')
+            elsif command == 'nwdiag'
+              system_graph_blockdiag(id, file_path, tf.path, 'nwdiag')
+            end
+          ensure
+            tf.unlink
+          end
+        end
+
+        # Add the generated file to the image index
+        @chapter.image_index.image_finder.add_entry(file_path) if @chapter.image_index
+
+        # Now render as a regular numbered image
+        caption_content = caption_text ? render_inline_in_caption(caption_text) : nil
+
+        result = []
+        result << '<img>'
+
+        if caption_top?('image') && caption_content
+          result << generate_image_header(id, caption_content)
+        end
+
+        result << %Q(<Image href="file://#{file_path.sub(%r{\A\./}, '')}" />)
+
+        if !caption_top?('image') && caption_content
+          result << generate_image_header(id, caption_content)
+        end
+
+        result << '</img>'
+
+        result.join("\n") + "\n"
       end
 
       def visit_tex_equation(node)
@@ -402,11 +733,20 @@ module ReVIEW
         if node.id?
           result << '<equationblock>'
 
+          # Render caption with inline elements
+          rendered_caption = if node.caption.is_a?(String)
+                               render_inline_in_caption(node.caption)
+                             elsif node.caption
+                               render_children(node.caption)
+                             else
+                               ''
+                             end
+
           # Generate caption
           caption_str = if get_chap.nil?
-                          %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(node.id).number])}#{I18n.t('caption_prefix_idgxml')}#{escape(node.caption.to_s)}</caption>)
+                          %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(node.id).number])}#{I18n.t('caption_prefix_idgxml')}#{rendered_caption}</caption>)
                         else
-                          %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(node.id).number])}#{I18n.t('caption_prefix_idgxml')}#{escape(node.caption.to_s)}</caption>)
+                          %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(node.id).number])}#{I18n.t('caption_prefix_idgxml')}#{rendered_caption}</caption>)
                         end
 
           result << caption_str if caption_top?('equation')
@@ -414,6 +754,12 @@ module ReVIEW
 
         # Handle math format
         if @book.config['math_format'] == 'imgmath'
+          # Initialize ImgMath if needed
+          unless @img_math
+            require 'review/img_math'
+            @img_math = ReVIEW::ImgMath.new(@book.config)
+          end
+
           fontsize = @book.config.dig('imgmath_options', 'fontsize').to_f
           lineheight = @book.config.dig('imgmath_options', 'lineheight').to_f
           math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{content}\n\\end{equation*}\n"
@@ -423,11 +769,7 @@ module ReVIEW
           result << %Q(<Image href="file://#{img_path}" />)
           result << '</equationimage>'
         else
-          result << %Q(<replace idref="texblock-#{@texblockequation}">)
-          result << '<pre>'
-          result << content
-          result << '</pre>'
-          result << '</replace>'
+          result << %Q(<replace idref="texblock-#{@texblockequation}"><pre>#{content}</pre></replace>)
         end
 
         if node.id?
@@ -448,10 +790,19 @@ module ReVIEW
         if node.lines
           node.lines.join("\n") + "\n"
         elsif node.arg
-          "#{node.arg}\n"
+          # Don't add trailing newline for arg-based embed
+          # The compile_block test helper will strip whitespace anyway
+          node.arg.to_s
         else
           ''
         end
+      end
+
+      def visit_footnote(node)
+        # FootnoteNode is not rendered directly - it's just a definition
+        # The actual footnote output is generated by @<fn>{id} inline element
+        # Return empty string to indicate no output for this definition block
+        ''
       end
 
       def visit_generic(node)
@@ -461,10 +812,249 @@ module ReVIEW
 
       private
 
+      # Unified list rendering with proper context management
+      def render_list(node, list_type)
+        with_list_context(list_type) do |context|
+          result = []
+          result << "<#{context.tag_name}>"
+          result << context.opening_marker unless context.opening_marker.empty?
+
+          # Render list items based on list type
+          case list_type
+          when :ul
+            result << render_ul_items(node, context)
+          when :ol
+            result << render_ol_items(node, context)
+          when :dl
+            result << render_dl_items(node, context)
+          end
+
+          result << context.closing_marker unless context.closing_marker.empty?
+          result << "</#{context.tag_name}>"
+
+          # Track for beginchild/endchild (legacy)
+          @previous_list_type = list_type.to_s
+
+          result.join("\n") + "\n"
+        end
+      end
+
+      # Context management for list rendering
+      def with_list_context(list_type)
+        depth = increment_list_depth(list_type)
+        context = ListContext.new(list_type, depth)
+        old_context = @current_list_context
+        @current_list_context = context
+
+        result = yield(context)
+
+        @current_list_context = old_context
+        decrement_list_depth(list_type)
+
+        result
+      end
+
+      # Increment depth counter for list type
+      def increment_list_depth(list_type)
+        case list_type
+        when :ul
+          @ul_depth += 1
+          @ul_depth
+        when :ol
+          @ol_depth += 1
+          @ol_depth
+        when :dl
+          @dl_depth += 1
+          @dl_depth
+        else
+          1
+        end
+      end
+
+      # Decrement depth counter for list type
+      def decrement_list_depth(list_type)
+        case list_type
+        when :ul
+          @ul_depth -= 1
+        when :ol
+          @ol_depth -= 1
+        when :dl
+          @dl_depth -= 1
+        end
+      end
+
+      # Render unordered list items
+      def render_ul_items(node, context)
+        items = []
+        node.children.each_with_index do |item, idx|
+          item_content = item.children.map { |child| visit(child) }.join("\n")
+          # Join lines in list item according to join_lines_by_lang setting
+          unless @book.config['join_lines_by_lang']
+            item_content = item_content.gsub(/\n/, '')
+          else
+            item_content = item_content.gsub(/\n/, ' ')
+          end
+
+          items << %Q(<li aid:pstyle="ul-item">#{item_content.chomp})
+
+          # Close </li> for all non-last items
+          is_last_item = (idx == node.children.size - 1)
+          if !is_last_item
+            items << '</li>'
+          else
+            # Set pending close tag for the last item
+            @pending_close_tag = '</li>'
+          end
+        end
+
+        items.join("\n")
+      end
+
+      # Render ordered list items
+      def render_ol_items(node, context)
+        items = []
+        olnum = @ol_num || 1
+
+        node.children.each_with_index do |item, idx|
+          item_content = item.children.map { |child| visit(child) }.join("\n")
+          # Join lines in list item according to join_lines_by_lang setting
+          unless @book.config['join_lines_by_lang']
+            item_content = item_content.gsub(/\n/, '')
+          else
+            item_content = item_content.gsub(/\n/, ' ')
+          end
+
+          # Get the num attribute from the item if available
+          num = item.respond_to?(:number) ? (item.number || olnum) : olnum
+
+          items << %Q(<li aid:pstyle="ol-item" olnum="#{olnum}" num="#{num}">#{item_content.chomp})
+
+          # Close </li> for all non-last items
+          is_last_item = (idx == node.children.size - 1)
+          if !is_last_item
+            items << '</li>'
+          else
+            # Set pending close tag for the last item
+            @pending_close_tag = '</li>'
+          end
+
+          olnum += 1
+        end
+
+        # Reset olnum after list
+        @ol_num = nil
+
+        items.join("\n")
+      end
+
+      # Render definition list items
+      def render_dl_items(node, context)
+        items = []
+
+        node.children.each_with_index do |item, idx|
+          # Get term and definitions
+          if item.term_children && item.term_children.any?
+            term_content = item.term_children.map { |child| visit(child) }.join
+          elsif item.content
+            term_content = item.content.to_s
+          else
+            term_content = ''
+          end
+
+          items << "<dt>#{term_content}</dt>"
+
+          # Process definition content
+          is_last_item = (idx == node.children.size - 1)
+
+          if item.children && !item.children.empty?
+            definition_parts = item.children.map { |child| visit(child) }
+            definition_content = definition_parts.join
+            items << "<dd>#{definition_content.chomp}"
+          else
+            # Empty dd - output opening tag only
+            items << "<dd>"
+          end
+
+          # Close </dd> for all non-last items
+          if !is_last_item
+            items << '</dd>'
+          else
+            # Set pending close tag for the last item
+            @pending_close_tag = '</dd>'
+          end
+        end
+
+        items.join("\n")
+      end
+
       def render_children(node)
         return '' unless node.children
 
-        node.children.map { |child| visit(child) }.join
+        result = []
+        node.children.each_with_index do |child, idx|
+          # Check if next child is beginchild for special handling
+          next_child = node.children[idx + 1]
+          is_next_beginchild = next_child && next_child.is_a?(ReVIEW::AST::BlockNode) && next_child.block_type == :beginchild
+
+          # Visit the child
+          child_output = visit(child)
+
+          # Handle pending close tag if present
+          if @pending_close_tag && child_output
+            if is_next_beginchild
+              # Next is beginchild - defer the close tag handling
+              # Remove the closing list tag that will be re-added after nested content
+              child_output = remove_closing_list_tag(child_output)
+              result << child_output
+              # Keep @pending_close_tag for beginchild to handle
+            else
+              # Normal case - insert pending close tag
+              child_output = insert_pending_close_tag(child_output)
+              @pending_close_tag = nil
+              result << child_output
+            end
+          else
+            result << child_output
+          end
+        end
+
+        # Final cleanup: ensure any remaining pending close tag is added
+        if @pending_close_tag
+          last_idx = result.length - 1
+          if last_idx >= 0 && result[last_idx]
+            result[last_idx] = insert_pending_close_tag(result[last_idx])
+          else
+            result << @pending_close_tag
+          end
+          @pending_close_tag = nil
+        end
+
+        result.join
+      end
+
+      # Remove closing list tag from output
+      def remove_closing_list_tag(output)
+        # Remove the last closing list tag (</ul>, </ol>, or </dl>)
+        output.sub(/<\/(ul|ol|dl)>\n?\z/, '')
+      end
+
+      # Insert pending close tag before the closing list tag
+      def insert_pending_close_tag(output)
+        # Find the last closing list tag (</ul>, </ol>, or </dl>)
+        if output =~ /(.*)<\/(ul|ol|dl)>(\n?)\z/m
+          # Insert the pending close tag before the closing list tag
+          before_closing = $1
+          list_type = $2
+          trailing_newline = $3
+          "#{before_closing}#{@pending_close_tag}</#{list_type}>#{trailing_newline}"
+        else
+          # No closing list tag found - append at the end
+          if output.end_with?("\n")
+            output.chomp + @pending_close_tag + "\n"
+          else
+            output + @pending_close_tag
+          end
+        end
       end
 
       def render_inline_element(type, content, node)
@@ -491,18 +1081,82 @@ module ReVIEW
         closing_tags.join
       end
 
-      # Solve list nesting like IDGXMLBuilder
+      # Merge consecutive lists of the same type that appear at the same nesting level.
+      # This is required for IDGXML format to properly handle list continuations.
+      #
+      # The IDGXML format requires that consecutive lists of the same type at the same
+      # nesting level be merged into a single list structure. This is achieved through
+      # a multi-step marker-based post-processing approach.
+      #
+      # Processing steps:
+      # 1. Remove opening markers from nested lists
+      # 2. Convert closing markers to merge markers
+      # 3. Merge consecutive lists by removing intermediate tags
+      # 4. Merge top-level lists (without markers)
+      # 5. Clean up remaining markers
+      #
+      # Example transformation:
+      #   Input:  </ul><ul>
+      #   Output: (merged into single list with items continuing)
+      #
+      # This follows the same pattern as IDGXMLBuilder.solve_nest
       def solve_nest(content)
-        content.gsub("</dd></dl>\x01→dl←\x01", '').
-          gsub("\x01→/dl←\x01", "</dd></dl>←END\x01").
-          gsub("</li></ul>\x01→ul←\x01", '').
-          gsub("\x01→/ul←\x01", "</li></ul>←END\x01").
-          gsub("</li></ol>\x01→ol←\x01", '').
-          gsub("\x01→/ol←\x01", "</li></ol>←END\x01").
-          gsub("</dl>←END\x01<dl>", '').
-          gsub("</ul>←END\x01<ul>", '').
-          gsub("</ol>←END\x01<ol>", '').
-          gsub("←END\x01", '')
+        # Step 1: Remove opening markers from nested lists
+        content = remove_opening_markers(content)
+
+        # Step 2: Convert closing markers to merge markers
+        content = convert_to_merge_markers(content)
+
+        # Step 3: Merge consecutive lists using merge markers
+        content = merge_lists_with_markers(content)
+
+        # Step 4: Merge consecutive top-level lists (no markers)
+        content = merge_toplevel_lists(content)
+
+        # Step 5: Clean up any remaining merge markers
+        content.gsub(/#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}/, '')
+      end
+
+      # Step 1: Remove opening markers that appear at nested list start
+      # These markers are placed right after opening tag of nested lists
+      # Pattern: <TYPE(N)>\n?MARKER -> <TYPE(N)> (remove opening marker)
+      def remove_opening_markers(content)
+        content
+          .gsub(/<(dl\d+)>\n?#{Regexp.escape(IDGXML_LIST_NEST_DL_START)}/, '<\1>')
+          .gsub(/<(ul\d+)>\n?#{Regexp.escape(IDGXML_LIST_NEST_UL_START)}/, '<\1>')
+          .gsub(/<(ol\d+)>\n?#{Regexp.escape(IDGXML_LIST_NEST_OL_START)}/, '<\1>')
+          # Also handle case where opening marker appears after closing item tags
+          # Pattern: </dd></dl(N)>MARKER -> empty (remove nested list opening marker)
+          .gsub(/<\/dd><\/dl(\d*)>\n?#{Regexp.escape(IDGXML_LIST_NEST_DL_START)}/, '')
+          .gsub(/<\/li><\/ul(\d*)>\n?#{Regexp.escape(IDGXML_LIST_NEST_UL_START)}/, '')
+          .gsub(/<\/li><\/ol(\d*)>\n?#{Regexp.escape(IDGXML_LIST_NEST_OL_START)}/, '')
+      end
+
+      # Step 2: Convert closing markers to MERGE markers
+      # Pattern: CLOSE_MARKER\n?</TYPE(N)> -> </item></TYPE(N)>MERGE_MARKER
+      def convert_to_merge_markers(content)
+        content
+          .gsub(/#{Regexp.escape(IDGXML_LIST_NEST_DL_END)}\n?<\/dl(\d*)>/, "</dd></dl\\1>#{IDGXML_LIST_MERGE_MARKER}")
+          .gsub(/#{Regexp.escape(IDGXML_LIST_NEST_UL_END)}\n?<\/ul(\d*)>/, "</li></ul\\1>#{IDGXML_LIST_MERGE_MARKER}")
+          .gsub(/#{Regexp.escape(IDGXML_LIST_NEST_OL_END)}\n?<\/ol(\d*)>/, "</li></ol\\1>#{IDGXML_LIST_MERGE_MARKER}")
+      end
+
+      # Step 3: Merge consecutive lists by removing intermediate tags
+      # Pattern: </TYPE(N)>MERGE_MARKER\n?<TYPE(M)> -> empty (merge lists)
+      def merge_lists_with_markers(content)
+        content
+          .gsub(/<\/dl(\d*)>#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}\n?<dl(\d*)>/, '')
+          .gsub(/<\/ul(\d*)>#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}\n?<ul(\d*)>/, '')
+          .gsub(/<\/ol(\d*)>#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}\n?<ol(\d*)>/, '')
+      end
+
+      # Step 4: Merge consecutive top-level lists (no markers, just adjacent tags)
+      # Pattern: </li></TYPE>\n?<TYPE><li> -> </li><li> (merge lists at same level)
+      def merge_toplevel_lists(content)
+        content
+          .gsub(/<\/li>\n?<\/ul>\n?<ul>\n?<li/, '</li><li')
+          .gsub(/<\/li>\n?<\/ol>\n?<ol>\n?<li/, '</li><li')
+          .gsub(/<\/dd>\n?<\/dl>\n?<dl>\n?<dt/, '</dd><dt')
       end
 
       # Get headline prefix
@@ -557,6 +1211,20 @@ module ReVIEW
         result.join("\n") + "\n"
       end
 
+      # Captionblock helper for content that already contains <p> tags
+      def captionblock_with_content(type, content, caption, specialstyle = nil)
+        result = []
+        result << "<#{type}>"
+        if caption && !caption.empty?
+          style = specialstyle || "#{type}-title"
+          result << %Q(<title aid:pstyle='#{style}'>#{caption}</title>)
+        end
+        # Content already contains <p> tags, use as-is
+        result << content.chomp
+        result << "</#{type}>"
+        result.join + "\n"
+      end
+
       # Syntaxblock helper for special code blocks
       def syntaxblock(type, content, caption)
         result = []
@@ -588,74 +1256,93 @@ module ReVIEW
         paragraphs.map { |para| "<p>#{para.strip}</p>" }
       end
 
+      # Render block content with paragraph grouping
+      # Used for point/shoot/notice/term blocks
+      def render_block_content_with_paragraphs(node)
+        # Use preserved lines if available (like box/insn)
+        if node.lines && node.lines.any?
+          # Process each line through inline processor
+          processed_lines = node.lines.map do |line|
+            if line.empty?
+              ''
+            else
+              temp_node = ReVIEW::AST::ParagraphNode.new(location: nil)
+              @ast_compiler ||= ReVIEW::AST::Compiler.for_chapter(@chapter)
+              @ast_compiler.inline_processor.parse_inline_elements(line, temp_node)
+              render_children(temp_node)
+            end
+          end
+
+          # Group lines into paragraphs (split on empty lines)
+          paragraphs = []
+          current_paragraph = []
+          processed_lines.each do |line|
+            if line.empty?
+              # Empty line signals paragraph break
+              unless current_paragraph.empty?
+                # Join lines in paragraph according to join_lines_by_lang setting
+                if @book.config['join_lines_by_lang']
+                  paragraphs << current_paragraph.join(' ')
+                else
+                  paragraphs << current_paragraph.join
+                end
+              end
+              current_paragraph = []
+            else
+              current_paragraph << line
+            end
+          end
+          # Add last paragraph
+          unless current_paragraph.empty?
+            if @book.config['join_lines_by_lang']
+              paragraphs << current_paragraph.join(' ')
+            else
+              paragraphs << current_paragraph.join
+            end
+          end
+
+          # Join paragraphs with double newlines so split_paragraph_content can split them
+          paragraphs.join("\n\n")
+        else
+          # Fallback: render children directly
+          render_children(node)
+        end
+      end
+
       # Visit unordered list
       def visit_ul(node)
-        result = []
-        result << '<ul>'
+        output = render_list(node, :ul)
 
-        node.children.each do |item|
-          item_content = render_children(item)
-          result << %Q(<li aid:pstyle="ul-item">#{item_content.chomp}</li>)
+        # If in nest context, mark that we need a closing tag (for beginchild/endchild)
+        unless @nest_stack.empty?
+          @nest_stack.last.needs_close_tag = true
         end
 
-        result << '</ul>'
-        result.join("\n") + "\n"
+        output
       end
 
       # Visit ordered list
       def visit_ol(node)
-        result = []
-        result << '<ol>'
+        output = render_list(node, :ol)
 
-        # Use @ol_num if set by olnum command, or get from node attribute
-        num = node.attribute?(:start_number) ? node.fetch_attribute(:start_number) : (@ol_num || 1)
-        @ol_num = num unless @ol_num
-
-        # Count total items
-        total_items = node.children.length
-
-        node.children.each_with_index do |item, _idx|
-          item_content = render_children(item)
-          # num attribute should be the starting number (same for all items in IDGXMLBuilder)
-          result << %Q(<li aid:pstyle="ol-item" olnum="#{@ol_num}" num="#{num}">#{item_content.chomp}</li>)
-          @ol_num += 1
+        # If in nest context, mark that we need a closing tag (for beginchild/endchild)
+        unless @nest_stack.empty?
+          @nest_stack.last.needs_close_tag = true
         end
 
-        result << '</ol>'
-        @ol_num = nil
-
-        result.join("\n") + "\n"
+        output
       end
 
       # Visit definition list
       def visit_dl(node)
-        result = []
-        result << '<dl>'
+        output = render_list(node, :dl)
 
-        node.children.each do |item|
-          # Get term and definitions
-          if item.term_children && item.term_children.any?
-            term_content = item.term_children.map { |child| visit(child) }.join
-          elsif item.content
-            term_content = item.content.to_s
-          else
-            term_content = ''
-          end
-
-          result << "<dt>#{term_content}</dt>"
-
-          # Process definition content
-          if item.children && !item.children.empty?
-            definition_parts = item.children.map { |child| visit(child) }
-            definition_content = definition_parts.join
-            result << "<dd>#{definition_content.chomp}</dd>"
-          else
-            result << '<dd></dd>'
-          end
+        # If in nest context, mark that we need a closing tag (for beginchild/endchild)
+        unless @nest_stack.empty?
+          @nest_stack.last.needs_close_tag = true
         end
 
-        result << '</dl>'
-        result.join("\n") + "\n"
+        output
       end
 
       # Visit list code block
@@ -664,21 +1351,27 @@ module ReVIEW
         result << '<codelist>'
 
         # Generate caption if present
-        if node.caption
+        caption_content = nil
+        if node.caption && node.id?
           caption_content = render_children(node.caption)
-          if node.id?
-            list_header_output = generate_list_header(node.id, caption_content)
-            result << list_header_output
-          end
+          list_header_output = generate_list_header(node.id, caption_content)
+          result << list_header_output if caption_top?('list')
         end
 
-        # Generate code content
-        result << '<pre>'
-        result << generate_code_lines_body(node)
-        result << '</pre>'
+        # Generate code content (already includes trailing newlines for each line)
+        code_content = generate_code_lines_body(node)
+        # Combine <pre>, code content, and </pre> in a single string
+        result << "<pre>#{code_content}</pre>"
+
+        # Add caption at bottom if configured
+        if caption_content && !caption_top?('list')
+          list_header_output = generate_list_header(node.id, caption_content)
+          result << list_header_output
+        end
 
         result << '</codelist>'
-        result.join("\n") + "\n"
+        # Join without newlines (nolf mode), then add final newline
+        result.join + "\n"
       end
 
       # Visit listnum code block
@@ -687,21 +1380,27 @@ module ReVIEW
         result << '<codelist>'
 
         # Generate caption if present
-        if node.caption
+        caption_content = nil
+        if node.caption && node.id?
           caption_content = render_children(node.caption)
-          if node.id?
-            list_header_output = generate_list_header(node.id, caption_content)
-            result << list_header_output
-          end
+          list_header_output = generate_list_header(node.id, caption_content)
+          result << list_header_output if caption_top?('list')
         end
 
-        # Generate code content with line numbers
-        result << '<pre>'
-        result << generate_listnum_body(node)
-        result << '</pre>'
+        # Generate code content with line numbers (already includes trailing newlines for each line)
+        code_content = generate_listnum_body(node)
+        # Combine <pre>, code content, and </pre> in a single string
+        result << "<pre>#{code_content}</pre>"
+
+        # Add caption at bottom if configured
+        if caption_content && !caption_top?('list')
+          list_header_output = generate_list_header(node.id, caption_content)
+          result << list_header_output
+        end
 
         result << '</codelist>'
-        result.join("\n") + "\n"
+        # Join without newlines (nolf mode), then add final newline
+        result.join + "\n"
       end
 
       # Visit emlist code block
@@ -733,16 +1432,18 @@ module ReVIEW
           result << %Q(<caption>#{caption_content}</caption>)
         end
 
-        result << '<pre>'
-        result << generate_code_lines_body(node)
-        result << '</pre>'
+        # Generate code content (already includes trailing newlines for each line)
+        code_content = generate_code_lines_body(node)
+        # Combine <pre>, code content, and </pre> in a single string
+        result << "<pre>#{code_content}</pre>"
 
         if !caption_top?('list') && caption_content
           result << %Q(<caption>#{caption_content}</caption>)
         end
 
         result << '</source>'
-        result.join("\n") + "\n"
+        # Join without newlines (nolf mode), then add final newline
+        result.join + "\n"
       end
 
       # Generate list header like IDGXMLBuilder
@@ -792,7 +1493,7 @@ module ReVIEW
 
         lines.each_with_index do |line, i|
           # Add line number span
-          line_with_number = detab(%Q(<span type='lineno'>) + (i + first_line_num).to_s.rjust(2) + ': </span>' + line)
+          line_with_number = detab(%Q(<span type='lineno'>) + (i + first_line_num).to_s.rjust(2) + ': </span>' + line, tabwidth)
 
           if @book.config['listinfo']
             line_output = %Q(<listinfo line="#{no}")
@@ -824,16 +1525,19 @@ module ReVIEW
           result << %Q(<caption aid:pstyle='#{css_class}-title'>#{caption}</caption>)
         end
 
-        result << '<pre>'
-        result << generate_code_lines_body(node)
-        result << '</pre>'
+        # Generate code content (already includes trailing newlines for each line)
+        code_content = generate_code_lines_body(node)
+        # Combine <pre>, code content, and </pre> in a single string
+        # This matches IDGXMLBuilder behavior: print '<pre>'; print lines; puts '</pre>'
+        result << "<pre>#{code_content}</pre>"
 
         if !caption_top?('list') && caption
           result << %Q(<caption aid:pstyle='#{css_class}-title'>#{caption}</caption>)
         end
 
         result << '</list>'
-        result.join("\n") + "\n"
+        # Join without newlines (nolf mode), then add final newline
+        result.join + "\n"
       end
 
       # Quotedlist with line numbers
@@ -845,43 +1549,18 @@ module ReVIEW
           result << %Q(<caption aid:pstyle='#{css_class}-title'>#{caption}</caption>)
         end
 
-        result << '<pre>'
-
-        # Generate lines with line numbers
-        lines = node.children.map { |line| visit(line) }
-        no = 1
-        first_line_num = @first_line_num || 1
-
-        lines.each_with_index do |line, i|
-          # Add line number span
-          line_with_number = detab(%Q(<span type='lineno'>) + (i + first_line_num).to_s.rjust(2) + ': </span>' + line)
-
-          if @book.config['listinfo']
-            line_output = %Q(<listinfo line="#{no}")
-            line_output += %Q( begin="1") if no == 1
-            line_output += %Q( end="#{no}") if no == lines.size
-            line_output += '>'
-            line_output += line_with_number
-            line_output += "\n"
-            line_output += '</listinfo>'
-            result << line_output
-          else
-            result << line_with_number + "\n"
-          end
-          no += 1
-        end
-
-        # Clear @first_line_num after use
-        @first_line_num = nil
-
-        result << '</pre>'
+        # Generate code content with line numbers (already includes trailing newlines for each line)
+        code_content = generate_listnum_body(node)
+        # Combine <pre>, code content, and </pre> in a single string
+        result << "<pre>#{code_content}</pre>"
 
         if !caption_top?('list') && caption
           result << %Q(<caption aid:pstyle='#{css_class}-title'>#{caption}</caption>)
         end
 
         result << '</list>'
-        result.join("\n") + "\n"
+        # Join without newlines (nolf mode), then add final newline
+        result.join + "\n"
       end
 
       # Visit regular table
@@ -1127,7 +1806,7 @@ module ReVIEW
 
         result << %Q(<pre aid:pstyle="dummyimage">)
         lines.each do |line|
-          result << detab(line)
+          result << detab(line, tabwidth)
           result << "\n"
         end
         result << '</pre>'
@@ -1176,9 +1855,16 @@ module ReVIEW
         lines = []
         lines << escape(node.args.first) if node.args&.first && !node.args.first.empty?
 
+        # Process children as separate text lines (not as paragraphs)
         if node.children && !node.children.empty?
-          content = render_children(node)
-          lines << content unless content.empty?
+          node.children.each do |child|
+            if child.is_a?(ReVIEW::AST::TextNode)
+              lines << escape(child.content.to_s)
+            else
+              # For other node types, render normally
+              lines << visit(child)
+            end
+          end
         end
 
         return '' if lines.empty?
@@ -1194,11 +1880,12 @@ module ReVIEW
           return ''
         end
 
-        # Get content from either arg or content attribute
-        # For inline raw, content is in node.arg
-        content = node.arg || node.content || ''
-        # Convert literal \n to actual newline
-        content.gsub('\\n', "\n")
+        # Get content - for both inline and block raw, content is in node.content
+        # (after target processing by the parser)
+        content = node.content || ''
+        # Convert literal \n (backslash followed by n) to a protected newline marker
+        # The marker will be preserved through paragraph and nolf processing
+        content.gsub('\n', "\x01IDGXML_INLINE_NEWLINE\x01")
       end
 
       # Escape for IDGXML (uses HTML escaping)
@@ -1282,6 +1969,169 @@ module ReVIEW
       # Normalize ID for XML attributes
       def normalize_id(id)
         id.to_s.gsub(/[^a-zA-Z0-9_-]/, '_')
+      end
+
+      # Count ul nesting depth by traversing parent contexts
+      def count_ul_nesting_depth
+        depth = 0
+        current = @rendering_context
+        while current
+          depth += 1 if current.context_type == :ul
+          current = current.parent_context
+        end
+        depth
+      end
+
+      # Count ol nesting depth by traversing parent contexts
+      def count_ol_nesting_depth
+        depth = 0
+        current = @rendering_context
+        while current
+          depth += 1 if current.context_type == :ol
+          current = current.parent_context
+        end
+        depth
+      end
+
+      # Visit syntaxblock (box, insn) - processes lines with listinfo
+      def visit_syntaxblock(node)
+        type = node.block_type.to_s
+        caption = node.args&.first
+
+        # Render caption if present
+        captionstr = nil
+        if caption && !caption.empty?
+          titleopentag = %Q(caption aid:pstyle="#{type}-title")
+          titleclosetag = 'caption'
+          if type == 'insn'
+            titleopentag = %Q(floattitle type="insn")
+            titleclosetag = 'floattitle'
+          end
+          # Process inline elements in caption
+          caption_with_inline = render_inline_in_caption(caption)
+          captionstr = %Q(<#{titleopentag}>#{caption_with_inline}</#{titleclosetag}>)
+        end
+
+        result = []
+        result << "<#{type}>"
+
+        # Output caption at top if configured
+        result << captionstr if caption_top?('list') && captionstr
+
+        # Process lines with listinfo
+        lines = extract_lines_from_node(node)
+        if @book.config['listinfo'] && lines.any?
+          # Generate all listinfo entries as a single string (like IDGXMLBuilder's print/puts)
+          listinfo_output = lines.map.with_index do |line, i|
+            no = i + 1
+            line_parts = []
+            line_parts << %Q(<listinfo line="#{no}")
+            line_parts << %Q( begin="1") if no == 1
+            line_parts << %Q( end="#{no}") if no == lines.size
+            line_parts << '>'
+            # Always include line content (even if empty) followed by newline
+            # Protect newlines inside listinfo from nolf processing
+            line_parts << detab(line, tabwidth)
+            line_parts << "\x01IDGXML_LISTINFO_NEWLINE\x01"
+            line_parts << '</listinfo>'
+            line_parts.join
+          end.join
+          result << listinfo_output
+        else
+          lines_output = lines.map { |line| detab(line, tabwidth) + "\n" }.join
+          result << lines_output
+        end
+
+        # Output caption at bottom if configured
+        result << captionstr if !caption_top?('list') && captionstr
+
+        result << "</#{type}>"
+        result.join + "\n"
+      end
+
+      # Extract lines from block node and process inline elements
+      def extract_lines_from_node(node)
+        # If the node has preserved original lines, use them with inline processing
+        if node.lines && node.lines.any?
+          node.lines.map do |line|
+            # Empty lines should remain empty
+            if line.empty?
+              ''
+            else
+              # Create a temporary paragraph node to process inline elements in this line
+              temp_node = ReVIEW::AST::ParagraphNode.new(location: nil)
+              @ast_compiler ||= ReVIEW::AST::Compiler.for_chapter(@chapter)
+              @ast_compiler.inline_processor.parse_inline_elements(line, temp_node)
+              # Render the inline elements
+              render_children(temp_node)
+            end
+          end
+        else
+          # Fallback: render all children to get the full content
+          full_content = render_children(node)
+
+          # Split by newlines to get individual lines
+          # Keep empty lines (important for blank lines in the source)
+          lines = full_content.split("\n", -1)
+
+          # Remove the last empty line if present (split always creates one at the end)
+          lines.pop if lines.last == ''
+
+          lines
+        end
+      end
+
+      # Render inline elements in caption
+      def render_inline_in_caption(caption_text)
+        # Create a temporary paragraph node and parse inline elements
+        require 'review/ast/compiler'
+        require 'review/lineinput'
+
+        # Use the inline processor to parse inline elements
+        temp_node = ReVIEW::AST::ParagraphNode.new(location: nil)
+        @ast_compiler ||= ReVIEW::AST::Compiler.for_chapter(@chapter)
+        @ast_compiler.inline_processor.parse_inline_elements(caption_text, temp_node)
+
+        # Render the inline elements
+        render_children(temp_node)
+      end
+
+      # Parse tsize target specification like |idgxml|2 or |idgxml,html|2
+      def parse_tsize_target(arg)
+        # Format: |target1,target2,...|value
+        if arg =~ /\A\|([^|]+)\|(.+)/
+          targets = Regexp.last_match(1).split(',').map(&:strip)
+          value = Regexp.last_match(2)
+          [targets, value]
+        else
+          # No target specification (malformed)
+          [nil, arg]
+        end
+      end
+
+      # Get tabwidth setting (default to 8)
+      def tabwidth
+        @book&.config&.[]('tabwidth') || 8
+      end
+
+      # Graph generation helper methods (for non-mermaid graphs)
+      def system_graph_graphviz(id, file_path, tf_path)
+        system("dot -Tpdf -o#{file_path} #{tf_path}")
+      end
+
+      def system_graph_gnuplot(id, file_path, content, tf_path)
+        File.open(tf_path, 'w') do |tf|
+          tf.puts <<~GNUPLOT
+            set terminal pdf
+            set output "#{file_path}"
+            #{content}
+          GNUPLOT
+        end
+        system("gnuplot #{tf_path}")
+      end
+
+      def system_graph_blockdiag(id, file_path, tf_path, command)
+        system("#{command} -Tpdf -o #{file_path} #{tf_path}")
       end
     end
   end

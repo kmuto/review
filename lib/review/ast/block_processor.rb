@@ -602,9 +602,14 @@ module ReVIEW
       end
 
       def build_complex_block_ast(context)
+        # For syntaxblock types (box, insn) and captionblock types (point, term),
+        # preserve the original lines array for proper formatting
+        preserve_lines = %i[box insn point term].include?(context.name)
+
         node = context.create_node(AST::BlockNode,
                                    block_type: context.name,
-                                   args: context.args)
+                                   args: context.args,
+                                   lines: preserve_lines ? context.lines.dup : nil)
 
         # Process content and nested blocks
         if context.nested_blocks?
@@ -979,6 +984,9 @@ module ReVIEW
         bibpaper: :build_complex_block_ast,
         graph: :build_complex_block_ast,
         box: :build_complex_block_ast,
+        insn: :build_complex_block_ast,
+        point: :build_complex_block_ast,
+        term: :build_complex_block_ast,
 
         # Control commands
         comment: :build_control_command_ast,
