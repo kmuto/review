@@ -1159,9 +1159,13 @@ module ReVIEW
         # Handle definition content (all children are definition content)
         if item.children && !item.children.empty?
           definition_parts = item.children.map do |child|
-            visit(child) # Use visit instead of render_children for individual nodes
+            result = visit(child) # Use visit instead of render_children for individual nodes
+            # Strip all trailing whitespace and newlines
+            # LATEXBuilder's dd() joins lines with "\n", so we need single newlines between paragraphs
+            result.rstrip
           end
-          definition = definition_parts.join(' ').strip
+          # Join with single newline to match LATEXBuilder dd() behavior (lines.map(&:chomp).join("\n"))
+          definition = definition_parts.join("\n")
 
           # Use exact LATEXBuilder format: \item[term] \mbox{} \\
           "\\item[#{term}] \\mbox{} \\\\\n#{definition}"
