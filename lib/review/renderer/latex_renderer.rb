@@ -439,13 +439,11 @@ module ReVIEW
             else
               content
             end
-          else
+          elsif node.cell_type == :th
             # Non-fixed-width cell: use \shortstack[l] like LATEXBuilder does
-            if node.cell_type == :th
-              "\\reviewth{\\shortstack[l]{#{content}}}"
-            else
-              "\\shortstack[l]{#{content}}"
-            end
+            "\\reviewth{\\shortstack[l]{#{content}}}"
+          else
+            "\\shortstack[l]{#{content}}"
           end
         elsif node.cell_type == :th
           # No line breaks - standard formatting
@@ -769,7 +767,7 @@ module ReVIEW
                   else
                     "\\begin{#{env_name}}"
                   end
-        result << ''  # blank line after begin
+        result << '' # blank line after begin
         result << content.chomp
         result << "\\end{#{env_name}}"
 

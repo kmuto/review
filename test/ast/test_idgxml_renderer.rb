@@ -31,16 +31,15 @@ class IdgxmlRendererTest < Test::Unit::TestCase
     result = renderer.render(ast)
     # Strip XML declaration and root doc tags to match expected output format
     # Remove leading/trailing newlines but preserve spaces (for //raw blocks)
-    result = result.sub(/\A<\?xml[^>]+\?><doc[^>]*>/, '').sub(/<\/doc>\s*\z/, '')
-    result = result.gsub(/\A\n+/, '').gsub(/\n+\z/, '')
-    result
+    result = result.sub(/\A<\?xml[^>]+\?><doc[^>]*>/, '').sub(%r{</doc>\s*\z}, '')
+    result.gsub(/\A\n+/, '').gsub(/\n+\z/, '')
   end
 
   def compile_inline(src)
     result = compile_block(src)
     # For inline tests, also strip the paragraph tags if present
     # Don't use .strip as it removes important whitespace like newlines from @<br>{}
-    result = result.sub(/\A<p>/, '').sub(/<\/p>\z/, '') if result.start_with?('<p>')
+    result = result.sub(/\A<p>/, '').delete_suffix('</p>') if result.start_with?('<p>')
     result
   end
 
@@ -737,7 +736,7 @@ EOS
   end
 
   def test_empty_table
-    pend 'Empty table error handling - requires error handling in AST/Renderer'
+    pend('Empty table error handling - requires error handling in AST/Renderer')
   end
 
   def test_emtable
@@ -750,7 +749,7 @@ EOS
   end
 
   def test_table_row_separator
-    pend 'Table row separator options - requires custom separator support'
+    pend('Table row separator options - requires custom separator support')
   end
 
   def test_dlist_beforeulol
@@ -789,11 +788,11 @@ EOS
   end
 
   def test_ul_nest3
-    pend 'List nesting validation - requires error handling in AST/Renderer'
+    pend('List nesting validation - requires error handling in AST/Renderer')
   end
 
   def test_inline_unknown
-    pend 'Unknown reference error handling - requires error handling in AST/Renderer'
+    pend('Unknown reference error handling - requires error handling in AST/Renderer')
   end
 
   def test_inline_imgref
@@ -836,7 +835,7 @@ EOS
     assert_equal %Q(<inlineequation><Image href="file://images/_review_math/_gen_5fded382aa33f0f0652092d41e05c743f7453c26ca1433038a4883234975a9b0.png" type="inline" /></inlineequation> <inlineequation><Image href="file://images/_review_math/_gen_e7e9536310cdba7ff948771f791cefe32f99b73c608778c9660db79e4926e9f9.png" type="inline" /></inlineequation>), actual
   end
 
-  def test_column_1
+  def test_column1
     src = <<-EOS
 ===[column] prev column
 
@@ -855,7 +854,7 @@ EOS
     assert_equal expected, actual
   end
 
-  def test_column_2
+  def test_column2
     src = <<-EOS
 ===[column] test
 
@@ -870,8 +869,8 @@ EOS
     assert_equal expected, actual
   end
 
-  def test_column_3
-    pend 'Column error handling - not critical for basic functionality'
+  def test_column3
+    pend('Column error handling - not critical for basic functionality')
   end
 
   def test_column_ref
@@ -901,7 +900,7 @@ EOS
 
     # Override the book's contents method to include chap1
     def @book.contents
-      @mock_contents ||= []
+      @contents ||= []
     end
     @book.contents << chap1
 
@@ -1038,15 +1037,15 @@ EOS
   end
 
   def test_minicolumn_blocks_nest_error1
-    pend 'Minicolumn nesting error - not critical for basic functionality'
+    pend('Minicolumn nesting error - not critical for basic functionality')
   end
 
   def test_minicolumn_blocks_nest_error2
-    pend 'Minicolumn nesting error variant - not critical for basic functionality'
+    pend('Minicolumn nesting error variant - not critical for basic functionality')
   end
 
   def test_minicolumn_blocks_nest_error3
-    pend 'Minicolumn nesting error variant - not critical for basic functionality'
+    pend('Minicolumn nesting error variant - not critical for basic functionality')
   end
 
   def test_point_without_caption
@@ -1105,15 +1104,15 @@ EOS
   end
 
   def test_nest_error_close1
-    pend 'Nesting error handling - not critical for basic functionality'
+    pend('Nesting error handling - not critical for basic functionality')
   end
 
   def test_nest_error_close2
-    pend 'Nesting error handling variant - not critical for basic functionality'
+    pend('Nesting error handling variant - not critical for basic functionality')
   end
 
   def test_nest_error_close3
-    pend 'Nesting error handling variant - not critical for basic functionality'
+    pend('Nesting error handling variant - not critical for basic functionality')
   end
 
   def test_nest_ul

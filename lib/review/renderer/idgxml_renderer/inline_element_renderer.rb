@@ -21,7 +21,7 @@ module ReVIEW
 
         def render(type, content, node)
           # Dispatch to specific render method
-          method_name = "render_#{type}".to_sym
+          method_name = :"render_#{type}"
           if respond_to?(method_name, true)
             send(method_name, content, node)
           else
@@ -151,11 +151,11 @@ module ReVIEW
             alt = node.args[1]
 
             result = '<keyword>'
-            if alt && !alt.empty?
-              result += escape("#{word}（#{alt.strip}）")
-            else
-              result += escape(word)
-            end
+            result += if alt && !alt.empty?
+                        escape("#{word}（#{alt.strip}）")
+                      else
+                        escape(word)
+                      end
             result += '</keyword>'
 
             result += %Q(<index value="#{escape(word)}" />)
@@ -211,7 +211,7 @@ module ReVIEW
             # Get list reference using parent renderer's method
             base_ref = @parent_renderer.send(:get_list_reference, id)
             "<span type='list'>#{base_ref}</span>"
-          rescue StandardError => e
+          rescue StandardError
             "<span type='list'>#{escape(id)}</span>"
           end
         end
@@ -222,7 +222,7 @@ module ReVIEW
             # Get table reference using parent renderer's method
             base_ref = @parent_renderer.send(:get_table_reference, id)
             "<span type='table'>#{base_ref}</span>"
-          rescue StandardError => e
+          rescue StandardError
             "<span type='table'>#{escape(id)}</span>"
           end
         end
@@ -233,7 +233,7 @@ module ReVIEW
             # Get image reference using parent renderer's method
             base_ref = @parent_renderer.send(:get_image_reference, id)
             "<span type='image'>#{base_ref}</span>"
-          rescue StandardError => e
+          rescue StandardError
             "<span type='image'>#{escape(id)}</span>"
           end
         end
@@ -244,7 +244,7 @@ module ReVIEW
             # Get equation reference using parent renderer's method
             base_ref = @parent_renderer.send(:get_equation_reference, id)
             "<span type='eq'>#{base_ref}</span>"
-          rescue StandardError => e
+          rescue StandardError
             "<span type='eq'>#{escape(id)}</span>"
           end
         end
@@ -465,7 +465,7 @@ module ReVIEW
           if @book.config['math_format'] == 'imgmath'
             require 'review/img_math'
             @parent_renderer.instance_variable_set(:@texinlineequation, @parent_renderer.instance_variable_get(:@texinlineequation) + 1)
-            texinlineequation = @parent_renderer.instance_variable_get(:@texinlineequation)
+            @parent_renderer.instance_variable_get(:@texinlineequation)
 
             math_str = '$' + str + '$'
             key = Digest::SHA256.hexdigest(str)
@@ -492,7 +492,7 @@ module ReVIEW
         # Break
         # Returns a protected newline marker that will be preserved through paragraph
         # and nolf processing, then restored to an actual newline in visit_document
-        def render_br(content, _node)
+        def render_br(_content, _node)
           "\x01IDGXML_INLINE_NEWLINE\x01"
         end
 

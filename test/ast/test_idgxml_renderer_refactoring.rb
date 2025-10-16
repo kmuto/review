@@ -112,8 +112,8 @@ class IdgxmlRendererRefactoringTest < Test::Unit::TestCase
     input = "<ul><li>item1<ul2>#{marker_start}<li>nested</li>#{marker_end}</ul2></li></ul>"
     # After solve_nest, markers should be removed
     result = @renderer.send(:solve_nest, input)
-    assert_not_include result, marker_start
-    assert_not_include result, marker_end
+    assert_not_include(result, marker_start)
+    assert_not_include(result, marker_end)
   end
 
   def test_solve_nest_step_by_step
@@ -130,7 +130,7 @@ class IdgxmlRendererRefactoringTest < Test::Unit::TestCase
     # Step 2: convert_to_merge_markers
     input2 = "<ul2><li>item</li>#{marker_end}</ul2>"
     result2 = @renderer.send(:convert_to_merge_markers, input2)
-    assert_include result2, merge_marker
+    assert_include(result2, merge_marker)
 
     # Step 3: merge_lists_with_markers
     input3 = "</ul>#{merge_marker}<ul>"
@@ -140,7 +140,7 @@ class IdgxmlRendererRefactoringTest < Test::Unit::TestCase
     # Step 4: merge_toplevel_lists
     # Note: This pattern only matches when there's specific structure
     input4 = '</li></ul><ul><li'
-    result4 = @renderer.send(:merge_toplevel_lists, input4.gsub("\n", ''))
+    result4 = @renderer.send(:merge_toplevel_lists, input4.delete("\n"))
     assert_equal '</li><li', result4
   end
 
@@ -156,9 +156,9 @@ class IdgxmlRendererRefactoringTest < Test::Unit::TestCase
     list_node.children = [item1]
 
     result = @renderer.send(:render_list, list_node, :ul)
-    assert_include result, '<ul>'
-    assert_include result, '</ul>'
-    assert_include result, '<li aid:pstyle="ul-item">'
+    assert_include(result, '<ul>')
+    assert_include(result, '</ul>')
+    assert_include(result, '<li aid:pstyle="ul-item">')
   end
 
   def test_increment_and_decrement_list_depth
@@ -185,7 +185,7 @@ class IdgxmlRendererRefactoringTest < Test::Unit::TestCase
 
     @renderer.send(:with_list_context, :ul) do |context|
       # Inside the block, context should be set
-      assert_not_nil context
+      assert_not_nil(context)
       assert_equal :ul, context.list_type
       assert_equal @renderer.instance_variable_get(:@current_list_context), context
     end

@@ -48,7 +48,7 @@ module ReVIEW
       attr_accessor :needs_close_tag, :has_nested_content
 
       def initialize(list_type, depth)
-        @list_type = list_type  # :ul, :ol, :dl (as symbol)
+        @list_type = list_type # :ul, :ol, :dl (as symbol)
         @depth = depth
         @needs_close_tag = false
         @has_nested_content = false
@@ -62,6 +62,7 @@ module ReVIEW
       # Generate opening marker for nested lists (used by solve_nest)
       def opening_marker
         return '' if @depth == 1
+
         case @list_type
         when :ul then IdgxmlRenderer::IDGXML_LIST_NEST_UL_START
         when :ol then IdgxmlRenderer::IDGXML_LIST_NEST_OL_START
@@ -73,6 +74,7 @@ module ReVIEW
       # Generate closing marker for nested lists (used by solve_nest)
       def closing_marker
         return '' if @depth == 1
+
         case @list_type
         when :ul then IdgxmlRenderer::IDGXML_LIST_NEST_UL_END
         when :ol then IdgxmlRenderer::IDGXML_LIST_NEST_OL_END
@@ -100,7 +102,7 @@ module ReVIEW
       attr_accessor :list_type, :needs_close_tag
 
       def initialize(list_type)
-        @list_type = list_type  # 'ul', 'ol', 'dl' (as string for legacy)
+        @list_type = list_type # 'ul', 'ol', 'dl' (as string for legacy)
         @needs_close_tag = false
       end
 
@@ -175,9 +177,9 @@ module ReVIEW
         @img_graph = nil
 
         # Initialize list nesting tracking with stack-based approach
-        @nest_stack = []  # Stack of NestContext objects
+        @nest_stack = [] # Stack of NestContext objects
         @previous_list_type = nil
-        @pending_close_tag = nil  # Pending closing tag (e.g., '</li>' or '</dd>')
+        @pending_close_tag = nil # Pending closing tag (e.g., '</li>' or '</dd>')
 
         # Initialize list depth tracking for solve_nest markers
         @ul_depth = 0
@@ -245,7 +247,7 @@ module ReVIEW
         # But preserve newlines inside <pre> tags and listinfo tags
         if nolf
           # Protect newlines inside <pre> tags
-          result = result.gsub(/<pre>(.*?)<\/pre>/m) do |match|
+          result = result.gsub(%r{<pre>(.*?)</pre>}m) do |match|
             match.gsub("\n", "\x01IDGXML_PRE_NEWLINE\x01")
           end
 
@@ -259,9 +261,7 @@ module ReVIEW
 
         # Restore protected newlines from listinfo and inline elements
         result = result.gsub("\x01IDGXML_LISTINFO_NEWLINE\x01", "\n")
-        result = result.gsub("\x01IDGXML_INLINE_NEWLINE\x01", "\n")
-
-        result
+        result.gsub("\x01IDGXML_INLINE_NEWLINE\x01", "\n")
       end
 
       def visit_headline(node)
@@ -328,11 +328,11 @@ module ReVIEW
         # Join lines in paragraph by removing newlines (like join_lines in IDGXMLBuilder)
         # Inline elements like @<br>{} and @<raw>{} use protected markers that are preserved
         # unless join_lines_by_lang is explicitly enabled
-        unless @book.config['join_lines_by_lang']
-          content = content.gsub(/\n/, '')
-        else
-          content = content.gsub(/\n/, ' ')
-        end
+        content = if @book.config['join_lines_by_lang']
+                    content.tr("\n", ' ')
+                  else
+                    content.delete("\n")
+                  end
 
         # Handle noindent attribute
         if node.attribute?(:noindent) || @noindent
@@ -360,7 +360,7 @@ module ReVIEW
         render_inline_element(node.inline_type, content, node)
       end
 
-      def visit_reference(node)
+      def visit_reference(_node)
         # ReferenceNode is a child of InlineNode(type=ref)
         # Return empty string as the actual rendering is done by parent InlineNode
         ''
@@ -575,7 +575,7 @@ module ReVIEW
         end
       end
 
-      def visit_beginchild(node)
+      def visit_beginchild(_node)
         # beginchild marks the start of nested content within a list item
         # Validate that we're in a list context
         unless @previous_list_type
@@ -591,10 +591,10 @@ module ReVIEW
         # Push context for tracking
         @nest_stack.push(NestContext.new(@previous_list_type))
 
-        ''  # No output - just state management
+        '' # No output - just state management
       end
 
-      def visit_endchild(node)
+      def visit_endchild(_node)
         # endchild marks the end of nested content
         # Validate stack state
         if @nest_stack.empty?
@@ -666,12 +666,12 @@ module ReVIEW
           end
         else
           # For other graph types, generate directly
-          c = 'idgxml'  # target_name
+          c = 'idgxml' # target_name
           dir = File.join(@book.imagedir, c)
           FileUtils.mkdir_p(dir) unless File.directory?(dir)
 
           # Determine image extension based on format
-          image_ext = 'pdf'  # IDGXML typically uses PDF
+          image_ext = 'pdf' # IDGXML typically uses PDF
           file = "#{id}.#{image_ext}"
           file_path = File.join(dir, file)
 
@@ -798,7 +798,7 @@ module ReVIEW
         end
       end
 
-      def visit_footnote(node)
+      def visit_footnote(_node)
         # FootnoteNode is not rendered directly - it's just a definition
         # The actual footnote output is generated by @<fn>{id} inline element
         # Return empty string to indicate no output for this definition block
@@ -884,26 +884,26 @@ module ReVIEW
       end
 
       # Render unordered list items
-      def render_ul_items(node, context)
+      def render_ul_items(node, _context)
         items = []
         node.children.each_with_index do |item, idx|
           item_content = item.children.map { |child| visit(child) }.join("\n")
           # Join lines in list item according to join_lines_by_lang setting
-          unless @book.config['join_lines_by_lang']
-            item_content = item_content.gsub(/\n/, '')
-          else
-            item_content = item_content.gsub(/\n/, ' ')
-          end
+          item_content = if @book.config['join_lines_by_lang']
+                           item_content.tr("\n", ' ')
+                         else
+                           item_content.delete("\n")
+                         end
 
           items << %Q(<li aid:pstyle="ul-item">#{item_content.chomp})
 
           # Close </li> for all non-last items
           is_last_item = (idx == node.children.size - 1)
-          if !is_last_item
-            items << '</li>'
-          else
+          if is_last_item
             # Set pending close tag for the last item
             @pending_close_tag = '</li>'
+          else
+            items << '</li>'
           end
         end
 
@@ -911,18 +911,18 @@ module ReVIEW
       end
 
       # Render ordered list items
-      def render_ol_items(node, context)
+      def render_ol_items(node, _context)
         items = []
         olnum = @ol_num || 1
 
         node.children.each_with_index do |item, idx|
           item_content = item.children.map { |child| visit(child) }.join("\n")
           # Join lines in list item according to join_lines_by_lang setting
-          unless @book.config['join_lines_by_lang']
-            item_content = item_content.gsub(/\n/, '')
-          else
-            item_content = item_content.gsub(/\n/, ' ')
-          end
+          item_content = if @book.config['join_lines_by_lang']
+                           item_content.tr("\n", ' ')
+                         else
+                           item_content.delete("\n")
+                         end
 
           # Get the num attribute from the item if available
           num = item.respond_to?(:number) ? (item.number || olnum) : olnum
@@ -931,11 +931,11 @@ module ReVIEW
 
           # Close </li> for all non-last items
           is_last_item = (idx == node.children.size - 1)
-          if !is_last_item
-            items << '</li>'
-          else
+          if is_last_item
             # Set pending close tag for the last item
             @pending_close_tag = '</li>'
+          else
+            items << '</li>'
           end
 
           olnum += 1
@@ -948,18 +948,18 @@ module ReVIEW
       end
 
       # Render definition list items
-      def render_dl_items(node, context)
+      def render_dl_items(node, _context)
         items = []
 
         node.children.each_with_index do |item, idx|
           # Get term and definitions
-          if item.term_children && item.term_children.any?
-            term_content = item.term_children.map { |child| visit(child) }.join
-          elsif item.content
-            term_content = item.content.to_s
-          else
-            term_content = ''
-          end
+          term_content = if item.term_children && item.term_children.any?
+                           item.term_children.map { |child| visit(child) }.join
+                         elsif item.content
+                           item.content.to_s
+                         else
+                           ''
+                         end
 
           items << "<dt>#{term_content}</dt>"
 
@@ -972,15 +972,15 @@ module ReVIEW
             items << "<dd>#{definition_content.chomp}"
           else
             # Empty dd - output opening tag only
-            items << "<dd>"
+            items << '<dd>'
           end
 
           # Close </dd> for all non-last items
-          if !is_last_item
-            items << '</dd>'
-          else
+          if is_last_item
             # Set pending close tag for the last item
             @pending_close_tag = '</dd>'
+          else
+            items << '</dd>'
           end
         end
 
@@ -1035,25 +1035,23 @@ module ReVIEW
       # Remove closing list tag from output
       def remove_closing_list_tag(output)
         # Remove the last closing list tag (</ul>, </ol>, or </dl>)
-        output.sub(/<\/(ul|ol|dl)>\n?\z/, '')
+        output.sub(%r{</(ul|ol|dl)>\n?\z}, '')
       end
 
       # Insert pending close tag before the closing list tag
       def insert_pending_close_tag(output)
         # Find the last closing list tag (</ul>, </ol>, or </dl>)
-        if output =~ /(.*)<\/(ul|ol|dl)>(\n?)\z/m
+        if output =~ %r{(.*)</(ul|ol|dl)>(\n?)\z}m
           # Insert the pending close tag before the closing list tag
           before_closing = $1
           list_type = $2
           trailing_newline = $3
           "#{before_closing}#{@pending_close_tag}</#{list_type}>#{trailing_newline}"
-        else
+        elsif output.end_with?("\n")
           # No closing list tag found - append at the end
-          if output.end_with?("\n")
-            output.chomp + @pending_close_tag + "\n"
-          else
-            output + @pending_close_tag
-          end
+          output.chomp + @pending_close_tag + "\n"
+        else
+          output + @pending_close_tag
         end
       end
 
@@ -1114,49 +1112,49 @@ module ReVIEW
         content = merge_toplevel_lists(content)
 
         # Step 5: Clean up any remaining merge markers
-        content.gsub(/#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}/, '')
+        content.gsub(/#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}/o, '')
       end
 
       # Step 1: Remove opening markers that appear at nested list start
       # These markers are placed right after opening tag of nested lists
       # Pattern: <TYPE(N)>\n?MARKER -> <TYPE(N)> (remove opening marker)
       def remove_opening_markers(content)
-        content
-          .gsub(/<(dl\d+)>\n?#{Regexp.escape(IDGXML_LIST_NEST_DL_START)}/, '<\1>')
-          .gsub(/<(ul\d+)>\n?#{Regexp.escape(IDGXML_LIST_NEST_UL_START)}/, '<\1>')
-          .gsub(/<(ol\d+)>\n?#{Regexp.escape(IDGXML_LIST_NEST_OL_START)}/, '<\1>')
+        content.
+          gsub(/<(dl\d+)>\n?#{Regexp.escape(IDGXML_LIST_NEST_DL_START)}/o, '<\1>').
+          gsub(/<(ul\d+)>\n?#{Regexp.escape(IDGXML_LIST_NEST_UL_START)}/o, '<\1>').
+          gsub(/<(ol\d+)>\n?#{Regexp.escape(IDGXML_LIST_NEST_OL_START)}/o, '<\1>').
           # Also handle case where opening marker appears after closing item tags
           # Pattern: </dd></dl(N)>MARKER -> empty (remove nested list opening marker)
-          .gsub(/<\/dd><\/dl(\d*)>\n?#{Regexp.escape(IDGXML_LIST_NEST_DL_START)}/, '')
-          .gsub(/<\/li><\/ul(\d*)>\n?#{Regexp.escape(IDGXML_LIST_NEST_UL_START)}/, '')
-          .gsub(/<\/li><\/ol(\d*)>\n?#{Regexp.escape(IDGXML_LIST_NEST_OL_START)}/, '')
+          gsub(%r{</dd></dl(\d*)>\n?#{Regexp.escape(IDGXML_LIST_NEST_DL_START)}}o, '').
+          gsub(%r{</li></ul(\d*)>\n?#{Regexp.escape(IDGXML_LIST_NEST_UL_START)}}o, '').
+          gsub(%r{</li></ol(\d*)>\n?#{Regexp.escape(IDGXML_LIST_NEST_OL_START)}}o, '')
       end
 
       # Step 2: Convert closing markers to MERGE markers
       # Pattern: CLOSE_MARKER\n?</TYPE(N)> -> </item></TYPE(N)>MERGE_MARKER
       def convert_to_merge_markers(content)
-        content
-          .gsub(/#{Regexp.escape(IDGXML_LIST_NEST_DL_END)}\n?<\/dl(\d*)>/, "</dd></dl\\1>#{IDGXML_LIST_MERGE_MARKER}")
-          .gsub(/#{Regexp.escape(IDGXML_LIST_NEST_UL_END)}\n?<\/ul(\d*)>/, "</li></ul\\1>#{IDGXML_LIST_MERGE_MARKER}")
-          .gsub(/#{Regexp.escape(IDGXML_LIST_NEST_OL_END)}\n?<\/ol(\d*)>/, "</li></ol\\1>#{IDGXML_LIST_MERGE_MARKER}")
+        content.
+          gsub(%r{#{Regexp.escape(IDGXML_LIST_NEST_DL_END)}\n?</dl(\d*)>}o, "</dd></dl\\1>#{IDGXML_LIST_MERGE_MARKER}").
+          gsub(%r{#{Regexp.escape(IDGXML_LIST_NEST_UL_END)}\n?</ul(\d*)>}o, "</li></ul\\1>#{IDGXML_LIST_MERGE_MARKER}").
+          gsub(%r{#{Regexp.escape(IDGXML_LIST_NEST_OL_END)}\n?</ol(\d*)>}o, "</li></ol\\1>#{IDGXML_LIST_MERGE_MARKER}")
       end
 
       # Step 3: Merge consecutive lists by removing intermediate tags
       # Pattern: </TYPE(N)>MERGE_MARKER\n?<TYPE(M)> -> empty (merge lists)
       def merge_lists_with_markers(content)
-        content
-          .gsub(/<\/dl(\d*)>#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}\n?<dl(\d*)>/, '')
-          .gsub(/<\/ul(\d*)>#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}\n?<ul(\d*)>/, '')
-          .gsub(/<\/ol(\d*)>#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}\n?<ol(\d*)>/, '')
+        content.
+          gsub(%r{</dl(\d*)>#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}\n?<dl(\d*)>}o, '').
+          gsub(%r{</ul(\d*)>#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}\n?<ul(\d*)>}o, '').
+          gsub(%r{</ol(\d*)>#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}\n?<ol(\d*)>}o, '')
       end
 
       # Step 4: Merge consecutive top-level lists (no markers, just adjacent tags)
       # Pattern: </li></TYPE>\n?<TYPE><li> -> </li><li> (merge lists at same level)
       def merge_toplevel_lists(content)
-        content
-          .gsub(/<\/li>\n?<\/ul>\n?<ul>\n?<li/, '</li><li')
-          .gsub(/<\/li>\n?<\/ol>\n?<ol>\n?<li/, '</li><li')
-          .gsub(/<\/dd>\n?<\/dl>\n?<dl>\n?<dt/, '</dd><dt')
+        content.
+          gsub(%r{</li>\n?</ul>\n?<ul>\n?<li}, '</li><li').
+          gsub(%r{</li>\n?</ol>\n?<ol>\n?<li}, '</li><li').
+          gsub(%r{</dd>\n?</dl>\n?<dl>\n?<dt}, '</dd><dt')
       end
 
       # Get headline prefix
@@ -1281,11 +1279,11 @@ module ReVIEW
               # Empty line signals paragraph break
               unless current_paragraph.empty?
                 # Join lines in paragraph according to join_lines_by_lang setting
-                if @book.config['join_lines_by_lang']
-                  paragraphs << current_paragraph.join(' ')
-                else
-                  paragraphs << current_paragraph.join
-                end
+                paragraphs << if @book.config['join_lines_by_lang']
+                                current_paragraph.join(' ')
+                              else
+                                current_paragraph.join
+                              end
               end
               current_paragraph = []
             else
@@ -1294,11 +1292,11 @@ module ReVIEW
           end
           # Add last paragraph
           unless current_paragraph.empty?
-            if @book.config['join_lines_by_lang']
-              paragraphs << current_paragraph.join(' ')
-            else
-              paragraphs << current_paragraph.join
-            end
+            paragraphs << if @book.config['join_lines_by_lang']
+                            current_paragraph.join(' ')
+                          else
+                            current_paragraph.join
+                          end
           end
 
           # Join paragraphs with double newlines so split_paragraph_content can split them
@@ -1475,7 +1473,7 @@ module ReVIEW
             line_output += '</listinfo>'
             result << line_output
           else
-            result << line + "\n"
+            result << (line + "\n")
           end
           no += 1
         end
@@ -1505,7 +1503,7 @@ module ReVIEW
             line_output += '</listinfo>'
             result << line_output
           else
-            result << line_with_number + "\n"
+            result << (line_with_number + "\n")
           end
           no += 1
         end
@@ -1586,11 +1584,11 @@ module ReVIEW
         end
 
         # Generate tbody
-        if @tablewidth.nil?
-          result << '<tbody>'
-        else
-          result << %Q(<tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="#{rows_data[:rows].length}" aid:tcols="#{@col}">)
-        end
+        result << if @tablewidth.nil?
+                    '<tbody>'
+                  else
+                    %Q(<tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="#{rows_data[:rows].length}" aid:tcols="#{@col}">)
+                  end
 
         @table_id = node.id
         result << generate_table_rows(rows_data, node.header_rows.length)
@@ -1625,11 +1623,11 @@ module ReVIEW
           # Apply table width processing if enabled
           if @tablewidth
             cells = cells.map do |cell|
-              cell.gsub("\t.\t", "\tDUMMYCELLSPLITTER\t")
-                  .gsub("\t..\t", "\t.\t")
-                  .gsub(/\t\.\Z/, "\tDUMMYCELLSPLITTER")
-                  .gsub(/\t\.\.\Z/, "\t.")
-                  .gsub(/\A\./, '')
+              cell.gsub("\t.\t", "\tDUMMYCELLSPLITTER\t").
+                gsub("\t..\t", "\t.\t").
+                gsub(/\t\.\Z/, "\tDUMMYCELLSPLITTER").
+                gsub(/\t\.\.\Z/, "\t.").
+                gsub(/\A\./, '')
             end
           end
 
@@ -1858,12 +1856,12 @@ module ReVIEW
         # Process children as separate text lines (not as paragraphs)
         if node.children && !node.children.empty?
           node.children.each do |child|
-            if child.is_a?(ReVIEW::AST::TextNode)
-              lines << escape(child.content.to_s)
-            else
-              # For other node types, render normally
-              lines << visit(child)
-            end
+            lines << if child.is_a?(ReVIEW::AST::TextNode)
+                       escape(child.content.to_s)
+                     else
+                       # For other node types, render normally
+                       visit(child)
+                     end
           end
         end
 
@@ -2115,11 +2113,11 @@ module ReVIEW
       end
 
       # Graph generation helper methods (for non-mermaid graphs)
-      def system_graph_graphviz(id, file_path, tf_path)
+      def system_graph_graphviz(_id, file_path, tf_path)
         system("dot -Tpdf -o#{file_path} #{tf_path}")
       end
 
-      def system_graph_gnuplot(id, file_path, content, tf_path)
+      def system_graph_gnuplot(_id, file_path, content, tf_path)
         File.open(tf_path, 'w') do |tf|
           tf.puts <<~GNUPLOT
             set terminal pdf
@@ -2130,7 +2128,7 @@ module ReVIEW
         system("gnuplot #{tf_path}")
       end
 
-      def system_graph_blockdiag(id, file_path, tf_path, command)
+      def system_graph_blockdiag(_id, file_path, tf_path, command)
         system("#{command} -Tpdf -o #{file_path} #{tf_path}")
       end
     end

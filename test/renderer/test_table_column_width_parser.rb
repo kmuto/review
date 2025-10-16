@@ -31,9 +31,9 @@ class TestTableColumnWidthParser < Test::Unit::TestCase
   def test_fixed_width_detection
     assert ReVIEW::Renderer::LatexRenderer::TableColumnWidthParser.fixed_width?('p{10mm}')
     assert ReVIEW::Renderer::LatexRenderer::TableColumnWidthParser.fixed_width?('L{30mm}')
-    refute ReVIEW::Renderer::LatexRenderer::TableColumnWidthParser.fixed_width?('l')
-    refute ReVIEW::Renderer::LatexRenderer::TableColumnWidthParser.fixed_width?('c')
-    refute ReVIEW::Renderer::LatexRenderer::TableColumnWidthParser.fixed_width?('r')
+    refute(ReVIEW::Renderer::LatexRenderer::TableColumnWidthParser.fixed_width?('l'))
+    refute(ReVIEW::Renderer::LatexRenderer::TableColumnWidthParser.fixed_width?('c'))
+    refute(ReVIEW::Renderer::LatexRenderer::TableColumnWidthParser.fixed_width?('r'))
   end
 
   def test_separate_tsize_simple
