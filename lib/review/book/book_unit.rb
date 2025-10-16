@@ -81,7 +81,7 @@ module ReVIEW
         @indepimage_index = indexes[:indepimage_index] if indexes[:indepimage_index]
         @headline_index = indexes[:headline_index] if indexes[:headline_index]
         @column_index = indexes[:column_index] if indexes[:column_index]
-        @bibpaper_index = indexes[:bibpaper_index] if indexes[:bibpaper_index]
+        @book.bibpaper_index = indexes[:bibpaper_index] if @book.present? && indexes[:bibpaper_index]
       end
 
       def dirname
