@@ -336,9 +336,14 @@ module ReVIEW
 
       def output_extension(format)
         case format
-        when 'html' then '.html'
-        when 'latex' then '.tex'
-        when 'idgxml' then '.xml'
+        when 'html'
+          '.html'
+        when 'latex'
+          '.tex'
+        when 'idgxml'
+          '.xml'
+        else
+          '.txt'
         end
       end
 

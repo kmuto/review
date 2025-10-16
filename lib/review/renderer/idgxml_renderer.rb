@@ -363,7 +363,7 @@ module ReVIEW
         result.join("\n") + "\n"
       end
 
-      def visit_block(node)
+      def visit_block(node) # rubocop:disable Metrics/CyclomaticComplexity
         block_type = node.block_type.to_s
 
         case block_type
@@ -379,7 +379,7 @@ module ReVIEW
           caption = node.args&.first
           content = render_children(node)
           captionblock(block_type, content, caption)
-        when 'planning', 'best', 'security', 'reference', 'link', 'practice', 'expert'
+        when 'planning', 'best', 'security', 'reference', 'link', 'practice', 'expert' # rubocop:disable Lint/DuplicateBranch
           caption = node.args&.first
           content = render_children(node)
           captionblock(block_type, content, caption)
@@ -1358,7 +1358,7 @@ module ReVIEW
         if @book.config['tableopt']
           pt_unit = @book.config['pt_to_mm_unit']
           pt_unit = pt_unit.to_f if pt_unit
-          pt_unit = 1.0 if pt_unit.nil? || pt_unit.zero?
+          pt_unit = 1.0 if pt_unit.nil? || pt_unit == 0
           @tablewidth = @book.config['tableopt'].split(',')[0].to_f / pt_unit
         end
         @col = 0
