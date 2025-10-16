@@ -3,6 +3,6 @@
 
 $LOAD_PATH.unshift(File.realpath('../lib', __dir__))
 
-require 'review/command/compile'
+require 'review/ast/command/compile'
 
-exit ReVIEW::Command::Compile.new.run(ARGV)
+exit ReVIEW::AST::Command::Compile.new.run(ARGV)
