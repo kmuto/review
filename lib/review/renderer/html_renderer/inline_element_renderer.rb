@@ -213,7 +213,7 @@ module ReVIEW
           # Get the raw index string from args (before any processing)
           index_str = node.args&.first || content
           # Create ID from the hierarchical index path (replace <<>> with -)
-          index_id = index_str.gsub('<<>>', '-').tr(' ', '-')
+          index_id = normalize_id(index_str.gsub('<<>>', '-'))
           %Q(<a id="idx-#{index_id}"></a>#{escape_content(content)})
         end
 
@@ -221,7 +221,7 @@ module ReVIEW
           # Get the raw index string from args (before any processing)
           index_str = node.args&.first || content
           # Create ID from the hierarchical index path (replace <<>> with -)
-          index_id = index_str.gsub('<<>>', '-').tr(' ', '-')
+          index_id = normalize_id(index_str.gsub('<<>>', '-'))
           %Q(<a id="hidx-#{index_id}"></a>)
         end
 
