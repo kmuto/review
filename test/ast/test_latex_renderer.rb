@@ -63,7 +63,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 1, caption: caption, label: 'chap1')
     result = @renderer.visit(headline)
 
-    assert_equal "\\chapter{Chapter Title}\n\\label{chap:test}\n", result
+    assert_equal "\\chapter{Chapter Title}\n\\label{chap:test}\n\n", result
   end
 
   def test_visit_headline_level2
@@ -73,7 +73,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 2, caption: caption)
     result = @renderer.visit(headline)
 
-    assert_equal "\\section{Section Title}\n\\label{sec:1-1}\n", result
+    assert_equal "\\section{Section Title}\n\\label{sec:1-1}\n\n", result
   end
 
   def test_visit_headline_with_secnolevel_default
@@ -85,7 +85,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 3, caption: caption)
     result = @renderer.visit(headline)
 
-    expected = "\\subsection*{Subsection Title}\n\\addcontentsline{toc}{subsection}{Subsection Title}\n\\label{sec:1-0-1}\n"
+    expected = "\\subsection*{Subsection Title}\n\\addcontentsline{toc}{subsection}{Subsection Title}\n\\label{sec:1-0-1}\n\n"
     assert_equal expected, result
   end
 
@@ -98,14 +98,14 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption3.add_child(AST::TextNode.new(content: 'Subsection Title'))
     headline3 = AST::HeadlineNode.new(level: 3, caption: caption3)
     result3 = @renderer.visit(headline3)
-    assert_equal "\\subsection{Subsection Title}\n\\label{sec:1-0-1}\n", result3
+    assert_equal "\\subsection{Subsection Title}\n\\label{sec:1-0-1}\n\n", result3
 
-    # Level 4 - subsubsection* with addcontentsline
+    # Level 4 - subsubsection* without addcontentsline (exceeds default toclevel of 3)
     caption4 = AST::CaptionNode.new
     caption4.add_child(AST::TextNode.new(content: 'Subsubsection Title'))
     headline4 = AST::HeadlineNode.new(level: 4, caption: caption4)
     result4 = @renderer.visit(headline4)
-    expected4 = "\\subsubsection*{Subsubsection Title}\n\\addcontentsline{toc}{subsection}{Subsubsection Title}\n\\label{sec:1-0-1-1}\n"
+    expected4 = "\\subsubsection*{Subsubsection Title}\n\\label{sec:1-0-1-1}\n\n"
     assert_equal expected4, result4
   end
 
@@ -118,7 +118,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 2, caption: caption)
     result = @renderer.visit(headline)
 
-    expected = "\\section*{Section Title}\n\\addcontentsline{toc}{subsection}{Section Title}\n\\label{sec:1-1}\n"
+    expected = "\\section*{Section Title}\n\\addcontentsline{toc}{section}{Section Title}\n\\label{sec:1-1}\n\n"
     assert_equal expected, result
   end
 
@@ -133,7 +133,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 2, caption: caption)
     result = @renderer.visit(headline)
 
-    expected = "\\section*{Section Title}\n\\addcontentsline{toc}{subsection}{Section Title}\n\\label{sec:-1}\n"
+    expected = "\\section*{Section Title}\n\\addcontentsline{toc}{section}{Section Title}\n\\label{sec:-1}\n\n"
     assert_equal expected, result
   end
 
@@ -146,7 +146,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption1.add_child(AST::TextNode.new(content: 'Chapter Title'))
     headline1 = AST::HeadlineNode.new(level: 1, caption: caption1)
     result1 = @renderer.visit(headline1)
-    expected1 = "\\chapter*{Chapter Title}\n\\addcontentsline{toc}{subsection}{Chapter Title}\n\\label{chap:test}\n"
+    expected1 = "\\chapter*{Chapter Title}\n\\addcontentsline{toc}{chapter}{Chapter Title}\n\\label{chap:test}\n\n"
     assert_equal expected1, result1
 
     # Level 2 - section*
@@ -154,7 +154,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption2.add_child(AST::TextNode.new(content: 'Section Title'))
     headline2 = AST::HeadlineNode.new(level: 2, caption: caption2)
     result2 = @renderer.visit(headline2)
-    expected2 = "\\section*{Section Title}\n\\addcontentsline{toc}{subsection}{Section Title}\n\\label{sec:1-1}\n"
+    expected2 = "\\section*{Section Title}\n\\addcontentsline{toc}{section}{Section Title}\n\\label{sec:1-1}\n\n"
     assert_equal expected2, result2
   end
 
@@ -169,7 +169,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 1, caption: caption)
     result = part_renderer.visit(headline)
 
-    expected = "\\begin{reviewpart}\n\\part{Part Title}\n\\label{chap:part1}\n"
+    expected = "\\begin{reviewpart}\n\\part{Part Title}\n\\label{chap:part1}\n\n"
     assert_equal expected, result
   end
 
@@ -185,7 +185,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 1, caption: caption)
     result = part_renderer.visit(headline)
 
-    expected = "\\begin{reviewpart}\n\\part*{Part Title}\n\\addcontentsline{toc}{subsection}{Part Title}\n\\label{chap:part1}\n"
+    expected = "\\begin{reviewpart}\n\\part*{Part Title}\n\\addcontentsline{toc}{part}{Part Title}\n\\label{chap:part1}\n\n"
     assert_equal expected, result
   end
 
@@ -200,7 +200,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 2, caption: caption)
     result = part_renderer.visit(headline)
 
-    expected = "\\section{Chapter in Part}\n\\label{sec:1-1}\n"
+    expected = "\\section{Chapter in Part}\n\\label{sec:1-1}\n\n"
     assert_equal expected, result
   end
 
@@ -216,7 +216,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 2, caption: caption)
     result = part_renderer.visit(headline)
 
-    expected = "\\section*{Chapter in Numberless Part}\n\\addcontentsline{toc}{subsection}{Chapter in Numberless Part}\n\\label{sec:-1}\n"
+    expected = "\\section*{Chapter in Numberless Part}\n\\addcontentsline{toc}{section}{Chapter in Numberless Part}\n\\label{sec:-1}\n\n"
     assert_equal expected, result
   end
 
@@ -266,7 +266,7 @@ class TestLatexRenderer < Test::Unit::TestCase
                "\\begin{reviewemlist}\n" +
                "puts \"Hello\"\n" +
                "\\end{reviewemlist}\n" +
-               "\\end{reviewlistblock}\n"
+               "\\end{reviewlistblock}\n\n"
 
     assert_equal expected, result
   end
@@ -311,7 +311,7 @@ class TestLatexRenderer < Test::Unit::TestCase
       '\\end{table}'
     ]
 
-    assert_equal expected_lines.join("\n") + "\n", result
+    assert_equal expected_lines.join("\n") + "\n\n", result
   end
 
   def test_visit_image
@@ -344,7 +344,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     list.add_child(item2)
 
     result = @renderer.visit(list)
-    expected = "\n\\begin{itemize}\n\\item First item\n\\item Second item\n\\end{itemize}\n"
+    expected = "\n\\begin{itemize}\n\\item First item\n\\item Second item\n\\end{itemize}\n\n"
 
     assert_equal expected, result
   end
@@ -362,7 +362,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     list.add_child(item2)
 
     result = @renderer.visit(list)
-    expected = "\n\\begin{enumerate}\n\\item First item\n\\item Second item\n\\end{enumerate}\n"
+    expected = "\n\\begin{enumerate}\n\\item First item\n\\item Second item\n\\end{enumerate}\n\n"
 
     assert_equal expected, result
   end
@@ -447,7 +447,7 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     expected = "\\begin{reviewpart}\n" +
                "\\part{Part Title}\n" +
-               "\\label{chap:part1}\n" +
+               "\\label{chap:part1}\n\n" +
                "Part content here.\n\n" +
                "\\end{reviewpart}\n"
 
@@ -478,9 +478,9 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     expected = "\\begin{reviewpart}\n" +
                "\\part{Part Title}\n" +
-               "\\label{chap:part1}\n" +
+               "\\label{chap:part1}\n\n" +
                "\\part{Another Part Title}\n" +
-               "\\label{chap:part1}\n" +
+               "\\label{chap:part1}\n\n" +
                "\\end{reviewpart}\n"
 
     assert_equal expected, result
@@ -503,7 +503,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     result = part_renderer.visit(document)
 
     expected = "\\section{Section Title}\n" +
-               "\\label{sec:1-1}\n"
+               "\\label{sec:1-1}\n\n"
 
     assert_equal expected, result
   end
@@ -526,7 +526,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     result = @renderer.visit(document)
 
     expected = "\\chapter{Chapter Title}\n" +
-               "\\label{chap:test}\n" +
+               "\\label{chap:test}\n\n" +
                "Chapter content here.\n\n"
 
     assert_equal expected, result
@@ -540,9 +540,9 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 2, caption: caption, tag: 'nonum')
     result = @renderer.visit(headline)
 
+    # nonum does NOT get labels (matching LATEXBuilder behavior)
     expected = "\\section*{Unnumbered Section}\n" +
-               "\\addcontentsline{toc}{section}{Unnumbered Section}\n" +
-               "\\label{sec:1-1}\n"
+               "\\addcontentsline{toc}{section}{Unnumbered Section}\n\n"
 
     assert_equal expected, result
   end
@@ -555,8 +555,8 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 2, caption: caption, tag: 'notoc')
     result = @renderer.visit(headline)
 
-    expected = "\\section*{No TOC Section}\n" +
-               "\\label{sec:1-1}\n"
+    # notoc does NOT get labels (matching LATEXBuilder behavior)
+    expected = "\\section*{No TOC Section}\n\n"
 
     assert_equal expected, result
   end
@@ -582,9 +582,9 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 1, caption: caption, tag: 'nonum')
     result = @renderer.visit(headline)
 
+    # nonum does NOT get labels (matching LATEXBuilder behavior)
     expected = "\\chapter*{Unnumbered Chapter}\n" +
-               "\\addcontentsline{toc}{chapter}{Unnumbered Chapter}\n" +
-               "\\label{chap:test}\n"
+               "\\addcontentsline{toc}{chapter}{Unnumbered Chapter}\n\n"
 
     assert_equal expected, result
   end
@@ -597,9 +597,9 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 3, caption: caption, tag: 'nonum')
     result = @renderer.visit(headline)
 
+    # nonum does NOT get labels (matching LATEXBuilder behavior)
     expected = "\\subsection*{Unnumbered Subsection}\n" +
-               "\\addcontentsline{toc}{subsection}{Unnumbered Subsection}\n" +
-               "\\label{sec:1-0-1}\n"
+               "\\addcontentsline{toc}{subsection}{Unnumbered Subsection}\n\n"
 
     assert_equal expected, result
   end
@@ -615,10 +615,10 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(level: 1, caption: caption, tag: 'nonum')
     result = part_renderer.visit(headline)
 
+    # Part level 1 with nonum does NOT get a label (matching LATEXBuilder behavior)
     expected = "\\begin{reviewpart}\n" +
                "\\part*{Unnumbered Part}\n" +
-               "\\addcontentsline{toc}{chapter}{Unnumbered Part}\n" +
-               "\\label{chap:part1}\n"
+               "\\addcontentsline{toc}{chapter}{Unnumbered Part}\n\n"
 
     assert_equal expected, result
   end
@@ -900,7 +900,7 @@ class TestLatexRenderer < Test::Unit::TestCase
                "RISC CPU made by DEC.\n" +
                "\\item[POWER \\lbrack{}IBM\\rbrack{}] \\mbox{} \\\\\n" +
                "RISC CPU made by IBM and Motorola.\n" +
-               "\\end{description}\n"
+               "\\end{description}\n\n"
 
     assert_equal expected, result
   end
@@ -920,7 +920,7 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     expected = "\n\\begin{description}\n" +
                "\\item[Term Only] \\mbox{} \\\\\n" +
-               "\\end{description}\n"
+               "\\end{description}\n\n"
 
     assert_equal expected, result
   end
@@ -1206,7 +1206,7 @@ class TestLatexRenderer < Test::Unit::TestCase
       '\\end{reviewtable}'
     ]
 
-    assert_equal expected_lines.join("\n") + "\n", result
+    assert_equal expected_lines.join("\n") + "\n\n", result
   end
 
   def test_visit_table_with_empty_caption_node
@@ -1252,7 +1252,7 @@ class TestLatexRenderer < Test::Unit::TestCase
       '\\end{reviewtable}'
     ]
 
-    assert_equal expected_lines.join("\n") + "\n", result
+    assert_equal expected_lines.join("\n") + "\n\n", result
   end
 
   def test_inline_bib_reference

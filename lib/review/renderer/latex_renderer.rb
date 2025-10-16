@@ -1411,14 +1411,14 @@ module ReVIEW
                      'subsection'
                    end
 
-        "\\#{section_command}{#{caption}}\n\\addcontentsline{toc}{#{toc_type}}{#{caption}}\n"
+        "\\#{section_command}{#{caption}}\n\\addcontentsline{toc}{#{toc_type}}{#{caption}}\n\n"
       end
 
       # Generate unnumbered headline without TOC entry (for notoc headlines)
       def generate_notoc_headline(level, caption, _node)
         section_command = get_base_section_name(level) + '*'
 
-        "\\#{section_command}{#{caption}}\n"
+        "\\#{section_command}{#{caption}}\n\n"
       end
 
       # Get base section name without star
