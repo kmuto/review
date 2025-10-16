@@ -88,17 +88,14 @@ module ReVIEW
 
           if beginchild_block?(current)
             depth += 1
-            collected << current
           elsif endchild_block?(current)
             depth -= 1
-            if depth.zero?
+            if depth == 0
               idx += 1
               return [collected, idx]
             end
-            collected << current
-          else
-            collected << current
           end
+          collected << current
 
           idx += 1
         end
