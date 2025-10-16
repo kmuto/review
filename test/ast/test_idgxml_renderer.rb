@@ -198,7 +198,7 @@ EOS
   end
 
   def test_printendnotes
-    src = <<~'REVIEW'
+    src = <<~REVIEW
       本文@<endnote>{note1}
 
       //endnote[note1][後注その1です。]
@@ -206,8 +206,8 @@ EOS
     REVIEW
 
     actual = compile_block(src)
-    assert_includes actual, "<span type='endnoteref' idref='endnoteb-note1'>(1)</span>"
-    assert_includes actual, "<endnotes>\n<endnote id='endnoteb-note1'><span type='endnotenumber'>(1)</span>\t後注その1です。</endnote>\n</endnotes>"
+    assert_includes(actual, "<span type='endnoteref' idref='endnoteb-note1'>(1)</span>")
+    assert_includes(actual, "<endnotes>\n<endnote id='endnoteb-note1'><span type='endnotenumber'>(1)</span>\t後注その1です。</endnote>\n</endnotes>")
   end
 
   def test_inline_maru

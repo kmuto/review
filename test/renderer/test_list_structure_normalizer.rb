@@ -26,7 +26,7 @@ class ListStructureNormalizerTest < Test::Unit::TestCase
   end
 
   def test_beginchild_nested_lists
-    src = <<'REVIEW'
+    src = <<REVIEW
  * UL1
 
 //beginchild
@@ -57,7 +57,7 @@ REVIEW
     @normalizer.normalize(ast)
 
     document = ast.children.first
-    assert_instance_of ReVIEW::AST::ListNode, document
+    assert_instance_of(ReVIEW::AST::ListNode, document)
     assert_equal :ul, document.list_type
 
     first_item = document.children.first
@@ -67,22 +67,22 @@ REVIEW
     assert_equal 3, nested_lists.size
 
     ordered = nested_lists.find { |child| child.list_type == :ol }
-    assert_not_nil ordered
-    assert_equal %w[UL1-OL1 UL1-OL2], ordered.children.map { |item| item.children.first.content }
+    assert_not_nil(ordered)
+    assert_equal(%w[UL1-OL1 UL1-OL2], ordered.children.map { |item| item.children.first.content })
 
     unordered = nested_lists.find { |child| child.list_type == :ul }
-    assert_not_nil unordered
-    assert_equal %w[UL1-UL1 UL1-UL2], unordered.children.map { |item| item.children.first.content }
+    assert_not_nil(unordered)
+    assert_equal(%w[UL1-UL1 UL1-UL2], unordered.children.map { |item| item.children.first.content })
 
     definition = nested_lists.find { |child| child.list_type == :dl }
-    assert_not_nil definition
-    assert_equal %w[UL1-DL1 UL1-DL2], definition.children.map { |item| item.term_children.first.content }
-    assert_equal %w[UL1-DD1 UL1-DD2], definition.children.map { |item| item.children.first.content.strip }
+    assert_not_nil(definition)
+    assert_equal(%w[UL1-DL1 UL1-DL2], definition.children.map { |item| item.term_children.first.content })
+    assert_equal(%w[UL1-DD1 UL1-DD2], definition.children.map { |item| item.children.first.content.strip })
 
     second_item = document.children.last
     assert_equal 'UL2', second_item.children.first.content
     paragraph = second_item.children.last
-    assert_instance_of ReVIEW::AST::ParagraphNode, paragraph
+    assert_instance_of(ReVIEW::AST::ParagraphNode, paragraph)
     assert_equal 'UL2-PARA', paragraph.children.first.content
 
     ordered.children.each_with_index do |item, index|
@@ -91,7 +91,7 @@ REVIEW
   end
 
   def test_definition_list_paragraphs_split
-    src = <<'REVIEW'
+    src = <<REVIEW
 : Term1
 	First definition
 
@@ -104,7 +104,7 @@ REVIEW
     @normalizer.normalize(ast)
 
     definition = ast.children.first
-    assert_instance_of ReVIEW::AST::ListNode, definition
+    assert_instance_of(ReVIEW::AST::ListNode, definition)
     assert_equal :dl, definition.list_type
 
     items = definition.children
@@ -116,11 +116,11 @@ REVIEW
 
     term2 = items.last
     assert_equal 'Term2', term2.term_children.first.content
-    assert_equal ['Second line', 'Third line'], term2.children.map { |child| child.content.strip }
+    assert_equal(['Second line', 'Third line'], term2.children.map { |child| child.content.strip })
   end
 
   def test_missing_endchild_raises
-    src = <<~'REVIEW'
+    src = <<~REVIEW
       * UL1
 
       //beginchild

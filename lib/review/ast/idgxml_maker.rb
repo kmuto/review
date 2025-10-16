@@ -22,7 +22,7 @@ module ReVIEW
 
       private
 
-      def build_body(basetmpdir, yamlfile) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      def build_body(basetmpdir, _yamlfile)
         base_path = Pathname.new(@basedir)
         book = @book || ReVIEW::Book::Base.new(@basedir, config: @config)
 
@@ -127,12 +127,12 @@ module ReVIEW
         File.write(output_path, xml_output)
 
         true
-#      rescue ReVIEW::CompileError, ReVIEW::SyntaxError, ReVIEW::AST::InlineTokenizeError => e
-#        handle_known_error(filename, e)
-#        false
-#      rescue StandardError => e
-#        handle_unexpected_error(filename, e)
-#        false
+        #      rescue ReVIEW::CompileError, ReVIEW::SyntaxError, ReVIEW::AST::InlineTokenizeError => e
+        #        handle_known_error(filename, e)
+        #        false
+        #      rescue StandardError => e
+        #        handle_unexpected_error(filename, e)
+        #        false
       end
 
       def any_errors?
