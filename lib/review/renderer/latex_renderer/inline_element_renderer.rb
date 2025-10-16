@@ -25,7 +25,9 @@ module ReVIEW
           @rendering_context = rendering_context
 
           # Initialize LaTeX character escaping
-          initialize_metachars('')
+          # Use texcommand config like LATEXBuilder does to properly configure character escaping
+          texcommand = @book.config['texcommand']
+          initialize_metachars(texcommand)
         end
 
         def render(type, content, node)

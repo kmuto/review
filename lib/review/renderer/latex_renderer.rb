@@ -36,7 +36,7 @@ module ReVIEW
         end
 
         # Initialize LaTeX character escaping
-        initialize_metachars('')
+        initialize_metachars(@book.config['texcommand'])
 
         # Initialize section counter like LATEXBuilder
         @sec_counter = SecCounter.new(5, @chapter) if @chapter
