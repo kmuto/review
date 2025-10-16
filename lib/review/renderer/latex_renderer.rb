@@ -623,17 +623,14 @@ module ReVIEW
 
         case block_type
         when 'quote'
-          # LATEXBuilder adds blank line before and after via blank() method
-          result = "\n\\begin{quote}\n#{content}\\end{quote}\n\n"
+          result = "\n\\begin{quote}\n#{content.chomp}\\end{quote}\n\n"
           apply_noindent_if_needed(node, result)
         when 'source'
           # Source code block without caption
-          # LATEXBuilder adds blank line before and after via blank() method
           "\\begin{reviewcmd}\n#{content}\\end{reviewcmd}\n"
         when 'lead'
           # Lead paragraph - use standard quotation environment like LATEXBuilder
-          # LATEXBuilder adds blank line before and after via blank() method
-          result = "\n\\begin{quotation}\n#{content}\\end{quotation}\n\n"
+          result = "\n\\begin{quotation}\n#{content.chomp}\\end{quotation}\n\n"
           apply_noindent_if_needed(node, result)
         when 'olnum'
           # olnum is now handled as metadata in list processing
@@ -692,22 +689,22 @@ module ReVIEW
           ''
         when 'centering'
           # Center alignment
-          "\n\\begin{center}\n#{content}\\end{center}\n\n"
+          "\n\\begin{center}\n#{content.chomp}\\end{center}\n\n"
         when 'flushright'
           # Right alignment
-          "\n\\begin{flushright}\n#{content}\\end{flushright}\n\n"
+          "\n\\begin{flushright}\n#{content.chomp}\\end{flushright}\n\n"
         when 'address' # rubocop:disable Lint/DuplicateBranch
           # Address block - similar to flushright
-          "\n\\begin{flushright}\n#{content}\\end{flushright}\n\n"
+          "\n\\begin{flushright}\n#{content.chomp}\\end{flushright}\n\n"
         when 'talk'
           # Dialog/conversation block
           "#{content}\n"
         when 'read'
           # Reading material block - use quotation environment
-          "\n\\begin{quotation}\n#{content}\\end{quotation}\n\n"
+          "\n\\begin{quotation}\n#{content.chomp}\\end{quotation}\n\n"
         when 'blockquote'
           # Block quotation - same as quote but different semantic meaning
-          "\n\\begin{quote}\n#{content}\\end{quote}\n\n"
+          "\n\\begin{quote}\n#{content.chomp}\\end{quote}\n\n"
         when 'printendnotes'
           # Print collected endnotes
           "\n\\theendnotes\n\n"
@@ -772,12 +769,11 @@ module ReVIEW
                   else
                     "\\begin{#{env_name}}"
                   end
-        result << ''  # blank line
+        result << ''  # blank line after begin
         result << content.chomp
-        result << ''  # blank line
         result << "\\end{#{env_name}}"
 
-        output = result.join("\n") + "\n"
+        output = result.join("\n") + "\n\n"
 
         # Add collected footnotetext commands from caption context
         if caption_collector && caption_collector.any?
@@ -867,7 +863,6 @@ module ReVIEW
 
         result << ''  # blank line after header
         result << content.chomp
-        result << ''  # blank line before end
         result << '\\end{reviewcolumn}'
         result << ''  # blank line after column
 
@@ -1292,7 +1287,15 @@ module ReVIEW
           results << result
         end
 
-        results.join
+        content = results.join
+
+        # Post-process to fix consecutive minicolumn blocks spacing like LATEXBuilder's solve_nest
+        # When minicolumn blocks are consecutive, remove extra blank line between them
+        # Pattern: \end{reviewnote}\n\n\begin{reviewnote} should become \end{reviewnote}\n\begin{reviewnote}
+        content.gsub!(/\\end\{(reviewnote|reviewmemo|reviewtip|reviewinfo|reviewwarning|reviewimportant|reviewcaution|reviewnotice)\}\n\n\\begin\{(reviewnote|reviewmemo|reviewtip|reviewinfo|reviewwarning|reviewimportant|reviewcaution|reviewnotice)\}/,
+                      "\\\\end{\\1}\n\\\\begin{\\2}")
+
+        content
       end
 
       # Render children with specific rendering context

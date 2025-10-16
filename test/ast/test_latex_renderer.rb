@@ -375,7 +375,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     minicolumn.add_child(AST::TextNode.new(content: 'This is a note.'))
 
     result = @renderer.visit(minicolumn)
-    expected = "\\begin{reviewnote}[Note Caption]\n\nThis is a note.\n\n\\end{reviewnote}\n"
+    expected = "\\begin{reviewnote}[Note Caption]\n\nThis is a note.\n\\end{reviewnote}\n\n"
 
     assert_equal expected, result
   end
