@@ -46,6 +46,7 @@ module ReVIEW
 
         # Initialize table column width state like Builder
         @tsize = nil
+        @cellwidth = nil
 
         # Initialize RenderingContext for cleaner state management
         @rendering_context = RenderingContext.new(:document)
@@ -264,9 +265,10 @@ module ReVIEW
           all_rows = node.header_rows + node.body_rows
           col_count = all_rows.first ? all_rows.first.children.length : 1
 
-          # Generate column specification with borders (like LATEXBuilder)
-          # Use @tsize if available, otherwise default to left-aligned columns
-          col_spec = @tsize || ('|' + ('l|' * col_count))
+          # Generate column specification and cellwidth array using TableColumnWidthParser
+          parsed = TableColumnWidthParser.parse(@tsize, col_count)
+          col_spec = parsed[:col_spec]
+          @cellwidth = parsed[:cellwidth]
 
           # Clear @tsize after use like Builder does
           @tsize = nil
@@ -318,6 +320,10 @@ module ReVIEW
 
           # Restore the previous context
           @rendering_context = old_context
+
+          # Clear @cellwidth after use like LATEXBuilder does
+          @cellwidth = nil
+
           result.join("\n") + "\n"
         end
 
@@ -402,23 +408,44 @@ module ReVIEW
       def visit_table_row(node)
         # Process all cells in the row using visitor pattern while maintaining table context
         # Note: table context should already be set by visit_table
-        cells = node.children.map { |cell| visit(cell) }
+        cells = node.children.map.with_index do |cell, col_index|
+          visit_table_cell_with_index(cell, col_index)
+        end
         cells.join(' & ')
       end
 
       def visit_table_cell(node)
+        # Fallback method if called without index
+        visit_table_cell_with_index(node, 0)
+      end
+
+      def visit_table_cell_with_index(node, col_index)
         # Process cell content while maintaining table context to collect footnotes
         # Note: table context should already be set by visit_table
         content = render_children(node)
 
+        # Get cellwidth for this column if available
+        cellwidth = @cellwidth && @cellwidth[col_index] ? @cellwidth[col_index] : 'l'
+
         # Check if content contains line breaks (from @<br>{})
-        # If so, wrap with \shortstack[l] like LATEXBuilder does
+        # Like LATEXBuilder: use \newline{} for fixed-width cells (p{...}), otherwise use \shortstack
         if /\\\\/.match?(content)
-          # Use cell_type to determine LaTeX formatting
-          if node.cell_type == :th
-            "\\reviewth{\\shortstack[l]{#{content}}}"
+          # Check if cellwidth is fixed-width format using TableColumnWidthParser
+          if TableColumnWidthParser.fixed_width?(cellwidth)
+            # Fixed-width cell: replace \\\n with \newline{}
+            content = content.gsub("\\\\\n", '\\newline{}')
+            if node.cell_type == :th
+              "\\reviewth{#{content}}"
+            else
+              content
+            end
           else
-            "\\shortstack[l]{#{content}}"
+            # Non-fixed-width cell: use \shortstack[l] like LATEXBuilder does
+            if node.cell_type == :th
+              "\\reviewth{\\shortstack[l]{#{content}}}"
+            else
+              "\\shortstack[l]{#{content}}"
+            end
           end
         elsif node.cell_type == :th
           # No line breaks - standard formatting
@@ -1469,3 +1496,6 @@ module ReVIEW
     end
   end
 end
+
+# Load nested classes
+require_relative 'latex_renderer/table_column_width_parser'
