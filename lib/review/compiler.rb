@@ -668,11 +668,6 @@ module ReVIEW
     end
 
     def text(str, block_mode = false)
-      # Handle CaptionNode objects
-      if str.respond_to?(:to_text)
-        str = str.to_text
-      end
-
       return '' if str.empty?
 
       words = replace_fence(str).split(/(@<\w+>\{(?:[^}\\]|\\.)*?\})/, -1)
