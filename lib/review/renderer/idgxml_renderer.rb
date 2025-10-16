@@ -20,18 +20,6 @@
 # - IDGXML_LISTINFO_NEWLINE: Protects newlines inside <listinfo> tags
 #
 # The markers are restored to actual newlines at the end of visit_document.
-#
-# == List Nesting Markers
-#
-# This renderer uses special markers to handle nested list structures. These markers
-# are used by solve_nest to properly merge consecutive lists of the same type while
-# maintaining correct nesting levels (ul, ul2, ul3, etc.):
-#
-# - IDGXML_LIST_NEST_START: Marks the start of a nested list structure
-# - IDGXML_LIST_NEST_END: Marks the end of a nested list structure
-#
-# These markers are processed and removed by solve_nest at the end of visit_document.
-
 require 'review/renderer/base'
 require 'review/renderer/rendering_context'
 require 'review/htmlutils'
@@ -42,98 +30,11 @@ require 'digest/sha2'
 
 module ReVIEW
   module Renderer
-    # Context for managing list rendering with proper encapsulation
-    class ListContext
-      attr_reader :list_type, :depth
-      attr_accessor :needs_close_tag, :has_nested_content
-
-      def initialize(list_type, depth)
-        @list_type = list_type # :ul, :ol, :dl (as symbol)
-        @depth = depth
-        @needs_close_tag = false
-        @has_nested_content = false
-      end
-
-      # Generate appropriate tag name with depth suffix
-      def tag_name
-        @depth == 1 ? @list_type.to_s : "#{@list_type}#{@depth}"
-      end
-
-      # Generate opening marker for nested lists (used by solve_nest)
-      def opening_marker
-        return '' if @depth == 1
-
-        case @list_type
-        when :ul then IdgxmlRenderer::IDGXML_LIST_NEST_UL_START
-        when :ol then IdgxmlRenderer::IDGXML_LIST_NEST_OL_START
-        when :dl then IdgxmlRenderer::IDGXML_LIST_NEST_DL_START
-        else ''
-        end
-      end
-
-      # Generate closing marker for nested lists (used by solve_nest)
-      def closing_marker
-        return '' if @depth == 1
-
-        case @list_type
-        when :ul then IdgxmlRenderer::IDGXML_LIST_NEST_UL_END
-        when :ol then IdgxmlRenderer::IDGXML_LIST_NEST_OL_END
-        when :dl then IdgxmlRenderer::IDGXML_LIST_NEST_DL_END
-        else ''
-        end
-      end
-
-      # Get appropriate item closing tag
-      def item_close_tag
-        case @list_type
-        when :ul, :ol then '</li>'
-        when :dl then '</dd>'
-        else ''
-        end
-      end
-
-      def mark_nested_content
-        @has_nested_content = true
-      end
-    end
-
-    # Legacy context for beginchild/endchild compatibility
-    class NestContext
-      attr_accessor :list_type, :needs_close_tag
-
-      def initialize(list_type)
-        @list_type = list_type # 'ul', 'ol', 'dl' (as string for legacy)
-        @needs_close_tag = false
-      end
-
-      def close_tag
-        return '' unless @needs_close_tag
-
-        case @list_type
-        when 'ul', 'ol'
-          '</li>'
-        when 'dl'
-          '</dd>'
-        else
-          ''
-        end
-      end
-    end
-
     class IdgxmlRenderer < Base
       include ReVIEW::HTMLUtils
       include ReVIEW::TextUtils
 
       attr_reader :chapter, :book
-
-      # Marker constants for list nesting
-      IDGXML_LIST_NEST_UL_START = "\x01IDGXML_LIST_NEST_UL_START\x01"
-      IDGXML_LIST_NEST_UL_END = "\x01IDGXML_LIST_NEST_UL_END\x01"
-      IDGXML_LIST_NEST_OL_START = "\x01IDGXML_LIST_NEST_OL_START\x01"
-      IDGXML_LIST_NEST_OL_END = "\x01IDGXML_LIST_NEST_OL_END\x01"
-      IDGXML_LIST_NEST_DL_START = "\x01IDGXML_LIST_NEST_DL_START\x01"
-      IDGXML_LIST_NEST_DL_END = "\x01IDGXML_LIST_NEST_DL_END\x01"
-      IDGXML_LIST_MERGE_MARKER = "\x01IDGXML_LIST_MERGE_MARKER\x01"
 
       def initialize(chapter)
         super
@@ -176,19 +77,6 @@ module ReVIEW
         # Initialize ImgGraph for graph rendering
         @img_graph = nil
 
-        # Initialize list nesting tracking with stack-based approach
-        @nest_stack = [] # Stack of NestContext objects
-        @previous_list_type = nil
-        @pending_close_tag = nil # Pending closing tag (e.g., '</li>' or '</dd>')
-
-        # Initialize list depth tracking for solve_nest markers
-        @ul_depth = 0
-        @ol_depth = 0
-        @dl_depth = 0
-
-        # Initialize current list context for improved list management
-        @current_list_context = nil
-
         # Initialize root element name
         @rootelement = 'doc'
 
@@ -203,6 +91,9 @@ module ReVIEW
       end
 
       def visit_document(node)
+        # Normalize beginchild/endchild structure before any processing
+        normalize_ast_structure(node)
+
         # Build indexes using AST::Indexer
         if @chapter && !@ast_indexer
           require 'review/ast/indexer'
@@ -231,10 +122,6 @@ module ReVIEW
           closing_tags += '</sect>' if @section > 0
           closing_tags += '</chapter>'
         end
-
-        # Apply solve_nest to merge consecutive lists of the same type
-        # This is still needed even with the new nest_stack approach
-        content = solve_nest(content)
 
         # Combine all parts
         output << content
@@ -576,64 +463,11 @@ module ReVIEW
       end
 
       def visit_beginchild(_node)
-        # beginchild marks the start of nested content within a list item
-        # Validate that we're in a list context
-        unless @previous_list_type
-          raise ReVIEW::ApplicationError, "//beginchild is shown, but previous element isn't ul, ol, or dl"
-        end
-
-        # Mark current context as having nested content
-        @current_list_context&.mark_nested_content if @current_list_context
-
-        # Clear pending close tag (it will be handled by endchild)
-        @pending_close_tag = nil
-
-        # Push context for tracking
-        @nest_stack.push(NestContext.new(@previous_list_type))
-
-        '' # No output - just state management
+        ''
       end
 
       def visit_endchild(_node)
-        # endchild marks the end of nested content
-        # Validate stack state
-        if @nest_stack.empty?
-          raise ReVIEW::ApplicationError, "//endchild is shown, but any opened //beginchild doesn't exist"
-        end
-
-        context = @nest_stack.pop
-
-        # Generate appropriate closing tags based on list type
-        item_close = case context.list_type
-                     when 'ul', 'ol' then '</li>'
-                     when 'dl' then '</dd>'
-                     else ''
-                     end
-
-        # Determine list closing tag with proper depth suffix
-        list_close = generate_list_closing_tag(context.list_type)
-
-        "#{item_close}#{list_close}"
-      end
-
-      # Generate list closing tag with proper depth suffix
-      # Note: This is called during endchild processing after the list has been closed,
-      # so depth counters may have already been decremented. We need to use the actual
-      # current depth or infer from context.
-      def generate_list_closing_tag(list_type)
-        # Get current depth for the list type
-        depth = case list_type
-                when 'ul' then @ul_depth
-                when 'ol' then @ol_depth
-                when 'dl' then @dl_depth
-                else 1
-                end
-
-        # If depth is 0 or negative, default to 1 (shouldn't happen in well-formed documents)
-        depth = 1 if depth <= 0
-
-        tag_name = depth == 1 ? list_type : "#{list_type}#{depth}"
-        "</#{tag_name}>"
+        ''
       end
 
       def visit_graph(node)
@@ -812,247 +646,303 @@ module ReVIEW
 
       private
 
-      # Unified list rendering with proper context management
+      def normalize_ast_structure(node)
+        normalize_node(node)
+      end
+
+      def normalize_node(node)
+        return unless node.respond_to?(:children) && node.children
+
+        assign_ordered_offsets(node)
+
+        normalized_children = []
+        children = node.children.dup
+        idx = 0
+        last_list_context = nil
+
+        while idx < children.size
+          child = children[idx]
+
+          if beginchild_block?(child)
+            nested_nodes, idx = extract_nested_child_sequence(children, idx)
+            unless last_list_context
+              raise ReVIEW::ApplicationError, "//beginchild is shown, but previous element isn't ul, ol, or dl"
+            end
+
+            nested_nodes.each { |nested| normalize_node(nested) }
+            nested_nodes.each { |nested| last_list_context[:item].add_child(nested) }
+            normalize_node(last_list_context[:item])
+            last_list_context[:item] = last_list_context[:list_node].children.last
+            next
+          end
+
+          if endchild_block?(child)
+            raise ReVIEW::ApplicationError, "//endchild is shown, but any opened //beginchild doesn't exist"
+          end
+
+          if paragraph_node?(child) &&
+             last_list_context &&
+             last_list_context[:list_type] == :dl &&
+             definition_paragraph?(child)
+            transfer_definition_paragraph(last_list_context, child)
+            last_list_context[:item] = last_list_context[:list_node].children.last
+            idx += 1
+            next
+          end
+
+          normalize_node(child)
+          normalized_children << child
+          last_list_context = last_list_context_for(child)
+          idx += 1
+        end
+
+        node.children.replace(merge_consecutive_lists(normalized_children))
+      end
+
+      def assign_ordered_offsets(node)
+        return unless node.is_a?(ReVIEW::AST::ListNode)
+        return unless node.list_type == :ol
+
+        base = node.start_number || 1
+        node.children&.each_with_index do |item, index|
+          offset = base + index
+          item.instance_variable_set(:@idgxml_ol_offset, offset)
+        end
+      end
+
+      def extract_nested_child_sequence(children, begin_index)
+        collected = []
+        depth = 1
+        idx = begin_index + 1
+
+        while idx < children.size
+          current = children[idx]
+
+          if beginchild_block?(current)
+            depth += 1
+          elsif endchild_block?(current)
+            depth -= 1
+            if depth == 0
+              idx += 1
+              return [collected, idx]
+            end
+          end
+          collected << current
+
+          idx += 1
+        end
+
+        raise ReVIEW::ApplicationError, '//beginchild of dl,ol,ul misses //endchild'
+      end
+
+      def beginchild_block?(node)
+        node.is_a?(ReVIEW::AST::BlockNode) && node.block_type == :beginchild
+      end
+
+      def endchild_block?(node)
+        node.is_a?(ReVIEW::AST::BlockNode) && node.block_type == :endchild
+      end
+
+      def paragraph_node?(node)
+        node.is_a?(ReVIEW::AST::ParagraphNode)
+      end
+
+      def definition_paragraph?(paragraph)
+        text = paragraph_text(paragraph)
+        text.lines.any? { |line| line =~ /\A\s*[:\t]/ }
+      end
+
+      def last_list_context_for(node)
+        return nil unless node.is_a?(ReVIEW::AST::ListNode) && node.children.any?
+
+        {
+          item: node.children.last,
+          list_node: node,
+          list_type: node.list_type
+        }
+      end
+
+      def merge_consecutive_lists(children)
+        merged = []
+
+        children.each do |child|
+          if child.is_a?(ReVIEW::AST::ListNode) &&
+             merged.last.is_a?(ReVIEW::AST::ListNode) &&
+             merged.last.list_type == child.list_type
+            merged.last.children.concat(child.children)
+          else
+            merged << child
+          end
+        end
+
+        merged
+      end
+
+      def transfer_definition_paragraph(context, paragraph)
+        list_node = context[:list_node]
+        current_item = context[:item]
+        text = paragraph_text(paragraph)
+
+        text.each_line do |line|
+          stripped = line.strip
+          next if stripped.empty?
+
+          if line.lstrip.start_with?(':')
+            term_text = line.sub(/\A\s*:\s*/, '').strip
+            new_item = ReVIEW::AST::ListItemNode.new(level: 1)
+            new_item.term_children = parse_inline_nodes(term_text)
+            list_node.add_child(new_item)
+            current_item = new_item
+          else
+            inline_nodes = parse_inline_nodes(stripped)
+            inline_nodes = [ReVIEW::AST::TextNode.new(content: stripped)] if inline_nodes.empty?
+            inline_nodes.each { |node| current_item.add_child(node) }
+          end
+        end
+
+        context[:item] = list_node.children.last
+      end
+
+      def paragraph_text(paragraph)
+        paragraph.children.map do |child|
+          if child.respond_to?(:content)
+            child.content
+          else
+            ''
+          end
+        end.join
+      end
+
+      def parse_inline_nodes(text)
+        return [] if text.nil? || text.empty?
+
+        @ast_compiler ||= ReVIEW::AST::Compiler.for_chapter(@chapter)
+        temp_node = ReVIEW::AST::ParagraphNode.new(location: nil)
+        @ast_compiler.inline_processor.parse_inline_elements(text, temp_node)
+        temp_node.children
+      end
+
       def render_list(node, list_type)
-        with_list_context(list_type) do |context|
-          result = []
-          result << "<#{context.tag_name}>"
-          result << context.opening_marker unless context.opening_marker.empty?
+        tag_name = list_tag_name(node, list_type)
 
-          # Render list items based on list type
-          case list_type
-          when :ul
-            result << render_ul_items(node, context)
-          when :ol
-            result << render_ol_items(node, context)
-          when :dl
-            result << render_dl_items(node, context)
-          end
+        body = case list_type
+               when :ul
+                 render_unordered_items(node)
+               when :ol
+                 render_ordered_items(node)
+               when :dl
+                 render_definition_items(node)
+               else
+                 raise NotImplementedError, "IdgxmlRenderer does not support list_type #{list_type}"
+               end
 
-          result << context.closing_marker unless context.closing_marker.empty?
-          result << "</#{context.tag_name}>"
-
-          # Track for beginchild/endchild (legacy)
-          @previous_list_type = list_type.to_s
-
-          result.join("\n") + "\n"
-        end
+        "<#{tag_name}>#{body}</#{tag_name}>"
       end
 
-      # Context management for list rendering
-      def with_list_context(list_type)
-        depth = increment_list_depth(list_type)
-        context = ListContext.new(list_type, depth)
-        old_context = @current_list_context
-        @current_list_context = context
-
-        result = yield(context)
-
-        @current_list_context = old_context
-        decrement_list_depth(list_type)
-
-        result
+      def list_tag_name(node, list_type)
+        levels = node.children&.map { |item| item.respond_to?(:level) ? item.level : nil }&.compact
+        max_level = levels&.max || 1
+        max_level > 1 ? "#{list_type}#{max_level}" : list_type.to_s
       end
 
-      # Increment depth counter for list type
-      def increment_list_depth(list_type)
-        case list_type
-        when :ul
-          @ul_depth += 1
-          @ul_depth
-        when :ol
-          @ol_depth += 1
-          @ol_depth
-        when :dl
-          @dl_depth += 1
-          @dl_depth
-        else
-          1
-        end
+      def render_unordered_items(node)
+        node.children.map { |item| render_unordered_item(item) }.join
       end
 
-      # Decrement depth counter for list type
-      def decrement_list_depth(list_type)
-        case list_type
-        when :ul
-          @ul_depth -= 1
-        when :ol
-          @ol_depth -= 1
-        when :dl
-          @dl_depth -= 1
-        end
+      def render_unordered_item(item)
+        content = render_list_item_body(item)
+        %Q(<li aid:pstyle="ul-item">#{content}</li>)
       end
 
-      # Render unordered list items
-      def render_ul_items(node, _context)
-        items = []
-        node.children.each_with_index do |item, idx|
-          item_content = item.children.map { |child| visit(child) }.join("\n")
-          # Join lines in list item according to join_lines_by_lang setting
-          item_content = if @book.config['join_lines_by_lang']
-                           item_content.tr("\n", ' ')
-                         else
-                           item_content.delete("\n")
-                         end
+      def render_ordered_items(node)
+        start_number = @ol_num || node.start_number || 1
+        current_number = start_number
 
-          items << %Q(<li aid:pstyle="ul-item">#{item_content.chomp})
-
-          # Close </li> for all non-last items
-          is_last_item = (idx == node.children.size - 1)
-          if is_last_item
-            # Set pending close tag for the last item
-            @pending_close_tag = '</li>'
-          else
-            items << '</li>'
-          end
+        items = node.children.map do |item|
+          rendered = render_ordered_item(item, current_number)
+          current_number += 1
+          rendered
         end
 
-        items.join("\n")
-      end
-
-      # Render ordered list items
-      def render_ol_items(node, _context)
-        items = []
-        olnum = @ol_num || 1
-
-        node.children.each_with_index do |item, idx|
-          item_content = item.children.map { |child| visit(child) }.join("\n")
-          # Join lines in list item according to join_lines_by_lang setting
-          item_content = if @book.config['join_lines_by_lang']
-                           item_content.tr("\n", ' ')
-                         else
-                           item_content.delete("\n")
-                         end
-
-          # Get the num attribute from the item if available
-          num = item.respond_to?(:number) ? (item.number || olnum) : olnum
-
-          items << %Q(<li aid:pstyle="ol-item" olnum="#{olnum}" num="#{num}">#{item_content.chomp})
-
-          # Close </li> for all non-last items
-          is_last_item = (idx == node.children.size - 1)
-          if is_last_item
-            # Set pending close tag for the last item
-            @pending_close_tag = '</li>'
-          else
-            items << '</li>'
-          end
-
-          olnum += 1
-        end
-
-        # Reset olnum after list
         @ol_num = nil
-
-        items.join("\n")
+        items.join
       end
 
-      # Render definition list items
-      def render_dl_items(node, _context)
-        items = []
+      def render_ordered_item(item, current_number)
+        offset = item.instance_variable_get(:@idgxml_ol_offset)
+        olnum_attr = offset || current_number
+        display_number = item.respond_to?(:number) && item.number ? item.number : current_number
+        content = render_list_item_body(item)
+        %Q(<li aid:pstyle="ol-item" olnum="#{olnum_attr}" num="#{display_number}">#{content}</li>)
+      end
 
-        node.children.each_with_index do |item, idx|
-          # Get term and definitions
-          term_content = if item.term_children && item.term_children.any?
-                           item.term_children.map { |child| visit(child) }.join
-                         elsif item.content
-                           item.content.to_s
-                         else
-                           ''
-                         end
+      def render_definition_items(node)
+        node.children.map { |item| render_definition_item(item) }.join
+      end
 
-          items << "<dt>#{term_content}</dt>"
+      def render_definition_item(item)
+        term_content = render_inline_nodes(item.term_children)
+        definition_content = render_nodes(item.children)
 
-          # Process definition content
-          is_last_item = (idx == node.children.size - 1)
+        if definition_content.empty?
+          %Q(<dt>#{term_content}</dt><dd></dd>)
+        else
+          %Q(<dt>#{term_content}</dt><dd>#{definition_content}</dd>)
+        end
+      end
 
-          if item.children && !item.children.empty?
-            definition_parts = item.children.map { |child| visit(child) }
-            definition_content = definition_parts.join
-            items << "<dd>#{definition_content.chomp}"
+      def render_list_item_body(item)
+        parts = []
+        inline_buffer = []
+
+        item.children.each do |child|
+          if inline_node?(child)
+            inline_buffer << visit(child)
           else
-            # Empty dd - output opening tag only
-            items << '<dd>'
-          end
-
-          # Close </dd> for all non-last items
-          if is_last_item
-            # Set pending close tag for the last item
-            @pending_close_tag = '</dd>'
-          else
-            items << '</dd>'
+            unless inline_buffer.empty?
+              parts << format_inline_buffer(inline_buffer)
+              inline_buffer.clear
+            end
+            parts << visit(child)
           end
         end
 
-        items.join("\n")
+        parts << format_inline_buffer(inline_buffer) unless inline_buffer.empty?
+        content = parts.compact.join
+        content.end_with?("\n") ? content.chomp : content
+      end
+
+      def render_nodes(nodes)
+        return '' unless nodes && !nodes.empty?
+
+        nodes.map { |child| visit(child) }.join
+      end
+
+      def render_inline_nodes(nodes)
+        return '' unless nodes && !nodes.empty?
+
+        format_inline_buffer(nodes.map { |child| visit(child) })
+      end
+
+      def inline_node?(node)
+        node.is_a?(ReVIEW::AST::TextNode) || node.is_a?(ReVIEW::AST::InlineNode)
+      end
+
+      def format_inline_buffer(buffer)
+        return '' if buffer.empty?
+
+        content = buffer.join("\n")
+        if @book.config['join_lines_by_lang']
+          content.tr("\n", ' ')
+        else
+          content.delete("\n")
+        end
       end
 
       def render_children(node)
         return '' unless node.children
 
-        result = []
-        node.children.each_with_index do |child, idx|
-          # Check if next child is beginchild for special handling
-          next_child = node.children[idx + 1]
-          is_next_beginchild = next_child && next_child.is_a?(ReVIEW::AST::BlockNode) && next_child.block_type == :beginchild
-
-          # Visit the child
-          child_output = visit(child)
-
-          # Handle pending close tag if present
-          if @pending_close_tag && child_output
-            if is_next_beginchild
-              # Next is beginchild - defer the close tag handling
-              # Remove the closing list tag that will be re-added after nested content
-              child_output = remove_closing_list_tag(child_output)
-              result << child_output
-              # Keep @pending_close_tag for beginchild to handle
-            else
-              # Normal case - insert pending close tag
-              child_output = insert_pending_close_tag(child_output)
-              @pending_close_tag = nil
-              result << child_output
-            end
-          else
-            result << child_output
-          end
-        end
-
-        # Final cleanup: ensure any remaining pending close tag is added
-        if @pending_close_tag
-          last_idx = result.length - 1
-          if last_idx >= 0 && result[last_idx]
-            result[last_idx] = insert_pending_close_tag(result[last_idx])
-          else
-            result << @pending_close_tag
-          end
-          @pending_close_tag = nil
-        end
-
-        result.join
-      end
-
-      # Remove closing list tag from output
-      def remove_closing_list_tag(output)
-        # Remove the last closing list tag (</ul>, </ol>, or </dl>)
-        output.sub(%r{</(ul|ol|dl)>\n?\z}, '')
-      end
-
-      # Insert pending close tag before the closing list tag
-      def insert_pending_close_tag(output)
-        # Find the last closing list tag (</ul>, </ol>, or </dl>)
-        if output =~ %r{(.*)</(ul|ol|dl)>(\n?)\z}m
-          # Insert the pending close tag before the closing list tag
-          before_closing = $1
-          list_type = $2
-          trailing_newline = $3
-          "#{before_closing}#{@pending_close_tag}</#{list_type}>#{trailing_newline}"
-        elsif output.end_with?("\n")
-          # No closing list tag found - append at the end
-          output.chomp + @pending_close_tag + "\n"
-        else
-          output + @pending_close_tag
-        end
+        node.children.map { |child| visit(child) }.join
       end
 
       def render_inline_element(type, content, node)
@@ -1077,84 +967,6 @@ module ReVIEW
         closing_tags << '</sect>' if level <= 2 && @section > 0
 
         closing_tags.join
-      end
-
-      # Merge consecutive lists of the same type that appear at the same nesting level.
-      # This is required for IDGXML format to properly handle list continuations.
-      #
-      # The IDGXML format requires that consecutive lists of the same type at the same
-      # nesting level be merged into a single list structure. This is achieved through
-      # a multi-step marker-based post-processing approach.
-      #
-      # Processing steps:
-      # 1. Remove opening markers from nested lists
-      # 2. Convert closing markers to merge markers
-      # 3. Merge consecutive lists by removing intermediate tags
-      # 4. Merge top-level lists (without markers)
-      # 5. Clean up remaining markers
-      #
-      # Example transformation:
-      #   Input:  </ul><ul>
-      #   Output: (merged into single list with items continuing)
-      #
-      # This follows the same pattern as IDGXMLBuilder.solve_nest
-      def solve_nest(content)
-        # Step 1: Remove opening markers from nested lists
-        content = remove_opening_markers(content)
-
-        # Step 2: Convert closing markers to merge markers
-        content = convert_to_merge_markers(content)
-
-        # Step 3: Merge consecutive lists using merge markers
-        content = merge_lists_with_markers(content)
-
-        # Step 4: Merge consecutive top-level lists (no markers)
-        content = merge_toplevel_lists(content)
-
-        # Step 5: Clean up any remaining merge markers
-        content.gsub(/#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}/o, '')
-      end
-
-      # Step 1: Remove opening markers that appear at nested list start
-      # These markers are placed right after opening tag of nested lists
-      # Pattern: <TYPE(N)>\n?MARKER -> <TYPE(N)> (remove opening marker)
-      def remove_opening_markers(content)
-        content.
-          gsub(/<(dl\d+)>\n?#{Regexp.escape(IDGXML_LIST_NEST_DL_START)}/o, '<\1>').
-          gsub(/<(ul\d+)>\n?#{Regexp.escape(IDGXML_LIST_NEST_UL_START)}/o, '<\1>').
-          gsub(/<(ol\d+)>\n?#{Regexp.escape(IDGXML_LIST_NEST_OL_START)}/o, '<\1>').
-          # Also handle case where opening marker appears after closing item tags
-          # Pattern: </dd></dl(N)>MARKER -> empty (remove nested list opening marker)
-          gsub(%r{</dd></dl(\d*)>\n?#{Regexp.escape(IDGXML_LIST_NEST_DL_START)}}o, '').
-          gsub(%r{</li></ul(\d*)>\n?#{Regexp.escape(IDGXML_LIST_NEST_UL_START)}}o, '').
-          gsub(%r{</li></ol(\d*)>\n?#{Regexp.escape(IDGXML_LIST_NEST_OL_START)}}o, '')
-      end
-
-      # Step 2: Convert closing markers to MERGE markers
-      # Pattern: CLOSE_MARKER\n?</TYPE(N)> -> </item></TYPE(N)>MERGE_MARKER
-      def convert_to_merge_markers(content)
-        content.
-          gsub(%r{#{Regexp.escape(IDGXML_LIST_NEST_DL_END)}\n?</dl(\d*)>}o, "</dd></dl\\1>#{IDGXML_LIST_MERGE_MARKER}").
-          gsub(%r{#{Regexp.escape(IDGXML_LIST_NEST_UL_END)}\n?</ul(\d*)>}o, "</li></ul\\1>#{IDGXML_LIST_MERGE_MARKER}").
-          gsub(%r{#{Regexp.escape(IDGXML_LIST_NEST_OL_END)}\n?</ol(\d*)>}o, "</li></ol\\1>#{IDGXML_LIST_MERGE_MARKER}")
-      end
-
-      # Step 3: Merge consecutive lists by removing intermediate tags
-      # Pattern: </TYPE(N)>MERGE_MARKER\n?<TYPE(M)> -> empty (merge lists)
-      def merge_lists_with_markers(content)
-        content.
-          gsub(%r{</dl(\d*)>#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}\n?<dl(\d*)>}o, '').
-          gsub(%r{</ul(\d*)>#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}\n?<ul(\d*)>}o, '').
-          gsub(%r{</ol(\d*)>#{Regexp.escape(IDGXML_LIST_MERGE_MARKER)}\n?<ol(\d*)>}o, '')
-      end
-
-      # Step 4: Merge consecutive top-level lists (no markers, just adjacent tags)
-      # Pattern: </li></TYPE>\n?<TYPE><li> -> </li><li> (merge lists at same level)
-      def merge_toplevel_lists(content)
-        content.
-          gsub(%r{</li>\n?</ul>\n?<ul>\n?<li}, '</li><li').
-          gsub(%r{</li>\n?</ol>\n?<ol>\n?<li}, '</li><li').
-          gsub(%r{</dd>\n?</dl>\n?<dl>\n?<dt}, '</dd><dt')
       end
 
       # Get headline prefix
@@ -1309,38 +1121,17 @@ module ReVIEW
 
       # Visit unordered list
       def visit_ul(node)
-        output = render_list(node, :ul)
-
-        # If in nest context, mark that we need a closing tag (for beginchild/endchild)
-        unless @nest_stack.empty?
-          @nest_stack.last.needs_close_tag = true
-        end
-
-        output
+        render_list(node, :ul)
       end
 
       # Visit ordered list
       def visit_ol(node)
-        output = render_list(node, :ol)
-
-        # If in nest context, mark that we need a closing tag (for beginchild/endchild)
-        unless @nest_stack.empty?
-          @nest_stack.last.needs_close_tag = true
-        end
-
-        output
+        render_list(node, :ol)
       end
 
       # Visit definition list
       def visit_dl(node)
-        output = render_list(node, :dl)
-
-        # If in nest context, mark that we need a closing tag (for beginchild/endchild)
-        unless @nest_stack.empty?
-          @nest_stack.last.needs_close_tag = true
-        end
-
-        output
+        render_list(node, :dl)
       end
 
       # Visit list code block
@@ -1565,7 +1356,10 @@ module ReVIEW
       def visit_regular_table(node)
         @tablewidth = nil
         if @book.config['tableopt']
-          @tablewidth = @book.config['tableopt'].split(',')[0].to_f / @book.config['pt_to_mm_unit'].to_f
+          pt_unit = @book.config['pt_to_mm_unit']
+          pt_unit = pt_unit.to_f if pt_unit
+          pt_unit = 1.0 if pt_unit.nil? || pt_unit.zero?
+          @tablewidth = @book.config['tableopt'].split(',')[0].to_f / pt_unit
         end
         @col = 0
 
@@ -1663,7 +1457,7 @@ module ReVIEW
             cellwidth = @tsize.split(/\s*,\s*/)
             totallength = 0
             cellwidth.size.times do |n|
-              cellwidth[n] = cellwidth[n].to_f / @book.config['pt_to_mm_unit'].to_f
+              cellwidth[n] = cellwidth[n].to_f / @book.config['pt_to_mm_unit']
               totallength += cellwidth[n]
             end
             if cellwidth.size < @col
