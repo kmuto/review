@@ -8,6 +8,7 @@
 
 require 'review/renderer/base'
 require 'review/renderer/rendering_context'
+require 'review/renderer/list_structure_normalizer'
 require 'review/latexutils'
 require 'review/sec_counter'
 require 'review/i18n'
@@ -27,6 +28,8 @@ module ReVIEW
         # For AST rendering, we need to set up indexing properly
         # The indexing will be done when we process the AST
         @ast_indexer = nil
+        @ast_compiler = nil
+        @list_structure_normalizer = nil
 
         # Initialize I18n if not already setup
         if @book && @book.config['language']
@@ -59,6 +62,9 @@ module ReVIEW
       end
 
       def visit_document(node)
+        # Normalize nested list structure before any processing
+        normalize_ast_structure(node)
+
         # Build indexes using AST::Indexer for proper footnote support
         if @chapter && !@ast_indexer
           require 'review/ast/indexer'
@@ -1112,6 +1118,18 @@ module ReVIEW
       end
 
       private
+
+      def normalize_ast_structure(node)
+        list_structure_normalizer.normalize(node)
+      end
+
+      def list_structure_normalizer
+        @list_structure_normalizer ||= ListStructureNormalizer.new(self)
+      end
+
+      def ast_compiler
+        @ast_compiler ||= ReVIEW::AST::Compiler.for_chapter(@chapter)
+      end
 
       # Render definition list with proper footnote handling
       # Footnotes in definition terms require special handling in LaTeX:
