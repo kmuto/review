@@ -86,7 +86,7 @@ module ReVIEW
           opts.banner = 'Usage: review-ast-compile --target FORMAT <file>'
           opts.version = ReVIEW::VERSION
 
-          opts.on('-t', '--target FORMAT', 'Output format (html, latex) [required unless --check]') do |fmt|
+          opts.on('-t', '--target FORMAT', 'Output format (html, latex, idgxml) [required unless --check]') do |fmt|
             @options[:target] = fmt
           end
 
@@ -305,8 +305,11 @@ module ReVIEW
         when 'latex'
           require 'review/renderer/latex_renderer'
           ReVIEW::Renderer::LatexRenderer
+        when 'idgxml'
+          require 'review/renderer/idgxml_renderer'
+          ReVIEW::Renderer::IdgxmlRenderer
         else
-          raise UnsupportedFormatError, "Unsupported format: #{format}"
+          raise UnsupportedFormatError, "Unsupported format: #{format} (supported: html, latex, idgxml)"
         end
       end
 
@@ -335,6 +338,7 @@ module ReVIEW
         case format
         when 'html' then '.html'
         when 'latex' then '.tex'
+        when 'idgxml' then '.xml'
         end
       end
 
@@ -361,7 +365,7 @@ module ReVIEW
           when FileNotFoundError
             error 'Please check the file path and try again.'
           when UnsupportedFormatError
-            error 'Supported formats: html, latex'
+            error 'Supported formats: html, latex, idgxml'
           when MissingTargetError
             error 'Example: review-ast-compile --target html chapter1.re'
           end
