@@ -682,7 +682,6 @@ class TestLatexRenderer < Test::Unit::TestCase
                "\\addcontentsline{toc}{subsection}{Test Column}\n" +
                "\n" +
                "Column content here.\n\n" +
-               "\n" +
                "\\end{reviewcolumn}\n" +
                "\n"
 
@@ -702,7 +701,6 @@ class TestLatexRenderer < Test::Unit::TestCase
                "\\begin{reviewcolumn}[\\hypertarget{column:test:1}{}]\n" +
                "\n" +
                "No caption column.\n\n" +
-               "\n" +
                "\\end{reviewcolumn}\n" +
                "\n"
 
@@ -728,7 +726,6 @@ class TestLatexRenderer < Test::Unit::TestCase
                "\\begin{reviewcolumn}[Level 3 Column\\hypertarget{column:test:1}{}]\n" +
                "\n" +
                "This should not get TOC entry.\n\n" +
-               "\n" +
                "\\end{reviewcolumn}\n" +
                "\n"
 
