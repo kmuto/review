@@ -649,7 +649,7 @@ module ReVIEW
         require 'review/ast/tex_equation_node'
         node = context.create_node(AST::TexEquationNode,
                                    id: context.arg(0),
-                                   caption: context.arg(1))
+                                   caption: context.process_caption(context.args, 1))
 
         if context.content?
           context.lines.each { |line| node.add_content_line(line) }

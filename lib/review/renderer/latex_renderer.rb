@@ -993,9 +993,10 @@ module ReVIEW
         if node.id? && node.caption?
           # Equation with ID and caption - use reviewequationblock like traditional compiler
           equation_num = get_equation_number(node.id)
+          caption_content = render_children(node.caption)
           result = []
           result << '\\begin{reviewequationblock}'
-          result << "\\reviewequationcaption{#{escape("式#{equation_num}: #{node.caption}")}}"
+          result << "\\reviewequationcaption{#{escape("式#{equation_num}: #{caption_content}")}}"
           result << '\\begin{equation*}'
           result << content
           result << '\\end{equation*}'

@@ -510,12 +510,14 @@ module ReVIEW
         id_attr = %Q( id="#{normalize_id(node.id)}")
         caption_html = if get_chap
                          if node.caption?
-                           %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(node.id).number])}#{I18n.t('caption_prefix')}#{escape(node.caption)}</p>\n)
+                           caption_content = render_children(node.caption)
+                           %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(node.id).number])}#{I18n.t('caption_prefix')}#{caption_content}</p>\n)
                          else
                            %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(node.id).number])}</p>\n)
                          end
                        elsif node.caption?
-                         %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(node.id).number])}#{I18n.t('caption_prefix')}#{escape(node.caption)}</p>\n)
+                         caption_content = render_children(node.caption)
+                         %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(node.id).number])}#{I18n.t('caption_prefix')}#{caption_content}</p>\n)
                        else
                          %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(node.id).number])}</p>\n)
                        end

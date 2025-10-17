@@ -622,13 +622,7 @@ module ReVIEW
           result << '<equationblock>'
 
           # Render caption with inline elements
-          rendered_caption = if node.caption.is_a?(String)
-                               render_inline_in_caption(node.caption)
-                             elsif node.caption
-                               render_children(node.caption)
-                             else
-                               ''
-                             end
+          rendered_caption = render_children(node.caption)
 
           # Generate caption
           caption_str = if get_chap.nil?
@@ -830,7 +824,7 @@ module ReVIEW
       end
 
       def render_children(node)
-        return '' unless node.children
+        return '' unless node&.children
 
         node.children.map { |child| visit(child) }.join
       end
