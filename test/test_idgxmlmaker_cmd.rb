@@ -31,7 +31,15 @@ class IDGXMLMakerCmdTest < Test::Unit::TestCase
       ruby_cmd = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name']) + RbConfig::CONFIG['EXEEXT']
       Dir.chdir(@tmpdir1) do
         _o, e, s = Open3.capture3("#{ruby_cmd} -S #{REVIEW_IDGXMLMAKER} #{option} #{configfile}")
-        if defined?(ReVIEW::TTYLogger)
+        # Check if tty-logger is available by attempting to require it
+        tty_logger_available = begin
+          require 'tty-logger'
+          true
+        rescue LoadError
+          false
+        end
+
+        if tty_logger_available
           assert_match(/SUCCESS|INFO/, e) # XXX TTY::Logger should be fixed
         else
           assert_equal '', e
