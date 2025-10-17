@@ -138,26 +138,25 @@ module ReVIEW
         # Get parent list to determine list type
         parent_list = node.parent
         if parent_list && parent_list.list_type == :dl
-          # Definition list item - first child is term, rest are definitions
-          if node.children && node.children.length >= 2
-            # First child is the term (dt)
-            term = visit(node.children[0])
-            dt_element = "<dt>#{term}</dt>"
+          # Definition list item - use term_children for term like LaTeXRenderer
+          term = if node.term_children&.any?
+                   node.term_children.map { |child| visit(child) }.join
+                 elsif node.content
+                   escape_content(node.content.to_s)
+                 else
+                   ''
+                 end
 
-            # Rest are definitions (dd elements)
-            definitions = node.children[1..-1].map do |child|
+          # Children contain the definition content
+          if node.children && !node.children.empty?
+            definitions = node.children.map do |child|
               definition_content = visit(child)
               "<dd>#{definition_content}</dd>"
             end
-
-            dt_element + definitions.join
-          elsif node.children && node.children.length == 1
-            # Only term, no definition
-            term = visit(node.children[0])
-            "<dt>#{term}</dt>"
+            "<dt>#{term}</dt>" + definitions.join
           else
-            # No content available
-            '<dt></dt>'
+            # Only term, no definition - add empty dd like HTMLBuilder
+            "<dt>#{term}</dt><dd></dd>"
           end
         else
           # Regular list item
@@ -319,18 +318,28 @@ module ReVIEW
       end
 
       def visit_column(node)
-        id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
+        # HTMLBuilder uses column counter for anchor IDs
+        @column_counter ||= 0
+        @column_counter += 1
 
+        id_attr = node.label ? %Q( id="#{normalize_id(node.label)}") : ''
+        anchor_id = %Q(<a id="column-#{@column_counter}"></a>)
+
+        # HTMLBuilder uses h4 tag for column headers
         caption_html = if node.caption
                          caption_content = render_children(node.caption)
-                         %Q(<div class="column-header">#{caption_content}</div>)
+                         if node.label
+                           %Q(<h4#{id_attr}>#{anchor_id}#{caption_content}</h4>)
+                         else
+                           %Q(<h4>#{anchor_id}#{caption_content}</h4>)
+                         end
                        else
-                         ''
+                         node.label ? anchor_id : ''
                        end
 
         content = render_children(node)
 
-        %Q(<div class="column"#{id_attr}>
+        %Q(<div class="column">
 #{caption_html}#{content}</div>)
       end
 
@@ -362,17 +371,17 @@ module ReVIEW
           @rendering_context.with_child_context(:caption) do |caption_context|
             # Check if image is bound like HTMLBuilder does
             if @chapter&.image_bound?(node.id)
-              image_image_html_with_context(node.id, node.caption, nil, id_attr, caption_context)
+              image_image_html_with_context(node.id, node.caption, nil, id_attr, caption_context, node.image_type)
             else
               # For dummy images, ImageNode doesn't have lines, so use empty array
-              image_dummy_html_with_context(node.id, node.caption, [], id_attr, caption_context)
+              image_dummy_html_with_context(node.id, node.caption, [], id_attr, caption_context, node.image_type)
             end
           end
         elsif @chapter&.image_bound?(node.id)
           # No caption, no special context needed
-          image_image_html(node.id, node.caption, nil, id_attr)
+          image_image_html(node.id, node.caption, nil, id_attr, node.image_type)
         else
-          image_dummy_html(node.id, node.caption, [], id_attr)
+          image_dummy_html(node.id, node.caption, [], id_attr, node.image_type)
         end
       end
 
@@ -548,6 +557,90 @@ module ReVIEW
         render_children(footnote_node)
       end
 
+      # Public methods for inline element rendering
+      # These methods need to be accessible from InlineElementRenderer
+
+      def render_list(content, _node)
+        # Generate proper list reference exactly like HTMLBuilder's inline_list method
+        list_id = content
+
+        begin
+          # Use exactly the same logic as HTMLBuilder's inline_list method
+          chapter, extracted_id = extract_chapter_id(list_id)
+
+          # Generate list number using the same pattern as Builder base class
+          list_number = if get_chap(chapter)
+                          %Q(#{I18n.t('list')}#{I18n.t('format_number', [get_chap(chapter), chapter.list(extracted_id).number])})
+                        else
+                          %Q(#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [chapter.list(extracted_id).number])})
+                        end
+
+          # Generate href exactly like HTMLBuilder with chapterlink check
+          if @book.config['chapterlink']
+            %Q(<span class="listref"><a href="./#{chapter.id}#{extname}##{normalize_id(extracted_id)}">#{list_number}</a></span>)
+          else
+            %Q(<span class="listref">#{list_number}</span>)
+          end
+        rescue KeyError
+          # Use app_error for consistency with HTMLBuilder error handling
+          app_error("unknown list: #{list_id}")
+        end
+      end
+
+      def render_img(content, _node)
+        # Generate proper image reference exactly like HTMLBuilder's inline_img method
+        img_id = content
+
+        begin
+          # Use exactly the same logic as HTMLBuilder's inline_img method
+          chapter, extracted_id = extract_chapter_id(img_id)
+
+          # Generate image number using the same pattern as Builder base class
+          image_number = if get_chap(chapter)
+                           %Q(#{I18n.t('image')}#{I18n.t('format_number', [get_chap(chapter), chapter.image(extracted_id).number])})
+                         else
+                           %Q(#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [chapter.image(extracted_id).number])})
+                         end
+
+          # Generate href exactly like HTMLBuilder with chapterlink check
+          if @book.config['chapterlink']
+            %Q(<span class="imgref"><a href="./#{chapter.id}#{extname}##{normalize_id(extracted_id)}">#{image_number}</a></span>)
+          else
+            %Q(<span class="imgref">#{image_number}</span>)
+          end
+        rescue KeyError
+          # Use app_error for consistency with HTMLBuilder error handling
+          app_error("unknown image: #{img_id}")
+        end
+      end
+
+      def render_inline_table(content, _node)
+        # Generate proper table reference exactly like HTMLBuilder's inline_table method
+        table_id = content
+
+        begin
+          # Use exactly the same logic as HTMLBuilder's inline_table method
+          chapter, extracted_id = extract_chapter_id(table_id)
+
+          # Generate table number using the same pattern as Builder base class
+          table_number = if get_chap(chapter)
+                           %Q(#{I18n.t('table')}#{I18n.t('format_number', [get_chap(chapter), chapter.table(extracted_id).number])})
+                         else
+                           %Q(#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [chapter.table(extracted_id).number])})
+                         end
+
+          # Generate href exactly like HTMLBuilder with chapterlink check
+          if @book.config['chapterlink']
+            %Q(<span class="tableref"><a href="./#{chapter.id}#{extname}##{normalize_id(extracted_id)}">#{table_number}</a></span>)
+          else
+            %Q(<span class="tableref">#{table_number}</span>)
+          end
+        rescue KeyError
+          # Use app_error for consistency with HTMLBuilder error handling
+          app_error("unknown table: #{table_id}")
+        end
+      end
+
       private
 
       def render_children(node)
@@ -571,7 +664,24 @@ module ReVIEW
         # Note: This renders the footnote definition block at document level.
         # For inline footnote references (@<fn>{id}), see render_footnote method.
         footnote_content = render_children(node)
-        %Q(<div class="footnote" id="fn-#{node.id}">#{footnote_content}</div>)
+
+        # Match HTMLBuilder's footnote output format
+        footnote_number = @chapter&.footnote(node.id)&.number || '??'
+
+        # Check epubversion for consistent output with HTMLBuilder
+        if @book.config['epubversion'].to_i == 3
+          # EPUB3 version with epub:type attributes
+          # Only add back link if epubmaker/back_footnote is configured (like HTMLBuilder)
+          back_link = ''
+          if @book.config['epubmaker'] && @book.config['epubmaker']['back_footnote']
+            back_link = %Q(<a href="#fnb-#{normalize_id(node.id)}">#{I18n.t('html_footnote_backmark')}</a>)
+          end
+          %Q(<div class="footnote" epub:type="footnote" id="fn-#{normalize_id(node.id)}"><p class="footnote">#{back_link}#{I18n.t('html_footnote_textmark', footnote_number)}#{footnote_content}</p></div>)
+        else
+          # Non-EPUB version
+          footnote_back_link = %Q(<a href="#fnb-#{normalize_id(node.id)}">*#{footnote_number}</a>)
+          %Q(<div class="footnote" id="fn-#{normalize_id(node.id)}"><p class="footnote">[#{footnote_back_link}] #{footnote_content}</p></div>)
+        end
       end
 
       def visit_embed(node)
@@ -678,7 +788,7 @@ module ReVIEW
 
       def render_comment_block(node)
         # ブロックcomment - draft設定時のみ表示
-        return '' unless @book&.config&.[]('draft')
+        return '' unless @book.config['draft']
 
         content_lines = []
 
@@ -758,87 +868,6 @@ module ReVIEW
         %Q(<span class="chapref-ref">#{content}</span>)
       end
 
-      def render_list(content, _node)
-        # Generate proper list reference exactly like HTMLBuilder's inline_list method
-        list_id = content
-
-        begin
-          # Use exactly the same logic as HTMLBuilder's inline_list method
-          chapter, extracted_id = extract_chapter_id(list_id)
-
-          # Generate list number using the same pattern as Builder base class
-          list_number = if get_chap(chapter)
-                          %Q(#{I18n.t('list')}#{I18n.t('format_number', [get_chap(chapter), chapter.list(extracted_id).number])})
-                        else
-                          %Q(#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [chapter.list(extracted_id).number])})
-                        end
-
-          # Generate href exactly like HTMLBuilder with chapterlink check
-          if @book&.config&.[]('chapterlink')
-            %Q(<span class="listref"><a href="./#{chapter.id}#{extname}##{normalize_id(extracted_id)}">#{list_number}</a></span>)
-          else
-            %Q(<span class="listref">#{list_number}</span>)
-          end
-        rescue KeyError
-          # Use app_error for consistency with HTMLBuilder error handling
-          app_error("unknown list: #{list_id}")
-        end
-      end
-
-      def render_img(content, _node)
-        # Generate proper image reference exactly like HTMLBuilder's inline_img method
-        img_id = content
-
-        begin
-          # Use exactly the same logic as HTMLBuilder's inline_img method
-          chapter, extracted_id = extract_chapter_id(img_id)
-
-          # Generate image number using the same pattern as Builder base class
-          image_number = if get_chap(chapter)
-                           %Q(#{I18n.t('image')}#{I18n.t('format_number', [get_chap(chapter), chapter.image(extracted_id).number])})
-                         else
-                           %Q(#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [chapter.image(extracted_id).number])})
-                         end
-
-          # Generate href exactly like HTMLBuilder with chapterlink check
-          if @book&.config&.[]('chapterlink')
-            %Q(<span class="imgref"><a href="./#{chapter.id}#{extname}##{normalize_id(extracted_id)}">#{image_number}</a></span>)
-          else
-            %Q(<span class="imgref">#{image_number}</span>)
-          end
-        rescue KeyError
-          # Use app_error for consistency with HTMLBuilder error handling
-          app_error("unknown image: #{img_id}")
-        end
-      end
-
-      def render_inline_table(content, _node)
-        # Generate proper table reference exactly like HTMLBuilder's inline_table method
-        table_id = content
-
-        begin
-          # Use exactly the same logic as HTMLBuilder's inline_table method
-          chapter, extracted_id = extract_chapter_id(table_id)
-
-          # Generate table number using the same pattern as Builder base class
-          table_number = if get_chap(chapter)
-                           %Q(#{I18n.t('table')}#{I18n.t('format_number', [get_chap(chapter), chapter.table(extracted_id).number])})
-                         else
-                           %Q(#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [chapter.table(extracted_id).number])})
-                         end
-
-          # Generate href exactly like HTMLBuilder with chapterlink check
-          if @book&.config&.[]('chapterlink')
-            %Q(<span class="tableref"><a href="./#{chapter.id}#{extname}##{normalize_id(extracted_id)}">#{table_number}</a></span>)
-          else
-            %Q(<span class="tableref">#{table_number}</span>)
-          end
-        rescue KeyError
-          # Use app_error for consistency with HTMLBuilder error handling
-          app_error("unknown table: #{table_id}")
-        end
-      end
-
       def render_footnote(content, node)
         # HTMLでは常にspan要素として出力
         # FootnoteCollectorは使用しないが、一貫性のためRenderingContextを認識
@@ -869,14 +898,16 @@ module ReVIEW
         if node.args && node.args.length >= 2
           # First argument is the keyword, second is the reading/definition
           word = escape(node.args[0])
-          _reading = escape(node.args[1])
+          alt = escape(node.args[1].strip)
+          # Format with parentheses like HTMLBuilder's compile_kw
+          text = "#{word} (#{alt})"
         else
           # Single argument or fallback
-          word = content
+          text = content
         end
 
         # Add index comment like HTMLBuilder
-        %Q(<b class="kw">#{word}</b><!-- IDX:#{word} -->)
+        %Q(<b class="kw">#{text}</b><!-- IDX:#{text} -->)
       end
 
       def render_bou(content, _node)
@@ -947,7 +978,7 @@ module ReVIEW
 
       def render_comment(content, _node)
         # Inline comments like HTMLBuilder - conditionally render based on draft mode
-        if @book&.config&.[]('draft')
+        if @book.config['draft']
           %Q(<span class="draft-comment">#{escape(content)}</span>)
         else
           '' # Don't render in non-draft mode
@@ -1068,7 +1099,7 @@ module ReVIEW
 
         @sec_counter.inc(level)
         anchor = @sec_counter.anchor(level)
-        prefix = @sec_counter.prefix(level, @book&.config&.[]('secnolevel'))
+        prefix = @sec_counter.prefix(level, @book.config['secnolevel'])
         [prefix, anchor]
       end
 
@@ -1085,7 +1116,7 @@ module ReVIEW
       end
 
       def get_chap(chapter = @chapter)
-        if @book&.config&.[]('secnolevel') && @book.config['secnolevel'] > 0 &&
+        if @book.config['secnolevel'] && @book.config['secnolevel'] > 0 &&
            !chapter.number.nil? && !chapter.number.to_s.empty?
           if chapter.is_a?(ReVIEW::Book::Part)
             return I18n.t('part_short', chapter.number)
@@ -1097,12 +1128,12 @@ module ReVIEW
       end
 
       def extname
-        ".#{@book&.config&.[]('htmlext') || 'html'}"
+        ".#{@book.config['htmlext'] || 'html'}"
       end
 
       # Image helper methods matching HTMLBuilder's implementation
-      def image_image_html(id, caption, _metric, id_attr)
-        caption_html = image_header_html(id, caption)
+      def image_image_html(id, caption, _metric, id_attr, image_type = :image)
+        caption_html = image_header_html(id, caption, image_type)
 
         begin
           image_path = @chapter.image(id).path.sub(%r{\A\./}, '')
@@ -1124,14 +1155,14 @@ module ReVIEW
           end
         rescue StandardError
           # If image loading fails, fall back to dummy
-          image_dummy_html(id, caption, [], id_attr)
+          image_dummy_html(id, caption, [], id_attr, image_type)
         end
       end
 
       # Context-aware version of image_image_html
-      def image_image_html_with_context(id, caption, _metric, id_attr, caption_context)
+      def image_image_html_with_context(id, caption, _metric, id_attr, caption_context, image_type = :image)
         caption_html = if caption
-                         image_header_html_with_context(id, caption, caption_context)
+                         image_header_html_with_context(id, caption, caption_context, image_type)
                        else
                          ''
                        end
@@ -1156,12 +1187,12 @@ module ReVIEW
           end
         rescue StandardError
           # If image loading fails, fall back to dummy
-          image_dummy_html_with_context(id, caption, [], id_attr, caption_context)
+          image_dummy_html_with_context(id, caption, [], id_attr, caption_context, image_type)
         end
       end
 
-      def image_dummy_html(id, caption, lines, id_attr)
-        caption_html = image_header_html(id, caption)
+      def image_dummy_html(id, caption, lines, id_attr, image_type = :image)
+        caption_html = image_header_html(id, caption, image_type)
 
         # Generate dummy image content exactly like HTMLBuilder
         # HTMLBuilder puts each line and adds newlines via 'puts'
@@ -1186,9 +1217,9 @@ module ReVIEW
       end
 
       # Context-aware version of image_dummy_html
-      def image_dummy_html_with_context(id, caption, lines, id_attr, caption_context)
+      def image_dummy_html_with_context(id, caption, lines, id_attr, caption_context, image_type = :image)
         caption_html = if caption
-                         image_header_html_with_context(id, caption, caption_context)
+                         image_header_html_with_context(id, caption, caption_context, image_type)
                        else
                          ''
                        end
@@ -1214,22 +1245,27 @@ module ReVIEW
         end
       end
 
-      def image_header_html(id, caption)
+      def image_header_html(id, caption, image_type = :image)
         return '' unless caption
 
         caption_content = render_children(caption)
 
-        # Generate image number like HTMLBuilder using chapter image index
-        image_item = @chapter&.image(id)
-        unless image_item && image_item.number
-          raise KeyError, "image '#{id}' not found"
-        end
+        # For indepimage (numberless image), use numberless_image label like HTMLBuilder
+        if image_type == :indepimage || image_type == :numberlessimage
+          image_number = I18n.t('numberless_image')
+        else
+          # Generate image number like HTMLBuilder using chapter image index
+          image_item = @chapter&.image(id)
+          unless image_item && image_item.number
+            raise KeyError, "image '#{id}' not found"
+          end
 
-        image_number = if get_chap
-                         %Q(#{I18n.t('image')}#{I18n.t('format_number_header', [get_chap, image_item.number])})
-                       else
-                         %Q(#{I18n.t('image')}#{I18n.t('format_number_header_without_chapter', [image_item.number])})
-                       end
+          image_number = if get_chap
+                           %Q(#{I18n.t('image')}#{I18n.t('format_number_header', [get_chap, image_item.number])})
+                         else
+                           %Q(#{I18n.t('image')}#{I18n.t('format_number_header_without_chapter', [image_item.number])})
+                         end
+        end
 
         %Q(<p class="caption">
 #{image_number}#{I18n.t('caption_prefix')}#{caption_content}
@@ -1238,22 +1274,27 @@ module ReVIEW
       end
 
       # Context-aware version of image_header_html
-      def image_header_html_with_context(id, caption, caption_context)
+      def image_header_html_with_context(id, caption, caption_context, image_type = :image)
         return '' unless caption
 
         caption_content = render_children_with_context(caption, caption_context)
 
-        # Generate image number like HTMLBuilder using chapter image index
-        image_item = @chapter&.image(id)
-        unless image_item && image_item.number
-          raise KeyError, "image '#{id}' not found"
-        end
+        # For indepimage (numberless image), use numberless_image label like HTMLBuilder
+        if image_type == :indepimage || image_type == :numberlessimage
+          image_number = I18n.t('numberless_image')
+        else
+          # Generate image number like HTMLBuilder using chapter image index
+          image_item = @chapter&.image(id)
+          unless image_item && image_item.number
+            raise KeyError, "image '#{id}' not found"
+          end
 
-        image_number = if get_chap
-                         %Q(#{I18n.t('image')}#{I18n.t('format_number_header', [get_chap, image_item.number])})
-                       else
-                         %Q(#{I18n.t('image')}#{I18n.t('format_number_header_without_chapter', [image_item.number])})
-                       end
+          image_number = if get_chap
+                           %Q(#{I18n.t('image')}#{I18n.t('format_number_header', [get_chap, image_item.number])})
+                         else
+                           %Q(#{I18n.t('image')}#{I18n.t('format_number_header_without_chapter', [image_item.number])})
+                         end
+        end
 
         %Q(<p class="caption">
 #{image_number}#{I18n.t('caption_prefix')}#{caption_content}
@@ -1262,7 +1303,7 @@ module ReVIEW
       end
 
       def caption_top?(type)
-        @book&.config&.[]('caption_position')&.[](type) == 'top' # rubocop:disable Style/SafeNavigationChainLength
+        @book.config['caption_position'] && @book.config['caption_position'][type] == 'top'
       end
 
       # Generate list header like HTMLBuilder's list_header method
@@ -1300,7 +1341,7 @@ module ReVIEW
       end
 
       def highlighter
-        @highlighter ||= ReVIEW::Highlighter.new(@book&.config || {})
+        @highlighter ||= ReVIEW::Highlighter.new(@book.config || {})
       end
 
       # Helper methods for template variables

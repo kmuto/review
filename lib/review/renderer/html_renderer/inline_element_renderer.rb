@@ -135,22 +135,30 @@ module ReVIEW
           escape_content(content)
         end
 
-        def render_inline_list(_type, content, _node)
-          escape_content(content)
+        def render_inline_list(_type, content, node)
+          # Delegate to renderer's render_list method for proper reference handling
+          @renderer.render_list(content, node)
         end
 
-        def render_inline_img(_type, content, _node)
-          escape_content(content)
+        def render_inline_img(_type, content, node)
+          # Delegate to renderer's render_img method for proper reference handling
+          @renderer.render_img(content, node)
         end
 
-        def render_inline_table(_type, content, _node)
-          escape_content(content)
+        def render_inline_table(_type, content, node)
+          # Delegate to renderer's render_inline_table method for proper reference handling
+          @renderer.render_inline_table(content, node)
         end
 
         def render_inline_fn(_type, content, node)
           if node.args && node.args.first
             fn_id = node.args.first
-            %Q(<a id="fnb-#{fn_id}" href="#fn-#{fn_id}" class="noteref">*#{content}</a>)
+            # Check epubversion for consistent output with HTMLBuilder
+            if @book&.config&.[]('epubversion').to_i == 3
+              %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref" epub:type="noteref">#{I18n.t('html_footnote_refmark', content)}</a>)
+            else
+              %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref">*#{content}</a>)
+            end
           else
             escape_content(content)
           end
@@ -158,11 +166,14 @@ module ReVIEW
 
         def render_inline_kw(_type, content, node)
           if node.args && node.args.length >= 2
-            word = node.args[0]
-            alt = node.args[1]
-            %Q(<b class="kw">#{escape_content(word)}</b>（#{escape_content(alt)}）)
+            word = escape_content(node.args[0])
+            alt = escape_content(node.args[1].strip)
+            # Format like HTMLBuilder: word + space + parentheses with alt inside <b> tag
+            text = "#{word} (#{alt})"
+            # IDX comment uses only the word, like HTMLBuilder
+            %Q(<b class="kw">#{text}</b><!-- IDX:#{word} -->)
           else
-            %Q(<b class="kw">#{escape_content(content)}</b>)
+            %Q(<b class="kw">#{escape_content(content)}</b><!-- IDX:#{escape_content(content)} -->)
           end
         end
 
