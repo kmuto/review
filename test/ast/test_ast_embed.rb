@@ -92,7 +92,9 @@ class TestASTEmbed < Test::Unit::TestCase
     assert_not_nil(embed_node, 'Should have inline embed node')
     assert_equal :inline, embed_node.embed_type
     assert_equal 'inline content', embed_node.arg
-    assert_equal ['inline content'], embed_node.lines
+
+    # Inline Embed should not have lines
+    assert_equal [], embed_node.lines
   end
 
   def test_inline_embed_with_builder_filter
