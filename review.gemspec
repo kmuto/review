@@ -35,7 +35,6 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency('diff-lcs')
   gem.add_development_dependency('math_ml')
   gem.add_development_dependency('nokogiri')
-  gem.add_development_dependency('parallel')
   gem.add_development_dependency('playwright-runner')
   gem.add_development_dependency('pygments.rb')
   gem.add_development_dependency('rake')
