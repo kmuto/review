@@ -119,7 +119,7 @@ class TestHtmlRenderer < Test::Unit::TestCase
     html_output = renderer.render(ast_root)
 
     assert_match(/<div class="column">/, html_output)
-    assert_match(%r{Column Title}, html_output)
+    assert_match(/Column Title/, html_output)
     assert_match(%r{<p>Column content here\.</p>}, html_output)
   end
 

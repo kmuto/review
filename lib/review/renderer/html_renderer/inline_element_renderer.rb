@@ -178,32 +178,30 @@ module ReVIEW
         def render_inline_chapref(_type, content, node)
           id = node.args&.first || content
           begin
-            # Find the chapter and get its title
-            chapter = @book.contents.detect { |chap| chap.id == id }
-            raise KeyError unless chapter
-
-            title = compile_inline(chapter.title)
+            # Use display_string like Builder to get chapter number + title
+            # This returns formatted string like "第1章「タイトル」" from I18n.t('chapter_quote')
+            display_str = @book.chapter_index.display_string(id)
             if config['chapterlink']
-              %Q(<a href="./#{id}#{extname}">#{title}</a>)
+              %Q(<a href="./#{id}#{extname}">#{display_str}</a>)
             else
-              title
+              display_str
             end
           rescue KeyError
             app_error "unknown chapter: #{id}"
           end
         end
 
-        def render_inline_list(_type, content, node)
+        def render_inline_list(_type, _content, node)
           id = node.reference_id
           @renderer.render_list(id, node)
         end
 
-        def render_inline_img(_type, content, node)
+        def render_inline_img(_type, _content, node)
           id = node.reference_id
           @renderer.render_img(id, node)
         end
 
-        def render_inline_table(_type, content, node)
+        def render_inline_table(_type, _content, node)
           id = node.reference_id
           @renderer.render_inline_table(id, node)
         end
@@ -296,21 +294,17 @@ module ReVIEW
         end
 
         def render_inline_idx(_type, content, node)
-          # Get the raw index string from args for ID generation
+          # Use HTML comment format like HTMLBuilder
           # content is already escaped for display
-          index_str = node.args&.first || ''
-          # Create ID from the hierarchical index path (replace <<>> with -)
-          index_id = normalize_id(index_str.gsub('<<>>', '-'))
-          %Q(<a id="idx-#{index_id}"></a>#{content})
+          index_str = node.args&.first || content
+          %Q(#{content}<!-- IDX:#{escape_comment(index_str)} -->)
         end
 
-        def render_inline_hidx(_type, content, node)
-          # Get the raw index string from args for ID generation
-          # hidx doesn't display content, so we don't need to use it
+        def render_inline_hidx(_type, _content, node)
+          # Use HTML comment format like HTMLBuilder
+          # hidx doesn't display content, only outputs the index comment
           index_str = node.args&.first || ''
-          # Create ID from the hierarchical index path (replace <<>> with -)
-          index_id = normalize_id(index_str.gsub('<<>>', '-'))
-          %Q(<a id="hidx-#{index_id}"></a>)
+          %Q(<!-- IDX:#{escape_comment(index_str)} -->)
         end
 
         def render_inline_comment(_type, content, _node)
@@ -321,7 +315,7 @@ module ReVIEW
           end
         end
 
-        def render_inline_sec(_type, content, node)
+        def render_inline_sec(_type, _content, node)
           # Section number reference: @<sec>{id} or @<sec>{chapter|id}
           # This should match HTMLBuilder's inline_sec behavior
           id = node.reference_id
@@ -347,9 +341,8 @@ module ReVIEW
           end
         end
 
-        def render_inline_secref(_type, content, node)
-          # secref is an alias for hd in Builder
-          render_inline_hd(_type, content, node)
+        def render_inline_secref(type, content, node)
+          render_inline_hd(type, content, node)
         end
 
         def render_inline_labelref(_type, content, node)
@@ -359,9 +352,8 @@ module ReVIEW
           %Q(<a target='#{escape_content(idref)}'>「#{I18n.t('label_marker')}#{escape_content(idref)}」</a>)
         end
 
-        def render_inline_ref(_type, content, node)
-          # ref is an alias for labelref
-          render_inline_labelref(_type, content, node)
+        def render_inline_ref(type, content, node)
+          render_inline_labelref(type, content, node)
         end
 
         def render_inline_w(_type, content, _node)
@@ -478,7 +470,7 @@ module ReVIEW
           end
         end
 
-        def render_inline_hd(_type, content, node)
+        def render_inline_hd(_type, _content, node)
           # Headline reference: @<hd>{id} or @<hd>{chapter|id}
           # This should match HTMLBuilder's inline_hd_chap behavior
           id = node.reference_id

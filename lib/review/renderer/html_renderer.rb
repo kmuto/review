@@ -330,6 +330,11 @@ module ReVIEW
       end
 
       def visit_table(node)
+        # Check if this is an imgtable - handle as image like HTMLBuilder
+        if node.table_type == :imgtable
+          return render_imgtable(node)
+        end
+
         id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
 
         # Process caption with proper context management
@@ -337,12 +342,12 @@ module ReVIEW
                          @rendering_context.with_child_context(:caption) do |caption_context|
                            caption_content = render_children_with_context(node.caption, caption_context)
                            # Generate table number like HTMLBuilder using chapter table index
-                           if node.id
-                             table_number = generate_table_header(node.id, caption_content)
-                           else
-                             # No ID - just use caption without numbering
-                             table_number = caption_content
-                           end
+                           table_number = if node.id
+                                            generate_table_header(node.id, caption_content)
+                                          else
+                                            # No ID - just use caption without numbering
+                                            caption_content
+                                          end
                            %Q(<p class="caption">#{table_number}</p>
 )
                          end
@@ -484,6 +489,12 @@ module ReVIEW
         when 'printendnotes'
           # Print collected endnotes
           render_printendnotes_block(node)
+        when 'flushright'
+          # Right-align text like HTMLBuilder
+          render_flushright_block(node)
+        when 'centering'
+          # Center-align text like HTMLBuilder
+          render_centering_block(node)
         else
           render_generic_block(node)
         end
@@ -942,14 +953,14 @@ module ReVIEW
       end
 
       # Render tsize control block
-      def render_tsize_block(node)
+      def render_tsize_block(_node)
         # Table size control - HTMLBuilder outputs nothing for HTML
         # tsize is only used for LaTeX/PDF output
         ''
       end
 
       # Render printendnotes control block
-      def render_printendnotes_block(node)
+      def render_printendnotes_block(_node)
         # Render collected endnotes like HTMLBuilder's printendnotes method
         return '' unless @chapter
         return '' unless @chapter.endnotes
@@ -974,6 +985,22 @@ module ReVIEW
 
         # End endnotes block
         result + %Q(</div>\n)
+      end
+
+      # Render flushright block like HTMLBuilder's flushright method
+      def render_flushright_block(node)
+        # Render children (which produces <p> tags)
+        content = render_children(node)
+        # Replace <p> with <p class="flushright"> like HTMLBuilder
+        content.gsub('<p>', %Q(<p class="flushright">))
+      end
+
+      # Render centering block like HTMLBuilder's centering method
+      def render_centering_block(node)
+        # Render children (which produces <p> tags)
+        content = render_children(node)
+        # Replace <p> with <p class="center"> like HTMLBuilder
+        content.gsub('<p>', %Q(<p class="center">))
       end
 
       # Line numbering for code blocks like HTMLBuilder
@@ -1293,6 +1320,76 @@ module ReVIEW
         end
       rescue KeyError
         raise NotImplementedError, "no such table: #{id}"
+      end
+
+      # Render imgtable (table as image) like HTMLBuilder's imgtable method
+      def render_imgtable(node)
+        id = node.id
+        caption = node.caption
+
+        # Check if image is bound like HTMLBuilder does
+        unless @chapter&.image_bound?(id)
+          warn "image not bound: #{id}"
+          # For dummy images, use empty array for lines (no lines in TableNode)
+          return render_imgtable_dummy(id, caption, [])
+        end
+
+        id_attr = id ? %Q( id="#{normalize_id(id)}") : ''
+
+        # Generate table caption HTML if caption exists
+        caption_html = if caption
+                         caption_content = render_children(caption)
+                         # Use table_header format for imgtable like HTMLBuilder
+                         table_caption = generate_table_header(id, caption_content)
+                         %Q(<p class="caption">#{table_caption}</p>\n)
+                       else
+                         ''
+                       end
+
+        # Render image tag
+        begin
+          image_path = @chapter.image(id).path.sub(%r{\A\./}, '')
+          alt_text = caption ? escape(render_children(caption)) : ''
+          img_html = %Q(<img src="#{image_path}" alt="#{alt_text}" />\n)
+
+          # Check caption positioning like HTMLBuilder (uses 'table' type for imgtable)
+          if caption_top?('table') && caption
+            %Q(<div#{id_attr} class="imgtable image">\n#{caption_html}#{img_html}</div>\n)
+          else
+            %Q(<div#{id_attr} class="imgtable image">\n#{img_html}#{caption_html}</div>\n)
+          end
+        rescue KeyError
+          app_error "no such table: #{id}"
+        end
+      end
+
+      # Render dummy imgtable when image is not found
+      def render_imgtable_dummy(id, caption, lines)
+        id_attr = id ? %Q( id="#{normalize_id(id)}") : ''
+
+        # Generate table caption HTML if caption exists
+        caption_html = if caption
+                         caption_content = render_children(caption)
+                         # Use table_header format for imgtable like HTMLBuilder
+                         table_caption = generate_table_header(id, caption_content)
+                         %Q(<p class="caption">#{table_caption}</p>\n)
+                       else
+                         ''
+                       end
+
+        # Generate dummy content like image_dummy_html
+        lines_content = if lines.empty?
+                          "\n"
+                        else
+                          "\n" + lines.map { |line| escape(line) }.join("\n") + "\n"
+                        end
+
+        # Check caption positioning like HTMLBuilder
+        if caption_top?('table') && caption
+          %Q(<div#{id_attr} class="imgtable image">\n#{caption_html}<pre class="dummyimage">#{lines_content}</pre>\n</div>\n)
+        else
+          %Q(<div#{id_attr} class="imgtable image">\n<pre class="dummyimage">#{lines_content}</pre>\n#{caption_html}</div>\n)
+        end
       end
 
       # Generate indexes using AST::Indexer for Renderer (builder-independent)

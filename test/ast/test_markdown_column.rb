@@ -129,7 +129,7 @@ class TestMarkdownColumn < Test::Unit::TestCase
     html_output = renderer.render(ast_root)
 
     assert_match(/<div class="column">/, html_output)
-    assert_match(%r{HTML Test}, html_output)
+    assert_match(/HTML Test/, html_output)
     assert_match(/Column.*content/, html_output)
   end
 
