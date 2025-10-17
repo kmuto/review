@@ -10,19 +10,18 @@ require 'review/compiler'
 require 'review/htmlbuilder'
 require 'review/renderer/html_renderer'
 require 'review/ast'
+require 'review/ast/compiler'
+require 'review/ast/indexer'
 require 'review/book'
 require 'review/configure'
 require 'review/i18n'
 require 'stringio'
+require 'yaml'
 
 module ReVIEW
   # HTMLConverter converts *.re files to HTML using both HTMLBuilder and HTMLRenderer
   # for comparison purposes.
   class HTMLConverter
-    def initialize(config: {})
-      @config = config.dup
-    end
-
     # Convert a Re:VIEW source string to HTML using HTMLBuilder
     #
     # @param source [String] Re:VIEW source content
@@ -73,22 +72,32 @@ module ReVIEW
       renderer.render_body(ast)
     end
 
-    # Convert a *.re file to HTML using HTMLBuilder
+    # Convert a chapter from a book project to HTML using both builder and renderer
     #
-    # @param file_path [String] Path to .re file
-    # @return [String] Generated HTML
-    def convert_file_with_builder(file_path)
-      source = File.read(file_path)
-      convert_with_builder(source)
-    end
+    # @param book_dir [String] Path to book project directory
+    # @param chapter_name [String] Chapter filename (e.g., 'ch01.re' or 'ch01')
+    # @return [Hash] Hash with :builder and :renderer keys containing HTML output
+    def convert_chapter_with_book_context(book_dir, chapter_name)
+      # Ensure book_dir is absolute
+      book_dir = File.expand_path(book_dir)
 
-    # Convert a *.re file to HTML using HTMLRenderer
-    #
-    # @param file_path [String] Path to .re file
-    # @return [String] Generated HTML
-    def convert_file_with_renderer(file_path)
-      source = File.read(file_path)
-      convert_with_renderer(source)
+      # Load book configuration
+      book = load_book(book_dir)
+
+      # Find chapter by name (with or without .re extension)
+      chapter_name = chapter_name.sub(/\.re$/, '')
+      chapter = book.chapters.find { |ch| ch.name == chapter_name }
+
+      raise "Chapter '#{chapter_name}' not found in book at #{book_dir}" unless chapter
+
+      # Convert with both builder and renderer
+      builder_html = convert_with_builder(nil, chapter: chapter)
+      renderer_html = convert_with_renderer(nil, chapter: chapter)
+
+      {
+        builder: builder_html,
+        renderer: renderer_html
+      }
     end
 
     private
@@ -96,7 +105,6 @@ module ReVIEW
     # Create a temporary book for testing
     def create_temporary_book
       book_config = Configure.values
-      book_config.merge!(@config)
 
       # Set default HTML configuration
       book_config['htmlext'] = 'html'
@@ -115,6 +123,38 @@ module ReVIEW
       # Create a StringIO with the source content
       io = StringIO.new(source)
       Book::Chapter.new(book, 1, 'test', 'test.re', io)
+    end
+
+    # Load a book from a directory
+    def load_book(book_dir)
+      # Change to book directory to load configuration
+      Dir.chdir(book_dir) do
+        # Load book configuration from config.yml
+        book_config = Configure.values
+        config_file = File.join(book_dir, 'config.yml')
+        if File.exist?(config_file)
+          yaml_config = YAML.load_file(config_file, permitted_classes: [Date, Time, Symbol])
+          book_config.merge!(yaml_config) if yaml_config
+        end
+
+        # Set default HTML configuration
+        book_config['htmlext'] ||= 'html'
+        book_config['stylesheet'] ||= []
+        book_config['language'] ||= 'ja'
+        book_config['epubversion'] ||= 3
+
+        # Initialize I18n
+        I18n.setup(book_config['language'])
+
+        # Create book instance
+        book = Book::Base.new(book_dir, config: book_config)
+
+        # Initialize book-wide indexes early for cross-chapter references
+        # This is the same approach used by bin/review-ast-compile
+        ReVIEW::AST::Indexer.build_book_indexes(book)
+
+        book
+      end
     end
   end
 end

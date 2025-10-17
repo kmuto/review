@@ -222,12 +222,11 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
   end
 
   def test_syntax_book_ch02
-    pend('ch02.re has cross-reference errors that prevent compilation')
-    file_path = File.join(__dir__, '../../samples/syntax-book/ch02.re')
-    source = File.read(file_path)
+    book_dir = File.join(__dir__, '../../samples/syntax-book')
+    result = @converter.convert_chapter_with_book_context(book_dir, 'ch02')
 
-    builder_html = @converter.convert_with_builder(source)
-    renderer_html = @converter.convert_with_renderer(source)
+    builder_html = result[:builder]
+    renderer_html = result[:renderer]
 
     diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
 
