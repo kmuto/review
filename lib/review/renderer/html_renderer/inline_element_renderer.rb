@@ -119,6 +119,30 @@ module ReVIEW
           end
         end
 
+        def render_inline_embed(_type, content, node)
+          # @<embed> simply outputs its content as-is, like Builder's inline_embed
+          # It can optionally specify target formats like @<embed>{|html,latex|content}
+          if node.args && node.args.first
+            args = node.args.first
+            # DEBUG
+            if ENV['REVIEW_DEBUG']
+              puts "DEBUG render_inline_embed: content=#{content.inspect}, args=#{args.inspect}"
+            end
+            if matched = args.match(/\|(.*?)\|(.*)/)
+              builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }
+              if builders.include?('html')
+                matched[2]
+              else
+                ''
+              end
+            else
+              args
+            end
+          else
+            content
+          end
+        end
+
         def render_inline_chap(_type, content, node)
           if node.args && node.args.first
             node.args.first
@@ -153,11 +177,18 @@ module ReVIEW
         def render_inline_fn(_type, content, node)
           if node.args && node.args.first
             fn_id = node.args.first
-            # Check epubversion for consistent output with HTMLBuilder
-            if @book&.config&.[]('epubversion').to_i == 3
-              %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref" epub:type="noteref">#{I18n.t('html_footnote_refmark', content)}</a>)
-            else
-              %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref">*#{content}</a>)
+            # Get footnote number from chapter like HTMLBuilder
+            begin
+              fn_number = @chapter.footnote(fn_id).number
+              # Check epubversion for consistent output with HTMLBuilder
+              if @book&.config&.[]('epubversion').to_i == 3
+                %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref" epub:type="noteref">#{I18n.t('html_footnote_refmark', fn_number)}</a>)
+              else
+                %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref">*#{fn_number}</a>)
+              end
+            rescue KeyError
+              # Fallback if footnote not found
+              escape_content(content)
             end
           else
             escape_content(content)

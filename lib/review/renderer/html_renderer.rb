@@ -69,9 +69,7 @@ module ReVIEW
         # Generate indexes using AST::Indexer (builder-independent approach)
         generate_ast_indexes(node)
 
-        # Generate body content only, like HTMLBuilder
-        # The complete HTML document structure (html, head, body tags)
-        # is handled by templates/html/layout-html5.html.erb
+        # Generate body content only
         render_children(node)
       end
 
@@ -79,19 +77,42 @@ module ReVIEW
         level = node.level
         caption = render_children(node.caption) if node.caption
 
-        # Use HTMLBuilder's headline_prefix method
-        prefix, anchor = headline_prefix(level)
+        if node.nonum? || node.notoc? || node.nodisp?
+          @nonum_counter ||= 0
+          @nonum_counter += 1
 
-        # Generate anchor ID like HTMLBuilder
-        anchor_html = anchor ? %Q(<a id="h#{anchor}"></a>) : ''
+          id = if node.label
+                 normalize_id(node.label)
+               else
+                 # Auto-generate ID like HTMLBuilder: test_nonum1, test_nonum2, etc.
+                 chapter_name = @chapter&.name || 'test'
+                 normalize_id("#{chapter_name}_nonum#{@nonum_counter}")
+               end
 
-        # Generate section number like HTMLBuilder
-        secno_html = prefix ? %Q(<span class="secno">#{prefix}</span>) : ''
+          spacing_before = level > 1 ? "\n" : ''
 
-        # Add proper spacing like HTMLBuilder (disabled)
-        spacing_before = ''
-        spacing_after = ''
-        "#{spacing_before}<h#{level}>#{anchor_html}#{secno_html}#{caption}</h#{level}>#{spacing_after}\n"
+          if node.nodisp?
+            a_tag = %Q(<a id="#{id}" />)
+            %Q(#{spacing_before}#{a_tag}<h#{level} id="#{id}" hidden="true">#{caption}</h#{level}>\n)
+          elsif node.notoc?
+            %Q(#{spacing_before}<h#{level} id="#{id}" notoc="true">#{caption}</h#{level}>\n)
+          else
+            %Q(#{spacing_before}<h#{level} id="#{id}">#{caption}</h#{level}>\n)
+          end
+        else
+          prefix, anchor = headline_prefix(level)
+
+          anchor_html = anchor ? %Q(<a id="h#{anchor}"></a>) : ''
+          secno_html = prefix ? %Q(<span class="secno">#{prefix}</span>) : ''
+          spacing_before = level > 1 ? "\n" : ''
+
+          if node.label
+            label_id = normalize_id(node.label)
+            %Q(#{spacing_before}<h#{level} id="#{label_id}">#{anchor_html}#{secno_html}#{caption}</h#{level}>\n)
+          else
+            "#{spacing_before}<h#{level}>#{anchor_html}#{secno_html}#{caption}</h#{level}>\n"
+          end
+        end
       end
 
       def visit_paragraph(node)
@@ -148,12 +169,13 @@ module ReVIEW
                  end
 
           # Children contain the definition content
+          # Join all children into a single dd like HTMLBuilder does with join_lines_to_paragraph
           if node.children && !node.children.empty?
-            definitions = node.children.map do |child|
-              definition_content = visit(child)
-              "<dd>#{definition_content}</dd>"
-            end
-            "<dt>#{term}</dt>" + definitions.join
+            # Render all child content and join together
+            definition_parts = node.children.map { |child| visit(child) }
+            # Join multiple paragraphs/text into single dd content, removing <p> tags
+            definition_content = definition_parts.map { |part| part.gsub(%r{</?p[^>]*>}, '').strip }.join
+            "<dt>#{term}</dt><dd>#{definition_content}</dd>"
           else
             # Only term, no definition - add empty dd like HTMLBuilder
             "<dt>#{term}</dt><dd></dd>"
@@ -339,8 +361,7 @@ module ReVIEW
 
         content = render_children(node)
 
-        %Q(<div class="column">
-#{caption_html}#{content}</div>)
+        %Q(<div class="column">\n#{caption_html}#{content}</div>)
       end
 
       def visit_minicolumn(node)
@@ -358,9 +379,7 @@ module ReVIEW
         # Content already contains proper paragraph structure from ParagraphNode children
         content_html = render_children(node)
 
-        %Q(<div class="#{type}"#{id_attr}>
-#{caption_html}#{content_html}</div>
-)
+        %Q(<div class="#{type}"#{id_attr}>\n#{caption_html}#{content_html}</div>\n)
       end
 
       def visit_image(node)
@@ -821,8 +840,7 @@ module ReVIEW
 
         content = render_children(node)
 
-        %Q(<div class="#{type}"#{id_attr}>
-#{caption_html}#{content}</div>)
+        %Q(<div class="#{type}"#{id_attr}>\n#{caption_html}#{content}</div>)
       end
 
       def render_generic_block(node)
@@ -1143,15 +1161,9 @@ module ReVIEW
 
           # Check caption positioning like HTMLBuilder
           if caption_top?('image') && caption
-            %Q(<div#{id_attr} class="image">
-#{caption_html}#{img_html}
-</div>
-)
+            %Q(<div#{id_attr} class="image">\n#{caption_html}#{img_html}\n</div>\n)
           else
-            %Q(<div#{id_attr} class="image">
-#{img_html}
-#{caption_html}</div>
-)
+            %Q(<div#{id_attr} class="image">\n#{img_html}\n#{caption_html}</div>\n)
           end
         rescue StandardError
           # If image loading fails, fall back to dummy
@@ -1175,15 +1187,9 @@ module ReVIEW
 
           # Check caption positioning like HTMLBuilder
           if caption_top?('image') && caption
-            %Q(<div#{id_attr} class="image">
-#{caption_html}#{img_html}
-</div>
-)
+            %Q(<div#{id_attr} class="image">\n#{caption_html}#{img_html}\n</div>\n)
           else
-            %Q(<div#{id_attr} class="image">
-#{img_html}
-#{caption_html}</div>
-)
+            %Q(<div#{id_attr} class="image">\n#{img_html}\n#{caption_html}</div>\n)
           end
         rescue StandardError
           # If image loading fails, fall back to dummy
@@ -1204,15 +1210,9 @@ module ReVIEW
 
         # Check caption positioning like HTMLBuilder
         if caption_top?('image') && caption
-          %Q(<div#{id_attr} class="image">
-#{caption_html}<pre class="dummyimage">#{lines_content}</pre>
-</div>
-)
+          %Q(<div#{id_attr} class="image">\n#{caption_html}<pre class="dummyimage">#{lines_content}</pre>\n</div>\n)
         else
-          %Q(<div#{id_attr} class="image">
-<pre class="dummyimage">#{lines_content}</pre>
-#{caption_html}</div>
-)
+          %Q(<div#{id_attr} class="image">\n<pre class="dummyimage">#{lines_content}</pre>\n#{caption_html}</div>\n)
         end
       end
 
@@ -1233,15 +1233,9 @@ module ReVIEW
 
         # Check caption positioning like HTMLBuilder
         if caption_top?('image') && caption
-          %Q(<div#{id_attr} class="image">
-#{caption_html}<pre class="dummyimage">#{lines_content}</pre>
-</div>
-)
+          %Q(<div#{id_attr} class="image">\n#{caption_html}<pre class="dummyimage">#{lines_content}</pre>\n</div>\n)
         else
-          %Q(<div#{id_attr} class="image">
-<pre class="dummyimage">#{lines_content}</pre>
-#{caption_html}</div>
-)
+          %Q(<div#{id_attr} class="image">\n<pre class="dummyimage">#{lines_content}</pre>\n#{caption_html}</div>\n)
         end
       end
 
@@ -1267,10 +1261,7 @@ module ReVIEW
                          end
         end
 
-        %Q(<p class="caption">
-#{image_number}#{I18n.t('caption_prefix')}#{caption_content}
-</p>
-)
+        %Q(<p class="caption">\n#{image_number}#{I18n.t('caption_prefix')}#{caption_content}\n</p>\n)
       end
 
       # Context-aware version of image_header_html
@@ -1296,10 +1287,7 @@ module ReVIEW
                          end
         end
 
-        %Q(<p class="caption">
-#{image_number}#{I18n.t('caption_prefix')}#{caption_content}
-</p>
-)
+        %Q(<p class="caption">\n#{image_number}#{I18n.t('caption_prefix')}#{caption_content}\n</p>\n)
       end
 
       def caption_top?(type)
