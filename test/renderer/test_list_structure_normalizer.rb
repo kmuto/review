@@ -6,6 +6,7 @@ require 'ostruct'
 require 'review/ast/compiler'
 require 'review/book'
 require 'review/configure'
+require 'review/renderer/latex_renderer'
 require 'review/renderer/list_structure_normalizer'
 
 class ListStructureNormalizerTest < Test::Unit::TestCase
@@ -17,7 +18,8 @@ class ListStructureNormalizerTest < Test::Unit::TestCase
     @book.config = @config
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     @compiler = ReVIEW::AST::Compiler.for_chapter(@chapter)
-    @normalizer = ReVIEW::Renderer::ListStructureNormalizer.new(OpenStruct.new(ast_compiler: @compiler))
+    renderer = ReVIEW::Renderer::LatexRenderer.new(@chapter)
+    @normalizer = ReVIEW::Renderer::ListStructureNormalizer.new(renderer)
   end
 
   def compile_ast(src)
