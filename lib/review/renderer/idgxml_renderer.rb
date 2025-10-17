@@ -823,12 +823,6 @@ module ReVIEW
         @ast_compiler ||= ReVIEW::AST::Compiler.for_chapter(@chapter)
       end
 
-      def render_children(node)
-        return '' unless node&.children
-
-        node.children.map { |child| visit(child) }.join
-      end
-
       def render_inline_element(type, content, node)
         require 'review/renderer/idgxml_renderer/inline_element_renderer'
         inline_renderer = InlineElementRenderer.new(

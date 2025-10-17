@@ -59,12 +59,6 @@ module ReVIEW
       )
     end
 
-    private
-
-    def highlighter
-      @highlighter ||= ReVIEW::Highlighter.new(@book.config)
-    end
-
     def normalize_id(id)
       if /\A[a-z][a-z0-9_.-]*\Z/i.match?(id)
         id
@@ -73,6 +67,12 @@ module ReVIEW
       else
         "id_#{CGI.escape(id.gsub('_', '__')).tr('%', '_').tr('+', '-')}" # escape all
       end
+    end
+
+    private
+
+    def highlighter
+      @highlighter ||= ReVIEW::Highlighter.new(@book.config)
     end
   end
 end # module ReVIEW

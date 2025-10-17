@@ -61,6 +61,26 @@ module ReVIEW
         post_process(result)
       end
 
+      # Check if caption should be positioned at top for given type
+      #
+      # @param type [String] Element type (e.g., 'image', 'table', 'list', 'equation')
+      # @return [Boolean] true if caption should be at top, false otherwise
+      def caption_top?(type)
+        config['caption_position'] && config['caption_position'][type] == 'top'
+      end
+
+      # Render all children of a node and join the results.
+      # This is a common helper method used by all renderers and can be called
+      # from helper classes like CodeBlockRenderer.
+      #
+      # @param node [Object] The parent node whose children should be rendered
+      # @return [String] The joined rendered output of all children
+      def render_children(node)
+        return '' unless node.children
+
+        node.children.map { |child| visit(child) }.join
+      end
+
       private
 
       # Post-process the rendered result.

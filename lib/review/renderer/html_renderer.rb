@@ -195,138 +195,14 @@ module ReVIEW
       end
 
       def visit_code_block(node)
-        id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
-        lines_content = render_children(node)
-
-        # Determine block type based on code_type like HTMLBuilder
-        case node.code_type
-        when :emlist
-          # Emlist block - like HTMLBuilder's emlist with proper detab and line processing
-          caption_html = if node.caption && caption_top?('list')
-                           caption_content = render_children(node.caption)
-                           %Q(<p class="caption">#{caption_content}</p>\n)
-                         else
-                           ''
-                         end
-
-          caption_bottom_html = if node.caption && !caption_top?('list')
-                                  caption_content = render_children(node.caption)
-                                  %Q(<p class="caption">#{caption_content}</p>\n)
-                                else
-                                  ''
-                                end
-
-          # Process lines like HTMLBuilder with detab and proper line endings
-          processed_content = process_code_lines_like_builder(lines_content, node.lang)
-
-          lang_class = node.lang ? " language-#{node.lang}" : ''
-          highlight_class = highlight? ? ' highlight' : ''
-          %Q(<div class="emlist-code">\n#{caption_html}<pre class="emlist#{lang_class}#{highlight_class}">#{processed_content}</pre>\n#{caption_bottom_html}</div>\n)
-        when :emlistnum
-          # Emlistnum block - like HTMLBuilder's emlistnum
-          caption_html = if node.caption && caption_top?('list')
-                           caption_content = render_children(node.caption)
-                           %Q(<p class="caption">#{caption_content}</p>\n)
-                         else
-                           ''
-                         end
-
-          caption_bottom_html = if node.caption && !caption_top?('list')
-                                  caption_content = render_children(node.caption)
-                                  %Q(<p class="caption">#{caption_content}</p>\n)
-                                else
-                                  ''
-                                end
-
-          # Process lines like HTMLBuilder with detab and proper line endings
-          # For emlistnum, we don't highlight first, we pass raw content to line numberer
-          numbered_lines = add_line_numbers_like_emlistnum(lines_content, node.lang)
-
-          lang_class = node.lang ? " language-#{node.lang}" : ''
-          highlight_class = highlight? ? ' highlight' : ''
-          %Q(<div class="emlistnum-code">\n#{caption_html}<pre class="emlist#{lang_class}#{highlight_class}">#{numbered_lines}</pre>\n#{caption_bottom_html}</div>\n)
-        when :list
-          # Regular list block - like HTMLBuilder's list
-          caption_html = if node.caption
-                           caption_content = render_children(node.caption)
-                           # Generate list number like HTMLBuilder using chapter list index
-                           list_number = generate_list_header(node.id, caption_content)
-                           %Q(<p class="caption">#{list_number}</p>\n)
-                         else
-                           ''
-                         end
-
-          # Process lines like HTMLBuilder with detab and proper line endings
-          processed_content = process_code_lines_like_builder(lines_content, node.lang)
-
-          lang_class = node.lang ? " language-#{node.lang}" : ''
-          highlight_class = highlight? ? ' highlight' : ''
-          %Q(<div#{id_attr} class="caption-code">\n#{caption_html}<pre class="list#{lang_class}#{highlight_class}">#{processed_content}</pre>\n</div>\n)
-        when :listnum
-          # Numbered list block - like HTMLBuilder's listnum
-          caption_html = if node.caption
-                           caption_content = render_children(node.caption)
-                           # Generate list number like HTMLBuilder using chapter list index
-                           list_number = generate_list_header(node.id, caption_content)
-                           %Q(<p class="caption">#{list_number}</p>\n)
-                         else
-                           ''
-                         end
-
-          # Process lines like HTMLBuilder with detab and proper line endings
-          # For listnum, we don't highlight first, we pass raw content to line numberer
-          numbered_lines = add_line_numbers_like_listnum(lines_content, node.lang)
-
-          lang_class = node.lang ? " language-#{node.lang}" : ''
-          %Q(<div#{id_attr} class="code">\n#{caption_html}<pre class="list#{lang_class}">#{numbered_lines}</pre>\n</div>\n)
-        when :source
-          # Source block - like HTMLBuilder's source
-          caption_html = if node.caption && caption_top?('list')
-                           caption_content = render_children(node.caption)
-                           %Q(<p class="caption">#{caption_content}</p>\n)
-                         else
-                           ''
-                         end
-
-          caption_bottom_html = if node.caption && !caption_top?('list')
-                                  caption_content = render_children(node.caption)
-                                  %Q(<p class="caption">#{caption_content}</p>\n)
-                                else
-                                  ''
-                                end
-
-          processed_content = process_code_lines_like_builder(lines_content, node.lang)
-          # HTMLBuilder doesn't add language class to source blocks
-          %Q(<div#{id_attr} class="source-code">\n#{caption_html}<pre class="source">#{processed_content}</pre>\n#{caption_bottom_html}</div>\n)
-        when :cmd
-          # Cmd block - like HTMLBuilder's cmd
-          caption_html = if node.caption && caption_top?('list')
-                           caption_content = render_children(node.caption)
-                           %Q(<p class="caption">#{caption_content}</p>\n)
-                         else
-                           ''
-                         end
-
-          caption_bottom_html = if node.caption && !caption_top?('list')
-                                  caption_content = render_children(node.caption)
-                                  %Q(<p class="caption">#{caption_content}</p>\n)
-                                else
-                                  ''
-                                end
-
-          processed_content = process_code_lines_like_builder(lines_content, node.lang)
-          %Q(<div#{id_attr} class="cmd-code">\n#{caption_html}<pre class="cmd">#{processed_content}</pre>\n#{caption_bottom_html}</div>\n)
-        else
-          # Fallback for unknown code types
-          processed_content = process_code_lines_like_builder(lines_content)
-          %Q(<div#{id_attr} class="caption-code">\n<pre>#{processed_content}</pre>\n</div>\n)
-        end
+        code_block_renderer.render(node)
       end
 
       def visit_code_line(node)
         # Process each line like HTMLBuilder - detab and preserve exact content
+        # Add newline like other renderers (LaTeX, Markdown, Top) do
         line_content = render_children(node)
-        detab(line_content)
+        detab(line_content) + "\n"
       end
 
       def visit_table(node)
@@ -730,23 +606,21 @@ module ReVIEW
         end
       end
 
-      # Configuration accessor - returns book config or empty hash for nil safety
-      # This follows the Builder pattern of accessing @book.config directly
-      def config
-        @book&.config || {}
+      # Line numbering for code blocks like HTMLBuilder
+      # This method is public so CodeBlockRenderer can access it directly
+      def line_num
+        return 1 unless @first_line_num
+
+        line_n = @first_line_num
+        @first_line_num = nil
+        line_n
       end
 
       private
 
-      def render_children(node)
-        return '' unless node.children
-
-        # Special handling for CodeBlockNode - preserve line breaks
-        if node.instance_of?(::ReVIEW::AST::CodeBlockNode)
-          node.children.map { |child| visit(child) }.join("\n")
-        else
-          node.children.map { |child| visit(child) }.join
-        end
+      def code_block_renderer
+        require 'review/renderer/html_renderer/code_block_renderer'
+        @code_block_renderer ||= CodeBlockRenderer.new(@chapter, parent: self)
       end
 
       def visit_reference(node)
@@ -1005,110 +879,14 @@ module ReVIEW
         content.gsub('<p>', %Q(<p class="center">))
       end
 
-      # Line numbering for code blocks like HTMLBuilder
-      def firstlinenum(num)
-        @first_line_num = num.to_i
-      end
-
-      def line_num
-        return 1 unless @first_line_num
-
-        line_n = @first_line_num
-        @first_line_num = nil
-        line_n
-      end
-
       def escape(str)
         # Use EscapeUtils for consistency
         escape_content(str.to_s)
       end
 
-      # Process code lines exactly like HTMLBuilder does
-      def process_code_lines_like_builder(lines_content, lang = nil)
-        # HTMLBuilder uses: lines.inject('') { |i, j| i + detab(j) + "\n" }
-        # We need to emulate this exact behavior to match Builder output
-
-        lines = lines_content.split("\n")
-
-        # Use inject pattern exactly like HTMLBuilder for consistency
-        body = lines.inject('') { |i, j| i + detab(j) + "\n" }
-
-        # Apply highlighting if enabled, otherwise return processed body
-        highlight(body: body, lexer: lang, format: 'html')
-      end
-
-      # Add line numbers like HTMLBuilder's emlistnum method
-      def add_line_numbers_like_emlistnum(content, lang = nil)
-        # HTMLBuilder processes lines with detab first, then adds line numbers
-        lines = content.split("\n")
-        # Remove last empty line if present to match HTMLBuilder behavior
-        lines.pop if lines.last && lines.last.empty?
-
-        # Use inject pattern exactly like HTMLBuilder for consistency
-        body = lines.inject('') { |i, j| i + detab(j) + "\n" }
-        first_line_number = line_num || 1 # Use line_num like HTMLBuilder (supports firstlinenum)
-
-        if highlight?
-          # Use highlight with line numbers like HTMLBuilder
-          highlight(body: body, lexer: lang, format: 'html', linenum: true, options: { linenostart: first_line_number })
-        else
-          # Fallback: manual line numbering like HTMLBuilder does when highlight is off
-          lines.map.with_index(first_line_number) do |line, i|
-            "#{i.to_s.rjust(2)}: #{detab(line)}"
-          end.join("\n") + "\n"
-        end
-      end
-
-      # Add line numbers like HTMLBuilder's listnum method
-      def add_line_numbers_like_listnum(content, lang = nil)
-        # HTMLBuilder processes lines with detab first, then adds line numbers
-        lines = content.split("\n")
-        # Remove last empty line if present to match HTMLBuilder behavior
-        lines.pop if lines.last && lines.last.empty?
-
-        # Use inject pattern exactly like HTMLBuilder for consistency
-        body = lines.inject('') { |i, j| i + detab(j) + "\n" }
-        first_line_number = line_num || 1 # Use line_num like HTMLBuilder
-
-        hs = highlight(body: body, lexer: lang, format: 'html', linenum: true,
-                       options: { linenostart: first_line_number })
-
-        if highlight?
-          hs
-        else
-          # Fallback: manual line numbering like HTMLBuilder does when highlight is off
-          lines.map.with_index(first_line_number) do |line, i|
-            i.to_s.rjust(2) + ': ' + detab(line)
-          end.join("\n") + "\n"
-        end
-      end
-
-      # Tab conversion like HTMLBuilder's detab method
-      def detab(str, ts = 8)
-        add = 0
-        len = nil
-        str.gsub("\t") do
-          len = ts - (($`.size + add) % ts)
-          add += len - 1
-          ' ' * len
-        end
-      end
-
-      # Check if highlight is enabled like HTMLBuilder
-      def highlight?
-        highlighter.highlight?('html')
-      end
-
-      # Highlight code using the new Highlighter class
-      def highlight(body:, lexer: nil, format: 'html', linenum: false, options: {}, location: nil)
-        highlighter.highlight(
-          body: body,
-          lexer: lexer,
-          format: format,
-          linenum: linenum,
-          options: options,
-          location: location
-        )
+      # Line numbering for code blocks like HTMLBuilder
+      def firstlinenum(num)
+        @first_line_num = num.to_i
       end
 
       # Generate headline prefix and anchor like HTMLBuilder
@@ -1290,25 +1068,6 @@ module ReVIEW
         %Q(<p class="caption">\n#{image_number}#{I18n.t('caption_prefix')}#{caption_content}\n</p>\n)
       end
 
-      def caption_top?(type)
-        config['caption_position'] && config['caption_position'][type] == 'top'
-      end
-
-      # Generate list header like HTMLBuilder's list_header method
-      def generate_list_header(id, caption)
-        list_item = @chapter.list(id)
-        list_num = list_item.number
-        chapter_num = @chapter.number
-
-        if chapter_num
-          "#{I18n.t('list')}#{I18n.t('format_number_header', [chapter_num, list_num])}#{I18n.t('caption_prefix')}#{caption}"
-        else
-          "#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [list_num])}#{I18n.t('caption_prefix')}#{caption}"
-        end
-      rescue KeyError
-        raise NotImplementedError, "no such list: #{id}"
-      end
-
       # Generate table header like HTMLBuilder's table_header method
       def generate_table_header(id, caption)
         table_item = @chapter.table(id)
@@ -1411,10 +1170,6 @@ module ReVIEW
         end
 
         @ast_indexes_generated = true
-      end
-
-      def highlighter
-        @highlighter ||= ReVIEW::Highlighter.new(config)
       end
 
       # Helper methods for template variables

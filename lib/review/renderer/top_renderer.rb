@@ -430,12 +430,6 @@ module ReVIEW
 
       private
 
-      def render_children(node)
-        return '' unless node&.children
-
-        node.children.map { |child| visit(child) }.join
-      end
-
       def generate_headline_prefix(level)
         # Simple numbering - in real implementation this would use chapter numbering
         case level

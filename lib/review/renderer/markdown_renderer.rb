@@ -335,10 +335,6 @@ module ReVIEW
 
       private
 
-      def render_children(node)
-        node.children.map { |child| visit(child) }.join
-      end
-
       def generate_markdown_table
         return '' if @table_rows.empty?
 

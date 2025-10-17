@@ -1280,12 +1280,6 @@ module ReVIEW
         inline_renderer.render(type, content, node)
       end
 
-      def render_children(node)
-        return '' unless node.children
-
-        node.children.map { |child| visit(child) }.join
-      end
-
       def visit_reference(node)
         # Handle ReferenceNode - simply render the content
         escape(node.content || '')
