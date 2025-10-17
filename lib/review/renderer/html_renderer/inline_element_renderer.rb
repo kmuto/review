@@ -160,23 +160,23 @@ module ReVIEW
         end
 
         def render_inline_list(_type, content, node)
-          id = node.args&.first
+          id = node.reference_id
           @renderer.render_list(id, node)
         end
 
         def render_inline_img(_type, content, node)
-          id = node.args&.first
+          id = node.reference_id
           @renderer.render_img(id, node)
         end
 
         def render_inline_table(_type, content, node)
-          id = node.args&.first
+          id = node.reference_id
           @renderer.render_inline_table(id, node)
         end
 
         def render_inline_fn(_type, content, node)
-          if node.args&.first
-            fn_id = node.args.first
+          fn_id = node.reference_id
+          if fn_id
             # Get footnote number from chapter like HTMLBuilder
             begin
               fn_number = @chapter.footnote(fn_id).number
@@ -386,7 +386,7 @@ module ReVIEW
 
         def render_inline_endnote(_type, content, node)
           # Endnote reference
-          id = node.args&.first || content
+          id = node.reference_id
           begin
             number = @chapter.endnote(id).number
             %Q(<a id="endnoteb-#{normalize_id(id)}" href="#endnote-#{normalize_id(id)}" class="noteref" epub:type="noteref">#{I18n.t('html_endnote_refmark', number)}</a>)
@@ -397,7 +397,7 @@ module ReVIEW
 
         def render_inline_eq(_type, content, node)
           # Equation reference
-          id = node.args&.first || content
+          id = node.reference_id
           begin
             chapter, extracted_id = extract_chapter_id(id)
             equation_number = if get_chap(chapter)
@@ -418,7 +418,8 @@ module ReVIEW
 
         def render_inline_hd(_type, content, node)
           # Headline reference: @<hd>{id} or @<hd>{chapter|id}
-          id = node.args&.first || content
+          # This should match HTMLBuilder's inline_hd_chap behavior
+          id = node.reference_id
           m = /\A([^|]+)\|(.+)/.match(id)
 
           chapter = if m && m[1]
@@ -483,7 +484,7 @@ module ReVIEW
 
         def render_inline_sectitle(_type, content, node)
           # Section title reference
-          id = node.args&.first || content
+          id = node.reference_id
           begin
             if @book.config['chapterlink']
               chap, id2 = extract_chapter_id(id)

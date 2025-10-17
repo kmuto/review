@@ -20,6 +20,20 @@ module ReVIEW
         )
       end
 
+      # Returns the reference ID in the format expected by extract_chapter_id
+      # For cross-chapter references (args.length >= 2), joins all elements with '|'
+      # For simple references, returns the first arg
+      # Falls back to nil if args is empty, allowing proper error handling in reference resolution
+      #
+      # @return [String, nil] The reference ID or nil
+      def reference_id
+        if args && args.length >= 2
+          args.join('|')
+        else
+          args&.first
+        end
+      end
+
       private
 
       def serialize_properties(hash, options)
