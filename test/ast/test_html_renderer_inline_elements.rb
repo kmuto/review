@@ -178,9 +178,9 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
   def test_inline_idx
     content = "= Chapter\n\n@<idx>{索引項目}\n"
     output = render_inline(content)
+    # idx displays the text and outputs an IDX comment (no anchor tag)
     assert_match(/索引項目/, output)
-    # normalize_id encodes non-ASCII characters
-    assert_match(%r{<a id="idx-id__E7_B4_A2_E5_BC_95_E9_A0_85_E7_9B_AE"></a>}, output)
+    assert_match(/<!-- IDX:索引項目 -->/, output)
   end
 
   def test_inline_idx_hierarchical
@@ -188,25 +188,28 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
     output = render_inline(content)
     # Display text includes the full hierarchical path with <<>>
     assert_match(/親項目&lt;&lt;&gt;&gt;子項目/, output)
-    # <<>> should be replaced with - in ID, then normalize_id encodes it
-    assert_match(%r{<a id="idx-id__E8_A6_AA_E9_A0_85_E7_9B_AE-_E5_AD_90_E9_A0_85_E7_9B_AE"></a>}, output)
+    # IDX comment preserves the <<>> delimiter (not escaped in HTML comments)
+    assert_match(/<!-- IDX:親項目<<>>子項目 -->/, output)
   end
 
   def test_inline_hidx
     content = "= Chapter\n\n@<hidx>{隠し索引}\n"
     output = render_inline(content)
-    # normalize_id encodes non-ASCII characters
-    assert_match(%r{<a id="hidx-id__E9_9A_A0_E3_81_97_E7_B4_A2_E5_BC_95"></a>}, output)
+    # hidx outputs only an IDX comment (no text, no anchor tag)
+    assert_match(/<!-- IDX:隠し索引 -->/, output)
+    # Text should not be displayed
+    refute_match(/>隠し索引</, output)
   end
 
   def test_inline_hidx_hierarchical
     content = "= Chapter\n\n@<hidx>{索引<<>>項目}\n"
     output = render_inline(content)
-    # <<>> should be replaced with - in ID, then normalize_id encodes it
-    assert_match(%r{<a id="hidx-id__E7_B4_A2_E5_BC_95-_E9_A0_85_E7_9B_AE"></a>}, output)
-    # hidx content should not be displayed (only the anchor tag)
-    # Check that there's no text content after the anchor
-    assert_match(%r{<a id="hidx-id__E7_B4_A2_E5_BC_95-_E9_A0_85_E7_9B_AE"></a></p>}, output)
+    # hidx outputs only an IDX comment with <<>> delimiter (no text, no anchor tag)
+    # Note: <<>> is not escaped in HTML comments
+    assert_match(/<!-- IDX:索引<<>>項目 -->/, output)
+    # Text should not be displayed
+    refute_match(/>索引/, output)
+    refute_match(/項目</, output)
   end
 
   # Links
@@ -307,8 +310,8 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
   def test_inline_m
     content = "= Chapter\n\n@<m>{E = mc^2}\n"
     output = render_inline(content)
-    # InlineElementRenderer uses class="math" instead of "equation"
-    assert_match(%r{<span class="math">E = mc\^2</span>}, output)
+    # InlineElementRenderer uses class="equation" like HTMLBuilder
+    assert_match(%r{<span class="equation">E = mc\^2</span>}, output)
   end
 
   # Comments (draft mode)
@@ -437,16 +440,30 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
 
   # Chapter reference
   def test_inline_chap
-    content = "= Chapter\n\nSee @<chap>{test}.\n"
-    output = render_inline(content)
-    # Should contain chapter number
-    assert_match(/1/, output)
+    # Use mktmpbookdir to create a proper book with chapters
+    mktmpbookdir('test.re' => "= Chapter Title\n\nSee @<chap>{test}.\n") do |_dir, book|
+      chapter = book.chapters[0]
+      chapter.generate_indexes
+      book.generate_indexes
+      ast_root = @compiler.compile_to_ast(chapter)
+      renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+      output = renderer.render(ast_root)
+      # Should contain chapter number
+      assert_match(/第1章/, output)
+    end
   end
 
   def test_inline_title
-    content = "= Chapter Title\n\nSee @<title>{test}.\n"
-    output = render_inline(content)
-    assert_match(/Chapter Title/, output)
+    # Use mktmpbookdir to create a proper book with chapters
+    mktmpbookdir('test.re' => "= Chapter Title\n\nSee @<title>{test}.\n") do |_dir, book|
+      chapter = book.chapters[0]
+      chapter.generate_indexes
+      book.generate_indexes
+      ast_root = @compiler.compile_to_ast(chapter)
+      renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+      output = renderer.render(ast_root)
+      assert_match(/Chapter Title/, output)
+    end
   end
 
   # Page reference (unsupported in HTML)

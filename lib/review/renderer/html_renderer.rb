@@ -279,6 +279,43 @@ module ReVIEW
 
           lang_class = node.lang ? " language-#{node.lang}" : ''
           %Q(<div#{id_attr} class="code">\n#{caption_html}<pre class="list#{lang_class}">#{numbered_lines}</pre>\n</div>\n)
+        when :source
+          # Source block - like HTMLBuilder's source
+          caption_html = if node.caption && caption_top?('list')
+                           caption_content = render_children(node.caption)
+                           %Q(<p class="caption">#{caption_content}</p>\n)
+                         else
+                           ''
+                         end
+
+          caption_bottom_html = if node.caption && !caption_top?('list')
+                                  caption_content = render_children(node.caption)
+                                  %Q(<p class="caption">#{caption_content}</p>\n)
+                                else
+                                  ''
+                                end
+
+          processed_content = process_code_lines_like_builder(lines_content, node.lang)
+          # HTMLBuilder doesn't add language class to source blocks
+          %Q(<div#{id_attr} class="source-code">\n#{caption_html}<pre class="source">#{processed_content}</pre>\n#{caption_bottom_html}</div>\n)
+        when :cmd
+          # Cmd block - like HTMLBuilder's cmd
+          caption_html = if node.caption && caption_top?('list')
+                           caption_content = render_children(node.caption)
+                           %Q(<p class="caption">#{caption_content}</p>\n)
+                         else
+                           ''
+                         end
+
+          caption_bottom_html = if node.caption && !caption_top?('list')
+                                  caption_content = render_children(node.caption)
+                                  %Q(<p class="caption">#{caption_content}</p>\n)
+                                else
+                                  ''
+                                end
+
+          processed_content = process_code_lines_like_builder(lines_content, node.lang)
+          %Q(<div#{id_attr} class="cmd-code">\n#{caption_html}<pre class="cmd">#{processed_content}</pre>\n#{caption_bottom_html}</div>\n)
         else
           # Fallback for unknown code types
           processed_content = process_code_lines_like_builder(lines_content)
@@ -299,9 +336,13 @@ module ReVIEW
         caption_html = if node.caption
                          @rendering_context.with_child_context(:caption) do |caption_context|
                            caption_content = render_children_with_context(node.caption, caption_context)
-                           # Generate table number like HTMLBuilder with proper counter
-                           @table_counter += 1
-                           table_number = "表1.#{@table_counter}: #{caption_content}"
+                           # Generate table number like HTMLBuilder using chapter table index
+                           if node.id
+                             table_number = generate_table_header(node.id, caption_content)
+                           else
+                             # No ID - just use caption without numbering
+                             table_number = caption_content
+                           end
                            %Q(<p class="caption">#{table_number}</p>
 )
                          end
@@ -425,6 +466,24 @@ module ReVIEW
           render_quote_block(node)
         when 'comment'
           render_comment_block(node)
+        when 'firstlinenum'
+          # Set line number for next code block, no HTML output
+          render_firstlinenum_block(node)
+        when 'blankline'
+          # Blank line control - no HTML output in most contexts
+          ''
+        when 'pagebreak'
+          # Page break - for HTML, output a div that can be styled
+          %Q(<div class="pagebreak"></div>\n)
+        when 'label'
+          # Label creates an anchor
+          render_label_block(node)
+        when 'tsize'
+          # Table size control - output as div for styling
+          render_tsize_block(node)
+        when 'printendnotes'
+          # Print collected endnotes
+          render_printendnotes_block(node)
         else
           render_generic_block(node)
         end
@@ -433,7 +492,7 @@ module ReVIEW
       def visit_tex_equation(node)
         content = node.content
 
-        math_format = @book.config['math_format']
+        math_format = config['math_format']
 
         return render_texequation_body(content, math_format) unless node.id?
 
@@ -518,15 +577,15 @@ module ReVIEW
 
         # Set up template variables like HTMLBuilder
         @title = strip_html(compile_inline(@chapter&.title || ''))
-        @language = @config['language'] || 'ja'
-        @stylesheets = @config['stylesheet'] || []
+        @language = config['language'] || 'ja'
+        @stylesheets = config['stylesheet'] || []
         @next = @chapter&.next_chapter
         @prev = @chapter&.prev_chapter
         @next_title = @next ? compile_inline(@next.title) : ''
         @prev_title = @prev ? compile_inline(@prev.title) : ''
 
         # Handle MathJax configuration like HTMLBuilder
-        if @config['math_format'] == 'mathjax'
+        if config['math_format'] == 'mathjax'
           @javascripts.push(%Q(<script>MathJax = { tex: { inlineMath: [['\\\\(', '\\\\)']] }, svg: { fontCache: 'global' } };</script>))
           @javascripts.push(%Q(<script type="text/javascript" id="MathJax-script" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>))
         end
@@ -537,7 +596,7 @@ module ReVIEW
 
       def layoutfile
         # Determine layout file like HTMLBuilder
-        if @config.maker == 'webmaker'
+        if config.maker == 'webmaker'
           htmldir = 'web/html'
           localfilename = 'layout-web.html.erb'
         else
@@ -545,7 +604,7 @@ module ReVIEW
           localfilename = 'layout.html.erb'
         end
 
-        htmlfilename = if @config['htmlversion'] == 5 || @config['htmlversion'].nil?
+        htmlfilename = if config['htmlversion'] == 5 || config['htmlversion'].nil?
                          File.join(htmldir, 'layout-html5.html.erb')
                        else
                          File.join(htmldir, 'layout-xhtml1.html.erb')
@@ -593,7 +652,7 @@ module ReVIEW
                         end
 
           # Generate href exactly like HTMLBuilder with chapterlink check
-          if @book.config['chapterlink']
+          if config['chapterlink']
             %Q(<span class="listref"><a href="./#{chapter.id}#{extname}##{normalize_id(extracted_id)}">#{list_number}</a></span>)
           else
             %Q(<span class="listref">#{list_number}</span>)
@@ -620,7 +679,7 @@ module ReVIEW
                          end
 
           # Generate href exactly like HTMLBuilder with chapterlink check
-          if @book.config['chapterlink']
+          if config['chapterlink']
             %Q(<span class="imgref"><a href="./#{chapter.id}#{extname}##{normalize_id(extracted_id)}">#{image_number}</a></span>)
           else
             %Q(<span class="imgref">#{image_number}</span>)
@@ -647,7 +706,7 @@ module ReVIEW
                          end
 
           # Generate href exactly like HTMLBuilder with chapterlink check
-          if @book.config['chapterlink']
+          if config['chapterlink']
             %Q(<span class="tableref"><a href="./#{chapter.id}#{extname}##{normalize_id(extracted_id)}">#{table_number}</a></span>)
           else
             %Q(<span class="tableref">#{table_number}</span>)
@@ -656,6 +715,12 @@ module ReVIEW
           # Use app_error for consistency with HTMLBuilder error handling
           app_error("unknown table: #{table_id}")
         end
+      end
+
+      # Configuration accessor - returns book config or empty hash for nil safety
+      # This follows the Builder pattern of accessing @book.config directly
+      def config
+        @book&.config || {}
       end
 
       private
@@ -673,24 +738,35 @@ module ReVIEW
 
       def visit_reference(node)
         # Handle ReferenceNode - simply render the content
-        node.content || ''
+        content = node.content || ''
+        # Debug: Check what content is being rendered for list references
+        if content.include?('pre01') || content == 'pre01'
+          warn "DEBUG visit_reference: content = '#{content.inspect}', resolved = #{node.resolved?}, ref_id = '#{node.ref_id}', context_id = '#{node.context_id}'"
+        end
+        content
       end
 
       def visit_footnote(node)
-        # Handle FootnoteNode - render as footnote definition
-        # Note: This renders the footnote definition block at document level.
+        # Handle FootnoteNode - render as footnote or endnote definition
+        # Note: This renders the footnote/endnote definition block at document level.
         # For inline footnote references (@<fn>{id}), see render_footnote method.
         footnote_content = render_children(node)
+
+        # Check if this is a footnote or endnote based on footnote_type attribute
+        if node.footnote_type == :endnote
+          # Endnote - skip rendering here, will be rendered by printendnotes
+          return ''
+        end
 
         # Match HTMLBuilder's footnote output format
         footnote_number = @chapter&.footnote(node.id)&.number || '??'
 
         # Check epubversion for consistent output with HTMLBuilder
-        if @book.config['epubversion'].to_i == 3
+        if config['epubversion'].to_i == 3
           # EPUB3 version with epub:type attributes
           # Only add back link if epubmaker/back_footnote is configured (like HTMLBuilder)
           back_link = ''
-          if @book.config['epubmaker'] && @book.config['epubmaker']['back_footnote']
+          if config['epubmaker'] && config['epubmaker']['back_footnote']
             back_link = %Q(<a href="#fnb-#{normalize_id(node.id)}">#{I18n.t('html_footnote_backmark')}</a>)
           end
           %Q(<div class="footnote" epub:type="footnote" id="fn-#{normalize_id(node.id)}"><p class="footnote">#{back_link}#{I18n.t('html_footnote_textmark', footnote_number)}#{footnote_content}</p></div>)
@@ -805,7 +881,7 @@ module ReVIEW
 
       def render_comment_block(node)
         # ブロックcomment - draft設定時のみ表示
-        return '' unless @book.config['draft']
+        return '' unless config['draft']
 
         content_lines = []
 
@@ -846,6 +922,58 @@ module ReVIEW
         content = render_children(node)
 
         %Q(<div class="#{escape(node.block_type)}"#{id_attr}>#{content}</div>)
+      end
+
+      # Render firstlinenum control block
+      def render_firstlinenum_block(node)
+        # Extract line number from args (first arg is the line number)
+        line_num = node.args&.first&.to_i || 1
+        firstlinenum(line_num)
+        '' # No HTML output
+      end
+
+      # Render label control block
+      def render_label_block(node)
+        # Extract label from args
+        label = node.args&.first
+        return '' unless label
+
+        %Q(<a id="#{normalize_id(label)}"></a>)
+      end
+
+      # Render tsize control block
+      def render_tsize_block(node)
+        # Table size control - HTMLBuilder outputs nothing for HTML
+        # tsize is only used for LaTeX/PDF output
+        ''
+      end
+
+      # Render printendnotes control block
+      def render_printendnotes_block(node)
+        # Render collected endnotes like HTMLBuilder's printendnotes method
+        return '' unless @chapter
+        return '' unless @chapter.endnotes
+
+        # Check if there are any endnotes using size
+        return '' if @chapter.endnotes.size == 0
+
+        # Mark that we've shown endnotes (like Builder base class)
+        @shown_endnotes = true
+
+        # Begin endnotes block
+        result = %Q(<div class="endnotes">\n)
+
+        # Render each endnote like HTMLBuilder's endnote_item
+        @chapter.endnotes.each do |en|
+          back = ''
+          if config['epubmaker'] && config['epubmaker']['back_footnote']
+            back = %Q(<a href="#endnoteb-#{normalize_id(en.id)}">#{I18n.t('html_footnote_backmark')}</a>)
+          end
+          result += %Q(<div class="endnote" id="endnote-#{normalize_id(en.id)}"><p class="endnote">#{back}#{I18n.t('html_endnote_textmark', @chapter.endnote(en.id).number)}#{compile_inline(@chapter.endnote(en.id).content)}</p></div>\n)
+        end
+
+        # End endnotes block
+        result + %Q(</div>\n)
       end
 
       # Line numbering for code blocks like HTMLBuilder
@@ -889,7 +1017,7 @@ module ReVIEW
 
         # Use inject pattern exactly like HTMLBuilder for consistency
         body = lines.inject('') { |i, j| i + detab(j) + "\n" }
-        first_line_number = 1 # Default line number start
+        first_line_number = line_num || 1 # Use line_num like HTMLBuilder (supports firstlinenum)
 
         if highlight?
           # Use highlight with line numbers like HTMLBuilder
@@ -897,7 +1025,7 @@ module ReVIEW
         else
           # Fallback: manual line numbering like HTMLBuilder does when highlight is off
           lines.map.with_index(first_line_number) do |line, i|
-            " #{i.to_s.rjust(2)}: #{detab(line)}"
+            "#{i.to_s.rjust(2)}: #{detab(line)}"
           end.join("\n") + "\n"
         end
       end
@@ -960,7 +1088,7 @@ module ReVIEW
 
         @sec_counter.inc(level)
         anchor = @sec_counter.anchor(level)
-        prefix = @sec_counter.prefix(level, @book.config['secnolevel'])
+        prefix = @sec_counter.prefix(level, config['secnolevel'])
         [prefix, anchor]
       end
 
@@ -977,7 +1105,7 @@ module ReVIEW
       end
 
       def get_chap(chapter = @chapter)
-        if @book.config['secnolevel'] && @book.config['secnolevel'] > 0 &&
+        if config['secnolevel'] && config['secnolevel'] > 0 &&
            !chapter.number.nil? && !chapter.number.to_s.empty?
           if chapter.is_a?(ReVIEW::Book::Part)
             return I18n.t('part_short', chapter.number)
@@ -989,7 +1117,7 @@ module ReVIEW
       end
 
       def extname
-        ".#{@book.config['htmlext'] || 'html'}"
+        ".#{config['htmlext'] || 'html'}"
       end
 
       # Image helper methods matching HTMLBuilder's implementation
@@ -1134,7 +1262,7 @@ module ReVIEW
       end
 
       def caption_top?(type)
-        @book.config['caption_position'] && @book.config['caption_position'][type] == 'top'
+        config['caption_position'] && config['caption_position'][type] == 'top'
       end
 
       # Generate list header like HTMLBuilder's list_header method
@@ -1150,6 +1278,21 @@ module ReVIEW
         end
       rescue KeyError
         raise NotImplementedError, "no such list: #{id}"
+      end
+
+      # Generate table header like HTMLBuilder's table_header method
+      def generate_table_header(id, caption)
+        table_item = @chapter.table(id)
+        table_num = table_item.number
+        chapter_num = @chapter.number
+
+        if chapter_num
+          "#{I18n.t('table')}#{I18n.t('format_number_header', [chapter_num, table_num])}#{I18n.t('caption_prefix')}#{caption}"
+        else
+          "#{I18n.t('table')}#{I18n.t('format_number_header_without_chapter', [table_num])}#{I18n.t('caption_prefix')}#{caption}"
+        end
+      rescue KeyError
+        raise NotImplementedError, "no such table: #{id}"
       end
 
       # Generate indexes using AST::Indexer for Renderer (builder-independent)
@@ -1172,7 +1315,7 @@ module ReVIEW
       end
 
       def highlighter
-        @highlighter ||= ReVIEW::Highlighter.new(@book.config || {})
+        @highlighter ||= ReVIEW::Highlighter.new(config)
       end
 
       # Helper methods for template variables

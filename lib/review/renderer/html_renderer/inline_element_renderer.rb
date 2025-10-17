@@ -144,19 +144,53 @@ module ReVIEW
         end
 
         def render_inline_chap(_type, content, node)
-          if node.args && node.args.first
-            node.args.first
-            # Simple chapter reference
+          id = node.args&.first || content
+          begin
+            chapter_num = @book.chapter_index.number(id)
+            if config['chapterlink']
+              %Q(<a href="./#{id}#{extname}">#{chapter_num}</a>)
+            else
+              chapter_num
+            end
+          rescue KeyError
+            app_error "unknown chapter: #{id}"
           end
-          content
         end
 
-        def render_inline_title(_type, content, _node)
-          %Q(<span class="title">#{content}</span>)
+        def render_inline_title(_type, content, node)
+          id = node.args&.first || content
+          begin
+            # Find the chapter and get its title
+            chapter = @book.contents.detect { |chap| chap.id == id }
+            raise KeyError unless chapter
+
+            title = compile_inline(chapter.title)
+            if config['chapterlink']
+              %Q(<a href="./#{id}#{extname}">#{title}</a>)
+            else
+              title
+            end
+          rescue KeyError
+            app_error "unknown chapter: #{id}"
+          end
         end
 
-        def render_inline_chapref(_type, content, _node)
-          content
+        def render_inline_chapref(_type, content, node)
+          id = node.args&.first || content
+          begin
+            # Find the chapter and get its title
+            chapter = @book.contents.detect { |chap| chap.id == id }
+            raise KeyError unless chapter
+
+            title = compile_inline(chapter.title)
+            if config['chapterlink']
+              %Q(<a href="./#{id}#{extname}">#{title}</a>)
+            else
+              title
+            end
+          rescue KeyError
+            app_error "unknown chapter: #{id}"
+          end
         end
 
         def render_inline_list(_type, content, node)
@@ -181,7 +215,7 @@ module ReVIEW
             begin
               fn_number = @chapter.footnote(fn_id).number
               # Check epubversion for consistent output with HTMLBuilder
-              if @book&.config&.[]('epubversion').to_i == 3
+              if @book.config['epubversion'].to_i == 3
                 %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref" epub:type="noteref">#{I18n.t('html_footnote_refmark', fn_number)}</a>)
               else
                 %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref">*#{fn_number}</a>)
@@ -257,7 +291,8 @@ module ReVIEW
         end
 
         def render_inline_m(_type, content, _node)
-          %Q(<span class="math">#{content}</span>)
+          # Use 'equation' class like HTMLBuilder
+          %Q(<span class="equation">#{content}</span>)
         end
 
         def render_inline_idx(_type, content, node)
@@ -279,27 +314,54 @@ module ReVIEW
         end
 
         def render_inline_comment(_type, content, _node)
-          if @book.config['draft']
+          if config['draft']
             %Q(<span class="draft-comment">#{content}</span>)
           else
             ''
           end
         end
 
-        def render_inline_sec(_type, content, _node)
-          %Q(<span class="section-ref">#{content}</span>)
+        def render_inline_sec(_type, content, node)
+          # Section number reference: @<sec>{id} or @<sec>{chapter|id}
+          # This should match HTMLBuilder's inline_sec behavior
+          id = node.reference_id
+          begin
+            chap, id2 = extract_chapter_id(id)
+            n = chap.headline_index.number(id2)
+
+            # Get section number like Builder does
+            section_number = if n.present? && chap.number && over_secnolevel?(n, chap)
+                               n
+                             else
+                               ''
+                             end
+
+            if config['chapterlink']
+              anchor = 'h' + n.tr('.', '-')
+              %Q(<a href="#{chap.id}#{extname}##{anchor}">#{section_number}</a>)
+            else
+              section_number
+            end
+          rescue KeyError
+            app_error "unknown headline: #{id}"
+          end
         end
 
-        def render_inline_secref(_type, content, _node)
-          %Q(<span class="section-ref">#{content}</span>)
+        def render_inline_secref(_type, content, node)
+          # secref is an alias for hd in Builder
+          render_inline_hd(_type, content, node)
         end
 
-        def render_inline_labelref(_type, content, _node)
-          %Q(<span class="label-ref">#{content}</span>)
+        def render_inline_labelref(_type, content, node)
+          # Label reference: @<labelref>{id}
+          # This should match HTMLBuilder's inline_labelref behavior
+          idref = node.args&.first || content
+          %Q(<a target='#{escape_content(idref)}'>「#{I18n.t('label_marker')}#{escape_content(idref)}」</a>)
         end
 
-        def render_inline_ref(_type, content, _node)
-          %Q(<span class="label-ref">#{content}</span>)
+        def render_inline_ref(_type, content, node)
+          # ref is an alias for labelref
+          render_inline_labelref(_type, content, node)
         end
 
         def render_inline_w(_type, content, _node)
@@ -376,7 +438,7 @@ module ReVIEW
           # Bibliography reference
           id = node.args&.first || content
           begin
-            bib_file = @book.bib_file.gsub(/\.re\Z/, ".#{@book.config['htmlext'] || 'html'}")
+            bib_file = @book.bib_file.gsub(/\.re\Z/, ".#{config['htmlext'] || 'html'}")
             number = @chapter.bibpaper(id).number
             %Q(<a href="#{bib_file}#bib-#{normalize_id(id)}">[#{number}]</a>)
           rescue KeyError
@@ -406,7 +468,7 @@ module ReVIEW
                                 %Q(#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [chapter.equation(extracted_id).number])})
                               end
 
-            if @book.config['chapterlink']
+            if config['chapterlink']
               %Q(<span class="eqref"><a href="./#{chapter.id}#{extname}##{normalize_id(extracted_id)}">#{equation_number}</a></span>)
             else
               %Q(<span class="eqref">#{equation_number}</span>)
@@ -436,20 +498,21 @@ module ReVIEW
             n = chapter.headline_index.number(headline_id)
             caption = chapter.headline(headline_id).caption
 
+            # Use compile_inline to process the caption, not escape_content
             str = if n.present? && chapter.number && over_secnolevel?(n, chapter)
-                    I18n.t('hd_quote', [n, escape_content(caption)])
+                    I18n.t('hd_quote', [n, compile_inline(caption)])
                   else
-                    I18n.t('hd_quote_without_number', escape_content(caption))
+                    I18n.t('hd_quote_without_number', compile_inline(caption))
                   end
 
-            if @book.config['chapterlink']
+            if config['chapterlink']
               anchor = 'h' + n.tr('.', '-')
               %Q(<a href="#{chapter.id}#{extname}##{anchor}">#{str}</a>)
             else
               str
             end
           rescue KeyError
-            content
+            app_error "unknown headline: #{id}"
           end
         end
 
@@ -472,7 +535,7 @@ module ReVIEW
             column_caption = chapter.column(column_id).caption
             column_number = chapter.column(column_id).number
 
-            if @book.config['chapterlink']
+            if config['chapterlink']
               %Q(<a href="#{chapter.id}#{extname}#column-#{column_number}" class="columnref">#{I18n.t('column', escape_content(column_caption))}</a>)
             else
               I18n.t('column', escape_content(column_caption))
@@ -486,7 +549,7 @@ module ReVIEW
           # Section title reference
           id = node.reference_id
           begin
-            if @book.config['chapterlink']
+            if config['chapterlink']
               chap, id2 = extract_chapter_id(id)
               anchor = 'h' + chap.headline_index.number(id2).tr('.', '-')
               title = chap.headline(id2).caption
@@ -502,6 +565,11 @@ module ReVIEW
         def render_inline_pageref(_type, content, _node)
           # Page reference is unsupported in HTML
           content
+        end
+
+        # Configuration accessor - returns book config or empty hash for nil safety
+        def config
+          @book&.config || {}
         end
 
         # Helper method to escape content
@@ -522,7 +590,7 @@ module ReVIEW
         end
 
         def get_chap(chapter = @chapter)
-          if @book.config['secnolevel'] && @book.config['secnolevel'] > 0 &&
+          if config['secnolevel'] && config['secnolevel'] > 0 &&
              !chapter.number.nil? && !chapter.number.to_s.empty?
             if chapter.is_a?(ReVIEW::Book::Part)
               return I18n.t('part_short', chapter.number)
@@ -534,12 +602,20 @@ module ReVIEW
         end
 
         def extname
-          ".#{@book.config['htmlext'] || 'html'}"
+          ".#{config['htmlext'] || 'html'}"
         end
 
         def over_secnolevel?(n, _chapter = @chapter)
-          secnolevel = @book.config['secnolevel'] || 0
+          secnolevel = config['secnolevel'] || 0
           secnolevel >= n.to_s.split('.').size
+        end
+
+        def compile_inline(str)
+          # Simple inline compilation - just return the string for now
+          # In the future, this could process inline Re:VIEW markup
+          return '' if str.nil? || str.empty?
+
+          str.to_s
         end
       end
     end
