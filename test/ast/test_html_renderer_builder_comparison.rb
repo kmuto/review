@@ -222,7 +222,7 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
   end
 
   def test_syntax_book_ch02
-    pend 'ch02.re has cross-reference errors that prevent compilation'
+    pend('ch02.re has cross-reference errors that prevent compilation')
     file_path = File.join(__dir__, '../../samples/syntax-book/ch02.re')
     source = File.read(file_path)
 
@@ -261,7 +261,7 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
   end
 
   def test_syntax_book_pre01
-    pend 'pre01.re has unknown list references that cause errors'
+    pend('pre01.re has unknown list references that cause errors')
     file_path = File.join(__dir__, '../../samples/syntax-book/pre01.re')
     source = File.read(file_path)
 
@@ -281,7 +281,7 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
   end
 
   def test_syntax_book_appA
-    pend 'appA.re has unknown list references that cause errors'
+    pend('appA.re has unknown list references that cause errors')
     file_path = File.join(__dir__, '../../samples/syntax-book/appA.re')
     source = File.read(file_path)
 
@@ -320,7 +320,7 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
   end
 
   def test_syntax_book_bib
-    pend 'bib.re requires missing bib.re file'
+    pend('bib.re requires missing bib.re file')
     file_path = File.join(__dir__, '../../samples/syntax-book/bib.re')
     source = File.read(file_path)
 
@@ -338,5 +338,4 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
 
     assert diff.same_hash?, 'bib.re should produce equivalent HTML'
   end
-
 end
