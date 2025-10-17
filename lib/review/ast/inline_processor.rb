@@ -102,11 +102,14 @@ module ReVIEW
 
       # Create inline embed AST node
       def create_inline_embed_ast_node(arg, parent_node)
+        target_builders, embed_content = parse_raw_content(arg)
+
         node = AST::EmbedNode.new(
           location: @ast_compiler.location,
           embed_type: :inline,
-          lines: [arg],
-          arg: arg
+          arg: arg,
+          target_builders: target_builders,
+          content: embed_content
         )
         parent_node.add_child(node)
       end

@@ -39,67 +39,67 @@ module ReVIEW
         private
 
         def render_inline_b(_type, content, _node)
-          %Q(<b>#{escape_content(content)}</b>)
+          %Q(<b>#{content}</b>)
         end
 
         def render_inline_strong(_type, content, _node)
-          %Q(<strong>#{escape_content(content)}</strong>)
+          %Q(<strong>#{content}</strong>)
         end
 
         def render_inline_i(_type, content, _node)
-          %Q(<i>#{escape_content(content)}</i>)
+          %Q(<i>#{content}</i>)
         end
 
         def render_inline_em(_type, content, _node)
-          %Q(<em>#{escape_content(content)}</em>)
+          %Q(<em>#{content}</em>)
         end
 
         def render_inline_code(_type, content, _node)
-          %Q(<code class="inline-code tt">#{escape_content(content)}</code>)
+          %Q(<code class="inline-code tt">#{content}</code>)
         end
 
         def render_inline_tt(_type, content, _node)
-          %Q(<code class="tt">#{escape_content(content)}</code>)
+          %Q(<code class="tt">#{content}</code>)
         end
 
         def render_inline_ttb(_type, content, _node)
-          %Q(<code class="tt"><b>#{escape_content(content)}</b></code>)
+          %Q(<code class="tt"><b>#{content}</b></code>)
         end
 
         def render_inline_tti(_type, content, _node)
-          %Q(<code class="tt"><i>#{escape_content(content)}</i></code>)
+          %Q(<code class="tt"><i>#{content}</i></code>)
         end
 
         def render_inline_kbd(_type, content, _node)
-          %Q(<kbd>#{escape_content(content)}</kbd>)
+          %Q(<kbd>#{content}</kbd>)
         end
 
         def render_inline_samp(_type, content, _node)
-          %Q(<samp>#{escape_content(content)}</samp>)
+          %Q(<samp>#{content}</samp>)
         end
 
         def render_inline_var(_type, content, _node)
-          %Q(<var>#{escape_content(content)}</var>)
+          %Q(<var>#{content}</var>)
         end
 
         def render_inline_sup(_type, content, _node)
-          %Q(<sup>#{escape_content(content)}</sup>)
+          %Q(<sup>#{content}</sup>)
         end
 
         def render_inline_sub(_type, content, _node)
-          %Q(<sub>#{escape_content(content)}</sub>)
+          %Q(<sub>#{content}</sub>)
         end
 
         def render_inline_del(_type, content, _node)
-          %Q(<del>#{escape_content(content)}</del>)
+          %Q(<del>#{content}</del>)
         end
 
         def render_inline_ins(_type, content, _node)
-          %Q(<ins>#{escape_content(content)}</ins>)
+          %Q(<ins>#{content}</ins>)
         end
 
         def render_inline_u(_type, content, _node)
-          %Q(<u>#{escape_content(content)}</u>)
+          %Q(<u>#{content}</u>)
         end
 
         def render_inline_br(_type, _content, _node)
@@ -148,15 +148,15 @@ module ReVIEW
             node.args.first
             # Simple chapter reference
           end
-          escape_content(content)
+          content
         end
 
         def render_inline_title(_type, content, _node)
-          %Q(<span class="title">#{escape_content(content)}</span>)
+          %Q(<span class="title">#{content}</span>)
         end
 
         def render_inline_chapref(_type, content, _node)
-          escape_content(content)
+          content
         end
 
         def render_inline_list(_type, content, node)
@@ -188,10 +188,10 @@ module ReVIEW
               end
             rescue KeyError
               # Fallback if footnote not found
-              escape_content(content)
+              content
             end
           else
-            escape_content(content)
+            content
           end
         end
 
@@ -204,36 +204,37 @@ module ReVIEW
             # IDX comment uses only the word, like HTMLBuilder
             %Q(<b class="kw">#{text}</b><!-- IDX:#{word} -->)
           else
-            %Q(<b class="kw">#{escape_content(content)}</b><!-- IDX:#{escape_content(content)} -->)
+            safe_text = content
+            %Q(<b class="kw">#{safe_text}</b><!-- IDX:#{escape_content(safe_text)} -->)
           end
         end
 
         def render_inline_bou(_type, content, _node)
-          %Q(<span class="bou">#{escape_content(content)}</span>)
+          %Q(<span class="bou">#{content}</span>)
         end
 
         def render_inline_ami(_type, content, _node)
-          %Q(<span class="ami">#{escape_content(content)}</span>)
+          %Q(<span class="ami">#{content}</span>)
         end
 
         def render_inline_href(_type, content, node)
           args = node.args || []
           if args.length >= 2
             url = args[0]
-            text = args[1]
+            text = escape_content(args[1])
             # Handle internal references (URLs starting with #)
             if url.start_with?('#')
               anchor = url.sub(/\A#/, '')
-              %Q(<a href="##{escape_content(anchor)}" class="link">#{escape_content(text)}</a>)
+              %Q(<a href="##{escape_content(anchor)}" class="link">#{text}</a>)
             else
-              %Q(<a href="#{escape_content(url)}" class="link">#{escape_content(text)}</a>)
+              %Q(<a href="#{escape_content(url)}" class="link">#{text}</a>)
             end
           elsif content.start_with?('#')
             # Handle internal references (URLs starting with #)
             anchor = content.sub(/\A#/, '')
-            %Q(<a href="##{escape_content(anchor)}" class="link">#{escape_content(content)}</a>)
+            %Q(<a href="##{escape_content(anchor)}" class="link">#{content}</a>)
           else
-            %Q(<a href="#{escape_content(content)}" class="link">#{escape_content(content)}</a>)
+            %Q(<a href="#{escape_content(content)}" class="link">#{content}</a>)
           end
         end
 
@@ -243,12 +244,12 @@ module ReVIEW
             ruby = node.args[1]
             %Q(<ruby>#{escape_content(base)}<rt>#{escape_content(ruby)}</rt></ruby>)
           else
-            escape_content(content)
+            content
           end
         end
 
         def render_inline_m(_type, content, _node)
-          %Q(<span class="math">#{escape_content(content)}</span>)
+          %Q(<span class="math">#{content}</span>)
         end
 
         def render_inline_idx(_type, content, node)
@@ -256,7 +257,7 @@ module ReVIEW
           index_str = node.args&.first || content
           # Create ID from the hierarchical index path (replace <<>> with -)
           index_id = normalize_id(index_str.gsub('<<>>', '-'))
-          %Q(<a id="idx-#{index_id}"></a>#{escape_content(content)})
+          %Q(<a id="idx-#{index_id}"></a>#{content})
         end
 
         def render_inline_hidx(_type, content, node)
@@ -269,60 +270,60 @@ module ReVIEW
 
         def render_inline_comment(_type, content, _node)
           if @book.config['draft']
-            %Q(<span class="draft-comment">#{escape_content(content)}</span>)
+            %Q(<span class="draft-comment">#{content}</span>)
           else
             ''
           end
         end
 
         def render_inline_sec(_type, content, _node)
-          %Q(<span class="section-ref">#{escape_content(content)}</span>)
+          %Q(<span class="section-ref">#{content}</span>)
         end
 
         def render_inline_secref(_type, content, _node)
-          %Q(<span class="section-ref">#{escape_content(content)}</span>)
+          %Q(<span class="section-ref">#{content}</span>)
         end
 
         def render_inline_labelref(_type, content, _node)
-          %Q(<span class="label-ref">#{escape_content(content)}</span>)
+          %Q(<span class="label-ref">#{content}</span>)
         end
 
         def render_inline_ref(_type, content, _node)
-          %Q(<span class="label-ref">#{escape_content(content)}</span>)
+          %Q(<span class="label-ref">#{content}</span>)
         end
 
         def render_inline_w(_type, content, _node)
           # Content should already be resolved by ReferenceResolver
-          escape_content(content)
+          content
         end
 
         def render_inline_wb(_type, content, _node)
           # Content should already be resolved by ReferenceResolver
-          %Q(<b>#{escape_content(content)}</b>)
+          %Q(<b>#{content}</b>)
         end
 
         def render_inline_abbr(_type, content, _node)
-          %Q(<abbr>#{escape_content(content)}</abbr>)
+          %Q(<abbr>#{content}</abbr>)
         end
 
         def render_inline_acronym(_type, content, _node)
-          %Q(<acronym>#{escape_content(content)}</acronym>)
+          %Q(<acronym>#{content}</acronym>)
         end
 
         def render_inline_cite(_type, content, _node)
-          %Q(<cite>#{escape_content(content)}</cite>)
+          %Q(<cite>#{content}</cite>)
         end
 
         def render_inline_dfn(_type, content, _node)
-          %Q(<dfn>#{escape_content(content)}</dfn>)
+          %Q(<dfn>#{content}</dfn>)
         end
 
         def render_inline_big(_type, content, _node)
-          %Q(<big>#{escape_content(content)}</big>)
+          %Q(<big>#{content}</big>)
         end
 
         def render_inline_small(_type, content, _node)
-          %Q(<small>#{escape_content(content)}</small>)
+          %Q(<small>#{content}</small>)
         end
 
         def render_inline_dtp(_type, content, _node)
@@ -330,7 +331,7 @@ module ReVIEW
         end
 
         def render_inline_recipe(_type, content, _node)
-          %Q(<span class="recipe">「#{escape_content(content)}」</span>)
+          %Q(<span class="recipe">「#{content}」</span>)
         end
 
         def render_inline_icon(_type, content, node)
@@ -354,11 +355,11 @@ module ReVIEW
           if content.size == 1 && content.match(/[[:ascii:]]/)
             style = 'upright'
           end
-          %Q(<span class="#{style}">#{escape_content(content)}</span>)
+          %Q(<span class="#{style}">#{content}</span>)
         end
 
         def render_inline_balloon(_type, content, _node)
-          %Q(<span class="balloon">#{escape_content(content)}</span>)
+          %Q(<span class="balloon">#{content}</span>)
         end
 
         def render_inline_bib(_type, content, node)
@@ -437,7 +438,7 @@ module ReVIEW
               str
             end
           rescue KeyError
-            escape_content(content)
+            content
           end
         end
 
@@ -466,7 +467,7 @@ module ReVIEW
               I18n.t('column', escape_content(column_caption))
             end
           rescue KeyError
-            escape_content(content)
+            content
           end
         end
 
@@ -480,16 +481,16 @@ module ReVIEW
               title = chap.headline(id2).caption
               %Q(<a href="#{chap.id}#{extname}##{anchor}">#{escape_content(title)}</a>)
             else
-              escape_content(content)
+              content
             end
           rescue KeyError
-            escape_content(content)
+            content
           end
         end
 
         def render_inline_pageref(_type, content, _node)
           # Page reference is unsupported in HTML
-          escape_content(content)
+          content
         end
 
         # Helper method to escape content

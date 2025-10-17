@@ -6,6 +6,21 @@ module ReVIEW
   module AST
     # EmbedNode is a leaf node that contains embedded content that should be
     # passed through to specific builders. It cannot have children.
+    #
+    # Attribute usage patterns:
+    # - lines: Used for block-level embed/raw commands (//embed{}, //raw{})
+    #          to preserve original multi-line structure.
+    #          Renderers typically use: node.lines.join("\n")
+    # - arg: Contains the original argument string from the Re:VIEW syntax.
+    #        For inline commands, this includes the full content.
+    #        For block commands with builder filter, this is the filter spec (e.g., "html")
+    # - content: Used primarily for //raw commands as the processed content.
+    #            For inline embed/raw, contains the extracted content after parsing.
+    #            Renderers should prefer this over arg when available.
+    # - embed_type: :block for //embed{}, :raw for //raw{}, :inline for @<embed>{}/@<raw>{}
+    #
+    # Note: There is some redundancy between lines/arg/content, especially for inline commands.
+    # Current implementation maintains backward compatibility but could be simplified in the future.
     class EmbedNode < LeafNode
       attr_accessor :lines, :arg, :embed_type, :target_builders
 
