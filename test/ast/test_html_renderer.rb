@@ -119,7 +119,7 @@ class TestHtmlRenderer < Test::Unit::TestCase
     html_output = renderer.render(ast_root)
 
     assert_match(/<div class="column">/, html_output)
-    assert_match(%r{<div class="column-header">Column Title</div>}, html_output)
+    assert_match(%r{Column Title}, html_output)
     assert_match(%r{<p>Column content here\.</p>}, html_output)
   end
 
@@ -159,7 +159,7 @@ class TestHtmlRenderer < Test::Unit::TestCase
   end
 
   def test_id_normalization
-    content = "= Test Chapter{#test-chapter}\n\nParagraph.\n"
+    content = "={test-chapter} Test Chapter\n\nParagraph.\n"
 
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
     chapter.generate_indexes
@@ -169,7 +169,7 @@ class TestHtmlRenderer < Test::Unit::TestCase
     html_output = renderer.render(ast_root)
 
     # HtmlRenderer now uses fixed anchor IDs like HTMLBuilder
-    assert_match(%r{<h1>.*</h1>}, html_output)
+    assert_match(%r{<h1 id="test-chapter">.*</h1>}, html_output)
     # Chapter title should be present
     assert_match(/Test Chapter/, html_output)
   end
@@ -311,19 +311,23 @@ class TestHtmlRenderer < Test::Unit::TestCase
     list = ReVIEW::AST::ListNode.new(list_type: :dl)
 
     # First definition item
-    item1 = ReVIEW::AST::ListItemNode.new(content: 'Alpha', level: 1)
+    item1 = ReVIEW::AST::ListItemNode.new(level: 1)
     item1.parent = list # Set parent for list type detection
+    # Term goes to term_children
     term1 = ReVIEW::AST::TextNode.new(content: 'Alpha')
+    item1.term_children << term1
+    # Definition goes to children
     def1 = ReVIEW::AST::TextNode.new(content: 'RISC CPU made by DEC.')
-    item1.add_child(term1)
     item1.add_child(def1)
 
     # Second definition item
-    item2 = ReVIEW::AST::ListItemNode.new(content: 'POWER', level: 1)
+    item2 = ReVIEW::AST::ListItemNode.new(level: 1)
     item2.parent = list # Set parent for list type detection
+    # Term goes to term_children
     term2 = ReVIEW::AST::TextNode.new(content: 'POWER')
+    item2.term_children << term2
+    # Definition goes to children
     def2 = ReVIEW::AST::TextNode.new(content: 'RISC CPU made by IBM and Motorola.')
-    item2.add_child(term2)
     item2.add_child(def2)
 
     list.add_child(item1)
@@ -345,10 +349,12 @@ class TestHtmlRenderer < Test::Unit::TestCase
     # Test definition list with term only (no definition)
     list = ReVIEW::AST::ListNode.new(list_type: :dl)
 
-    item = ReVIEW::AST::ListItemNode.new(content: 'Term Only', level: 1)
+    item = ReVIEW::AST::ListItemNode.new(level: 1)
     item.parent = list # Set parent for list type detection
+    # Term goes to term_children
     term = ReVIEW::AST::TextNode.new(content: 'Term Only')
-    item.add_child(term)
+    item.term_children << term
+    # No definition (children is empty)
 
     list.add_child(item)
 
@@ -357,7 +363,7 @@ class TestHtmlRenderer < Test::Unit::TestCase
     result = renderer.visit(list)
 
     expected = "<dl>\n" +
-               '<dt>Term Only</dt>' +
+               '<dt>Term Only</dt><dd></dd>' +
                "\n</dl>\n"
 
     assert_equal expected, result

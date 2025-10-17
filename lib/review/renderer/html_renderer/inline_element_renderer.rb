@@ -160,22 +160,22 @@ module ReVIEW
         end
 
         def render_inline_list(_type, content, node)
-          # Delegate to renderer's render_list method for proper reference handling
-          @renderer.render_list(content, node)
+          id = node.args&.first
+          @renderer.render_list(id, node)
         end
 
         def render_inline_img(_type, content, node)
-          # Delegate to renderer's render_img method for proper reference handling
-          @renderer.render_img(content, node)
+          id = node.args&.first
+          @renderer.render_img(id, node)
         end
 
         def render_inline_table(_type, content, node)
-          # Delegate to renderer's render_inline_table method for proper reference handling
-          @renderer.render_inline_table(content, node)
+          id = node.args&.first
+          @renderer.render_inline_table(id, node)
         end
 
         def render_inline_fn(_type, content, node)
-          if node.args && node.args.first
+          if node.args&.first
             fn_id = node.args.first
             # Get footnote number from chapter like HTMLBuilder
             begin
@@ -204,8 +204,9 @@ module ReVIEW
             # IDX comment uses only the word, like HTMLBuilder
             %Q(<b class="kw">#{text}</b><!-- IDX:#{word} -->)
           else
-            safe_text = content
-            %Q(<b class="kw">#{safe_text}</b><!-- IDX:#{escape_content(safe_text)} -->)
+            # content is already escaped, use node.args.first for IDX comment
+            index_term = node.args&.first || content
+            %Q(<b class="kw">#{content}</b><!-- IDX:#{escape_content(index_term)} -->)
           end
         end
 
@@ -220,21 +221,28 @@ module ReVIEW
         def render_inline_href(_type, content, node)
           args = node.args || []
           if args.length >= 2
-            url = args[0]
+            # Get raw URL and text from args, escape them
+            url = escape_content(args[0])
             text = escape_content(args[1])
             # Handle internal references (URLs starting with #)
-            if url.start_with?('#')
-              anchor = url.sub(/\A#/, '')
+            if args[0].start_with?('#')
+              anchor = args[0].sub(/\A#/, '')
               %Q(<a href="##{escape_content(anchor)}" class="link">#{text}</a>)
             else
-              %Q(<a href="#{escape_content(url)}" class="link">#{text}</a>)
+              %Q(<a href="#{url}" class="link">#{text}</a>)
             end
-          elsif content.start_with?('#')
-            # Handle internal references (URLs starting with #)
-            anchor = content.sub(/\A#/, '')
-            %Q(<a href="##{escape_content(anchor)}" class="link">#{content}</a>)
+          elsif node.args&.first
+            # Single argument case - use raw arg for URL
+            url = escape_content(node.args.first)
+            if node.args.first.start_with?('#')
+              anchor = node.args.first.sub(/\A#/, '')
+              %Q(<a href="##{escape_content(anchor)}" class="link">#{content}</a>)
+            else
+              %Q(<a href="#{url}" class="link">#{content}</a>)
+            end
           else
-            %Q(<a href="#{escape_content(content)}" class="link">#{content}</a>)
+            # Fallback: content is already escaped
+            %Q(<a href="#{content}" class="link">#{content}</a>)
           end
         end
 
@@ -253,16 +261,18 @@ module ReVIEW
         end
 
         def render_inline_idx(_type, content, node)
-          # Get the raw index string from args (before any processing)
-          index_str = node.args&.first || content
+          # Get the raw index string from args for ID generation
+          # content is already escaped for display
+          index_str = node.args&.first || ''
           # Create ID from the hierarchical index path (replace <<>> with -)
           index_id = normalize_id(index_str.gsub('<<>>', '-'))
           %Q(<a id="idx-#{index_id}"></a>#{content})
         end
 
         def render_inline_hidx(_type, content, node)
-          # Get the raw index string from args (before any processing)
-          index_str = node.args&.first || content
+          # Get the raw index string from args for ID generation
+          # hidx doesn't display content, so we don't need to use it
+          index_str = node.args&.first || ''
           # Create ID from the hierarchical index path (replace <<>> with -)
           index_id = normalize_id(index_str.gsub('<<>>', '-'))
           %Q(<a id="hidx-#{index_id}"></a>)

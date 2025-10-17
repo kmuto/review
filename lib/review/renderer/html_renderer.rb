@@ -162,23 +162,21 @@ module ReVIEW
           # Definition list item - use term_children for term like LaTeXRenderer
           term = if node.term_children&.any?
                    node.term_children.map { |child| visit(child) }.join
-                 elsif node.content
-                   escape_content(node.content.to_s)
                  else
                    ''
                  end
 
           # Children contain the definition content
           # Join all children into a single dd like HTMLBuilder does with join_lines_to_paragraph
-          if node.children && !node.children.empty?
+          if node.children.empty?
+            # Only term, no definition - add empty dd like HTMLBuilder
+            "<dt>#{term}</dt><dd></dd>"
+          else
             # Render all child content and join together
             definition_parts = node.children.map { |child| visit(child) }
             # Join multiple paragraphs/text into single dd content, removing <p> tags
             definition_content = definition_parts.map { |part| part.gsub(%r{</?p[^>]*>}, '').strip }.join
             "<dt>#{term}</dt><dd>#{definition_content}</dd>"
-          else
-            # Only term, no definition - add empty dd like HTMLBuilder
-            "<dt>#{term}</dt><dd></dd>"
           end
         else
           # Regular list item
@@ -850,127 +848,6 @@ module ReVIEW
         %Q(<div class="#{escape(node.block_type)}"#{id_attr}>#{content}</div>)
       end
 
-      def render_inline_b(content, _node)
-        "<b>#{content}</b>"
-      end
-
-      def render_inline_strong(content, _node)
-        "<strong>#{content}</strong>"
-      end
-
-      def render_inline_i(content, _node)
-        "<i>#{content}</i>"
-      end
-
-      def render_inline_em(content, _node)
-        "<em>#{content}</em>"
-      end
-
-      def render_inline_code(content, _node)
-        %Q(<code class="inline-code tt">#{content}</code>)
-      end
-
-      def render_inline_tt(content, _node)
-        %Q(<code class="tt">#{content}</code>)
-      end
-
-      def render_chap(content, _node)
-        %Q(<span class="chap-ref">#{content}</span>)
-      end
-
-      def render_title(content, _node)
-        %Q(<span class="title-ref">#{content}</span>)
-      end
-
-      def render_chapref(content, _node)
-        %Q(<span class="chapref-ref">#{content}</span>)
-      end
-
-      def render_footnote(content, node)
-        # HTMLでは常にspan要素として出力
-        # FootnoteCollectorは使用しないが、一貫性のためRenderingContextを認識
-        if node.args && node.args.first
-          footnote_id = node.args.first.to_s
-          if @chapter && @chapter.footnote_index
-            begin
-              index_item = @chapter.footnote_index[footnote_id]
-              footnote_content = if index_item.footnote_node?
-                                   render_footnote_content(index_item.footnote_node)
-                                 else
-                                   escape(index_item.content || '')
-                                 end
-              %Q(<span class="footnote">#{footnote_content}</span>)
-            rescue StandardError
-              %Q(<span class="footnote">#{footnote_id}</span>)
-            end
-          else
-            %Q(<span class="footnote">#{footnote_id}</span>)
-          end
-        else
-          %Q(<span class="footnote">#{content}</span>)
-        end
-      end
-
-      def render_keyword(content, node)
-        # Handle multiple arguments like HTMLBuilder
-        if node.args && node.args.length >= 2
-          # First argument is the keyword, second is the reading/definition
-          word = escape(node.args[0])
-          alt = escape(node.args[1].strip)
-          # Format with parentheses like HTMLBuilder's compile_kw
-          text = "#{word} (#{alt})"
-        else
-          # Single argument or fallback
-          text = content
-        end
-
-        # Add index comment like HTMLBuilder
-        %Q(<b class="kw">#{text}</b><!-- IDX:#{text} -->)
-      end
-
-      def render_bou(content, _node)
-        %Q(<span class="bou">#{content}</span>)
-      end
-
-      def render_ami(content, _node)
-        %Q(<span class="ami">#{content}</span>)
-      end
-
-      def render_ruby(content, node)
-        # Handle ruby annotations like HTMLBuilder
-        if node.args && node.args.length >= 2
-          base = escape(node.args[0])
-          ruby = escape(node.args[1])
-          # Use I18n for bracket consistency with HTMLBuilder
-          prefix = ReVIEW::I18n.t('ruby_prefix')
-          postfix = ReVIEW::I18n.t('ruby_postfix')
-          %Q(<ruby>#{base}<rp>#{prefix}</rp><rt>#{ruby}</rt><rp>#{postfix}</rp></ruby>)
-        else
-          # Fallback for malformed ruby
-          content
-        end
-      end
-
-      def render_math(content, node)
-        # Mathematical expressions like HTMLBuilder
-        math_content = if node.args && node.args.first
-                         escape(node.args.first)
-                       else
-                         escape(content)
-                       end
-        %Q(<span class="equation">#{math_content}</span>)
-      end
-
-      def render_idx(content, node)
-        # Index entries like HTMLBuilder - visible text + index comment
-        index_term = if node.args && node.args.first
-                       escape(node.args.first)
-                     else
-                       escape(content)
-                     end
-        %Q(#{index_term}<!-- IDX:#{index_term} -->)
-      end
-
       # Line numbering for code blocks like HTMLBuilder
       def firstlinenum(num)
         @first_line_num = num.to_i
@@ -982,40 +859,6 @@ module ReVIEW
         line_n = @first_line_num
         @first_line_num = nil
         line_n
-      end
-
-      def render_hidx(content, node)
-        # Hidden index entries like HTMLBuilder - only index comment
-        index_term = if node.args && node.args.first
-                       escape(node.args.first)
-                     else
-                       escape(content)
-                     end
-        %Q(<!-- IDX:#{index_term} -->)
-      end
-
-      def render_comment(content, _node)
-        # Inline comments like HTMLBuilder - conditionally render based on draft mode
-        if @book.config['draft']
-          %Q(<span class="draft-comment">#{escape(content)}</span>)
-        else
-          '' # Don't render in non-draft mode
-        end
-      end
-
-      def render_href(content, node)
-        args = node.args || []
-        if args.length >= 2
-          url = escape(args[0])
-          text = args[1]
-          %Q(<a href="#{url}" class="link">#{text}</a>)
-        else
-          %Q(<a href="#{content}" class="link">#{content}</a>)
-        end
-      end
-
-      def render_url(content, _node)
-        %Q(<a href="#{escape(content)}">#{content}</a>)
       end
 
       def escape(str)

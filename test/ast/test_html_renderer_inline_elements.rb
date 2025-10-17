@@ -171,38 +171,42 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
   def test_inline_kw
     content = "= Chapter\n\n@<kw>{キーワード, keyword}\n"
     output = render_inline(content)
-    assert_match(%r{<b class="kw">キーワード</b>（keyword）}, output)
+    # Uses half-width parentheses and includes IDX comment
+    assert_match(%r{<b class="kw">キーワード \(keyword\)</b><!-- IDX:キーワード -->}, output)
   end
 
   def test_inline_idx
     content = "= Chapter\n\n@<idx>{索引項目}\n"
     output = render_inline(content)
     assert_match(/索引項目/, output)
-    assert_match(%r{<a id="idx-索引項目"></a>}, output)
+    # normalize_id encodes non-ASCII characters
+    assert_match(%r{<a id="idx-id__E7_B4_A2_E5_BC_95_E9_A0_85_E7_9B_AE"></a>}, output)
   end
 
   def test_inline_idx_hierarchical
     content = "= Chapter\n\n@<idx>{親項目<<>>子項目}\n"
     output = render_inline(content)
-    assert_match(/子項目/, output)
-    # <<>> should be replaced with - in ID
-    assert_match(%r{<a id="idx-親項目-子項目"></a>}, output)
+    # Display text includes the full hierarchical path with <<>>
+    assert_match(/親項目&lt;&lt;&gt;&gt;子項目/, output)
+    # <<>> should be replaced with - in ID, then normalize_id encodes it
+    assert_match(%r{<a id="idx-id__E8_A6_AA_E9_A0_85_E7_9B_AE-_E5_AD_90_E9_A0_85_E7_9B_AE"></a>}, output)
   end
 
   def test_inline_hidx
     content = "= Chapter\n\n@<hidx>{隠し索引}\n"
     output = render_inline(content)
-    assert_match(%r{<a id="hidx-隠し索引"></a>}, output)
+    # normalize_id encodes non-ASCII characters
+    assert_match(%r{<a id="hidx-id__E9_9A_A0_E3_81_97_E7_B4_A2_E5_BC_95"></a>}, output)
   end
 
   def test_inline_hidx_hierarchical
     content = "= Chapter\n\n@<hidx>{索引<<>>項目}\n"
     output = render_inline(content)
-    # <<>> should be replaced with - in ID
-    assert_match(%r{<a id="hidx-索引-項目"></a>}, output)
+    # <<>> should be replaced with - in ID, then normalize_id encodes it
+    assert_match(%r{<a id="hidx-id__E7_B4_A2_E5_BC_95-_E9_A0_85_E7_9B_AE"></a>}, output)
     # hidx content should not be displayed (only the anchor tag)
     # Check that there's no text content after the anchor
-    assert_match(%r{<a id="hidx-索引-項目"></a></p>}, output)
+    assert_match(%r{<a id="hidx-id__E7_B4_A2_E5_BC_95-_E9_A0_85_E7_9B_AE"></a></p>}, output)
   end
 
   # Links
@@ -465,8 +469,8 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
   def test_inline_escaping
     content = "= Chapter\n\n@<b>{text with <html> & \"quotes\"}\n"
     output = render_inline(content)
-    # Content is already escaped by InlineNode processing, resulting in double-escaping
-    assert_match(%r{<b>text with &amp;lt;html&amp;gt; &amp;amp; &amp;quot;quotes&amp;quot;</b>}, output)
+    # Content is escaped once by visit_text, then rendered as-is
+    assert_match(%r{<b>text with &lt;html&gt; &amp; &quot;quotes&quot;</b>}, output)
   end
 
   # Raw inline content
@@ -494,8 +498,8 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
   def test_inline_code_with_special_chars
     content = "= Chapter\n\n@<code>{<tag> & \"value\"}\n"
     output = render_inline(content)
-    # Content is already escaped by InlineNode processing, so we get double-escaped output
-    assert_match(%r{<code class="inline-code tt">&amp;lt;tag&amp;gt; &amp;amp; &amp;quot;value&amp;quot;</code>}, output)
+    # Content is escaped once by visit_text, then rendered as-is
+    assert_match(%r{<code class="inline-code tt">&lt;tag&gt; &amp; &quot;value&quot;</code>}, output)
   end
 
   # Bibliography reference (requires bib file setup)
