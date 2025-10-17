@@ -102,6 +102,7 @@ module ReVIEW
       book_config['htmlext'] = 'html'
       book_config['stylesheet'] = []
       book_config['language'] = 'ja'
+      book_config['epubversion'] = 3 # Enable EPUB3 features for consistent output
 
       # Initialize I18n
       I18n.setup(book_config['language'])
