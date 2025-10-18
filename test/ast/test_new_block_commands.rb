@@ -260,7 +260,7 @@ class TestNewBlockCommands < Test::Unit::TestCase
   def find_node_by_type(node, block_type)
     return node if node.respond_to?(:block_type) && node.block_type == block_type
 
-    if node.respond_to?(:children) && node.children
+    if node.children
       node.children.each do |child|
         result = find_node_by_type(child, block_type)
         return result if result
@@ -278,7 +278,7 @@ class TestNewBlockCommands < Test::Unit::TestCase
       results << node
     end
 
-    if node.respond_to?(:children) && node.children
+    if node.children
       node.children.each do |child|
         results.concat(find_all_nodes_by_type(child, block_types))
       end

@@ -65,7 +65,7 @@ module ReVIEW
       # @param node [AST::Node] The parent node
       # @return [String] Concatenated text from all children
       def visit_children(node)
-        return '' unless node.respond_to?(:children) && node.children
+        return '' unless node.children
 
         node.children.map { |child| visit(child) }.join
       end
@@ -158,7 +158,7 @@ module ReVIEW
         elsif node.children&.any?
           # Reconstruct from AST structure
           lines = node.children.map do |line_node|
-            if line_node.respond_to?(:children) && line_node.children
+            if line_node.children
               line_node.children.map do |child|
                 case child
                 when ReVIEW::AST::TextNode
@@ -257,7 +257,7 @@ module ReVIEW
         text += "{\n"
 
         # Handle children - they may be strings or nodes
-        if node.respond_to?(:children) && node.children&.any?
+        if node.children&.any?
           content_lines = []
           node.children.each do |child|
             if child.is_a?(String)

@@ -74,7 +74,7 @@ module ReVIEW
         when nil
           ''
         else
-          if node.respond_to?(:children) && node.children&.any?
+          if node.children&.any?
             node.children.map { |child| extract_text(child) }.join
           elsif node.respond_to?(:content)
             node.content.to_s
@@ -92,7 +92,7 @@ module ReVIEW
       def process_inline_content(node)
         return '' unless node
 
-        if node.respond_to?(:children) && node.children
+        if node.children
           node.children.map { |child| visit(child) }.join
         else
           extract_text(node)

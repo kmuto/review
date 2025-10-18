@@ -189,7 +189,7 @@ class TestColumnSections < Test::Unit::TestCase
   def find_node_by_type(node, node_type)
     return node if node.is_a?(node_type)
 
-    if node.respond_to?(:children) && node.children
+    if node.children
       node.children.each do |child|
         result = find_node_by_type(child, node_type)
         return result if result
@@ -204,7 +204,7 @@ class TestColumnSections < Test::Unit::TestCase
 
     results << node if node.is_a?(node_type)
 
-    if node.respond_to?(:children) && node.children
+    if node.children
       node.children.each do |child|
         results.concat(find_all_nodes_by_type(child, node_type))
       end

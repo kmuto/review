@@ -346,7 +346,7 @@ class TestMarkdownColumn < Test::Unit::TestCase
       columns << node
     end
 
-    if node.respond_to?(:children) && node.children
+    if node.children
       node.children.each { |child| columns.concat(find_columns(child)) }
     end
 
@@ -366,7 +366,7 @@ class TestMarkdownColumn < Test::Unit::TestCase
       images << node
     end
 
-    if node.respond_to?(:children) && node.children
+    if node.children
       node.children.each { |child| images.concat(find_images(child)) }
     end
 

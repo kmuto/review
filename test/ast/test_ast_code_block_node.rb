@@ -250,7 +250,7 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
   def find_code_block_in_ast(node)
     return node if node.is_a?(ReVIEW::AST::CodeBlockNode)
 
-    if node.respond_to?(:children) && node.children
+    if node.children
       node.children.each do |child|
         result = find_code_block_in_ast(child)
         return result if result

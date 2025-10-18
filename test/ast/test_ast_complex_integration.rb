@@ -278,7 +278,7 @@ class TestASTComplexIntegration < Test::Unit::TestCase
   def count_node_types(node, counts = Hash.new(0))
     counts[node.class.name.split('::').last] += 1
 
-    if node.respond_to?(:children) && node.children
+    if node.children
       node.children.each { |child| count_node_types(child, counts) }
     end
 
@@ -290,7 +290,7 @@ class TestASTComplexIntegration < Test::Unit::TestCase
       inline_nodes << node
     end
 
-    if node.respond_to?(:children) && node.children
+    if node.children
       node.children.each { |child| collect_inline_nodes(child, inline_nodes) }
     end
 
@@ -355,7 +355,7 @@ class TestASTComplexIntegration < Test::Unit::TestCase
   def calculate_max_depth(node, current_depth = 0)
     max_depth = current_depth
 
-    if node.respond_to?(:children) && node.children
+    if node.children
       node.children.each do |child|
         child_depth = calculate_max_depth(child, current_depth + 1)
         max_depth = [max_depth, child_depth].max

@@ -19,7 +19,7 @@ module ReVIEW
       private
 
       def normalize_node(node)
-        return unless node.respond_to?(:children) && node.children
+        return unless node.children
 
         assign_ordered_offsets(node)
 
