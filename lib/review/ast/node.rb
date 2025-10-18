@@ -77,6 +77,26 @@ module ReVIEW
         @attributes.dup
       end
 
+      # Return the visit method name for this node as a symbol.
+      # This is used by the Visitor pattern for method dispatch.
+      #
+      # @return [Symbol] The visit method symbol (e.g., :visit_headline)
+      #
+      # @example
+      #   HeadlineNode.new.visit_method_name #=> :visit_headline
+      def visit_method_name
+        class_name = self.class.name.split('::').last
+
+        # Convert CamelCase to snake_case and remove 'Node' suffix
+        method_name = class_name.
+                      gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2').
+                      gsub(/([a-z\d])([A-Z])/, '\1_\2').
+                      downcase.
+                      gsub(/_node$/, '')
+
+        :"visit_#{method_name}"
+      end
+
       # Basic JSON serialization for compatibility
       def to_h
         result = {

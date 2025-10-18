@@ -7,67 +7,25 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/ast'
+require 'review/ast/visitor'
 
 module ReVIEW
   module AST
     # ReVIEWGenerator - Generate Re:VIEW text from AST nodes
-    #
-    # This class converts AST structures back to Re:VIEW text format,
-    # enabling round-trip conversion between Re:VIEW text and AST.
-    #
-    # All visitor methods are pure functions that return text without side effects,
-    # ensuring order-independent processing.
-    class ReVIEWGenerator
-      def initialize(options = {})
-        @options = options
-      end
-
+    class ReVIEWGenerator < Visitor
       # Generate Re:VIEW text from AST root node
-      # @param ast_root [AST::Node] The root node of AST
-      # @return [String] Generated Re:VIEW text
       def generate(ast_root)
         visit(ast_root)
       end
 
       private
 
-      # Visit a node and return its Re:VIEW representation
-      # @param node [AST::Node] The node to visit
-      # @return [String] Re:VIEW text representation
-      def visit(node)
-        return '' unless node
-
-        # Handle plain strings
-        return node if node.is_a?(String)
-
-        # Handle Hash objects (from JSON deserialization issues)
-        if node.is_a?(Hash)
-          if node['type'] == 'CaptionNode' || node['type'] == 'TextNode'
-            # Extract content from serialized node
-            if node['children']
-              return node['children'].map { |child| visit(child) }.join
-            elsif node['content']
-              return node['content'].to_s
-            end
-          end
-          return node.inspect # Convert hash to string representation for debugging
-        end
-
-        method_name = "visit_#{node.class.name.split('::').last.sub(/Node$/, '').downcase}"
-        if respond_to?(method_name, true)
-          send(method_name, node)
-        else
-          visit_children(node)
-        end
-      end
-
       # Visit all children of a node and concatenate results
+      # Uses parent's visit_all method for consistency
       # @param node [AST::Node] The parent node
       # @return [String] Concatenated text from all children
       def visit_children(node)
-        return '' unless node.children
-
-        node.children.map { |child| visit(child) }.join
+        visit_all(node.children).join
       end
 
       # === Document Node ===
@@ -105,7 +63,7 @@ module ReVIEW
 
         # Debug: check if we're getting the content properly
         # Only use args as content for specific inline types that don't have special handling
-        if content.empty? && node.respond_to?(:args) && node.args&.any? && !%w[href kw ruby].include?(node.inline_type)
+        if content.empty? && node.args.any? && !%w[href kw ruby].include?(node.inline_type)
           # Use first arg as content if children are empty
           content = node.args.first.to_s
         end
@@ -113,7 +71,7 @@ module ReVIEW
         case node.inline_type
         when 'href'
           # href has special syntax with URL
-          url = node.args&.first || ''
+          url = node.args.first || ''
           if content.empty?
             "@<href>{#{url}}"
           else
@@ -121,14 +79,14 @@ module ReVIEW
           end
         when 'kw'
           # kw can have optional description
-          if node.args&.any?
+          if node.args.any?
             "@<kw>{#{content}, #{node.args.join(', ')}}"
           else
             "@<kw>{#{content}}"
           end
         when 'ruby'
           # ruby has base text and ruby text
-          ruby_text = node.args&.first || ''
+          ruby_text = node.args.first || ''
           "@<ruby>{#{content}, #{ruby_text}}"
         else
           "@<#{node.inline_type}>{#{content}}"
@@ -136,7 +94,7 @@ module ReVIEW
       end
 
       # === Code Block Node ===
-      def visit_codeblock(node)
+      def visit_code_block(node)
         # Determine block type
         block_type = if node.id?
                        node.line_numbers ? 'listnum' : 'list'
@@ -164,7 +122,7 @@ module ReVIEW
                 when ReVIEW::AST::TextNode
                   child.content
                 when ReVIEW::AST::InlineNode
-                  "@<#{child.inline_type}>{#{child.args&.first || ''}}"
+                  "@<#{child.inline_type}>{#{child.args.first || ''}}"
                 else
                   child.to_s
                 end
@@ -195,7 +153,7 @@ module ReVIEW
       end
 
       # === List Item Node ===
-      def visit_listitem(node)
+      def visit_list_item(node)
         # This should be handled by parent list type
         visit_children(node)
       end
@@ -298,19 +256,19 @@ module ReVIEW
         when :pagebreak
           "//pagebreak\n\n"
         when :olnum
-          "//olnum[#{node.args&.join(', ')}]\n\n"
+          "//olnum[#{node.args.join(', ')}]\n\n"
         when :firstlinenum
-          "//firstlinenum[#{node.args&.join(', ')}]\n\n"
+          "//firstlinenum[#{node.args.join(', ')}]\n\n"
         when :tsize
-          "//tsize[#{node.args&.join(', ')}]\n\n"
+          "//tsize[#{node.args.join(', ')}]\n\n"
         when :footnote
           content = visit_children(node)
-          "//footnote[#{node.args&.join('][') || ''}][#{content.strip}]\n\n"
+          "//footnote[#{node.args.join('][') || ''}][#{content.strip}]\n\n"
         when :endnote
           content = visit_children(node)
-          "//endnote[#{node.args&.join('][') || ''}][#{content.strip}]\n\n"
+          "//endnote[#{node.args.join('][') || ''}][#{content.strip}]\n\n"
         when :label
-          "//label[#{node.args&.first}]\n\n"
+          "//label[#{node.args.first}]\n\n"
         when :printendnotes
           "//printendnotes\n\n"
         when :beginchild
@@ -331,7 +289,7 @@ module ReVIEW
           text
         when :doorquote
           text = '//doorquote'
-          text += "[#{node.args.join('][') if node.args&.any?}]"
+          text += "[#{node.args.join('][') if node.args.any?}]"
           text += "{\n"
           text += visit_children(node)
           text += "//}\n\n"
@@ -339,7 +297,7 @@ module ReVIEW
           text
         when :bibpaper
           text = '//bibpaper'
-          text += "[#{node.args.join('][') if node.args&.any?}]"
+          text += "[#{node.args.join('][') if node.args.any?}]"
           text += "{\n"
           text += visit_children(node)
           text += "//}\n\n"
@@ -354,7 +312,7 @@ module ReVIEW
           text
         when :graph
           text = '//graph'
-          text += "[#{node.args.join('][') if node.args&.any?}]"
+          text += "[#{node.args.join('][') if node.args.any?}]"
           text += "{\n"
           text += visit_children(node)
           text += "//}\n\n"
@@ -370,7 +328,7 @@ module ReVIEW
           "//parasep\n\n"
         when :box
           text = '//box'
-          text += "[#{node.args.first}]" if node.args&.any?
+          text += "[#{node.args.first}]" if node.args.any?
           text += "{\n"
           text += visit_children(node)
           text += "//}\n\n"
@@ -483,13 +441,8 @@ module ReVIEW
 
         if caption.respond_to?(:to_text)
           caption.to_text
-        elsif caption.respond_to?(:children) && caption.children
-          # For CaptionNode, extract text from children
-          caption.children.map { |child| visit(child) }.join
-        elsif caption.respond_to?(:to_s)
-          caption.to_s
         else
-          ''
+          caption.children.map { |child| visit(child) }.join
         end
       end
 
@@ -502,7 +455,7 @@ module ReVIEW
           when ReVIEW::AST::TextNode
             child.content
           when ReVIEW::AST::InlineNode
-            "@<#{child.inline_type}>{#{child.args&.first || ''}}"
+            "@<#{child.inline_type}>{#{child.args.first || ''}}"
           else
             visit(child)
           end

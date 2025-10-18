@@ -97,7 +97,7 @@ module ReVIEW
         end
 
         def render_inline_raw(_type, content, node)
-          if node.args && node.args.first
+          if node.args.first
             format = node.args.first
             if format == 'markdown'
               content
@@ -126,7 +126,7 @@ module ReVIEW
         end
 
         def render_inline_img(_type, content, node)
-          if node.args && node.args.first
+          if node.args.first
             image_id = node.args.first
             "![#{escape_content(content)}](##{image_id})"
           else
@@ -135,7 +135,7 @@ module ReVIEW
         end
 
         def render_inline_icon(_type, content, node)
-          if node.args && node.args.first
+          if node.args.first
             image_path = node.args.first
             image_path = image_path.sub(%r{\A\./}, '')
             "![](#{image_path})"
@@ -149,7 +149,7 @@ module ReVIEW
         end
 
         def render_inline_fn(_type, content, node)
-          if node.args && node.args.first
+          if node.args.first
             fn_id = node.args.first
             "[^#{fn_id}]"
           else
@@ -158,7 +158,7 @@ module ReVIEW
         end
 
         def render_inline_kw(_type, content, node)
-          if node.args && node.args.length >= 2
+          if node.args.length >= 2
             word = node.args[0]
             alt = node.args[1]
             "**#{escape_asterisks(word)}** (#{escape_content(alt)})"
@@ -187,7 +187,7 @@ module ReVIEW
         end
 
         def render_inline_ruby(_type, content, node)
-          if node.args && node.args.length >= 2
+          if node.args.length >= 2
             base = node.args[0]
             ruby = node.args[1]
             "<ruby>#{escape_content(base)}<rt>#{escape_content(ruby)}</rt></ruby>"

@@ -640,7 +640,7 @@ module ReVIEW
           # olnum is now handled as metadata in list processing
           # If we encounter it here, it means there was no following ordered list
           # In this case, we should still generate the setcounter command for compatibility
-          if node.args&.first
+          if node.args.first
             num = node.args.first.to_i
             "\\setcounter{enumi}{#{num - 1}}\n"
           else
@@ -648,7 +648,7 @@ module ReVIEW
           end
         when 'footnote'
           # Handle footnote blocks - generate \footnotetext LaTeX command
-          if node.args && node.args.length >= 2
+          if node.args.length >= 2
             footnote_id = node.args[0]
             footnote_content = escape(node.args[1])
             # Generate footnote number like LaTeXBuilder does
@@ -668,7 +668,7 @@ module ReVIEW
         when 'firstlinenum'
           # firstlinenum sets the starting line number for subsequent listnum blocks
           # Store the value in @first_line_num like LaTeXBuilder does
-          if node.args&.first
+          if node.args.first
             @first_line_num = node.args.first.to_i
           end
           # firstlinenum itself produces no output
@@ -676,7 +676,7 @@ module ReVIEW
         when 'tsize'
           # tsize sets table column widths for subsequent tables
           # Parse and store the value in @tsize like Builder does
-          if node.args&.first
+          if node.args.first
             process_tsize_command(node.args.first)
           end
           # tsize itself produces no output
@@ -714,7 +714,7 @@ module ReVIEW
           "\n\\theendnotes\n\n"
         when 'label'
           # Label command - output \label{id}
-          if node.args&.first
+          if node.args.first
             label_id = node.args.first
             "\\label{#{escape(label_id)}}\n"
           else
@@ -799,7 +799,7 @@ module ReVIEW
         content_lines = []
 
         # add argument if it exists
-        if node.args&.first&.then { |arg| !arg.empty? }
+        if node.args.first&.then { |arg| !arg.empty? }
           content_lines << escape(node.args.first)
         end
 
@@ -897,11 +897,6 @@ module ReVIEW
         else
           raise NotImplementedError, 'Unknown embed structure or missing argument'
         end
-      end
-
-      def visit_generic(node)
-        method_name = derive_visit_method_name_string(node)
-        raise NotImplementedError, "LaTeXRenderer does not support generic visitor. Implement #{method_name} for #{node.class.name}"
       end
 
       # Code block type handlers
@@ -1042,7 +1037,7 @@ module ReVIEW
 
       def visit_bibpaper(node)
         # Extract bibliography arguments
-        if node.args && node.args.length >= 2
+        if node.args.length >= 2
           bib_id = node.args[0]
           bib_caption = node.args[1]
 
@@ -1287,8 +1282,6 @@ module ReVIEW
 
       # Render document children with proper separation
       def render_document_children(node)
-        return '' unless node.children
-
         results = []
         node.children.each_with_index do |child, _index|
           result = visit(child)

@@ -370,7 +370,7 @@ module ReVIEW
 
         case node.block_type.to_s
         when 'bibpaper'
-          if node.args && node.args.length >= 2
+          if node.args.length >= 2
             bib_id = node.args[0]
             bib_caption = node.args[1]
             check_id(bib_id)
@@ -384,7 +384,7 @@ module ReVIEW
       def process_inline(node)
         case node.inline_type
         when 'fn'
-          if node.args && node.args.first
+          if node.args.first
             footnote_id = node.args.first
             check_id(footnote_id)
             # Track cross-reference
@@ -393,7 +393,7 @@ module ReVIEW
             @footnote_index.add_or_update(footnote_id)
           end
         when 'endnote'
-          if node.args && node.args.first
+          if node.args.first
             endnote_id = node.args.first
             check_id(endnote_id)
             # Track cross-reference
@@ -402,7 +402,7 @@ module ReVIEW
             @endnote_index.add_or_update(endnote_id)
           end
         when 'bib'
-          if node.args && node.args.first
+          if node.args.first
             bib_id = node.args.first
             check_id(bib_id)
             # Add to index if not already present (for compatibility with tests and IndexBuilder behavior)
@@ -412,7 +412,7 @@ module ReVIEW
             end
           end
         when 'eq'
-          if node.args && node.args.first
+          if node.args.first
             eq_id = node.args.first
             check_id(eq_id)
             # Add to index if not already present (for compatibility with tests and IndexBuilder behavior)
@@ -425,7 +425,7 @@ module ReVIEW
           # Image references are handled when the actual image blocks are processed
           # No special processing needed for inline image references
         when 'icon'
-          if node.args && node.args.first
+          if node.args.first
             icon_id = node.args.first
             check_id(icon_id)
             # Add icon to index if not already present

@@ -19,7 +19,7 @@ module ReVIEW
       private
 
       def normalize_node(node)
-        return unless node.children
+        return if node.children.empty?
 
         assign_ordered_offsets(node)
 

@@ -10,7 +10,7 @@ module ReVIEW
       def initialize(location: nil, inline_type: nil, args: nil, **kwargs)
         super(location: location, **kwargs)
         @inline_type = inline_type
-        @args = args
+        @args = args || []
       end
 
       def to_h
@@ -27,10 +27,10 @@ module ReVIEW
       #
       # @return [String, nil] The reference ID or nil
       def reference_id
-        if args && args.length >= 2
+        if args.length >= 2
           args.join('|')
         else
-          args&.first
+          args.first
         end
       end
 

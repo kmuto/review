@@ -80,15 +80,15 @@ module ReVIEW
           hash['label'] = node.label
           hash['caption'] = extract_text(node.caption)
         when ReVIEW::AST::ParagraphNode
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
         when ReVIEW::AST::CodeBlockNode
           hash['caption'] = extract_text(node.caption)
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
           hash['id'] = node.id if node.id
           hash['lang'] = node.lang if node.lang
           hash['numbered'] = node.line_numbers
         when ReVIEW::AST::CodeLineNode
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
           hash['line_number'] = node.line_number if node.line_number
         when ReVIEW::AST::TableNode
           hash['caption'] = extract_text(node.caption)
@@ -96,27 +96,27 @@ module ReVIEW
           hash['header_rows'] = node.header_rows.map { |row| serialize_to_hash(row, options) } if node.header_rows&.any?
           hash['body_rows'] = node.body_rows.map { |row| serialize_to_hash(row, options) } if node.body_rows&.any?
         when ReVIEW::AST::TableRowNode # rubocop:disable Lint/DuplicateBranch
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
         when ReVIEW::AST::TableCellNode # rubocop:disable Lint/DuplicateBranch
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
         when ReVIEW::AST::ImageNode
           hash['caption'] = extract_text(node.caption)
           hash['id'] = node.id if node.id
           hash['metric'] = node.metric if node.metric
         when ReVIEW::AST::ListNode
           hash['list_type'] = node.list_type
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
         when ReVIEW::AST::TextNode
           return node.content.to_s
         when ReVIEW::AST::InlineNode
           hash['element'] = node.inline_type
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
           hash['args'] = node.args if node.args
         when ReVIEW::AST::CaptionNode
           return extract_text(node)
         when ReVIEW::AST::BlockNode
           hash['block_type'] = node.block_type.to_s
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
         when ReVIEW::AST::EmbedNode
           case node.embed_type
           when :block
@@ -133,7 +133,7 @@ module ReVIEW
         when ReVIEW::AST::ListItemNode
           hash['level'] = node.level if node.level
           hash['number'] = node.number if node.number
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
         when ReVIEW::AST::ColumnNode
           hash['level'] = node.level
           hash['label'] = node.label
@@ -142,8 +142,8 @@ module ReVIEW
         when ReVIEW::AST::MinicolumnNode
           hash['minicolumn_type'] = node.minicolumn_type.to_s if node.minicolumn_type
           hash['caption'] = extract_text(node.caption) if node.caption
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children&.any?
-        else # rubocop:disable Lint/DuplicateBranch
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
+        else
           # Generic handling for unknown node types
           if node.children&.any?
             hash['children'] = node.children.map { |child| serialize_to_hash(child, options) }
@@ -160,7 +160,7 @@ module ReVIEW
         when nil
           ''
         else
-          if node.children&.any?
+          if node.children.any?
             node.children.map { |child| extract_text(child) }.join
           else
             node.content.to_s
@@ -169,7 +169,7 @@ module ReVIEW
       end
 
       def process_list_items(node, _list_type, options)
-        return [] unless node.children
+        return [] if node.children.empty?
 
         # For all list types, just serialize the children normally
         # The ListItemNode structure will be preserved

@@ -79,7 +79,7 @@ module ReVIEW
 
       def extract_olnum_value(olnum_node)
         # Extract number from olnum args
-        if olnum_node.respond_to?(:args) && olnum_node.args && olnum_node.args.first
+        if olnum_node.args.first
           olnum_node.args.first.to_i
         else
           1 # Default start number

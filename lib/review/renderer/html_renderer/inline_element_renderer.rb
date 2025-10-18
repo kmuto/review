@@ -107,7 +107,7 @@ module ReVIEW
         end
 
         def render_inline_raw(_type, content, node)
-          if node.args && node.args.first
+          if node.args.first
             format = node.args.first
             if format == 'html'
               content
@@ -122,7 +122,7 @@ module ReVIEW
         def render_inline_embed(_type, content, node)
           # @<embed> simply outputs its content as-is, like Builder's inline_embed
           # It can optionally specify target formats like @<embed>{|html,latex|content}
-          if node.args && node.args.first
+          if node.args.first
             args = node.args.first
             # DEBUG
             if ENV['REVIEW_DEBUG']
@@ -144,7 +144,7 @@ module ReVIEW
         end
 
         def render_inline_chap(_type, content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
           begin
             chapter_num = @book.chapter_index.number(id)
             if config['chapterlink']
@@ -158,7 +158,7 @@ module ReVIEW
         end
 
         def render_inline_title(_type, content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
           begin
             # Find the chapter and get its title
             chapter = @book.contents.detect { |chap| chap.id == id }
@@ -176,7 +176,7 @@ module ReVIEW
         end
 
         def render_inline_chapref(_type, content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
           begin
             # Use display_string like Builder to get chapter number + title
             # This returns formatted string like "第1章「タイトル」" from I18n.t('chapter_quote')
@@ -228,7 +228,7 @@ module ReVIEW
         end
 
         def render_inline_kw(_type, content, node)
-          if node.args && node.args.length >= 2
+          if node.args.length >= 2
             word = escape_content(node.args[0])
             alt = escape_content(node.args[1].strip)
             # Format like HTMLBuilder: word + space + parentheses with alt inside <b> tag
@@ -237,7 +237,7 @@ module ReVIEW
             %Q(<b class="kw">#{text}</b><!-- IDX:#{word} -->)
           else
             # content is already escaped, use node.args.first for IDX comment
-            index_term = node.args&.first || content
+            index_term = node.args.first || content
             %Q(<b class="kw">#{content}</b><!-- IDX:#{escape_content(index_term)} -->)
           end
         end
@@ -263,7 +263,7 @@ module ReVIEW
             else
               %Q(<a href="#{url}" class="link">#{text}</a>)
             end
-          elsif node.args&.first
+          elsif node.args.first
             # Single argument case - use raw arg for URL
             url = escape_content(node.args.first)
             if node.args.first.start_with?('#')
@@ -279,7 +279,7 @@ module ReVIEW
         end
 
         def render_inline_ruby(_type, content, node)
-          if node.args && node.args.length >= 2
+          if node.args.length >= 2
             base = node.args[0]
             ruby = node.args[1]
             %Q(<ruby>#{escape_content(base)}<rt>#{escape_content(ruby)}</rt></ruby>)
@@ -296,14 +296,14 @@ module ReVIEW
         def render_inline_idx(_type, content, node)
           # Use HTML comment format like HTMLBuilder
           # content is already escaped for display
-          index_str = node.args&.first || content
+          index_str = node.args.first || content
           %Q(#{content}<!-- IDX:#{escape_comment(index_str)} -->)
         end
 
         def render_inline_hidx(_type, _content, node)
           # Use HTML comment format like HTMLBuilder
           # hidx doesn't display content, only outputs the index comment
-          index_str = node.args&.first || ''
+          index_str = node.args.first || ''
           %Q(<!-- IDX:#{escape_comment(index_str)} -->)
         end
 
@@ -348,7 +348,7 @@ module ReVIEW
         def render_inline_labelref(_type, content, node)
           # Label reference: @<labelref>{id}
           # This should match HTMLBuilder's inline_labelref behavior
-          idref = node.args&.first || content
+          idref = node.args.first || content
           %Q(<a target='#{escape_content(idref)}'>「#{I18n.t('label_marker')}#{escape_content(idref)}」</a>)
         end
 
@@ -400,7 +400,7 @@ module ReVIEW
 
         def render_inline_icon(_type, content, node)
           # Icon is an image reference
-          id = node.args&.first || content
+          id = node.args.first || content
           begin
             %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="[#{id}]" />)
           rescue KeyError, NoMethodError
@@ -428,7 +428,7 @@ module ReVIEW
 
         def render_inline_bib(_type, content, node)
           # Bibliography reference
-          id = node.args&.first || content
+          id = node.args.first || content
           begin
             bib_file = @book.bib_file.gsub(/\.re\Z/, ".#{config['htmlext'] || 'html'}")
             number = @chapter.bibpaper(id).number
@@ -510,7 +510,7 @@ module ReVIEW
 
         def render_inline_column(_type, content, node)
           # Column reference: @<column>{id} or @<column>{chapter|id}
-          id = node.args&.first || content
+          id = node.args.first || content
           m = /\A([^|]+)\|(.+)/.match(id)
 
           chapter = if m && m[1]

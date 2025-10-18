@@ -12,7 +12,7 @@ module ReVIEW
       def initialize(location: nil, block_type: nil, args: nil, caption: nil, lines: nil, **kwargs)
         super(location: location, **kwargs)
         @block_type = block_type # :quote, :read, etc.
-        @args = args
+        @args = args || []
         @caption = caption
         @lines = lines # Optional: original lines for blocks like box, insn
       end

@@ -696,11 +696,6 @@ module ReVIEW
         end
       end
 
-      def visit_generic(node)
-        method_name = derive_visit_method_name_string(node)
-        raise NotImplementedError, "HTMLRenderer does not support generic visitor. Implement #{method_name} for #{node.class.name}"
-      end
-
       def render_inline_element(type, content, node)
         require 'review/renderer/html_renderer/inline_element_renderer'
         # Always create a new inline renderer with current rendering context
@@ -773,7 +768,7 @@ module ReVIEW
         content_lines = []
 
         # 引数があれば最初に追加
-        if node.args && node.args.first && !node.args.first.empty?
+        if node.args.first && !node.args.first.empty?
           content_lines << escape(node.args.first)
         end
 
@@ -814,7 +809,7 @@ module ReVIEW
       # Render firstlinenum control block
       def render_firstlinenum_block(node)
         # Extract line number from args (first arg is the line number)
-        line_num = node.args&.first&.to_i || 1
+        line_num = node.args.first&.to_i || 1
         firstlinenum(line_num)
         '' # No HTML output
       end
@@ -822,7 +817,7 @@ module ReVIEW
       # Render label control block
       def render_label_block(node)
         # Extract label from args
-        label = node.args&.first
+        label = node.args.first
         return '' unless label
 
         %Q(<a id="#{normalize_id(label)}"></a>)
@@ -1191,7 +1186,7 @@ module ReVIEW
         end
 
         # Legacy fallback for old-style inline raw
-        if node.args && node.args.first
+        if node.args.first
           raw_content = node.args.first
           # Parse target formats from argument like Builder base class
           if raw_content.start_with?('|') && raw_content.include?('|')

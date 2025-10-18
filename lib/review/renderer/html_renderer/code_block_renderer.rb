@@ -20,7 +20,7 @@ module ReVIEW
         def initialize(chapter, parent:)
           super(chapter)
           @parent = parent
-          # Note: @chapter and @book are now set by Base's initialize
+          # NOTE: @chapter and @book are now set by Base's initialize
         end
 
         # Main entry point for rendering code blocks

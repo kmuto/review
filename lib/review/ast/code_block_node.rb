@@ -44,7 +44,7 @@ module ReVIEW
               child.content
             when AST::InlineNode
               # Reconstruct Re:VIEW syntax from original args (preserve original IDs)
-              content = if child.args&.any?
+              content = if child.args.any?
                           child.args.first
                         elsif child.children&.any?
                           child.children.map do |grandchild|

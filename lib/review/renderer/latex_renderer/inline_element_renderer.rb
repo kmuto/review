@@ -82,7 +82,7 @@ module ReVIEW
         end
 
         def render_inline_href(_type, content, node)
-          if node.args && node.args.length >= 2
+          if node.args.length >= 2
             url = node.args[0]
             text = node.args[1]
             # Handle internal references (URLs starting with #)
@@ -119,7 +119,7 @@ module ReVIEW
         end
 
         def render_inline_fn(_type, content, node)
-          if node.args&.first
+          if node.args.first
             footnote_id = node.args.first.to_s
 
             # Get footnote info from chapter index
@@ -216,7 +216,7 @@ module ReVIEW
 
         # Render equation reference
         def render_inline_eq(_type, content, node)
-          return content unless node.args&.first
+          return content unless node.args.first
 
           equation_id = node.args.first
           if @chapter && @chapter.equation_index
@@ -263,7 +263,7 @@ module ReVIEW
 
         # Render bibliography reference
         def render_inline_bib(_type, content, node)
-          return content unless node.args&.first
+          return content unless node.args.first
 
           bib_id = node.args.first.to_s
           # Try to get bibpaper_index, either directly from instance variable or through method
@@ -427,7 +427,7 @@ module ReVIEW
 
         # Render chapter number reference
         def render_inline_chap(_type, content, node)
-          return content unless node.args&.first
+          return content unless node.args.first
 
           chapter_id = node.args.first
           if @book && @book.chapter_index
@@ -444,7 +444,7 @@ module ReVIEW
 
         # Render chapter title reference
         def render_inline_chapref(_type, content, node)
-          return content unless node.args&.first
+          return content unless node.args.first
 
           chapter_id = node.args.first
           if @book && @book.chapter_index
@@ -463,10 +463,10 @@ module ReVIEW
         # ReferenceResolver splits "ch02|ブロック命令" into ["ch02", "ブロック命令"]
         # We need to join them back together to get the original format
         def extract_heading_ref(node, content)
-          if node.args && node.args.length >= 2
+          if node.args.length >= 2
             # Multiple args - rejoin with pipe to reconstruct original format
             node.args.join('|')
-          elsif node.args&.first
+          elsif node.args.first
             # Single arg - use as-is
             node.args.first
           else
@@ -517,7 +517,7 @@ module ReVIEW
 
         # Render index entry
         def render_inline_idx(_type, content, node)
-          return content unless node.args&.first
+          return content unless node.args.first
 
           index_str = node.args.first
           # Process hierarchical index like LATEXBuilder's index method
@@ -528,7 +528,7 @@ module ReVIEW
 
         # Render hidden index entry
         def render_inline_hidx(_type, content, node)
-          return content unless node.args&.first
+          return content unless node.args.first
 
           index_str = node.args.first
           # Process hierarchical index like LATEXBuilder's index method
@@ -594,7 +594,7 @@ module ReVIEW
 
         # Render keyword notation
         def render_inline_kw(_type, content, node)
-          if node.args && node.args.length >= 2
+          if node.args.length >= 2
             term = escape(node.args[0])
             description = escape(node.args[1])
             "\\reviewkw{#{term}}（#{description}）"
@@ -605,7 +605,7 @@ module ReVIEW
 
         # Render ruby notation
         def render_inline_ruby(_type, content, node)
-          if node.args && node.args.length >= 2
+          if node.args.length >= 2
             base_text = escape(node.args[0])
             ruby_text = escape(node.args[1])
             "\\ruby{#{base_text}}{#{ruby_text}}"
@@ -616,7 +616,7 @@ module ReVIEW
 
         # Render icon
         def render_inline_icon(_type, content, node)
-          if node.args&.first
+          if node.args.first
             icon_id = node.args.first
             if @chapter&.image(icon_id)&.path
               command = @book&.config&.check_version('2', exception: false) ? 'includegraphics' : 'reviewicon'
@@ -650,7 +650,7 @@ module ReVIEW
         # Render mathematical expression
         def render_inline_m(_type, content, node)
           # Mathematical expressions - don't escape content
-          "$#{node.args&.first || content}$"
+          "$#{node.args.first || content}$"
         end
 
         # Render superscript
@@ -696,7 +696,7 @@ module ReVIEW
         # Render unicode character
         def render_inline_uchar(_type, content, node)
           # Unicode character handling like LATEXBuilder
-          if node.args&.first
+          if node.args.first
             char_code = node.args.first
             texcompiler = @book.config['texcommand']
             if texcompiler&.start_with?('platex')
@@ -730,7 +730,7 @@ module ReVIEW
 
         # Render raw content
         def render_inline_raw(_type, content, node)
-          if node.args&.first
+          if node.args.first
             # Raw content for specific format
             format = node.args.first
             if ['latex', 'tex'].include?(format)
@@ -755,7 +755,7 @@ module ReVIEW
           # otherwise fall back to legacy behavior
           if content && !content.empty?
             "\\textbf{#{escape(content)}}"
-          elsif node.args&.first
+          elsif node.args.first
             ref_id = node.args.first
             "\\ref{#{escape(ref_id)}}"
           else
@@ -779,7 +779,7 @@ module ReVIEW
 
         # Render title reference
         def render_inline_title(_type, content, node)
-          if node.args&.first
+          if node.args.first
             # Book/chapter title reference
             chapter_id = node.args.first
             if @book && @book.chapter_index
@@ -803,7 +803,7 @@ module ReVIEW
 
         # Render endnote reference
         def render_inline_endnote(_type, content, node)
-          if node.args&.first
+          if node.args.first
             # Endnote reference
             ref_id = node.args.first
             if @chapter && @chapter.endnote_index
@@ -825,7 +825,7 @@ module ReVIEW
 
         # Render page reference
         def render_inline_pageref(_type, content, node)
-          if node.args&.first
+          if node.args.first
             # Page reference
             ref_id = node.args.first
             "\\pageref{#{escape(ref_id)}}"

@@ -112,7 +112,7 @@ module ReVIEW
 
         # Maru (circled numbers/letters)
         def render_maru(content, node)
-          str = node.args&.first || content
+          str = node.args.first || content
 
           if /\A\d+\Z/.match?(str)
             sprintf('&#x%x;', 9311 + str.to_i)
@@ -135,7 +135,7 @@ module ReVIEW
 
         # Ruby (furigana)
         def render_ruby(content, node)
-          if node.args && node.args.length >= 2
+          if node.args.length >= 2
             base = escape(node.args[0])
             ruby = escape(node.args[1])
             %Q(<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>#{base}</aid:rb><aid:rt>#{ruby}</aid:rt></aid:ruby></GroupRuby>)
@@ -146,7 +146,7 @@ module ReVIEW
 
         # Keyword
         def render_kw(content, node)
-          if node.args && node.args.length >= 2
+          if node.args.length >= 2
             word = node.args[0]
             alt = node.args[1]
 
@@ -167,7 +167,7 @@ module ReVIEW
             end
 
             result
-          elsif node.args && node.args.length == 1
+          elsif node.args.length == 1
             # Single argument case - get raw string from args
             word = node.args[0]
             result = %Q(<keyword>#{escape(word)}</keyword>)
@@ -181,22 +181,22 @@ module ReVIEW
 
         # Index
         def render_idx(content, node)
-          str = node.args&.first || content
+          str = node.args.first || content
           %Q(#{escape(str)}<index value="#{escape(str)}" />)
         end
 
         def render_hidx(content, node)
-          str = node.args&.first || content
+          str = node.args.first || content
           %Q(<index value="#{escape(str)}" />)
         end
 
         # Links
         def render_href(content, node)
-          if node.args && node.args.length >= 2
+          if node.args.length >= 2
             url = node.args[0].gsub('\,', ',').strip
             label = node.args[1].gsub('\,', ',').strip
             %Q(<a linkurl='#{escape(url)}'>#{escape(label)}</a>)
-          elsif node.args && node.args.length >= 1
+          elsif node.args.length >= 1
             url = node.args[0].gsub('\,', ',').strip
             %Q(<a linkurl='#{escape(url)}'>#{escape(url)}</a>)
           else
@@ -206,7 +206,7 @@ module ReVIEW
 
         # References
         def render_list(content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
           begin
             # Get list reference using parent renderer's method
             base_ref = @parent_renderer.send(:get_list_reference, id)
@@ -217,7 +217,7 @@ module ReVIEW
         end
 
         def render_table(content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
           begin
             # Get table reference using parent renderer's method
             base_ref = @parent_renderer.send(:get_table_reference, id)
@@ -228,7 +228,7 @@ module ReVIEW
         end
 
         def render_img(content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
           begin
             # Get image reference using parent renderer's method
             base_ref = @parent_renderer.send(:get_image_reference, id)
@@ -239,7 +239,7 @@ module ReVIEW
         end
 
         def render_eq(content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
           begin
             # Get equation reference using parent renderer's method
             base_ref = @parent_renderer.send(:get_equation_reference, id)
@@ -250,7 +250,7 @@ module ReVIEW
         end
 
         def render_imgref(content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
           chapter, extracted_id = extract_chapter_id(id)
 
           if chapter.image(extracted_id).caption.blank?
@@ -266,7 +266,7 @@ module ReVIEW
 
         # Column reference
         def render_column(content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
 
           # Parse chapter|id format
           m = /\A([^|]+)\|(.+)/.match(id)
@@ -293,7 +293,7 @@ module ReVIEW
 
         # Footnotes
         def render_fn(content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
           begin
             fn_content = @chapter.footnote(id).content.strip
             # Compile inline elements in footnote content
@@ -306,7 +306,7 @@ module ReVIEW
 
         # Endnotes
         def render_endnote(content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
           begin
             %Q(<span type='endnoteref' idref='endnoteb-#{normalize_id(id)}'>(#{@chapter.endnote(id).number})</span>)
           rescue KeyError
@@ -316,7 +316,7 @@ module ReVIEW
 
         # Bibliography
         def render_bib(content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
           begin
             %Q(<span type='bibref' idref='#{id}'>[#{@chapter.bibpaper(id).number}]</span>)
           rescue KeyError
@@ -326,7 +326,7 @@ module ReVIEW
 
         # Headline reference
         def render_hd(content, node)
-          if node.args && node.args.length >= 2
+          if node.args.length >= 2
             chapter_id = node.args[0]
             headline_id = node.args[1]
 
@@ -350,7 +350,7 @@ module ReVIEW
 
         # Chapter reference
         def render_chap(content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
           if @book.config['chapterlink']
             %Q(<link href="#{id}">#{@book.chapter_index.number(id)}</link>)
           else
@@ -361,7 +361,7 @@ module ReVIEW
         end
 
         def render_chapref(content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
 
           if @book.config.check_version('2', exception: false)
             # Backward compatibility
@@ -392,7 +392,7 @@ module ReVIEW
         end
 
         def render_title(content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
           title = @book.chapter_index.title(id)
           if @book.config['chapterlink']
             %Q(<link href="#{id}">#{title}</link>)
@@ -406,20 +406,20 @@ module ReVIEW
         # Labels
         def render_labelref(content, node)
           # Get idref from node.args (raw, not escaped)
-          idref = node.respond_to?(:args) && node.args&.first ? node.args.first : content
+          idref = node.args.first || content
           %Q(<ref idref='#{escape(idref)}'>「#{I18n.t('label_marker')}#{escape(idref)}」</ref>)
         end
 
         alias_method :render_ref, :render_labelref
 
         def render_pageref(content, node)
-          idref = node.args&.first || content
+          idref = node.args.first || content
           %Q(<pageref idref='#{escape(idref)}'>●●</pageref>)
         end
 
         # Icon (inline image)
         def render_icon(content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
           begin
             %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A\./}, '')}" type="inline" />)
           rescue StandardError
@@ -432,7 +432,7 @@ module ReVIEW
           # Content is already escaped and rendered from children
           # Need to get raw text from node to process @maru markers
           # Since InlineNode processes children first, we need raw args
-          if node.respond_to?(:args) && node.args&.first
+          if node.args.first
             # Get raw string from args (not escaped yet)
             str = node.args.first
             processed = escape(str).gsub(/@maru\[(\d+)\]/) do
@@ -454,13 +454,13 @@ module ReVIEW
 
         # Unicode character
         def render_uchar(content, node)
-          str = node.args&.first || content
+          str = node.args.first || content
           %Q(&#x#{str};)
         end
 
         # Math
         def render_m(content, node)
-          str = node.args&.first || content
+          str = node.args.first || content
 
           if @book.config['math_format'] == 'imgmath'
             require 'review/img_math'
@@ -485,7 +485,7 @@ module ReVIEW
 
         # DTP processing instruction
         def render_dtp(content, node)
-          str = node.args&.first || content
+          str = node.args.first || content
           "<?dtp #{str} ?>"
         end
 
@@ -498,7 +498,7 @@ module ReVIEW
 
         # Raw
         def render_raw(content, node)
-          if node.args && node.args.first
+          if node.args.first
             raw_content = node.args.first
             # Convert \\n to actual newlines
             raw_content.gsub('\\n', "\n")
@@ -510,7 +510,7 @@ module ReVIEW
         # Comment
         def render_comment(content, node)
           if @book.config['draft']
-            str = node.args&.first || content
+            str = node.args.first || content
             %Q(<msg>#{escape(str)}</msg>)
           else
             ''
@@ -519,7 +519,7 @@ module ReVIEW
 
         # Recipe (FIXME placeholder)
         def render_recipe(content, node)
-          id = node.args&.first || content
+          id = node.args.first || content
           %Q(<recipe idref="#{escape(id)}">[XXX]「#{escape(id)}」　p.XX</recipe>)
         end
 

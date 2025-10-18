@@ -41,7 +41,6 @@ module ReVIEW
       attr_reader :chapter, :book, :config
 
       # Initialize the renderer with chapter context.
-      # Book and config are automatically derived from the chapter.
       #
       # @param chapter [ReVIEW::Book::Chapter] Chapter context
       def initialize(chapter)
@@ -52,7 +51,6 @@ module ReVIEW
       end
 
       # Render an AST node to the target format.
-      # This is the main entry point for rendering.
       #
       # @param ast_root [Object] The root AST node to render
       # @return [String] The rendered output
@@ -70,14 +68,10 @@ module ReVIEW
       end
 
       # Render all children of a node and join the results.
-      # This is a common helper method used by all renderers and can be called
-      # from helper classes like CodeBlockRenderer.
       #
       # @param node [Object] The parent node whose children should be rendered
       # @return [String] The joined rendered output of all children
       def render_children(node)
-        return '' unless node.children
-
         node.children.map { |child| visit(child) }.join
       end
 
@@ -94,7 +88,6 @@ module ReVIEW
       end
 
       # Handle inline elements within content.
-      # This method processes inline markup like bold, italic, code, etc.
       #
       # @param node [Object] The node containing inline content
       # @return [String] The rendered inline content
@@ -103,7 +96,6 @@ module ReVIEW
       end
 
       # Escape special characters for the target format.
-      # Subclasses should override this method to provide format-specific escaping.
       #
       # @param str [String] The string to escape
       # @return [String] The escaped string

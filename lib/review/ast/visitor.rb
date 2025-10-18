@@ -27,14 +27,13 @@ module ReVIEW
     #   result = visitor.visit(ast_root)
     class Visitor
       # Visit a node and dispatch to the appropriate visit method.
-      # The method name is derived from the node's class name.
       #
       # @param node [Object] The AST node to visit
       # @return [Object] The result of the visit method
       def visit(node)
         return nil if node.nil?
 
-        method_name = derive_visit_method_name(node)
+        method_name = node.visit_method_name
 
         if respond_to?(method_name, true)
           send(method_name, node)
@@ -54,12 +53,6 @@ module ReVIEW
       end
 
       private
-
-      # Generic visit method is disabled - all visitors must implement specific handlers
-      def visit_generic(node)
-        method_name = derive_visit_method_name_string(node)
-        raise NotImplementedError, "Generic visitor is disabled. Implement #{method_name} for #{node.class.name}"
-      end
 
       # Extract text content from a node, handling various node types.
       # This is useful for extracting plain text from caption nodes or
@@ -97,33 +90,6 @@ module ReVIEW
         else
           extract_text(node)
         end
-      end
-
-      # Helper method to derive visit method name as string
-      # This is useful for error messages and other string operations
-      #
-      # @param node [Object] The AST node
-      # @return [String] The method name as string
-      def derive_visit_method_name_string(node)
-        class_name = node.class.name.split('::').last
-
-        # Convert CamelCase to snake_case and remove 'Node' suffix
-        method_name = class_name.
-                      gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2').
-                      gsub(/([a-z\d])([A-Z])/, '\1_\2').
-                      downcase.
-                      gsub(/_node$/, '')
-
-        "visit_#{method_name}"
-      end
-
-      # Derive the visit method name from a node's class name.
-      # Converts class names like 'HeadlineNode' to 'visit_headline'.
-      #
-      # @param node [Object] The AST node
-      # @return [Symbol] The method name symbol
-      def derive_visit_method_name(node)
-        :"#{derive_visit_method_name_string(node)}"
       end
     end
   end
