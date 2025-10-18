@@ -67,6 +67,9 @@ module ReVIEW
 
         # Get config for debug output
         @config = {}
+
+        # Error accumulation flag (similar to HTMLBuilder's Compiler)
+        @compile_errors = false
       end
 
       attr_reader :ast_root, :current_ast_node
@@ -115,6 +118,11 @@ module ReVIEW
         # Post-process AST for noindent and olnum commands
         process_noindent_commands
         process_olnum_commands
+
+        # Check for accumulated errors (similar to HTMLBuilder's Compiler)
+        if @compile_errors
+          raise ApplicationError, "#{chapter.basename} cannot be compiled."
+        end
 
         # Return the compiled AST
         @ast_root
@@ -298,6 +306,12 @@ module ReVIEW
         info = " at line #{loc.lineno}"
         info += " in #{loc.filename}" if loc.filename
         info
+      end
+
+      # Override error method to accumulate errors (similar to HTMLBuilder's Compiler)
+      def error(msg, location: nil)
+        @compile_errors = true
+        super(msg, location: location)
       end
 
       def add_child_to_current_node(node)

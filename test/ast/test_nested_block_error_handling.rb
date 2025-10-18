@@ -103,7 +103,8 @@ class TestNestedBlockErrorHandling < Test::Unit::TestCase
     assert_include(error.message, 'Invalid block command syntax')
   end
 
-  def test_deeply_nested_blocks_success
+  def test_deeply_nested_minicolumn_error
+    # minicolumnのネスト（note → tip）はエラーになる
     content = <<~EOB
       //box[レベル1]{
       レベル1のコンテンツ
@@ -113,12 +114,41 @@ class TestNestedBlockErrorHandling < Test::Unit::TestCase
 
       //tip[レベル3]{
       レベル3のコンテンツ
+      //}
+
+      レベル2の終わり
+      //}
+
+      レベル1の終わり
+      //}
+    EOB
+
+    chapter = create_chapter(content)
+    compiler = AST::Compiler.new
+
+    # minicolumnのネストはエラーになる
+    error = assert_raise(ReVIEW::ApplicationError) do
+      compiler.compile_to_ast(chapter)
+    end
+
+    # HTMLBuilder pattern: general error message, specific error in log
+    assert_include(error.message, 'cannot be compiled')
+    # Check log for specific error message
+    assert_include(@log_io.string, 'minicolumn cannot be nested')
+    assert_include(@log_io.string, 'tip')
+  end
+
+  def test_deeply_nested_blocks_success
+    # boxの中にnoteとlistが入るのは成功する（minicolumnのネストではない）
+    content = <<~EOB
+      //box[レベル1]{
+      レベル1のコンテンツ
+
+      //note[レベル2]{
+      レベル2のコンテンツ
 
       //list[deep][深いネスト]{
       puts "深いネスト"
-      //}
-
-      レベル3の終わり
       //}
 
       レベル2の終わり
@@ -144,11 +174,7 @@ class TestNestedBlockErrorHandling < Test::Unit::TestCase
       assert_equal 1, note_nodes.size
 
       note_node = note_nodes.first
-      tip_nodes = note_node.children.select { |child| child.is_a?(AST::MinicolumnNode) && child.minicolumn_type == :tip }
-      assert_equal 1, tip_nodes.size
-
-      tip_node = tip_nodes.first
-      code_nodes = tip_node.children.select { |child| child.is_a?(AST::CodeBlockNode) }
+      code_nodes = note_node.children.select { |child| child.is_a?(AST::CodeBlockNode) }
       assert_equal 1, code_nodes.size
       assert_equal 'deep', code_nodes.first.id
     end

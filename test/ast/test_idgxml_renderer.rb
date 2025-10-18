@@ -815,7 +815,9 @@ EOS
   end
 
   def test_inline_unknown
-    pend('Unknown reference error handling - requires error handling in AST/Renderer')
+    pend('Unknown reference error handling - AST mode resolves references at different phase')
+    # AST mode resolves references during rendering, not during compilation
+    # This test is specific to HTMLBuilder's immediate reference resolution
   end
 
   def test_inline_imgref

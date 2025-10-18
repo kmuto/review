@@ -129,13 +129,13 @@ module ReVIEW
             level_diff = level - previous_level
             if level_diff > 1
               # Nesting level jumped too much (e.g., ** before * or *** after *)
-              # Log error (same as Builder) but don't raise - handle gracefully by adjusting level
+              # Log error (same as Builder) and continue processing
               if @location_provider.respond_to?(:error)
                 @location_provider.error('too many *.')
               elsif @location_provider.respond_to?(:logger)
                 @location_provider.logger.error('too many *.')
               end
-              # Adjust level to be previous_level + 1 to maintain proper nesting
+              # Adjust level to prevent invalid jump (same as Builder)
               level = previous_level + 1
             end
           end

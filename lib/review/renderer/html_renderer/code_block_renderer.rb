@@ -7,6 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/renderer/base'
+require 'review/textutils'
 
 module ReVIEW
   module Renderer
@@ -16,6 +17,7 @@ module ReVIEW
       # Inherits from Base to get render_children and other common functionality.
       class CodeBlockRenderer < Base
         include ReVIEW::HTMLUtils
+        include ReVIEW::TextUtils
 
         def initialize(chapter, parent:)
           super(chapter)

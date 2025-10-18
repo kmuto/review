@@ -555,7 +555,9 @@ module ReVIEW
         while current_node
           if current_node.is_a?(AST::MinicolumnNode)
             @ast_compiler.error("minicolumn cannot be nested: //#{context.name}")
-            raise ReVIEW::ApplicationError, "minicolumn cannot be nested: //#{context.name}#{context.format_location_info}"
+            # Continue processing without creating the nested minicolumn
+            # (same as Builder pattern - log error and continue)
+            return
           end
           current_node = current_node.parent
         end

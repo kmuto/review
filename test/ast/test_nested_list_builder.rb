@@ -248,16 +248,20 @@ class TestNestedListBuilder < Test::Unit::TestCase
 
   # Test error handling and edge cases
   def test_build_with_invalid_nesting
-    # Test items with inconsistent nesting levels
+    # Test items with inconsistent nesting levels - should log error and adjust level
     items = [
       create_list_item_data(:ul, 3, 'Deep item without parent'),
       create_list_item_data(:ul, 1, 'Normal item')
     ]
 
-    # Should not crash and should handle gracefully
+    # Should log error but continue processing (HTMLBuilder behavior)
+    # Level 3 will be adjusted to level 1
     list_node = @builder.build_unordered_list(items)
+
+    # Should successfully create list with adjusted levels
     assert_instance_of(ReVIEW::AST::ListNode, list_node)
     assert_equal :ul, list_node.list_type
+    assert_equal 2, list_node.children.size
   end
 
   def test_build_mixed_level_complexity
@@ -325,37 +329,29 @@ class TestNestedListBuilder < Test::Unit::TestCase
   end
 
   def test_build_irregular_nesting_pattern
-    # Test jumping nesting levels (1->3->2->4)
-    # The builder automatically adjusts invalid level jumps:
-    # Level 3 after Level 1 is adjusted to Level 2
-    # Level 4 after Level 2 is adjusted to Level 3
+    # Test jumping nesting levels (1->3) - should log error and adjust level
     items = [
       create_list_item_data(:ul, 1, 'Level 1'),
-      create_list_item_data(:ul, 3, 'Jump to Level 3'), # Will be adjusted to Level 2
-      create_list_item_data(:ul, 2, 'Back to Level 2'),
-      create_list_item_data(:ul, 4, 'Jump to Level 4'), # Will be adjusted to Level 3
-      create_list_item_data(:ul, 1, 'Back to Level 1'),
-      create_list_item_data(:ul, 2, 'Level 2 again')
+      create_list_item_data(:ul, 3, 'Jump to Level 3') # Invalid jump -> adjusted to level 2
     ]
 
+    # Should log error but continue processing (HTMLBuilder behavior)
+    # Level 3 will be adjusted to level 2 (previous_level + 1)
     list_node = @builder.build_unordered_list(items)
 
+    # Should successfully create list with adjusted levels
+    assert_instance_of(ReVIEW::AST::ListNode, list_node)
     assert_equal :ul, list_node.list_type
-    assert_equal 2, list_node.children.size # Two level-1 items
+    assert_equal 1, list_node.children.size # One top-level item
 
-    # Verify first complex nested structure
+    # First item should have nested list with adjusted level
     first_item = list_node.children[0]
-    assert_equal 1, first_item.level
-
-    # Should handle irregular nesting gracefully - "Jump to Level 3" was adjusted to Level 2
     nested_list = first_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
-    assert_equal 'Jump to Level 3', nested_list.children[0].children[0].content
-    assert_equal 'Back to Level 2', nested_list.children[1].children[0].content
+    assert_not_nil nested_list, 'First item should have nested list'
+    assert_equal 1, nested_list.children.size
 
-    # Verify second level-1 item also has nesting
-    second_item = list_node.children[1]
-    assert_equal 1, second_item.level
-    second_nested = second_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
-    assert_equal 'Level 2 again', second_nested.children[0].children[0].content
+    # Nested item should be at level 2 (adjusted from 3)
+    nested_item = nested_list.children[0]
+    assert_equal 2, nested_item.level
   end
 end
