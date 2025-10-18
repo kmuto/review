@@ -12,8 +12,11 @@ module ReVIEW
   module Renderer
     class IdgxmlRenderer
       class InlineElementRenderer
+        include ReVIEW::Loggable
+
         def initialize(parent_renderer, book:, chapter:, rendering_context:)
           @parent_renderer = parent_renderer
+          @logger = @parent_renderer.logger
           @book = book
           @chapter = chapter
           @rendering_context = rendering_context

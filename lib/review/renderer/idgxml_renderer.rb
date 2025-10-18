@@ -29,6 +29,7 @@ require 'review/htmlutils'
 require 'review/textutils'
 require 'review/sec_counter'
 require 'review/i18n'
+require 'review/loggable'
 require 'digest/sha2'
 
 module ReVIEW
@@ -36,11 +37,15 @@ module ReVIEW
     class IdgxmlRenderer < Base
       include ReVIEW::HTMLUtils
       include ReVIEW::TextUtils
+      include ReVIEW::Loggable
 
-      attr_reader :chapter, :book
+      attr_reader :chapter, :book, :logger
 
       def initialize(chapter)
         super
+
+        # Initialize logger for Loggable module
+        @logger = ReVIEW.logger
 
         # Initialize I18n if not already setup
         if @book && @book.config['language']
