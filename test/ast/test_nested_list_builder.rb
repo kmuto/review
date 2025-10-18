@@ -326,11 +326,14 @@ class TestNestedListBuilder < Test::Unit::TestCase
 
   def test_build_irregular_nesting_pattern
     # Test jumping nesting levels (1->3->2->4)
+    # The builder automatically adjusts invalid level jumps:
+    # Level 3 after Level 1 is adjusted to Level 2
+    # Level 4 after Level 2 is adjusted to Level 3
     items = [
       create_list_item_data(:ul, 1, 'Level 1'),
-      create_list_item_data(:ul, 3, 'Jump to Level 3'),
+      create_list_item_data(:ul, 3, 'Jump to Level 3'), # Will be adjusted to Level 2
       create_list_item_data(:ul, 2, 'Back to Level 2'),
-      create_list_item_data(:ul, 4, 'Jump to Level 4'),
+      create_list_item_data(:ul, 4, 'Jump to Level 4'), # Will be adjusted to Level 3
       create_list_item_data(:ul, 1, 'Back to Level 1'),
       create_list_item_data(:ul, 2, 'Level 2 again')
     ]
@@ -344,9 +347,10 @@ class TestNestedListBuilder < Test::Unit::TestCase
     first_item = list_node.children[0]
     assert_equal 1, first_item.level
 
-    # Should handle irregular nesting gracefully
+    # Should handle irregular nesting gracefully - "Jump to Level 3" was adjusted to Level 2
     nested_list = first_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
-    assert_equal 'Back to Level 2', nested_list.children[0].children[0].content
+    assert_equal 'Jump to Level 3', nested_list.children[0].children[0].content
+    assert_equal 'Back to Level 2', nested_list.children[1].children[0].content
 
     # Verify second level-1 item also has nesting
     second_item = list_node.children[1]

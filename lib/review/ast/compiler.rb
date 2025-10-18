@@ -140,7 +140,7 @@ module ReVIEW
             f.gets # consume blank line but don't create node
           when %r{\A//}
             compile_block_command_to_ast(f)
-          when /\A\s+\*\s/ # unordered list (must start with space)
+          when /\A\s+\*+\s/ # unordered list (must start with space, supports nesting with **)
             compile_ul_to_ast(f)
           when /\A\s+\d+\.\s/ # ordered list (must start with space)
             compile_ol_to_ast(f)
@@ -209,11 +209,12 @@ module ReVIEW
           @tagged_section.push(['column', level])
         elsif tag&.start_with?('/')
           # Closing tag (e.g., /column, /column_dummy)
-          open_tag = tag[1..-1]  # Remove leading '/'
+          open_tag = tag[1..-1] # Remove leading '/'
           prev_tag_info = @tagged_section.pop
           if prev_tag_info.nil? || prev_tag_info.first != open_tag
             raise ReVIEW::ApplicationError, "#{open_tag} is not opened#{format_location_info}"
           end
+
           # Column end tag - reset current node to parent (exiting column context)
           @current_ast_node = @current_ast_node.parent || @ast_root
           # Don't create any node for column end tag
@@ -476,7 +477,7 @@ module ReVIEW
           case line_content
           when /\A\s*\z/ # blank line
             line_input.gets # consume blank line but don't create node
-          when /\A\s+\*\s/ # unordered list (must start with space)
+          when /\A\s+\*+\s/ # unordered list (must start with space, supports nesting with **)
             compile_ul_to_ast(line_input)
           when /\A\s+\d+\.\s/ # ordered list (must start with space)
             compile_ol_to_ast(line_input)

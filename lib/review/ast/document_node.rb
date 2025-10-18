@@ -12,10 +12,6 @@ module ReVIEW
         @chapter = chapter
       end
 
-      def to_h
-        super
-      end
-
       private
 
       def serialize_properties(hash, options)

@@ -805,7 +805,13 @@ EOS
   end
 
   def test_ul_nest3
-    pend('List nesting validation - requires error handling in AST/Renderer')
+    src = <<-EOS
+  ** AAA
+  * AA
+EOS
+
+    assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_match(/too many \*\./, @log_io.string)
   end
 
   def test_inline_unknown
@@ -1063,15 +1069,46 @@ EOS
   end
 
   def test_minicolumn_blocks_nest_error1
-    pend('Minicolumn nesting error - not critical for basic functionality')
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+//}
+
+//}
+EOS
+      assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    end
   end
 
   def test_minicolumn_blocks_nest_error2
-    pend('Minicolumn nesting error variant - not critical for basic functionality')
+    %w[note memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+//#{type}{
+
+//#{type}{
+
+//}
+
+//}
+EOS
+      assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    end
   end
 
   def test_minicolumn_blocks_nest_error3
-    pend('Minicolumn nesting error variant - not critical for basic functionality')
+    %w[memo tip info warning important caution notice].each do |type|
+      src = <<-EOS
+//#{type}{
+
+//note{
+//}
+
+//}
+EOS
+      assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    end
   end
 
   def test_point_without_caption

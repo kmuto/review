@@ -437,11 +437,15 @@ module ReVIEW
 
         # Validate and process table rows
         # Check for empty table first (before context.content? check)
+        # Note: imgtable can be empty as it embeds an image file, not table data
         if !context.content? || context.lines.nil? || context.lines.empty?
-          raise ReVIEW::ApplicationError, 'no rows in the table'
+          unless context.name == :imgtable
+            raise ReVIEW::ApplicationError, 'no rows in the table'
+          end
+        else
+          # Process table content only if not empty
+          process_table_content(node, context.lines, context.start_location)
         end
-
-        process_table_content(node, context.lines, context.start_location)
 
         # Process nested blocks
         context.process_nested_blocks(node)
@@ -546,6 +550,16 @@ module ReVIEW
 
       # Build minicolumn (with nesting support)
       def build_minicolumn_ast(context)
+        # Check for nested minicolumn - traverse up the AST to find any minicolumn ancestor
+        current_node = @ast_compiler.current_ast_node
+        while current_node
+          if current_node.is_a?(AST::MinicolumnNode)
+            @ast_compiler.error("minicolumn cannot be nested: //#{context.name}")
+            raise ReVIEW::ApplicationError, "minicolumn cannot be nested: //#{context.name}#{context.format_location_info}"
+          end
+          current_node = current_node.parent
+        end
+
         # Handle both 1-arg and 2-arg minicolumn syntax
         # //note[caption]{ ... }         - 1 arg: caption only
         # //note[id][caption]{ ... }     - 2 args: id and caption

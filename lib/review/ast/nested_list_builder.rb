@@ -119,13 +119,44 @@ module ReVIEW
         return if items.empty?
 
         current_lists = { 1 => root_list } # Track list at each level
+        previous_level = 0 # Track previous level for validation
 
         items.each do |item_data|
           level = item_data.level || 1
 
-          # Create the list item
-          item_node = create_list_item_node(item_data)
-          add_all_content_to_item(item_node, item_data)
+          # Validate nesting level transition
+          if level > previous_level
+            level_diff = level - previous_level
+            if level_diff > 1
+              # Nesting level jumped too much (e.g., ** before * or *** after *)
+              # Log error (same as Builder) but don't raise - handle gracefully by adjusting level
+              if @location_provider.respond_to?(:error)
+                @location_provider.error('too many *.')
+              elsif @location_provider.respond_to?(:logger)
+                @location_provider.logger.error('too many *.')
+              end
+              # Adjust level to be previous_level + 1 to maintain proper nesting
+              level = previous_level + 1
+            end
+          end
+          previous_level = level
+
+          # Create the list item with adjusted level if needed
+          adjusted_item_data = if level != item_data.level
+                                 # Create new item data with adjusted level
+                                 ReVIEW::AST::ListParser::ListItemData.new(
+                                   type: item_data.type,
+                                   level: level,
+                                   content: item_data.content,
+                                   continuation_lines: item_data.continuation_lines,
+                                   metadata: item_data.metadata
+                                 )
+                               else
+                                 item_data
+                               end
+
+          item_node = create_list_item_node(adjusted_item_data)
+          add_all_content_to_item(item_node, adjusted_item_data)
 
           # Ensure we have a list at the appropriate level
           if level == 1
