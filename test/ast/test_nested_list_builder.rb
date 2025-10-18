@@ -347,7 +347,7 @@ class TestNestedListBuilder < Test::Unit::TestCase
     # First item should have nested list with adjusted level
     first_item = list_node.children[0]
     nested_list = first_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) }
-    assert_not_nil nested_list, 'First item should have nested list'
+    assert_not_nil(nested_list, 'First item should have nested list')
     assert_equal 1, nested_list.children.size
 
     # Nested item should be at level 2 (adjusted from 3)

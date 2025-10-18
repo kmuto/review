@@ -142,7 +142,9 @@ module ReVIEW
           previous_level = level
 
           # Create the list item with adjusted level if needed
-          adjusted_item_data = if level != item_data.level
+          adjusted_item_data = if level == item_data.level
+                                 item_data
+                               else
                                  # Create new item data with adjusted level
                                  ReVIEW::AST::ListParser::ListItemData.new(
                                    type: item_data.type,
@@ -151,8 +153,6 @@ module ReVIEW
                                    continuation_lines: item_data.continuation_lines,
                                    metadata: item_data.metadata
                                  )
-                               else
-                                 item_data
                                end
 
           item_node = create_list_item_node(adjusted_item_data)

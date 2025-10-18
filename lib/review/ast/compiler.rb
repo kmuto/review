@@ -311,7 +311,7 @@ module ReVIEW
       # Override error method to accumulate errors (similar to HTMLBuilder's Compiler)
       def error(msg, location: nil)
         @compile_errors = true
-        super(msg, location: location)
+        super
       end
 
       def add_child_to_current_node(node)

@@ -760,25 +760,64 @@ module ReVIEW
           raise ReVIEW::ApplicationError, 'no rows in the table'
         end
 
+        # Create row nodes first, then adjust columns
+        header_rows = []
+        body_rows = []
+
         if separator_index
           # Process header rows
           header_lines = lines[0...separator_index]
           header_lines.each do |line|
             row_node = create_table_row_from_line(line, is_header: true, block_location: block_location)
-            table_node.add_header_row(row_node)
+            header_rows << row_node
           end
 
           # Process body rows
           body_lines = lines[(separator_index + 1)..-1] || []
           body_lines.each do |line|
             row_node = create_table_row_from_line(line, first_cell_header: false, block_location: block_location)
-            table_node.add_body_row(row_node)
+            body_rows << row_node
           end
         else
           # No separator - all body rows (first cell as header)
           lines.each do |line|
             row_node = create_table_row_from_line(line, first_cell_header: true, block_location: block_location)
-            table_node.add_body_row(row_node)
+            body_rows << row_node
+          end
+        end
+
+        # Adjust column count to match Builder behavior
+        adjust_table_columns(header_rows + body_rows)
+
+        # Add rows to table node
+        header_rows.each { |row| table_node.add_header_row(row) }
+        body_rows.each { |row| table_node.add_body_row(row) }
+      end
+
+      # Adjust table row columns to ensure all rows have the same number of columns
+      # Matches the behavior of Builder#adjust_n_cols
+      def adjust_table_columns(rows)
+        return if rows.empty?
+
+        # Remove trailing empty cells from each row
+        rows.each do |row|
+          while row.children.last && row.children.last.children.empty?
+            row.children.pop
+          end
+        end
+
+        # Find maximum column count
+        max_cols = rows.map { |row| row.children.size }.max
+
+        # Add empty cells to rows that need them
+        rows.each do |row|
+          cells_needed = max_cols - row.children.size
+          cells_needed.times do
+            # Determine cell type based on whether this is a header row
+            # Check if first cell is :th to determine if this is a header row
+            cell_type = row.children.first&.cell_type == :th ? :th : :td
+            empty_cell = create_node(AST::TableCellNode, cell_type: cell_type)
+            row.add_child(empty_cell)
           end
         end
       end
@@ -891,14 +930,39 @@ module ReVIEW
         true
       end
 
+      # Get the regular expression for table row separator based on config
+      # Matches the logic in Builder#table_row_separator_regexp
+      def table_row_separator_regexp
+        # Get config from chapter's book (same as Builder pattern)
+        # Handle cases where chapter or book may not exist (e.g., in tests)
+        chapter = @ast_compiler.instance_variable_get(:@chapter)
+        config = if chapter && chapter.respond_to?(:book) && chapter.book
+                   chapter.book.config || {}
+                 else
+                   {}
+                 end
+
+        case config['table_row_separator']
+        when 'singletab'
+          /\t/
+        when 'spaces'
+          /\s+/
+        when 'verticalbar'
+          /\s*\|\s*/
+        else
+          # Default: 'tabs' or nil - consecutive tabs treated as one separator
+          /\t+/
+        end
+      end
+
       # Create a table row node from a line containing tab-separated cells
       # The is_header parameter determines if all cells should be header cells
       # The first_cell_header parameter determines if only the first cell should be a header
       def create_table_row_from_line(line, is_header: false, first_cell_header: false, block_location: nil)
         row_node = create_node(AST::TableRowNode)
 
-        # Split by tab to get cells
-        cells = line.split("\t")
+        # Split by configured separator to get cells
+        cells = line.strip.split(table_row_separator_regexp).map { |s| s.sub(/\A\./, '') }
         if cells.empty?
           error_location = block_location || @ast_compiler.location
           raise CompileError, "Invalid table row: empty line or no tab-separated cells#{format_location_info(error_location)}"
@@ -917,10 +981,8 @@ module ReVIEW
           cell_node = create_node(AST::TableCellNode, cell_type: cell_type)
 
           # Parse inline elements in cell content
-          # Convert prefix "." to empty content for separator disambiguation
-          # Preserve all other content including spaces
-          processed_content = cell_content.sub(/\A\./, '')
-          @ast_compiler.inline_processor.parse_inline_elements(processed_content, cell_node)
+          # Note: prefix "." has already been removed during split
+          @ast_compiler.inline_processor.parse_inline_elements(cell_content, cell_node)
 
           row_node.add_child(cell_node)
         end
