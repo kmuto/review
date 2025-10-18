@@ -7,6 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/ast'
+require 'review/exception'
 require 'review/loggable'
 require 'review/lineinput'
 require 'review/ast/inline_processor'
@@ -58,6 +59,9 @@ module ReVIEW
 
         # Block-scoped compilation support
         @block_context_stack = []
+
+        # Tagged section tracking (for column tags etc.)
+        @tagged_section = []
 
         @logger = ReVIEW.logger
 
@@ -201,7 +205,15 @@ module ReVIEW
           current_node.add_child(node)
           # Set column as current node so subsequent content becomes its children
           @current_ast_node = node
-        elsif tag == '/column'
+          # Track column opening for error checking
+          @tagged_section.push(['column', level])
+        elsif tag&.start_with?('/')
+          # Closing tag (e.g., /column, /column_dummy)
+          open_tag = tag[1..-1]  # Remove leading '/'
+          prev_tag_info = @tagged_section.pop
+          if prev_tag_info.nil? || prev_tag_info.first != open_tag
+            raise ReVIEW::ApplicationError, "#{open_tag} is not opened#{format_location_info}"
+          end
           # Column end tag - reset current node to parent (exiting column context)
           @current_ast_node = @current_ast_node.parent || @ast_root
           # Don't create any node for column end tag

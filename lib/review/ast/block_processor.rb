@@ -435,10 +435,13 @@ module ReVIEW
                                      table_type: context.name)
                end
 
-        # Process table rows
-        if context.content?
-          process_table_content(node, context.lines, context.start_location)
+        # Validate and process table rows
+        # Check for empty table first (before context.content? check)
+        if !context.content? || context.lines.nil? || context.lines.empty?
+          raise ReVIEW::ApplicationError, 'no rows in the table'
         end
+
+        process_table_content(node, context.lines, context.start_location)
 
         # Process nested blocks
         context.process_nested_blocks(node)
@@ -729,7 +732,17 @@ module ReVIEW
 
       # Process table content
       def process_table_content(table_node, lines, block_location = nil)
+        # Check for empty table
+        if lines.nil? || lines.empty?
+          raise ReVIEW::ApplicationError, 'no rows in the table'
+        end
+
         separator_index = lines.find_index { |line| line.match?(/\A[=-]{12}/) || line.match?(/\A[={}-]{12}/) }
+
+        # Check if table only contains separator (no actual data rows)
+        if separator_index && separator_index == 0 && lines.length == 1
+          raise ReVIEW::ApplicationError, 'no rows in the table'
+        end
 
         if separator_index
           # Process header rows

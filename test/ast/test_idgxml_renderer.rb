@@ -749,7 +749,11 @@ EOS
   end
 
   def test_empty_table
-    pend('Empty table error handling - requires error handling in AST/Renderer')
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n//}\n") }
+    assert_equal 'no rows in the table', e.message
+
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n------------\n//}\n") }
+    assert_equal 'no rows in the table', e.message
   end
 
   def test_emtable
@@ -883,7 +887,16 @@ EOS
   end
 
   def test_column3
-    pend('Column error handling - not critical for basic functionality')
+    src = <<-EOS
+===[column] test
+
+inside column
+
+===[/column_dummy]
+EOS
+    assert_raise(ReVIEW::ApplicationError) do
+      compile_block(src)
+    end
   end
 
   def test_column_ref
