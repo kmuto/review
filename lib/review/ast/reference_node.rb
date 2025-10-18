@@ -12,22 +12,29 @@ module ReVIEW
   module AST
     # ReferenceNode - 参照情報を保持するノード（InlineNodeの子ノードとして使用）
     #
-    # 従来のTextNodeの代わりに参照系InlineNodeの子ノードとして配置され、
-    # 参照解決時にcontentが更新される。
+    # 従来のTextNodeの代わりに参照系InlineNodeの子ノードとして配置される。
+    # このノードはイミュータブルであり、参照解決時には新しいインスタンスが作成される。
     class ReferenceNode < TextNode
-      attr_reader :ref_id, :context_id
-      attr_accessor :resolved, :location
+      attr_reader :ref_id, :context_id, :resolved
 
       # @param ref_id [String] 参照ID（主要な参照先）
       # @param context_id [String] コンテキストID（章ID等、オプション）
-      def initialize(ref_id, context_id = nil)
-        # 初期状態では元の参照IDを表示
-        initial_content = context_id ? "#{context_id}|#{ref_id}" : ref_id
-        super(content: initial_content)
+      # @param resolved [Boolean] 参照が解決済みかどうか
+      # @param resolved_content [String, nil] 解決された内容
+      # @param location [Location, nil] ソースコード内の位置情報
+      def initialize(ref_id, context_id = nil, resolved: false, resolved_content: nil, location: nil)
+        # 解決済みの場合はresolved_contentを、未解決の場合は元の参照IDを表示
+        content = if resolved && resolved_content
+                    resolved_content
+                  else
+                    context_id ? "#{context_id}|#{ref_id}" : ref_id
+                  end
+
+        super(content: content, location: location)
 
         @ref_id = ref_id
         @context_id = context_id
-        @resolved = false
+        @resolved = resolved
       end
 
       # 参照が解決済みかどうかを判定
@@ -36,18 +43,17 @@ module ReVIEW
         @resolved
       end
 
-      # 参照を解決し、内容を更新
+      # 解決済みの新しいReferenceNodeインスタンスを返す
       # @param resolved_content [String, nil] 解決された内容
-      def resolve!(resolved_content)
-        @content = resolved_content || @ref_id
-        @resolved = true
-      end
-
-      # 未解決状態にリセット
-      def reset!
-        initial_content = @context_id ? "#{@context_id}|#{@ref_id}" : @ref_id
-        @content = initial_content
-        @resolved = false
+      # @return [ReferenceNode] 解決済みの新しいインスタンス
+      def with_resolved_content(resolved_content)
+        self.class.new(
+          @ref_id,
+          @context_id,
+          resolved: true,
+          resolved_content: resolved_content,
+          location: @location
+        )
       end
 
       # ノードの説明文字列

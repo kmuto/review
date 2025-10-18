@@ -87,8 +87,7 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
     assert_equal 'hello world', generator.generate(text_node)
 
     # Test inline node
-    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
-    inline_node.args = ['bold text']
+    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b', args: ['bold text'])
     assert_equal '@<b>{bold text}', generator.generate(inline_node)
   end
 

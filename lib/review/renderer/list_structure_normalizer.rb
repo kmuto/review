@@ -157,8 +157,8 @@ module ReVIEW
 
           if line.lstrip.start_with?(':')
             term_text = line.sub(/\A\s*:\s*/, '').strip
-            new_item = ReVIEW::AST::ListItemNode.new(level: 1)
-            new_item.term_children = parse_inline_nodes(term_text)
+            term_children = parse_inline_nodes(term_text)
+            new_item = ReVIEW::AST::ListItemNode.new(level: 1, term_children: term_children)
             list_node.add_child(new_item)
             current_item = new_item
           else

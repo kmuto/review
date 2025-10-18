@@ -276,8 +276,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
     para = ReVIEW::AST::ParagraphNode.new
 
     # href with URL
-    href = ReVIEW::AST::InlineNode.new(inline_type: 'href')
-    href.args = ['https://example.com']
+    href = ReVIEW::AST::InlineNode.new(inline_type: 'href', args: ['https://example.com'])
     para.add_child(href)
 
     doc.add_child(para)

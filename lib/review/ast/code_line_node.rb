@@ -22,8 +22,7 @@ module ReVIEW
         @children = []
       end
 
-      attr_accessor :line_number, :original_text
-      attr_reader :children
+      attr_reader :line_number, :original_text, :children
 
       def add_child(node)
         @children << node

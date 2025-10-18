@@ -250,8 +250,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
 
   def test_document_node_serialization
     doc = AST::DocumentNode.new(
-      location: @location,
-      title: 'Test Document'
+      location: @location
     )
 
     headline = AST::HeadlineNode.new(
@@ -272,7 +271,6 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     parsed = JSON.parse(json)
 
     assert_equal 'DocumentNode', parsed['type']
-    assert_equal 'Test Document', parsed['title']
     assert_equal 2, parsed['children'].size
     assert_equal 'HeadlineNode', parsed['children'][0]['type']
     assert_equal 'ParagraphNode', parsed['children'][1]['type']
@@ -358,8 +356,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   def test_complex_nested_structure
     # Create a complex document structure
     doc = AST::DocumentNode.new(
-      location: @location,
-      title: 'Complex Document'
+      location: @location
     )
 
     # Add headline
@@ -422,7 +419,6 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     parsed = JSON.parse(json)
 
     assert_equal 'DocumentNode', parsed['type']
-    assert_equal 'Complex Document', parsed['title']
     assert_equal 3, parsed['children'].size
 
     # Check headline

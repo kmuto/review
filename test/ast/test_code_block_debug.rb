@@ -188,8 +188,7 @@ class TestCodeBlockDebug < Test::Unit::TestCase
               }
             ]
           }
-        ],
-        "title": "Chapter Title"
+        ]
       }
     EXPECTED
     assert_equal expected0, result

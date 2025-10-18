@@ -28,9 +28,10 @@ class TestASTInline < Test::Unit::TestCase
   end
 
   def test_inline_node_creation
-    node = ReVIEW::AST::InlineNode.new
-    node.inline_type = 'b'
-    node.args = ['bold text']
+    node = ReVIEW::AST::InlineNode.new(
+      inline_type: 'b',
+      args: ['bold text']
+    )
 
     hash = node.to_h
     assert_equal 'InlineNode', hash[:type]

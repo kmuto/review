@@ -7,7 +7,7 @@ module ReVIEW
   module AST
     # MinicolumnNode - Represents minicolumn blocks (note, memo, tip, etc.)
     class MinicolumnNode < Node
-      attr_accessor :minicolumn_type, :caption
+      attr_reader :minicolumn_type, :caption
 
       def initialize(location: nil, minicolumn_type: nil, caption: nil, **kwargs)
         super(location: location, **kwargs)

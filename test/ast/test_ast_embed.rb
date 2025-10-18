@@ -20,10 +20,11 @@ class TestASTEmbed < Test::Unit::TestCase
   end
 
   def test_embed_node_creation
-    node = ReVIEW::AST::EmbedNode.new
-    node.embed_type = :block
-    node.lines = ['content line 1', 'content line 2']
-    node.arg = 'html'
+    node = ReVIEW::AST::EmbedNode.new(
+      embed_type: :block,
+      lines: ['content line 1', 'content line 2'],
+      arg: 'html'
+    )
 
     hash = node.to_h
     assert_equal 'EmbedNode', hash[:type]

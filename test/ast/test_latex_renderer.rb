@@ -872,18 +872,16 @@ class TestLatexRenderer < Test::Unit::TestCase
     list = AST::ListNode.new(list_type: :dl)
 
     # First definition item: : Alpha \n    RISC CPU made by DEC.
-    item1 = AST::ListItemNode.new(content: 'Alpha', level: 1)
     # Set term as term_children (not regular children)
     term1 = AST::TextNode.new(content: 'Alpha')
-    item1.term_children = [term1]
+    item1 = AST::ListItemNode.new(content: 'Alpha', level: 1, term_children: [term1])
     # Add definition as regular child
     def1 = AST::TextNode.new(content: 'RISC CPU made by DEC.')
     item1.add_child(def1)
 
     # Second definition item with brackets in term
-    item2 = AST::ListItemNode.new(content: 'POWER [IBM]', level: 1)
     term2 = AST::TextNode.new(content: 'POWER [IBM]')
-    item2.term_children = [term2]
+    item2 = AST::ListItemNode.new(content: 'POWER [IBM]', level: 1, term_children: [term2])
     def2 = AST::TextNode.new(content: 'RISC CPU made by IBM and Motorola.')
     item2.add_child(def2)
 
@@ -906,10 +904,9 @@ class TestLatexRenderer < Test::Unit::TestCase
     # Test definition list with term only (no definition)
     list = AST::ListNode.new(list_type: :dl)
 
-    item = AST::ListItemNode.new(content: 'Term Only', level: 1)
     # Set term as term_children, no regular children (no definition)
     term = AST::TextNode.new(content: 'Term Only')
-    item.term_children = [term]
+    item = AST::ListItemNode.new(content: 'Term Only', level: 1, term_children: [term])
 
     list.add_child(item)
 

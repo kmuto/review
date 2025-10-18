@@ -5,7 +5,7 @@ require 'review/ast/node'
 module ReVIEW
   module AST
     class InlineNode < Node
-      attr_accessor :inline_type, :args
+      attr_reader :inline_type, :args
 
       def initialize(location: nil, inline_type: nil, args: nil, **kwargs)
         super(location: location, **kwargs)

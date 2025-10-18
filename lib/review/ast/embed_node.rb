@@ -22,7 +22,7 @@ module ReVIEW
     # Note: There is some redundancy between lines/arg/content, especially for inline commands.
     # Current implementation maintains backward compatibility but could be simplified in the future.
     class EmbedNode < LeafNode
-      attr_accessor :lines, :arg, :embed_type, :target_builders
+      attr_reader :lines, :arg, :embed_type, :target_builders
 
       def initialize(location: nil, lines: [], arg: nil, embed_type: :block, target_builders: nil, content: nil, **kwargs)
         super(location: location, content: content, **kwargs)

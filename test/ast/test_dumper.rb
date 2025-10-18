@@ -38,7 +38,6 @@ class TestDumper < Test::Unit::TestCase
 
     json = JSON.parse(result)
     assert_equal 'DocumentNode', json['type']
-    assert_equal 'Test Chapter', json['title']
     assert_equal 3, json['children'].size
 
     # Check headline
@@ -113,8 +112,9 @@ class TestDumper < Test::Unit::TestCase
     json1 = JSON.parse(results[path1])
     json2 = JSON.parse(results[path2])
 
-    assert_equal 'Chapter 1', json1['title']
-    assert_equal 'Chapter 2', json2['title']
+    # Check that both documents have headline children
+    assert_equal 'HeadlineNode', json1['children'][0]['type']
+    assert_equal 'HeadlineNode', json2['children'][0]['type']
   end
 
   def test_dump_nonexistent_file

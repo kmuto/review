@@ -26,10 +26,11 @@ class TestASTBasic < Test::Unit::TestCase
   end
 
   def test_headline_node
-    node = ReVIEW::AST::HeadlineNode.new
-    node.level = 1
-    node.label = 'test-label'
-    node.caption = ReVIEW::AST::CaptionNode.parse('Test Headline')
+    node = ReVIEW::AST::HeadlineNode.new(
+      level: 1,
+      label: 'test-label',
+      caption: ReVIEW::AST::CaptionNode.parse('Test Headline')
+    )
 
     hash = node.to_h
     assert_equal 'HeadlineNode', hash[:type]
@@ -85,9 +86,10 @@ class TestASTBasic < Test::Unit::TestCase
 
   def test_json_output_format
     node = ReVIEW::AST::DocumentNode.new
-    child_node = ReVIEW::AST::HeadlineNode.new
-    child_node.level = 1
-    child_node.caption = ReVIEW::AST::CaptionNode.parse('Test')
+    child_node = ReVIEW::AST::HeadlineNode.new(
+      level: 1,
+      caption: ReVIEW::AST::CaptionNode.parse('Test')
+    )
 
     node.add_child(child_node)
 

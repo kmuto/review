@@ -76,12 +76,11 @@ module ReVIEW
         root_list = create_list_node(:dl)
 
         items.each do |item_data|
-          # Create list item for term/definition pair
-          item_node = create_list_item_node(item_data)
+          # For definition lists, process the term inline elements first
+          term_children = process_definition_term_content(item_data.content)
 
-          # For definition lists, process the term inline elements and store separately
-          # from definition content to avoid mixing term and definition children
-          process_definition_term_content(item_node, item_data.content)
+          # Create list item for term/definition pair with term_children
+          item_node = create_list_item_node(item_data, term_children: term_children)
 
           # Add definition content (additional children) - only definition, not term
           item_data.continuation_lines.each do |definition_line|
@@ -239,17 +238,11 @@ module ReVIEW
         end
       end
 
-      # Add content to list item using inline processor if available
+      # Add content to list item using inline processor
       # @param item_node [ListItemNode] Target item node
       # @param content [String] Content to add
       def add_content_to_item(item_node, content)
-        if @inline_processor
-          @inline_processor.parse_inline_elements(content, item_node)
-        else
-          # Fallback: create simple text node
-          text_node = AST::TextNode.new(location: current_location, content: content)
-          item_node.add_child(text_node)
-        end
+        @inline_processor.parse_inline_elements(content, item_node)
       end
 
       # Add definition content with special handling for definition lists
@@ -259,12 +252,7 @@ module ReVIEW
         if definition_content.include?('@<')
           # Create a paragraph node to hold the definition with inline elements
           definition_paragraph = AST::ParagraphNode.new(location: current_location)
-          if @inline_processor
-            @inline_processor.parse_inline_elements(definition_content, definition_paragraph)
-          else
-            text_node = AST::TextNode.new(location: current_location, content: definition_content)
-            definition_paragraph.add_child(text_node)
-          end
+          @inline_processor.parse_inline_elements(definition_content, definition_paragraph)
           item_node.add_child(definition_paragraph)
         else
           # Create a simple text node for the definition
@@ -274,21 +262,15 @@ module ReVIEW
       end
 
       # Process definition list term content with inline elements
-      # @param item_node [ListItemNode] Target item node
       # @param term_content [String] Term content to process
-      def process_definition_term_content(item_node, term_content)
-        if term_content.include?('@<') && @inline_processor
-          # Create a temporary container to collect processed term elements
-          temp_container = AST::ParagraphNode.new(location: current_location)
-          @inline_processor.parse_inline_elements(term_content, temp_container)
+      # @return [Array<Node>] Processed term children nodes
+      def process_definition_term_content(term_content)
+        # Create a temporary container to collect processed term elements
+        temp_container = AST::ParagraphNode.new(location: current_location)
+        @inline_processor.parse_inline_elements(term_content, temp_container)
 
-          # Set the processed elements as term_children
-          item_node.term_children = temp_container.children
-        else
-          # For plain text terms, create a simple text node
-          text_node = AST::TextNode.new(location: current_location, content: term_content)
-          item_node.term_children = [text_node]
-        end
+        # Return the processed elements
+        temp_container.children
       end
 
       # Create a new ListNode
@@ -300,11 +282,13 @@ module ReVIEW
 
       # Create a new ListItemNode from parsed data
       # @param item_data [ListParser::ListItemData] Parsed item data
+      # @param term_children [Array<Node>] Optional term children for definition lists
       # @return [ListItemNode] New list item node
-      def create_list_item_node(item_data)
+      def create_list_item_node(item_data, term_children: [])
         node_attributes = {
           location: current_location,
-          level: item_data.level
+          level: item_data.level,
+          term_children: term_children
         }
 
         # Add type-specific attributes

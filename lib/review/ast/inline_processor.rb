@@ -116,15 +116,16 @@ module ReVIEW
 
       # Create inline ruby AST node
       def create_inline_ruby_ast_node(arg, parent_node)
-        inline_node = AST::InlineNode.new(
-          location: @ast_compiler.location,
-          inline_type: 'ruby'
-        )
-
         # Parse ruby format: "base_text,ruby_text"
         if arg.include?(',')
           base_text, ruby_text = arg.split(',', 2)
-          inline_node.args = [base_text.strip, ruby_text.strip]
+          args = [base_text.strip, ruby_text.strip]
+
+          inline_node = AST::InlineNode.new(
+            location: @ast_compiler.location,
+            inline_type: 'ruby',
+            args: args
+          )
 
           # Add text nodes for both parts
           parent_text = AST::TextNode.new(
@@ -139,7 +140,12 @@ module ReVIEW
           )
           inline_node.add_child(ruby_text)
         else
-          inline_node.args = [arg]
+          inline_node = AST::InlineNode.new(
+            location: @ast_compiler.location,
+            inline_type: 'ruby',
+            args: [arg]
+          )
+
           text_node = AST::TextNode.new(
             location: @ast_compiler.location,
             content: arg
@@ -152,20 +158,19 @@ module ReVIEW
 
       # Create inline href AST node
       def create_inline_href_ast_node(arg, parent_node)
+        # Parse href format: "URL" or "URL, display_text"
+        args, text_content = if arg.include?(',')
+                               parts = arg.split(',', 2)
+                               [[parts[0].strip, parts[1].strip], parts[1].strip] # Display text
+                             else
+                               [[arg], arg] # URL as display text
+                             end
+
         inline_node = AST::InlineNode.new(
           location: @ast_compiler.location,
-          inline_type: 'href'
+          inline_type: 'href',
+          args: args
         )
-
-        # Parse href format: "URL" or "URL, display_text"
-        text_content = if arg.include?(',')
-                         parts = arg.split(',', 2)
-                         inline_node.args = [parts[0].strip, parts[1].strip]
-                         parts[1].strip # Display text
-                       else
-                         inline_node.args = [arg]
-                         arg # URL as display text
-                       end
 
         text_node = AST::TextNode.new(
           location: @ast_compiler.location,
@@ -178,15 +183,16 @@ module ReVIEW
 
       # Create inline kw AST node
       def create_inline_kw_ast_node(arg, parent_node)
-        inline_node = AST::InlineNode.new(
-          location: @ast_compiler.location,
-          inline_type: 'kw'
-        )
-
         # Parse kw format: "keyword" or "keyword, supplement"
         if arg.include?(',')
           parts = arg.split(',', 2)
-          inline_node.args = [parts[0].strip, parts[1].strip]
+          args = [parts[0].strip, parts[1].strip]
+
+          inline_node = AST::InlineNode.new(
+            location: @ast_compiler.location,
+            inline_type: 'kw',
+            args: args
+          )
 
           # Add text nodes for both parts
           main_text = AST::TextNode.new(
@@ -201,7 +207,12 @@ module ReVIEW
           )
           inline_node.add_child(supplement_text)
         else
-          inline_node.args = [arg]
+          inline_node = AST::InlineNode.new(
+            location: @ast_compiler.location,
+            inline_type: 'kw',
+            args: [arg]
+          )
+
           text_node = AST::TextNode.new(
             location: @ast_compiler.location,
             content: arg
@@ -214,15 +225,16 @@ module ReVIEW
 
       # Create inline hd AST node
       def create_inline_hd_ast_node(arg, parent_node)
-        inline_node = AST::InlineNode.new(
-          location: @ast_compiler.location,
-          inline_type: 'hd'
-        )
-
         # Parse hd format: "chapter_id|heading" or just "heading"
         if arg.include?('|')
           parts = arg.split('|', 2)
-          inline_node.args = [parts[0].strip, parts[1].strip]
+          args = [parts[0].strip, parts[1].strip]
+
+          inline_node = AST::InlineNode.new(
+            location: @ast_compiler.location,
+            inline_type: 'hd',
+            args: args
+          )
 
           # Add text nodes for both parts
           chapter_text = AST::TextNode.new(
@@ -237,7 +249,12 @@ module ReVIEW
           )
           inline_node.add_child(heading_text)
         else
-          inline_node.args = [arg]
+          inline_node = AST::InlineNode.new(
+            location: @ast_compiler.location,
+            inline_type: 'hd',
+            args: [arg]
+          )
+
           text_node = AST::TextNode.new(
             location: @ast_compiler.location,
             content: arg
@@ -250,28 +267,23 @@ module ReVIEW
 
       # Create inline reference AST node (for img, list, table, eq, fn, endnote)
       def create_inline_ref_ast_node(ref_type, arg, parent_node)
+        # Parse reference format: "ID" or "chapter_id|ID"
+        args, reference_node = if arg.include?('|')
+                                 parts = arg.split('|', 2)
+                                 context_id = parts[0].strip
+                                 ref_id = parts[1].strip
+                                 [[context_id, ref_id], AST::ReferenceNode.new(ref_id, context_id, location: @ast_compiler.location)]
+                               else
+                                 ref_id = arg
+                                 [[ref_id], AST::ReferenceNode.new(ref_id, nil, location: @ast_compiler.location)]
+                               end
+
         inline_node = AST::InlineNode.new(
           location: @ast_compiler.location,
-          inline_type: ref_type
+          inline_type: ref_type,
+          args: args
         )
 
-        # Parse reference format: "ID" or "chapter_id|ID"
-        if arg.include?('|')
-          parts = arg.split('|', 2)
-          context_id = parts[0].strip
-          ref_id = parts[1].strip
-          inline_node.args = [context_id, ref_id]
-
-          # Add ReferenceNode instead of TextNodes
-          reference_node = AST::ReferenceNode.new(ref_id, context_id)
-        else
-          ref_id = arg
-          inline_node.args = [ref_id]
-
-          # Add ReferenceNode for single ID
-          reference_node = AST::ReferenceNode.new(ref_id)
-        end
-        reference_node.location = @ast_compiler.location
         inline_node.add_child(reference_node)
 
         parent_node.add_child(inline_node)
@@ -279,28 +291,23 @@ module ReVIEW
 
       # Create inline cross-reference AST node (for chap, chapref, sec, secref, labelref, ref)
       def create_inline_cross_ref_ast_node(ref_type, arg, parent_node)
+        # Handle special case for hd which supports pipe-separated format
+        args, reference_node = if ref_type == 'hd' && arg.include?('|')
+                                 parts = arg.split('|', 2)
+                                 context_id = parts[0].strip
+                                 ref_id = parts[1].strip
+                                 [[context_id, ref_id], AST::ReferenceNode.new(ref_id, context_id, location: @ast_compiler.location)]
+                               else
+                                 # Standard cross-references with single ID argument
+                                 [[arg], AST::ReferenceNode.new(arg, nil, location: @ast_compiler.location)]
+                               end
+
         inline_node = AST::InlineNode.new(
           location: @ast_compiler.location,
-          inline_type: ref_type
+          inline_type: ref_type,
+          args: args
         )
 
-        # Handle special case for hd which supports pipe-separated format
-        if ref_type == 'hd' && arg.include?('|')
-          parts = arg.split('|', 2)
-          context_id = parts[0].strip
-          ref_id = parts[1].strip
-          inline_node.args = [context_id, ref_id]
-
-          # Add ReferenceNode with context
-          reference_node = AST::ReferenceNode.new(ref_id, context_id)
-        else
-          # Standard cross-references with single ID argument
-          inline_node.args = [arg]
-
-          # Add ReferenceNode for cross-references
-          reference_node = AST::ReferenceNode.new(arg)
-        end
-        reference_node.location = @ast_compiler.location
         inline_node.add_child(reference_node)
 
         parent_node.add_child(inline_node)

@@ -55,6 +55,17 @@ module ReVIEW
         @children.delete(child)
       end
 
+      # Replace a child node with a new node
+      def replace_child(old_child, new_child)
+        index = @children.index(old_child)
+        return false unless index
+
+        old_child.parent = nil
+        @children[index] = new_child
+        new_child.parent = self
+        true
+      end
+
       # Check if node has a non-empty id
       def id?
         @id && !@id.empty?

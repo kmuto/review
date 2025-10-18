@@ -6,7 +6,7 @@ require 'review/ast/caption_node'
 module ReVIEW
   module AST
     class HeadlineNode < Node
-      attr_accessor :level, :label, :caption, :tag
+      attr_reader :level, :label, :caption, :tag
 
       def initialize(location: nil, level: nil, label: nil, caption: nil, tag: nil, **kwargs)
         super(location: location, **kwargs)

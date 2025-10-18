@@ -104,7 +104,10 @@ module ReVIEW
                     raise CompileError, "Unknown reference type: #{ref_type}"
                   end
 
-        node.resolve!(content)
+        # Create resolved node and replace in parent
+        resolved_node = node.with_resolved_content(content)
+        node.parent&.replace_child(node, resolved_node)
+
         !content.nil?
       end
 

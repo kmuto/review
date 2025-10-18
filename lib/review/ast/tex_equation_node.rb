@@ -21,7 +21,7 @@ module ReVIEW
     # E = mc^2
     # //}
     class TexEquationNode < Node
-      attr_accessor :id, :caption, :latex_content
+      attr_reader :id, :caption, :latex_content
 
       def initialize(location:, id: nil, caption: nil, latex_content: nil)
         super(location: location)
@@ -38,11 +38,6 @@ module ReVIEW
       # Check if this equation has a caption
       def caption?
         !@caption.nil?
-      end
-
-      # Add a line of LaTeX content
-      def add_content_line(line)
-        @latex_content += line + "\n"
       end
 
       # Get the LaTeX content without trailing newline

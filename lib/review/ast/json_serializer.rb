@@ -259,7 +259,10 @@ module ReVIEW
             end
             node
           when 'InlineNode'
-            node = ReVIEW::AST::InlineNode.new(inline_type: hash['element'] || hash['inline_type'])
+            node = ReVIEW::AST::InlineNode.new(
+              inline_type: hash['element'] || hash['inline_type'],
+              args: hash['args'] || []
+            )
             if hash['children']
               hash['children'].each do |child_hash|
                 child = deserialize_from_hash(child_hash)
@@ -275,9 +278,6 @@ module ReVIEW
                   node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
                 end
               end
-            end
-            if hash['args']
-              node.args = hash['args']
             end
             node
           when 'CodeBlockNode'

@@ -7,7 +7,7 @@ require 'review/ast/json_serializer'
 module ReVIEW
   module AST
     class TableNode < Node
-      attr_accessor :caption, :table_type, :metric
+      attr_reader :caption, :table_type, :metric
 
       def initialize(location: nil, id: nil, caption: nil, table_type: :table, metric: nil, **kwargs)
         super(location: location, id: id, **kwargs)

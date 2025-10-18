@@ -647,13 +647,18 @@ module ReVIEW
 
       def build_tex_equation_ast(context)
         require 'review/ast/tex_equation_node'
+
+        # Collect all LaTeX content lines
+        latex_content = if context.content?
+                          context.lines.join("\n") + "\n"
+                        else
+                          ''
+                        end
+
         node = context.create_node(AST::TexEquationNode,
                                    id: context.arg(0),
-                                   caption: context.process_caption(context.args, 1))
-
-        if context.content?
-          context.lines.each { |line| node.add_content_line(line) }
-        end
+                                   caption: context.process_caption(context.args, 1),
+                                   latex_content: latex_content)
 
         @ast_compiler.add_child_to_current_node(node)
         node

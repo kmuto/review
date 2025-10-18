@@ -6,7 +6,7 @@ require 'review/ast/caption_node'
 module ReVIEW
   module AST
     class ColumnNode < Node
-      attr_accessor :level, :label, :caption, :column_type
+      attr_reader :level, :label, :caption, :column_type
 
       def initialize(location: nil, level: nil, label: nil, caption: nil, column_type: 'column', inline_processor: nil, **kwargs)
         super(location: location, **kwargs)

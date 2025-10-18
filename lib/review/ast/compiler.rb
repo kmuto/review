@@ -93,12 +93,8 @@ module ReVIEW
         # For test compatibility, use a special calculation for line numbers
         f = LineInput.from_string(@chapter.content)
 
-        # Initialize title from chapter
-        # Chapter objects always have title method (from BookUnit)
-        title = @chapter.title || ''
         @ast_root = AST::DocumentNode.new(
           location: SnapshotLocation.new(@chapter.basename, f.lineno + 1),
-          title: title,
           chapter: @chapter
         )
         @current_ast_node = @ast_root
@@ -218,9 +214,6 @@ module ReVIEW
             caption: processed_caption,
             tag: tag
           )
-          if level == 1 && @ast_root && @ast_root.title.nil?
-            @ast_root.title = caption
-          end
           current_node.add_child(node)
           # For regular headlines, reset current node to document level
           @current_ast_node = @ast_root

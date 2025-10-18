@@ -6,7 +6,7 @@ require 'review/ast/caption_node'
 module ReVIEW
   module AST
     class ImageNode < Node
-      attr_accessor :caption, :metric, :image_type
+      attr_reader :caption, :metric, :image_type
 
       def initialize(location: nil, id: nil, caption: nil, metric: nil, image_type: :image, **kwargs)
         super(location: location, id: id, **kwargs)

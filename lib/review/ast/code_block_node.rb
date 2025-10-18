@@ -6,7 +6,7 @@ require 'review/ast/caption_node'
 module ReVIEW
   module AST
     class CodeBlockNode < Node
-      attr_accessor :lang, :caption, :line_numbers, :code_type
+      attr_reader :lang, :caption, :line_numbers, :code_type
 
       def initialize(location: nil, lang: nil, id: nil, caption: nil, line_numbers: false, code_type: nil, **kwargs)
         super(location: location, id: id, **kwargs)
