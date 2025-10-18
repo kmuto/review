@@ -32,11 +32,11 @@ module ReVIEW
           child = children[idx]
 
           if beginchild_block?(child)
-            nested_nodes, idx = extract_nested_child_sequence(children, idx)
             unless last_list_context
               raise ReVIEW::ApplicationError, "//beginchild is shown, but previous element isn't ul, ol, or dl"
             end
 
+            nested_nodes, idx = extract_nested_child_sequence(children, idx, last_list_context)
             nested_nodes.each { |nested| normalize_node(nested) }
             nested_nodes.each { |nested| last_list_context[:item].add_child(nested) }
             normalize_node(last_list_context[:item])
@@ -78,10 +78,12 @@ module ReVIEW
         end
       end
 
-      def extract_nested_child_sequence(children, begin_index)
+      def extract_nested_child_sequence(children, begin_index, initial_list_context = nil)
         collected = []
         depth = 1
         idx = begin_index + 1
+        # Track list types for better error messages
+        list_type_stack = initial_list_context ? [initial_list_context[:list_type]] : []
 
         while idx < children.size
           current = children[idx]
@@ -94,13 +96,27 @@ module ReVIEW
               idx += 1
               return [collected, idx]
             end
+            # Pop from stack when we close a nested beginchild
+            list_type_stack.pop unless list_type_stack.empty?
           end
-          collected << current
 
+          # Track list types as we encounter them
+          if current.is_a?(ReVIEW::AST::ListNode) && current.children.any?
+            list_type_stack.push(current.list_type)
+          end
+
+          collected << current
           idx += 1
         end
 
-        raise ReVIEW::ApplicationError, '//beginchild of dl,ol,ul misses //endchild'
+        # Generate error message with tracked list types
+        if list_type_stack.empty?
+          raise ReVIEW::ApplicationError, '//beginchild of dl,ol,ul misses //endchild'
+        else
+          # Reverse to show the order like Builder does (most recent first)
+          types = list_type_stack.reverse.join(',')
+          raise ReVIEW::ApplicationError, "//beginchild of #{types} misses //endchild"
+        end
       end
 
       def beginchild_block?(node)

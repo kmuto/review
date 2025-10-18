@@ -1192,15 +1192,49 @@ EOS
   end
 
   def test_nest_error_close1
-    pend('Nesting error handling - not critical for basic functionality')
+    src = <<-EOS
+//beginchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal "//beginchild is shown, but previous element isn't ul, ol, or dl", e.message
   end
 
   def test_nest_error_close2
-    pend('Nesting error handling variant - not critical for basic functionality')
+    src = <<-EOS
+ * foo
+
+//beginchild
+
+ 1. foo
+
+//beginchild
+
+ : foo
+
+//beginchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal '//beginchild of dl,ol,ul misses //endchild', e.message
   end
 
   def test_nest_error_close3
-    pend('Nesting error handling variant - not critical for basic functionality')
+    src = <<-EOS
+ * foo
+
+//beginchild
+
+ 1. foo
+
+//beginchild
+
+ : foo
+
+//beginchild
+
+//endchild
+EOS
+    e = assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_equal '//beginchild of ol,ul misses //endchild', e.message
   end
 
   def test_nest_ul

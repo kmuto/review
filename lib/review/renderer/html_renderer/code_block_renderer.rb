@@ -286,6 +286,11 @@ module ReVIEW
         def line_num
           @parent.line_num
         end
+
+        # Visit method for CodeLineNode - delegate to parent
+        def visit_code_line(node)
+          @parent.visit_code_line(node)
+        end
       end
     end
   end
