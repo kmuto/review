@@ -319,12 +319,11 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
   end
 
   def test_syntax_book_bib
-    pend('bib.re requires book context for bibpaper references')
-    file_path = File.join(__dir__, '../../samples/syntax-book/bib.re')
-    source = File.read(file_path)
+    book_dir = File.join(__dir__, '../../samples/syntax-book')
+    result = @converter.convert_chapter_with_book_context(book_dir, 'bib')
 
-    builder_html = @converter.convert_with_builder(source)
-    renderer_html = @converter.convert_with_renderer(source)
+    builder_html = result[:builder]
+    renderer_html = result[:renderer]
 
     diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
 

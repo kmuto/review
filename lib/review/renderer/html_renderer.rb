@@ -371,6 +371,9 @@ module ReVIEW
         when 'centering'
           # Center-align text like HTMLBuilder
           render_centering_block(node)
+        when 'bibpaper'
+          # Bibliography paper reference
+          render_bibpaper_block(node)
         else
           render_generic_block(node)
         end
@@ -872,6 +875,47 @@ module ReVIEW
         content = render_children(node)
         # Replace <p> with <p class="center"> like HTMLBuilder
         content.gsub('<p>', %Q(<p class="center">))
+      end
+
+      # Render bibpaper block like HTMLBuilder's bibpaper method
+      def render_bibpaper_block(node)
+        # For BlockNode, id and caption are in args array like HTMLBuilder's bibpaper(lines, id, caption)
+        id = node.args[0]
+        caption_text = node.args[1]
+
+        # Start div (puts in HTMLBuilder, so newline after)
+        result = %Q(<div class="bibpaper">\n)
+
+        # Add anchor and number like HTMLBuilder's bibpaper_header
+        # bibpaper_header uses print for anchor, then puts for caption (with newline)
+        if id && @chapter
+          begin
+            bibpaper_number = @chapter.bibpaper(id).number
+            result += %Q(<a id="bib-#{normalize_id(id)}">[#{bibpaper_number}]</a> )
+          rescue StandardError
+            # If bibpaper not found, use ?? like other references
+            result += %Q(<a id="bib-#{normalize_id(id)}">[??]</a> )
+          end
+        end
+
+        # Add caption (inline elements need to be processed with compile_inline)
+        # HTMLBuilder uses puts " #{compile_inline(caption)}", so space before caption and newline after
+        if caption_text && !caption_text.empty?
+          caption_content = compile_inline(caption_text)
+          result += caption_content + "\n"
+        end
+
+        # Add content wrapped in <p> if present (like split_paragraph does)
+        # HTMLBuilder uses print for bibpaper_bibpaper, so no newline after
+        # Then puts '</div>' adds the closing tag with newline
+        content = render_children(node)
+        unless content.strip.empty?
+          # strip to remove paragraph newlines, match Builder's behavior
+          result += %Q(<p>#{content.strip}</p>)
+        end
+
+        # Close div (puts in HTMLBuilder, so it's on the same line as </p>)
+        result + "</div>\n"
       end
 
       def escape(str)
