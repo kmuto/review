@@ -65,8 +65,6 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
       content = File.read(file_path)
       test_file_ast_compatibility(basename, content)
     end
-
-    generate_verification_report
   end
 
   def test_structure_consistency
@@ -238,37 +236,5 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
       data.each { |item| count = count_element_type(item, target_type, count) }
     end
     count
-  end
-
-  def generate_verification_report
-    report_file = File.join(@output_dir, 'verification_report.txt')
-
-    File.open(report_file, 'w') do |f|
-      f.puts 'AST JSON Verification Report'
-      f.puts "Generated: #{Time.now}"
-      f.puts '=' * 60
-      f.puts
-
-      @test_results.each do |basename, results|
-        f.puts "File: #{basename}"
-        f.puts '-' * 40
-
-        results.each do |mode, result|
-          if result[:success]
-            f.puts "  #{mode.ljust(15)}: ✅ #{result[:size]} chars, #{result[:children_count]} children"
-          else
-            f.puts "  #{mode.ljust(15)}: ❌ #{result[:error]}"
-          end
-        end
-
-        f.puts
-      end
-
-      f.puts 'Summary:'
-      f.puts "  Total files tested: #{@test_results.size}"
-      f.puts "  All files passed: #{@test_results.values.all? { |r| r.values.all? { |mode_result| mode_result[:success] } }}"
-    end
-
-    puts "\nVerification report generated: #{report_file}"
   end
 end

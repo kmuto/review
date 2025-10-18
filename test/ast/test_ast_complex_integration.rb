@@ -233,20 +233,8 @@ class TestASTComplexIntegration < Test::Unit::TestCase
     # AST compilation should handle errors gracefully
     ast_compiler = ReVIEW::AST::Compiler.new
 
-    # This might raise an error, but we want to test error handling
-    begin
-      ast_root = ast_compiler.compile_to_ast(chapter)
-
-      # If compilation succeeds, verify we can still render
-      if ast_root
-        html_renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
-        html_result = html_renderer.render(ast_root)
-        assert_not_nil(html_result, 'Should produce some HTML output even with malformed input')
-      end
-    rescue StandardError => e
-      # Error handling is acceptable for malformed input
-      assert(e.message.length > 0, 'Error message should be informative')
-      puts "Expected error for malformed content: #{e.message}"
+    assert_raises(ReVIEW::AST::InlineTokenizeError) do
+      ast_compiler.compile_to_ast(chapter)
     end
   end
 

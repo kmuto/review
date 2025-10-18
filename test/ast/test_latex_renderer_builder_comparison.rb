@@ -66,7 +66,7 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
       puts "Differences: #{result.differences.inspect}"
     end
 
-    assert result.equal?, 'Inline formatting should produce equivalent LaTeX'
+    assert result.equal?
   end
 
   def test_code_block_comparison
@@ -89,9 +89,7 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
       puts "Differences: #{result.differences.inspect}"
     end
 
-    # NOTE: This might fail initially as the formats may differ
-    # The test is here to help identify differences
-    puts "Code block comparison result: #{result.summary}"
+    assert result.equal?
   end
 
   def test_table_comparison
@@ -115,8 +113,7 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
       puts "Differences: #{result.differences.inspect}"
     end
 
-    # NOTE: This might fail initially as the formats may differ
-    puts "Table comparison result: #{result.summary}"
+    assert result.equal?
   end
 
   def test_list_comparison
@@ -137,7 +134,7 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
       puts "Differences: #{result.differences.inspect}"
     end
 
-    puts "List comparison result: #{result.summary}"
+    assert result.equal?
   end
 
   def test_note_block_comparison
@@ -158,7 +155,7 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
       puts "Differences: #{result.differences.inspect}"
     end
 
-    puts "Note block comparison result: #{result.summary}"
+    assert result.equal?
   end
 
   def test_complex_document_comparison
@@ -205,7 +202,7 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
       end
     end
 
-    puts "Complex document comparison result: #{result.summary}"
+    assert result.equal?
   end
 
   def test_comparator_options
@@ -238,6 +235,6 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
       puts "Differences: #{result.differences.inspect}"
     end
 
-    puts "Mathematical expressions comparison result: #{result.summary}"
+    assert result.equal?
   end
 end
