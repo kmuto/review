@@ -1287,26 +1287,26 @@ module ReVIEW
 
       # Format resolved reference based on ResolvedData
       def format_resolved_reference(data)
-        case data.type
-        when :image
+        case data
+        when AST::ResolvedData::Image
           format_image_reference(data)
-        when :table
+        when AST::ResolvedData::Table
           format_table_reference(data)
-        when :list
+        when AST::ResolvedData::List
           format_list_reference(data)
-        when :equation
+        when AST::ResolvedData::Equation
           format_equation_reference(data)
-        when :footnote
+        when AST::ResolvedData::Footnote
           format_footnote_reference(data)
-        when :endnote
+        when AST::ResolvedData::Endnote
           data.item_number.to_s
-        when :chapter
+        when AST::ResolvedData::Chapter
           format_chapter_reference(data)
-        when :headline
+        when AST::ResolvedData::Headline
           format_headline_reference(data)
-        when :column
+        when AST::ResolvedData::Column
           format_column_reference(data)
-        when :word
+        when AST::ResolvedData::Word
           escape(data.word_content)
         else
           # Default: return item_id

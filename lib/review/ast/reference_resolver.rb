@@ -418,15 +418,12 @@ module ReVIEW
         if @chapter.column_index
           item = find_index_item(@chapter.column_index, id)
           if item
-            # Return as a generic type with column information
-            data = ResolvedData.new(
-              type: :column,
+            return ResolvedData.column(
               chapter_number: @chapter.number,
               item_number: index_item_number(item),
               item_id: id,
               caption: extract_caption(item)
             )
-            return data
           end
         end
 

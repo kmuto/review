@@ -70,7 +70,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_not_nil(resolved_node.resolved_data)
 
     data = resolved_node.resolved_data
-    assert_equal :image, data.type
+    assert_equal ReVIEW::AST::ResolvedData::Image, data.class
     assert_equal '1', data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'img01', data.item_id
@@ -97,7 +97,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal :table, data.type
+    assert_equal ReVIEW::AST::ResolvedData::Table, data.class
     assert_equal '1', data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'tbl01', data.item_id
@@ -124,7 +124,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal :list, data.type
+    assert_equal ReVIEW::AST::ResolvedData::List, data.class
     assert_equal '1', data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'list01', data.item_id
@@ -152,7 +152,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal :footnote, data.type
+    assert_equal ReVIEW::AST::ResolvedData::Footnote, data.class
     assert_equal 1, data.item_number
     assert_equal 'fn01', data.item_id
   end
@@ -178,7 +178,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal :equation, data.type
+    assert_equal ReVIEW::AST::ResolvedData::Equation, data.class
     assert_equal '1', data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'eq01', data.item_id
@@ -206,7 +206,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal :word, data.type
+    assert_equal ReVIEW::AST::ResolvedData::Word, data.class
     assert_equal 'Ruby on Rails', data.word_content
     assert_equal 'rails', data.item_id
   end
@@ -246,7 +246,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal :image, data.type
+    assert_equal ReVIEW::AST::ResolvedData::Image, data.class
     assert_equal '1', data.chapter_number
     assert_equal '1', data.item_number
   end
@@ -272,7 +272,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal :table, data.type
+    assert_equal ReVIEW::AST::ResolvedData::Table, data.class
     assert_equal '1', data.chapter_number
     assert_equal '1', data.item_number
   end

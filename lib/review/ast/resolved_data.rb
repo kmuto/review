@@ -14,42 +14,9 @@ module ReVIEW
     # separating the logical resolution (what is being referenced)
     # from the presentation (how it should be displayed).
     class ResolvedData
-      attr_reader :type, :chapter_number, :item_number, :chapter_id, :item_id
+      attr_reader :chapter_number, :item_number, :chapter_id, :item_id
       attr_reader :chapter_title, :headline_number, :headline_caption, :word_content
       attr_reader :caption
-
-      # Initialize ResolvedData with reference information
-      #
-      # @param type [Symbol, String] Type of reference (:image, :table, :list, :equation, etc.)
-      # @param chapter_number [String, nil] Chapter number (e.g., "1", "2.3")
-      # @param item_number [Integer, String, nil] Item number within the chapter
-      # @param chapter_id [String, nil] Chapter identifier
-      # @param item_id [String] Item identifier within the chapter
-      # @param chapter_title [String, nil] Chapter title (for chapter references)
-      # @param headline_number [Array, nil] Headline number array (for headline references)
-      # @param headline_caption [String, nil] Headline caption (for headline references)
-      # @param word_content [String, nil] Word content (for word references)
-      def initialize(type:, # rubocop:disable Metrics/ParameterLists
-                     item_id:,
-                     chapter_number: nil,
-                     item_number: nil,
-                     chapter_id: nil,
-                     chapter_title: nil,
-                     headline_number: nil,
-                     headline_caption: nil,
-                     word_content: nil,
-                     caption: nil)
-        @type = type.to_sym
-        @chapter_number = chapter_number
-        @item_number = item_number
-        @chapter_id = chapter_id
-        @item_id = item_id
-        @chapter_title = chapter_title
-        @headline_number = headline_number
-        @headline_caption = headline_caption
-        @word_content = word_content
-        @caption = caption
-      end
 
       # Check if this is a cross-chapter reference
       # @return [Boolean] true if referencing an item in another chapter
@@ -65,11 +32,28 @@ module ReVIEW
         !@item_number.nil?
       end
 
+      # Check equality with another ResolvedData
+      # @param other [Object] Object to compare with
+      # @return [Boolean] true if equal
+      def ==(other)
+        other.instance_of?(self.class) &&
+          @chapter_number == other.chapter_number &&
+          @item_number == other.item_number &&
+          @chapter_id == other.chapter_id &&
+          @item_id == other.item_id &&
+          @caption == other.caption &&
+          @chapter_title == other.chapter_title &&
+          @headline_number == other.headline_number &&
+          @headline_caption == other.headline_caption &&
+          @word_content == other.word_content
+      end
+
+      alias_method :eql?, :==
+
       # Create a string representation for debugging
       # @return [String] Debug string representation
       def to_s
         parts = ['#<ResolvedData']
-        parts << "type=#{@type}"
         parts << "chapter=#{@chapter_number}" if @chapter_number
         parts << "item=#{@item_number}" if @item_number
         parts << "chapter_id=#{@chapter_id}" if @chapter_id
@@ -77,33 +61,11 @@ module ReVIEW
         parts.join(' ') + '>'
       end
 
-      # Check equality with another ResolvedData
-      # @param other [Object] Object to compare with
-      # @return [Boolean] true if equal
-      def ==(other)
-        other.is_a?(ResolvedData) &&
-          @type == other.type &&
-          @chapter_number == other.chapter_number &&
-          @item_number == other.item_number &&
-          @chapter_id == other.chapter_id &&
-          @item_id == other.item_id &&
-          @caption == other.caption
-      end
-
-      alias_method :eql?, :==
-
-      # Generate hash code for use as hash key
-      # @return [Integer] Hash code
-      def hash
-        [@type, @chapter_number, @item_number, @chapter_id, @item_id, @caption].hash
-      end
-
       # Factory methods for common reference types
 
       # Create ResolvedData for an image reference
       def self.image(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
-        new(
-          type: :image,
+        Image.new(
           chapter_number: chapter_number,
           item_number: item_number,
           chapter_id: chapter_id,
@@ -114,8 +76,7 @@ module ReVIEW
 
       # Create ResolvedData for a table reference
       def self.table(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
-        new(
-          type: :table,
+        Table.new(
           chapter_number: chapter_number,
           item_number: item_number,
           chapter_id: chapter_id,
@@ -126,8 +87,7 @@ module ReVIEW
 
       # Create ResolvedData for a list reference
       def self.list(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
-        new(
-          type: :list,
+        List.new(
           chapter_number: chapter_number,
           item_number: item_number,
           chapter_id: chapter_id,
@@ -138,8 +98,7 @@ module ReVIEW
 
       # Create ResolvedData for an equation reference
       def self.equation(chapter_number:, item_number:, item_id:, caption: nil)
-        new(
-          type: :equation,
+        Equation.new(
           chapter_number: chapter_number,
           item_number: item_number,
           item_id: item_id,
@@ -149,8 +108,7 @@ module ReVIEW
 
       # Create ResolvedData for a footnote reference
       def self.footnote(item_number:, item_id:, caption: nil)
-        new(
-          type: :footnote,
+        Footnote.new(
           item_number: item_number,
           item_id: item_id,
           caption: caption
@@ -159,8 +117,7 @@ module ReVIEW
 
       # Create ResolvedData for an endnote reference
       def self.endnote(item_number:, item_id:, caption: nil)
-        new(
-          type: :endnote,
+        Endnote.new(
           item_number: item_number,
           item_id: item_id,
           caption: caption
@@ -169,8 +126,7 @@ module ReVIEW
 
       # Create ResolvedData for a chapter reference
       def self.chapter(chapter_number:, chapter_id:, chapter_title: nil, caption: nil)
-        new(
-          type: :chapter,
+        Chapter.new(
           chapter_number: chapter_number,
           chapter_id: chapter_id,
           item_id: chapter_id, # For chapter refs, item_id is same as chapter_id
@@ -181,8 +137,7 @@ module ReVIEW
 
       # Create ResolvedData for a headline/section reference
       def self.headline(headline_number:, headline_caption:, item_id:, chapter_id: nil, caption: nil)
-        new(
-          type: :headline,
+        Headline.new(
           item_id: item_id,
           chapter_id: chapter_id,
           headline_number: headline_number, # Array format [1, 2, 3]
@@ -193,12 +148,146 @@ module ReVIEW
 
       # Create ResolvedData for a word reference
       def self.word(word_content:, item_id:, caption: nil)
-        new(
-          type: :word,
+        Word.new(
           item_id: item_id,
           word_content: word_content,
           caption: caption
         )
+      end
+
+      # Create ResolvedData for a column reference
+      def self.column(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
+        Column.new(
+          chapter_number: chapter_number,
+          item_number: item_number,
+          chapter_id: chapter_id,
+          item_id: item_id,
+          caption: caption
+        )
+      end
+    end
+
+    # Concrete subclasses representing each reference type
+    class ResolvedData
+      class Image < ResolvedData
+        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
+          super()
+          @chapter_number = chapter_number
+          @item_number = item_number
+          @chapter_id = chapter_id
+          @item_id = item_id
+          @caption = caption
+        end
+      end
+    end
+
+    class ResolvedData
+      class Table < ResolvedData
+        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
+          super()
+          @chapter_number = chapter_number
+          @item_number = item_number
+          @chapter_id = chapter_id
+          @item_id = item_id
+          @caption = caption
+        end
+      end
+    end
+
+    class ResolvedData
+      class List < ResolvedData
+        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
+          super()
+          @chapter_number = chapter_number
+          @item_number = item_number
+          @chapter_id = chapter_id
+          @item_id = item_id
+          @caption = caption
+        end
+      end
+    end
+
+    class ResolvedData
+      class Equation < ResolvedData
+        def initialize(chapter_number:, item_number:, item_id:, caption: nil)
+          super()
+          @chapter_number = chapter_number
+          @item_number = item_number
+          @item_id = item_id
+          @caption = caption
+        end
+      end
+    end
+
+    class ResolvedData
+      class Footnote < ResolvedData
+        def initialize(item_number:, item_id:, caption: nil)
+          super()
+          @item_number = item_number
+          @item_id = item_id
+          @caption = caption
+        end
+      end
+    end
+
+    class ResolvedData
+      class Endnote < ResolvedData
+        def initialize(item_number:, item_id:, caption: nil)
+          super()
+          @item_number = item_number
+          @item_id = item_id
+          @caption = caption
+        end
+      end
+    end
+
+    class ResolvedData
+      class Chapter < ResolvedData
+        def initialize(chapter_number:, chapter_id:, item_id:, chapter_title: nil, caption: nil)
+          super()
+          @chapter_number = chapter_number
+          @chapter_id = chapter_id
+          @item_id = item_id
+          @chapter_title = chapter_title
+          @caption = caption
+        end
+      end
+    end
+
+    class ResolvedData
+      class Headline < ResolvedData
+        def initialize(item_id:, headline_number:, headline_caption:, chapter_id: nil, caption: nil)
+          super()
+          @item_id = item_id
+          @chapter_id = chapter_id
+          @headline_number = headline_number
+          @headline_caption = headline_caption
+          @caption = caption
+        end
+      end
+    end
+
+    class ResolvedData
+      class Word < ResolvedData
+        def initialize(item_id:, word_content:, caption: nil)
+          super()
+          @item_id = item_id
+          @word_content = word_content
+          @caption = caption
+        end
+      end
+    end
+
+    class ResolvedData
+      class Column < ResolvedData
+        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
+          super()
+          @chapter_number = chapter_number
+          @item_number = item_number
+          @chapter_id = chapter_id
+          @item_id = item_id
+          @caption = caption
+        end
       end
     end
   end

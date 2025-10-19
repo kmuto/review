@@ -46,24 +46,24 @@ module ReVIEW
 
       # Generate default content string from ResolvedData
       def generate_content_from_data(data)
-        case data.type
-        when :image
+        case data
+        when ResolvedData::Image
           format_captioned_reference('image', data)
-        when :table
+        when ResolvedData::Table
           format_captioned_reference('table', data)
-        when :list
+        when ResolvedData::List
           format_captioned_reference('list', data)
-        when :equation
+        when ResolvedData::Equation
           format_captioned_reference('equation', data)
-        when :footnote, :endnote
+        when ResolvedData::Footnote, ResolvedData::Endnote
           data.item_number.to_s
-        when :chapter
+        when ResolvedData::Chapter
           format_chapter_reference(data)
-        when :headline
+        when ResolvedData::Headline
           format_headline_reference(data)
-        when :column
+        when ResolvedData::Column
           format_column_reference(data)
-        when :word
+        when ResolvedData::Word
           data.word_content
         else
           data.item_id || @ref_id

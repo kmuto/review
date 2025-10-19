@@ -51,11 +51,7 @@ module ReVIEW
         @rendering_context = nil
 
         # Ensure locale strings are available
-        if @book.config['language']
-          I18n.setup(@book.config['language'])
-        else
-          I18n.setup('ja')
-        end
+        I18n.setup(@book.config['language'] || 'ja')
       end
 
       def target_name
@@ -536,26 +532,26 @@ module ReVIEW
       end
 
       def format_resolved_reference(data)
-        case data.type
-        when :image
+        case data
+        when AST::ResolvedData::Image
           format_image_reference(data)
-        when :table
+        when AST::ResolvedData::Table
           format_table_reference(data)
-        when :list
+        when AST::ResolvedData::List
           format_list_reference(data)
-        when :equation
+        when AST::ResolvedData::Equation
           format_equation_reference(data)
-        when :footnote
+        when AST::ResolvedData::Footnote
           format_footnote_reference(data)
-        when :endnote
+        when AST::ResolvedData::Endnote
           format_endnote_reference(data)
-        when :chapter
+        when AST::ResolvedData::Chapter
           format_chapter_reference(data)
-        when :headline
+        when AST::ResolvedData::Headline
           format_headline_reference(data)
-        when :column
+        when AST::ResolvedData::Column
           format_column_reference(data)
-        when :word
+        when AST::ResolvedData::Word
           data.word_content.to_s
         else
           data.item_id.to_s
@@ -606,7 +602,7 @@ module ReVIEW
 
       def format_headline_reference(data)
         caption = data.headline_caption || ''
-        headline_numbers = Array(data.headline_number).reject(&:nil?)
+        headline_numbers = Array(data.headline_number).compact
 
         if !headline_numbers.empty?
           number_str = headline_numbers.join('.')
