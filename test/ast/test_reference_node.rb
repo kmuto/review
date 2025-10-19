@@ -4,6 +4,10 @@ require_relative '../test_helper'
 require 'review/ast/reference_node'
 
 class TestReferenceNode < Test::Unit::TestCase
+  def setup
+    ReVIEW::I18n.setup('ja')
+  end
+
   def test_reference_node_basic_creation
     node = ReVIEW::AST::ReferenceNode.new('figure1')
 
@@ -30,7 +34,15 @@ class TestReferenceNode < Test::Unit::TestCase
     assert_equal 'figure1', node.content
 
     # Resolve (creates new instance)
-    resolved_node = node.with_resolved_content('図1.1　サンプル図')
+    resolved_node = node.with_resolved_data(
+      ReVIEW::AST::ResolvedData.image(
+        chapter_number: '1',
+        item_number: '1',
+        chapter_id: 'chap01',
+        item_id: 'figure1',
+        caption: 'サンプル図'
+      )
+    )
 
     # Original node should remain unchanged
     assert_false(node.resolved?)
@@ -42,27 +54,21 @@ class TestReferenceNode < Test::Unit::TestCase
     assert_equal 'figure1', resolved_node.ref_id
   end
 
-  def test_reference_node_resolution_with_nil
-    node = ReVIEW::AST::ReferenceNode.new('missing')
-
-    # Resolve with nil (reference not found) - should use ref_id as fallback
-    resolved_node = node.with_resolved_content(nil)
-
-    # Original node should remain unchanged
-    assert_false(node.resolved?)
-
-    # Resolved node should be marked as resolved with ref_id as content
-    assert_true(resolved_node.resolved?)
-    assert_equal 'missing', resolved_node.content
-  end
-
   def test_reference_node_to_s
     node = ReVIEW::AST::ReferenceNode.new('figure1')
     assert_include(node.to_s, 'ReferenceNode')
     assert_include(node.to_s, '{figure1}')
     assert_include(node.to_s, 'unresolved')
 
-    resolved_node = node.with_resolved_content('図1.1')
+    resolved_node = node.with_resolved_data(
+      ReVIEW::AST::ResolvedData.image(
+        chapter_number: '1',
+        item_number: '1',
+        chapter_id: 'chap01',
+        item_id: 'figure1',
+        caption: 'サンプル図'
+      )
+    )
     assert_include(resolved_node.to_s, 'resolved: 図1.1')
   end
 
@@ -74,7 +80,14 @@ class TestReferenceNode < Test::Unit::TestCase
   def test_reference_node_immutability
     # Test that ReferenceNode is immutable
     node = ReVIEW::AST::ReferenceNode.new('figure1')
-    resolved_node = node.with_resolved_content('図1.1')
+    resolved_node = node.with_resolved_data(
+      ReVIEW::AST::ResolvedData.image(
+        chapter_number: '1',
+        item_number: '1',
+        chapter_id: 'chap01',
+        item_id: 'figure1'
+      )
+    )
 
     # Original node should be unchanged
     assert_false(node.resolved?)

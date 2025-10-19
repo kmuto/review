@@ -258,10 +258,123 @@ module ReVIEW
         render_inline_element(node.inline_type, content, node)
       end
 
-      def visit_reference(_node)
-        # ReferenceNode is a child of InlineNode(type=ref)
-        # Return empty string as the actual rendering is done by parent InlineNode
-        ''
+      def visit_reference(node)
+        # Handle ReferenceNode - use resolved_data if available
+        if node.resolved? && node.resolved_data
+          format_resolved_reference(node.resolved_data)
+        else
+          # Fallback to content for backward compatibility
+          node.content || ''
+        end
+      end
+
+      # Format resolved reference based on ResolvedData
+      def format_resolved_reference(data)
+        case data.type
+        when :image
+          format_image_reference(data)
+        when :table
+          format_table_reference(data)
+        when :list
+          format_list_reference(data)
+        when :equation
+          format_equation_reference(data)
+        when :footnote, :endnote
+          data.item_number.to_s
+        when :chapter
+          format_chapter_reference(data)
+        when :headline
+          format_headline_reference(data)
+        when :column
+          format_column_reference(data)
+        when :word
+          escape(data.word_content)
+        else
+          # Default: return item_id
+          escape(data.item_id)
+        end
+      end
+
+      def format_image_reference(data)
+        compose_numbered_reference('image', data)
+      end
+
+      def format_table_reference(data)
+        compose_numbered_reference('table', data)
+      end
+
+      def format_list_reference(data)
+        compose_numbered_reference('list', data)
+      end
+
+      def format_equation_reference(data)
+        number_text = reference_number_text(data)
+        label = I18n.t('equation')
+        escape("#{label}#{number_text || data.item_id || ''}")
+      end
+
+      def format_chapter_reference(data)
+        chapter_number = data.chapter_number
+        chapter_title = data.chapter_title
+
+        if chapter_title && chapter_number
+          number_text = formatted_chapter_number(chapter_number)
+          escape(I18n.t('chapter_quote', [number_text, chapter_title]))
+        elsif chapter_title
+          escape(I18n.t('chapter_quote_without_number', chapter_title))
+        elsif chapter_number
+          escape(formatted_chapter_number(chapter_number))
+        else
+          escape(data.item_id || '')
+        end
+      end
+
+      def format_headline_reference(data)
+        caption = data.headline_caption || ''
+        headline_numbers = Array(data.headline_number).reject(&:nil?)
+
+        if !headline_numbers.empty?
+          number_str = headline_numbers.join('.')
+          escape(I18n.t('hd_quote', [number_str, caption]))
+        elsif !caption.empty?
+          escape(I18n.t('hd_quote_without_number', caption))
+        else
+          escape(data.item_id || '')
+        end
+      end
+
+      def format_column_reference(data)
+        label = I18n.t('columnname')
+        number_text = reference_number_text(data)
+        escape("#{label}#{number_text || data.item_id || ''}")
+      end
+
+      def compose_numbered_reference(label_key, data)
+        label = I18n.t(label_key)
+        number_text = reference_number_text(data)
+        escape("#{label}#{number_text || data.item_id || ''}")
+      end
+
+      def reference_number_text(data)
+        item_number = data.item_number
+        return nil unless item_number
+
+        chapter_number = data.chapter_number
+        if chapter_number && !chapter_number.to_s.empty?
+          I18n.t('format_number', [chapter_number, item_number])
+        else
+          I18n.t('format_number_without_chapter', [item_number])
+        end
+      rescue StandardError
+        nil
+      end
+
+      def formatted_chapter_number(chapter_number)
+        if chapter_number.to_s.match?(/\A-?\d+\z/)
+          I18n.t('chapter', chapter_number.to_i)
+        else
+          chapter_number.to_s
+        end
       end
 
       def visit_list(node)

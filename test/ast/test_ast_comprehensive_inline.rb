@@ -13,6 +13,10 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     @config = ReVIEW::Configure.values
     @config['secnolevel'] = 2
     @config['language'] = 'ja'
+    @config['dictionary'] = {
+      'glossary' => 'glossary',
+      'abbreviations' => 'abbreviations'
+    }
     @book = ReVIEW::Book::Base.new
     @book.config = @config
     @log_io = StringIO.new

@@ -11,6 +11,16 @@ require 'review/exception'
 require 'review/sec_counter'
 require 'review/ast/footnote_node'
 require 'review/ast/footnote_index'
+require 'review/ast/headline_node'
+require 'review/ast/column_node'
+require 'review/ast/minicolumn_node'
+require 'review/ast/code_block_node'
+require 'review/ast/image_node'
+require 'review/ast/table_node'
+require 'review/ast/embed_node'
+require 'review/ast/tex_equation_node'
+require 'review/ast/block_node'
+require 'review/ast/inline_node'
 
 module ReVIEW
   module AST

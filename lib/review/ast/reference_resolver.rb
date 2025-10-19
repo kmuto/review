@@ -7,6 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/ast/reference_node'
+require 'review/ast/resolved_data'
 require 'review/ast/inline_node'
 require 'review/ast/indexer'
 require 'review/exception'
@@ -58,7 +59,7 @@ module ReVIEW
         return false unless inline_node.inline_type
 
         # Check reference-type inline_type
-        ref_types = %w[img list table eq fn endnote hd chap chapref sec secref labelref ref]
+        ref_types = %w[img list table eq fn endnote hd chap chapref sec secref labelref ref w wb]
         return false unless ref_types.include?(inline_node.inline_type)
 
         # Check if it has ReferenceNode children
@@ -81,30 +82,28 @@ module ReVIEW
                         node.ref_id
                       end
 
-        content = case ref_type
-                  when 'img' then resolve_image_ref(full_ref_id)
-                  when 'table' then resolve_table_ref(full_ref_id)
-                  when 'list' then resolve_list_ref(full_ref_id)
-                  when 'eq' then resolve_equation_ref(full_ref_id)
-                  when 'fn' then resolve_footnote_ref(full_ref_id)
-                  when 'endnote' then resolve_endnote_ref(full_ref_id)
-                  when 'chap' then resolve_chapter_ref(full_ref_id)
-                  when 'chapref' then resolve_chapter_ref_with_title(full_ref_id)
-                  when 'hd' then resolve_headline_ref(full_ref_id)
-                  when 'sec' then resolve_section_ref(full_ref_id)
-                  when 'secref' then "#{resolve_section_ref(full_ref_id)}節"
-                  when 'labelref', 'ref' then resolve_label_ref(full_ref_id)
-                  when 'w' then resolve_word_ref(full_ref_id)
-                  when 'wb' then resolve_word_ref(full_ref_id) # rubocop:disable Lint/DuplicateBranch
-                  else
-                    raise CompileError, "Unknown reference type: #{ref_type}"
-                  end
+        resolved_data = case ref_type
+                        when 'img' then resolve_image_ref(full_ref_id)
+                        when 'table' then resolve_table_ref(full_ref_id)
+                        when 'list' then resolve_list_ref(full_ref_id)
+                        when 'eq' then resolve_equation_ref(full_ref_id)
+                        when 'fn' then resolve_footnote_ref(full_ref_id)
+                        when 'endnote' then resolve_endnote_ref(full_ref_id)
+                        when 'chap' then resolve_chapter_ref(full_ref_id)
+                        when 'chapref' then resolve_chapter_ref_with_title(full_ref_id)
+                        when 'hd' then resolve_headline_ref(full_ref_id)
+                        when 'sec', 'secref' then resolve_section_ref(full_ref_id)
+                        when 'labelref', 'ref' then resolve_label_ref(full_ref_id)
+                        when 'w', 'wb' then resolve_word_ref(full_ref_id)
+                        else
+                          raise CompileError, "Unknown reference type: #{ref_type}"
+                        end
 
         # Create resolved node and replace in parent
-        resolved_node = node.with_resolved_content(content)
+        resolved_node = node.with_resolved_data(resolved_data)
         node.parent&.replace_child(node, resolved_node)
 
-        !content.nil?
+        !resolved_data.nil?
       end
 
       # Traverse all nodes in AST
@@ -122,17 +121,30 @@ module ReVIEW
           target_chapter = find_chapter_by_id(chapter_id)
           raise CompileError, "Chapter not found for image reference: #{chapter_id}" unless target_chapter
 
-          if target_chapter.image_index && target_chapter.image_index.number(item_id)
-            format_chapter_item_number('図', target_chapter.number, target_chapter.image_index.number(item_id))
+          if target_chapter.image_index && (item = find_index_item(target_chapter.image_index, item_id))
+            ResolvedData.image(
+              chapter_number: target_chapter.number,
+              item_number: index_item_number(item),
+              chapter_id: chapter_id,
+              item_id: item_id,
+              caption: extract_caption(item)
+            )
           else
             raise CompileError, "Image reference not found: #{id}"
           end
-        elsif @chapter.image_index && @chapter.image_index.number(id)
+        elsif (item = find_index_item(@chapter.image_index, id))
           # Same-chapter reference
-          format_chapter_item_number('図', @chapter.number, @chapter.image_index.number(id))
+          ResolvedData.image(
+            chapter_number: @chapter.number,
+            item_number: index_item_number(item),
+            item_id: id,
+            caption: extract_caption(item)
+          )
         else
           raise CompileError, "Image reference not found: #{id}"
         end
+      rescue KeyError
+        raise CompileError, "Image reference not found: #{id}"
       end
 
       # Resolve table references
@@ -143,14 +155,25 @@ module ReVIEW
           target_chapter = find_chapter_by_id(chapter_id)
           raise CompileError, "Chapter not found for table reference: #{chapter_id}" unless target_chapter
 
-          if target_chapter.table_index && target_chapter.table_index.number(item_id)
-            format_chapter_item_number('表', target_chapter.number, target_chapter.table_index.number(item_id))
+          if target_chapter.table_index && (item = find_index_item(target_chapter.table_index, item_id))
+            ResolvedData.table(
+              chapter_number: target_chapter.number,
+              item_number: index_item_number(item),
+              chapter_id: chapter_id,
+              item_id: item_id,
+              caption: extract_caption(item)
+            )
           else
             raise CompileError, "Table reference not found: #{id}"
           end
-        elsif @chapter.table_index && @chapter.table_index.number(id)
+        elsif (item = find_index_item(@chapter.table_index, id))
           # Same-chapter reference
-          format_chapter_item_number('表', @chapter.number, @chapter.table_index.number(id))
+          ResolvedData.table(
+            chapter_number: @chapter.number,
+            item_number: index_item_number(item),
+            item_id: id,
+            caption: extract_caption(item)
+          )
         else
           raise CompileError, "Table reference not found: #{id}"
         end
@@ -164,14 +187,25 @@ module ReVIEW
           target_chapter = find_chapter_by_id(chapter_id)
           raise CompileError, "Chapter not found for list reference: #{chapter_id}" unless target_chapter
 
-          if target_chapter.list_index && target_chapter.list_index.number(item_id)
-            format_chapter_item_number('リスト', target_chapter.number, target_chapter.list_index.number(item_id))
+          if target_chapter.list_index && (item = find_index_item(target_chapter.list_index, item_id))
+            ResolvedData.list(
+              chapter_number: target_chapter.number,
+              item_number: index_item_number(item),
+              chapter_id: chapter_id,
+              item_id: item_id,
+              caption: extract_caption(item)
+            )
           else
             raise CompileError, "List reference not found: #{id}"
           end
-        elsif @chapter.list_index && @chapter.list_index.number(id)
+        elsif (item = find_index_item(@chapter.list_index, id))
           # Same-chapter reference
-          format_chapter_item_number('リスト', @chapter.number, @chapter.list_index.number(id))
+          ResolvedData.list(
+            chapter_number: @chapter.number,
+            item_number: index_item_number(item),
+            item_id: id,
+            caption: extract_caption(item)
+          )
         else
           raise CompileError, "List reference not found: #{id}"
         end
@@ -179,17 +213,29 @@ module ReVIEW
 
       # Resolve equation references
       def resolve_equation_ref(id)
-        if @chapter.equation_index && @chapter.equation_index.number(id)
-          "式#{@chapter.number}.#{@chapter.equation_index.number(id)}"
+        if (item = find_index_item(@chapter.equation_index, id))
+          ResolvedData.equation(
+            chapter_number: @chapter.number,
+            item_number: index_item_number(item),
+            item_id: id,
+            caption: extract_caption(item)
+          )
         else
           raise CompileError, "Equation reference not found: #{id}"
         end
+      rescue KeyError
+        raise CompileError, "Equation reference not found: #{id}"
       end
 
       # Resolve footnote references
       def resolve_footnote_ref(id)
-        if @chapter.footnote_index && @chapter.footnote_index.number(id)
-          @chapter.footnote_index.number(id).to_s
+        if (item = find_index_item(@chapter.footnote_index, id))
+          number = item.respond_to?(:number) ? item.number : nil
+          ResolvedData.footnote(
+            item_number: number,
+            item_id: id,
+            caption: extract_caption(item)
+          )
         else
           raise CompileError, "Footnote reference not found: #{id}"
         end
@@ -197,8 +243,13 @@ module ReVIEW
 
       # Resolve endnote references
       def resolve_endnote_ref(id)
-        if @chapter.endnote_index && @chapter.endnote_index.number(id)
-          @chapter.endnote_index.number(id).to_s
+        if (item = find_index_item(@chapter.endnote_index, id))
+          number = item.respond_to?(:number) ? item.number : nil
+          ResolvedData.endnote(
+            item_number: number,
+            item_id: id,
+            caption: extract_caption(item)
+          )
         else
           raise CompileError, "Endnote reference not found: #{id}"
         end
@@ -209,7 +260,11 @@ module ReVIEW
         if @book
           chapter = find_chapter_by_id(id)
           if chapter
-            "第#{chapter.number}章"
+            ResolvedData.chapter(
+              chapter_number: chapter.number,
+              chapter_id: id,
+              chapter_title: chapter.title
+            )
           else
             raise CompileError, "Chapter reference not found: #{id}"
           end
@@ -220,16 +275,9 @@ module ReVIEW
 
       # Resolve chapter references with title
       def resolve_chapter_ref_with_title(id)
-        if @book
-          chapter = find_chapter_by_id(id)
-          if chapter
-            "第#{chapter.number}章「#{chapter.title}」"
-          else
-            raise CompileError, "Chapter reference not found: #{id}"
-          end
-        else
-          raise CompileError, "Book not available for chapter reference: #{id}"
-        end
+        # Use the same method as resolve_chapter_ref
+        # The renderer will decide whether to include the title
+        resolve_chapter_ref(id)
       end
 
       # Resolve headline references
@@ -256,6 +304,17 @@ module ReVIEW
           else
             raise CompileError, "Book not available for cross-chapter headline reference: #{id}"
           end
+
+          unless headline
+            raise CompileError, "Headline not found: #{id}"
+          end
+
+          ResolvedData.headline(
+            headline_number: headline.number,
+            headline_caption: headline.caption || '',
+            chapter_id: chapter_id,
+            item_id: headline_id
+          )
         elsif @chapter.headline_index
           # Same-chapter reference
           begin
@@ -263,91 +322,112 @@ module ReVIEW
           rescue KeyError
             headline = nil
           end
-        end
 
-        unless headline
-          raise CompileError, "Headline not found: #{id}"
-        end
+          unless headline
+            raise CompileError, "Headline not found: #{id}"
+          end
 
-        # Return combination of headline number and caption
-        # headline.number is array format (e.g. [1, 2, 3]) so join them
-        number_str = headline.number.join('.')
-        caption = headline.caption || ''
-
-        # Format: "1.2.3 headline text"
-        if number_str.empty?
-          "「#{caption}」"
+          ResolvedData.headline(
+            headline_number: headline.number,
+            headline_caption: headline.caption || '',
+            item_id: id
+          )
         else
-          "#{number_str} #{caption}"
+          raise CompileError, "Headline not found: #{id}"
         end
       end
 
       # Resolve section references
       def resolve_section_ref(id)
-        # Section references use the same index as headline references
-        # However, only return the number (for secref, add "節" suffix)
-
-        # Pipe-separated case: chapter_id|headline_id
-        if id.include?('|')
-          chapter_id, headline_id = id.split('|', 2).map(&:strip)
-
-          # Search for specified chapter
-          if @book
-            target_chapter = find_chapter_by_id(chapter_id)
-            unless target_chapter
-              raise CompileError, "Chapter not found for section reference: #{chapter_id}"
-            end
-
-            # Search from headline_index of that chapter
-            if target_chapter.headline_index
-              begin
-                headline = target_chapter.headline_index[headline_id]
-              rescue KeyError
-                headline = nil
-              end
-            end
-          else
-            raise CompileError, "Book not available for cross-chapter section reference: #{id}"
-          end
-        elsif @chapter.headline_index
-          # Same-chapter reference
-          begin
-            headline = @chapter.headline_index[id]
-          rescue KeyError
-            headline = nil
-          end
-        end
-
-        unless headline
-          raise CompileError, "Section not found: #{id}"
-        end
-
-        # Return only headline number
-        # headline.number is array format (e.g. [1, 2, 3]) so join them
-        headline.number.join('.')
-
-        # Format changes by ref_type (expected to be passed from parent method)
-        # Here only return number, caller adds "節" etc.
+        # Section references use the same data structure as headline references
+        # Renderers will format appropriately (e.g., adding "節" for secref)
+        resolve_headline_ref(id)
       end
 
       # Resolve label references
       def resolve_label_ref(id)
         # Label references search multiple indexes (by priority order)
-        label_searches = [
-          { index: @chapter.image_index, format: ->(item) { "図#{@chapter.number}.#{item.number}" } },
-          { index: @chapter.table_index, format: ->(item) { "表#{@chapter.number}.#{item.number}" } },
-          { index: @chapter.list_index, format: ->(item) { "リスト#{@chapter.number}.#{item.number}" } },
-          { index: @chapter.equation_index, format: ->(item) { "式#{@chapter.number}.#{item.number}" } },
-          { index: @chapter.headline_index, format: ->(item) { item.number.join('.') } },
-          { index: @chapter.column_index, format: ->(item) { "コラム#{@chapter.number}.#{item.number}" } }
-        ]
+        # Try to find the label in various indexes and return appropriate ResolvedData
 
-        # Search each index in order
-        label_searches.each do |search|
-          next unless search[:index]
+        # Search in image index
+        if @chapter.image_index
+          item = find_index_item(@chapter.image_index, id)
+          if item
+            return ResolvedData.image(
+              chapter_number: @chapter.number,
+              item_number: index_item_number(item),
+              item_id: id,
+              caption: extract_caption(item)
+            )
+          end
+        end
 
-          item = find_index_item(search[:index], id)
-          return search[:format].call(item) if item
+        # Search in table index
+        if @chapter.table_index
+          item = find_index_item(@chapter.table_index, id)
+          if item
+            return ResolvedData.table(
+              chapter_number: @chapter.number,
+              item_number: index_item_number(item),
+              item_id: id,
+              caption: extract_caption(item)
+            )
+          end
+        end
+
+        # Search in list index
+        if @chapter.list_index
+          item = find_index_item(@chapter.list_index, id)
+          if item
+            return ResolvedData.list(
+              chapter_number: @chapter.number,
+              item_number: index_item_number(item),
+              item_id: id,
+              caption: extract_caption(item)
+            )
+          end
+        end
+
+        # Search in equation index
+        if @chapter.equation_index
+          item = find_index_item(@chapter.equation_index, id)
+          if item
+            return ResolvedData.equation(
+              chapter_number: @chapter.number,
+              item_number: index_item_number(item),
+              item_id: id,
+              caption: extract_caption(item)
+            )
+          end
+        end
+
+        # Search in headline index
+        if @chapter.headline_index
+          item = find_index_item(@chapter.headline_index, id)
+          if item
+            return ResolvedData.headline(
+              headline_number: item.number,
+              headline_caption: item.caption || '',
+              item_id: id,
+              caption: extract_caption(item)
+            )
+          end
+        end
+
+        # Search in column index
+        if @chapter.column_index
+          item = find_index_item(@chapter.column_index, id)
+          if item
+            # Return as a generic type with column information
+            data = ResolvedData.new(
+              type: :column,
+              chapter_number: @chapter.number,
+              item_number: index_item_number(item),
+              item_id: id,
+              caption: extract_caption(item)
+            )
+            return data
+          end
         end
 
         # TODO: Support for other labeled elements (note, memo, tip, etc.)
@@ -355,6 +435,23 @@ module ReVIEW
         # so we need to add label_index in the future
 
         raise CompileError, "Label not found: #{id}"
+      end
+
+      def index_item_number(item)
+        return unless item
+
+        number = item.respond_to?(:number) ? item.number : nil
+        number.nil? ? nil : number.to_s
+      end
+
+      def extract_caption(item)
+        return unless item
+
+        if item.respond_to?(:caption)
+          item.caption
+        elsif item.respond_to?(:content)
+          item.content
+        end
       end
 
       # Safely search for items from index
@@ -372,7 +469,10 @@ module ReVIEW
       def resolve_word_ref(id)
         dictionary = @book.config['dictionary'] || {}
         if dictionary.key?(id)
-          dictionary[id]
+          ResolvedData.word(
+            word_content: dictionary[id],
+            item_id: id
+          )
         else
           raise CompileError, "word not bound: #{id}"
         end

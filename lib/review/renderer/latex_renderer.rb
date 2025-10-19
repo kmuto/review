@@ -1276,8 +1276,104 @@ module ReVIEW
       end
 
       def visit_reference(node)
-        # Handle ReferenceNode - simply render the content
-        escape(node.content || '')
+        # Handle ReferenceNode - use resolved_data if available
+        if node.resolved? && node.resolved_data
+          format_resolved_reference(node.resolved_data)
+        else
+          # Fallback to content for backward compatibility
+          escape(node.content || '')
+        end
+      end
+
+      # Format resolved reference based on ResolvedData
+      def format_resolved_reference(data)
+        case data.type
+        when :image
+          format_image_reference(data)
+        when :table
+          format_table_reference(data)
+        when :list
+          format_list_reference(data)
+        when :equation
+          format_equation_reference(data)
+        when :footnote
+          format_footnote_reference(data)
+        when :endnote
+          data.item_number.to_s
+        when :chapter
+          format_chapter_reference(data)
+        when :headline
+          format_headline_reference(data)
+        when :column
+          format_column_reference(data)
+        when :word
+          escape(data.word_content)
+        else
+          # Default: return item_id
+          escape(data.item_id)
+        end
+      end
+
+      def format_image_reference(data)
+        # LaTeX uses \ref{} for cross-references
+        if data.cross_chapter?
+          # For cross-chapter references, use full path
+          "\\ref{#{data.chapter_id}:#{data.item_id}}"
+        else
+          "\\ref{#{data.item_id}}"
+        end
+      end
+
+      def format_table_reference(data)
+        # LaTeX uses \ref{} for cross-references
+        if data.cross_chapter?
+          "\\ref{#{data.chapter_id}:#{data.item_id}}"
+        else
+          "\\ref{#{data.item_id}}"
+        end
+      end
+
+      def format_list_reference(data)
+        # LaTeX uses \ref{} for cross-references
+        if data.cross_chapter?
+          "\\ref{#{data.chapter_id}:#{data.item_id}}"
+        else
+          "\\ref{#{data.item_id}}"
+        end
+      end
+
+      def format_equation_reference(data)
+        # LaTeX equation references
+        "\\ref{#{data.item_id}}"
+      end
+
+      def format_footnote_reference(data)
+        # LaTeX footnote references use the footnote number
+        "\\footnotemark[#{data.item_number}]"
+      end
+
+      def format_chapter_reference(data)
+        # Format chapter reference
+        if data.chapter_title
+          "第#{data.chapter_number}章「#{escape(data.chapter_title)}」"
+        else
+          "第#{data.chapter_number}章"
+        end
+      end
+
+      def format_headline_reference(data)
+        number_str = data.headline_number.join('.')
+        caption = data.headline_caption
+
+        if number_str.empty?
+          "「#{escape(caption)}」"
+        else
+          "#{number_str} #{escape(caption)}"
+        end
+      end
+
+      def format_column_reference(data)
+        "コラム#{data.chapter_number}.#{data.item_number}"
       end
 
       # Render document children with proper separation

@@ -9,6 +9,7 @@
 require 'review/renderer/base'
 require 'review/textutils'
 require 'review/loggable'
+require 'review/i18n'
 
 module ReVIEW
   module Renderer
@@ -48,6 +49,13 @@ module ReVIEW
         @table_row_separator_count = 0
         @first_line_number = 1
         @rendering_context = nil
+
+        # Ensure locale strings are available
+        if @book.config['language']
+          I18n.setup(@book.config['language'])
+        else
+          I18n.setup('ja')
+        end
       end
 
       def target_name
@@ -425,7 +433,7 @@ module ReVIEW
       end
 
       def visit_reference(node)
-        node.content || ''
+        format_resolved_reference(node.resolved_data)
       end
 
       private
@@ -525,6 +533,123 @@ module ReVIEW
         args = node.args || []
         label_id = args.first || content
         "●ページ◆→#{label_id}←◆"
+      end
+
+      def format_resolved_reference(data)
+        case data.type
+        when :image
+          format_image_reference(data)
+        when :table
+          format_table_reference(data)
+        when :list
+          format_list_reference(data)
+        when :equation
+          format_equation_reference(data)
+        when :footnote
+          format_footnote_reference(data)
+        when :endnote
+          format_endnote_reference(data)
+        when :chapter
+          format_chapter_reference(data)
+        when :headline
+          format_headline_reference(data)
+        when :column
+          format_column_reference(data)
+        when :word
+          data.word_content.to_s
+        else
+          data.item_id.to_s
+        end
+      end
+
+      def format_image_reference(data)
+        compose_numbered_reference('image', data)
+      end
+
+      def format_table_reference(data)
+        compose_numbered_reference('table', data)
+      end
+
+      def format_list_reference(data)
+        compose_numbered_reference('list', data)
+      end
+
+      def format_equation_reference(data)
+        compose_numbered_reference('equation', data)
+      end
+
+      def format_footnote_reference(data)
+        number = data.item_number || data.item_id
+        "【注#{number}】"
+      end
+
+      def format_endnote_reference(data)
+        number = data.item_number || data.item_id
+        "【後注#{number}】"
+      end
+
+      def format_chapter_reference(data)
+        chapter_number = data.chapter_number
+        chapter_title = data.chapter_title
+
+        if chapter_title && chapter_number
+          number_text = formatted_chapter_number(chapter_number)
+          I18n.t('chapter_quote', [number_text, chapter_title])
+        elsif chapter_title
+          I18n.t('chapter_quote_without_number', chapter_title)
+        elsif chapter_number
+          formatted_chapter_number(chapter_number)
+        else
+          data.item_id.to_s
+        end
+      end
+
+      def format_headline_reference(data)
+        caption = data.headline_caption || ''
+        headline_numbers = Array(data.headline_number).reject(&:nil?)
+
+        if !headline_numbers.empty?
+          number_str = headline_numbers.join('.')
+          I18n.t('hd_quote', [number_str, caption])
+        elsif !caption.empty?
+          I18n.t('hd_quote_without_number', caption)
+        else
+          data.item_id.to_s
+        end
+      end
+
+      def format_column_reference(data)
+        label = I18n.t('columnname')
+        number_text = reference_number_text(data)
+        "#{label}#{number_text || data.item_id || ''}"
+      end
+
+      def compose_numbered_reference(label_key, data)
+        label = I18n.t(label_key)
+        number_text = reference_number_text(data)
+        "#{label}#{number_text || data.item_id || ''}"
+      end
+
+      def reference_number_text(data)
+        item_number = data.item_number
+        return nil unless item_number
+
+        chapter_number = data.chapter_number
+        if chapter_number && !chapter_number.to_s.empty?
+          I18n.t('format_number', [chapter_number, item_number])
+        else
+          I18n.t('format_number_without_chapter', [item_number])
+        end
+      rescue StandardError
+        nil
+      end
+
+      def formatted_chapter_number(chapter_number)
+        if chapter_number.to_s.match?(/\A-?\d+\z/)
+          I18n.t('chapter', chapter_number.to_i)
+        else
+          chapter_number.to_s
+        end
       end
 
       def get_footnote_number(footnote_id)
