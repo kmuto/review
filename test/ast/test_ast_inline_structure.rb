@@ -199,6 +199,6 @@ class TestASTInlineStructure < Test::Unit::TestCase
 
     # Use AST::Compiler directly
     ast_compiler = ReVIEW::AST::Compiler.new
-    ast_compiler.compile_to_ast(chapter)
+    ast_compiler.compile_to_ast(chapter, reference_resolution: false)
   end
 end

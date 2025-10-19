@@ -21,6 +21,12 @@ class TestASTDlBlock < Test::Unit::TestCase
     @compiler = ReVIEW::AST::Compiler.new
   end
 
+  def create_chapter(content)
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    chapter.content = content
+    chapter
+  end
+
   def test_dl_with_dt_dd_blocks
     input = <<~REVIEW
       //dl{
@@ -81,7 +87,7 @@ class TestASTDlBlock < Test::Unit::TestCase
       //}
     REVIEW
 
-    ast = @compiler.compile(input.strip)
+    ast = @compiler.compile_to_ast(create_chapter(input.strip))
 
     # Check that we have a document node
     assert_equal ReVIEW::AST::DocumentNode, ast.class
@@ -172,7 +178,7 @@ class TestASTDlBlock < Test::Unit::TestCase
       //}
     REVIEW
 
-    ast = @compiler.compile(input.strip)
+    ast = @compiler.compile_to_ast(create_chapter(input.strip))
 
     list_node = ast.children.first
     assert_equal :dl, list_node.list_type
@@ -209,7 +215,7 @@ class TestASTDlBlock < Test::Unit::TestCase
       //}
     REVIEW
 
-    ast = @compiler.compile(input.strip)
+    ast = @compiler.compile_to_ast(create_chapter(input.strip))
 
     list_node = ast.children.first
     assert_equal :dl, list_node.list_type
@@ -228,7 +234,7 @@ class TestASTDlBlock < Test::Unit::TestCase
       //}
     REVIEW
 
-    ast = @compiler.compile(input.strip)
+    ast = @compiler.compile_to_ast(create_chapter(input.strip))
 
     list_node = ast.children.first
     assert_equal :dl, list_node.list_type
@@ -275,7 +281,7 @@ class TestASTDlBlock < Test::Unit::TestCase
       //}
     REVIEW
 
-    ast = @compiler.compile(input.strip)
+    ast = @compiler.compile_to_ast(create_chapter(input.strip))
 
     list_node = ast.children.first
     assert_equal :dl, list_node.list_type

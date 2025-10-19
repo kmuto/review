@@ -67,7 +67,7 @@ class TestASTBasic < Test::Unit::TestCase
 
     # Test direct AST compilation using AST classes
     compiler = ReVIEW::AST::Compiler.new
-    ast_result = compiler.compile(chapter_content)
+    ast_result = compiler.compile_to_ast(chapter)
 
     # Verify that AST result is obtained
     assert_not_nil(ast_result)

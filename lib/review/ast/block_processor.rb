@@ -440,7 +440,7 @@ module ReVIEW
         # Note: imgtable can be empty as it embeds an image file, not table data
         if !context.content? || context.lines.nil? || context.lines.empty?
           unless context.name == :imgtable
-            raise ReVIEW::ApplicationError, 'no rows in the table'
+            raise ReVIEW::CompileError, 'no rows in the table'
           end
         else
           # Process table content only if not empty
@@ -750,14 +750,14 @@ module ReVIEW
       def process_table_content(table_node, lines, block_location = nil)
         # Check for empty table
         if lines.nil? || lines.empty?
-          raise ReVIEW::ApplicationError, 'no rows in the table'
+          raise ReVIEW::CompileError, 'no rows in the table'
         end
 
         separator_index = lines.find_index { |line| line.match?(/\A[=-]{12}/) || line.match?(/\A[={}-]{12}/) }
 
         # Check if table only contains separator (no actual data rows)
         if separator_index && separator_index == 0 && lines.length == 1
-          raise ReVIEW::ApplicationError, 'no rows in the table'
+          raise ReVIEW::CompileError, 'no rows in the table'
         end
 
         # Create row nodes first, then adjust columns

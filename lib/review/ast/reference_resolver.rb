@@ -24,10 +24,9 @@ module ReVIEW
         @logger = ReVIEW.logger
       end
 
-      # Resolve ReferenceNodes in AST
       def resolve_references(ast)
         # First build indexes (using existing mechanism)
-        build_indexes_if_needed(ast)
+        build_indexes_from_ast(ast)
 
         # Traverse InlineNodes and resolve their child ReferenceNodes
         resolve_count = 0
@@ -66,12 +65,9 @@ module ReVIEW
         inline_node.children&.any?(ReferenceNode)
       end
 
-      # Build indexes if not already built
-      def build_indexes_if_needed(ast)
-        # Check if indexes are already built by checking if any index exists
-        # If footnote_index exists, all indexes should have been built together
-        return if @chapter.footnote_index
-
+      def build_indexes_from_ast(ast)
+        # Always build indexes from the current AST
+        # This ensures indexes are up-to-date with the current content
         indexer = Indexer.new(@chapter)
         indexer.build_indexes(ast)
       end

@@ -127,7 +127,7 @@ class TestNestedBlockErrorHandling < Test::Unit::TestCase
     compiler = AST::Compiler.new
 
     # minicolumnのネストはエラーになる
-    error = assert_raise(ReVIEW::ApplicationError) do
+    error = assert_raise(ReVIEW::CompileError) do
       compiler.compile_to_ast(chapter)
     end
 

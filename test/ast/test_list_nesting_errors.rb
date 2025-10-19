@@ -21,6 +21,12 @@ class TestListNestingErrors < Test::Unit::TestCase
     @compiler = ReVIEW::AST::Compiler.new
   end
 
+  def create_chapter(content)
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    chapter.content = content
+    chapter
+  end
+
   # Test //li outside of list blocks
   def test_li_outside_list_error
     input = <<~REVIEW
@@ -34,7 +40,7 @@ class TestListNestingErrors < Test::Unit::TestCase
     REVIEW
 
     assert_raise(ReVIEW::CompileError) do
-      @compiler.compile(input.strip)
+      @compiler.compile_to_ast(create_chapter(input.strip))
     end
   end
 
@@ -51,7 +57,7 @@ class TestListNestingErrors < Test::Unit::TestCase
     REVIEW
 
     assert_raise(ReVIEW::CompileError) do
-      @compiler.compile(input.strip)
+      @compiler.compile_to_ast(create_chapter(input.strip))
     end
   end
 
@@ -68,7 +74,7 @@ class TestListNestingErrors < Test::Unit::TestCase
     REVIEW
 
     assert_raise(ReVIEW::CompileError) do
-      @compiler.compile(input.strip)
+      @compiler.compile_to_ast(create_chapter(input.strip))
     end
   end
 
@@ -83,7 +89,7 @@ class TestListNestingErrors < Test::Unit::TestCase
     REVIEW
 
     assert_raise(ReVIEW::CompileError) do
-      @compiler.compile(input.strip)
+      @compiler.compile_to_ast(create_chapter(input.strip))
     end
   end
 
@@ -98,7 +104,7 @@ class TestListNestingErrors < Test::Unit::TestCase
     REVIEW
 
     assert_raise(ReVIEW::CompileError) do
-      @compiler.compile(input.strip)
+      @compiler.compile_to_ast(create_chapter(input.strip))
     end
   end
 
@@ -121,7 +127,7 @@ class TestListNestingErrors < Test::Unit::TestCase
     REVIEW
 
     # This should NOT raise an error
-    ast = @compiler.compile(input.strip)
+    ast = @compiler.compile_to_ast(create_chapter(input.strip))
     assert_not_nil(ast)
   end
 
@@ -164,7 +170,7 @@ class TestListNestingErrors < Test::Unit::TestCase
     REVIEW
 
     # This should NOT raise an error - deeply nested lists are valid
-    ast = @compiler.compile(input.strip)
+    ast = @compiler.compile_to_ast(create_chapter(input.strip))
     assert_not_nil(ast)
   end
 
@@ -182,7 +188,7 @@ class TestListNestingErrors < Test::Unit::TestCase
 
     # Currently this doesn't raise an error, but ideally it should
     # For now, we'll test that it creates a regular ListItemNode without dt/dd type
-    ast = @compiler.compile(input.strip)
+    ast = @compiler.compile_to_ast(create_chapter(input.strip))
     list_node = ast.children.first
     # Find content items (//li blocks have children, simple text lines don't)
     li_items = list_node.children.select { |item| item.item_type.nil? && item.children.any? }
@@ -209,7 +215,7 @@ class TestListNestingErrors < Test::Unit::TestCase
       //}
     REVIEW
 
-    ast = @compiler.compile(input.strip)
+    ast = @compiler.compile_to_ast(create_chapter(input.strip))
     list_node = ast.children.first
 
     # Check that we have different types of items
@@ -240,7 +246,7 @@ class TestListNestingErrors < Test::Unit::TestCase
 
     # This should raise an error because dt/dd are only for dl
     assert_raise(ReVIEW::CompileError) do
-      @compiler.compile(input.strip)
+      @compiler.compile_to_ast(create_chapter(input.strip))
     end
   end
 
@@ -260,7 +266,7 @@ class TestListNestingErrors < Test::Unit::TestCase
     REVIEW
 
     assert_raise(ReVIEW::CompileError) do
-      @compiler.compile(input.strip)
+      @compiler.compile_to_ast(create_chapter(input.strip))
     end
   end
 
@@ -274,7 +280,7 @@ class TestListNestingErrors < Test::Unit::TestCase
     REVIEW
 
     assert_raise(ReVIEW::CompileError) do
-      @compiler.compile(input.strip)
+      @compiler.compile_to_ast(create_chapter(input.strip))
     end
   end
 end

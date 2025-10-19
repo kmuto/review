@@ -21,10 +21,16 @@ class TestASTLineBreakHandling < Test::Unit::TestCase
     ReVIEW::I18n.setup(@config['language'])
   end
 
+  def create_chapter(content)
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    chapter.content = content
+    chapter
+  end
+
   def test_single_line_paragraph
     content = 'これは一行のテストです。'
     compiler = ReVIEW::AST::Compiler.new
-    ast_root = compiler.compile(content)
+    ast_root = compiler.compile_to_ast(create_chapter(content))
 
     # Should have one paragraph with one text node
     assert_equal 1, ast_root.children.length
@@ -41,7 +47,7 @@ class TestASTLineBreakHandling < Test::Unit::TestCase
     # This is the main test case - single paragraph should remain single paragraph
     content = "この文章は改行が含まれています。\nしかし同じ段落のはずです。"
     compiler = ReVIEW::AST::Compiler.new
-    ast_root = compiler.compile(content)
+    ast_root = compiler.compile_to_ast(create_chapter(content))
 
     # Should have one paragraph with one text node
     assert_equal 1, ast_root.children.length, 'Should have exactly one paragraph'
@@ -62,7 +68,7 @@ class TestASTLineBreakHandling < Test::Unit::TestCase
     # This should correctly create two separate paragraphs
     content = "最初の段落です。\n\n次の段落です。"
     compiler = ReVIEW::AST::Compiler.new
-    ast_root = compiler.compile(content)
+    ast_root = compiler.compile_to_ast(create_chapter(content))
 
     # Should have two paragraphs
     assert_equal 2, ast_root.children.length, 'Should have exactly two paragraphs'
@@ -88,7 +94,7 @@ class TestASTLineBreakHandling < Test::Unit::TestCase
     # Multiple single line breaks should be preserved as single line breaks
     content = "行1\n行2\n行3"
     compiler = ReVIEW::AST::Compiler.new
-    ast_root = compiler.compile(content)
+    ast_root = compiler.compile_to_ast(create_chapter(content))
 
     # Should have one paragraph
     assert_equal 1, ast_root.children.length, 'Should have exactly one paragraph'
@@ -109,7 +115,7 @@ class TestASTLineBreakHandling < Test::Unit::TestCase
     # Test complex case with both single and double line breaks
     content = "段落1の行1\n段落1の行2\n\n段落2の行1\n段落2の行2"
     compiler = ReVIEW::AST::Compiler.new
-    ast_root = compiler.compile(content)
+    ast_root = compiler.compile_to_ast(create_chapter(content))
 
     # Should have two paragraphs
     assert_equal 2, ast_root.children.length, 'Should have exactly two paragraphs'

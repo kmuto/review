@@ -23,10 +23,10 @@ class IdgxmlRendererTest < Test::Unit::TestCase
     I18n.setup('ja')
   end
 
-  def compile_block(src)
+  def compile_block(src, reference_resolution: true)
     @chapter.content = src
     compiler = ReVIEW::AST::Compiler.for_chapter(@chapter)
-    ast = compiler.compile_to_ast(@chapter)
+    ast = compiler.compile_to_ast(@chapter, reference_resolution: reference_resolution)
     renderer = ReVIEW::Renderer::IdgxmlRenderer.new(@chapter)
     result = renderer.render(ast)
     # Strip XML declaration and root doc tags to match expected output format
@@ -35,8 +35,8 @@ class IdgxmlRendererTest < Test::Unit::TestCase
     result.gsub(/\A\n+/, '').gsub(/\n+\z/, '')
   end
 
-  def compile_inline(src)
-    result = compile_block(src)
+  def compile_inline(src, reference_resolution: true)
+    result = compile_block(src, reference_resolution: reference_resolution)
     # For inline tests, also strip the paragraph tags if present
     # Don't use .strip as it removes important whitespace like newlines from @<br>{}
     result = result.sub(/\A<p>/, '').delete_suffix('</p>') if result.start_with?('<p>')
@@ -89,7 +89,8 @@ class IdgxmlRendererTest < Test::Unit::TestCase
   end
 
   def test_inline_ref
-    actual = compile_inline('@<ref>{外部参照<>&}')
+    # do not resolves references strictly during compilation
+    actual = compile_inline('@<ref>{外部参照<>&}', reference_resolution: false)
     assert_equal %Q(<ref idref='外部参照&lt;&gt;&amp;'>「●●　外部参照&lt;&gt;&amp;」</ref>), actual
   end
 
@@ -749,10 +750,10 @@ EOS
   end
 
   def test_empty_table
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n//}\n") }
+    e = assert_raises(ReVIEW::CompileError) { compile_block("//table{\n//}\n") }
     assert_equal 'no rows in the table', e.message
 
-    e = assert_raises(ReVIEW::ApplicationError) { compile_block("//table{\n------------\n//}\n") }
+    e = assert_raises(ReVIEW::CompileError) { compile_block("//table{\n------------\n//}\n") }
     assert_equal 'no rows in the table', e.message
   end
 
@@ -833,7 +834,7 @@ EOS
   * AA
 EOS
 
-    assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+    assert_raises(ReVIEW::CompileError) { compile_block(src) }
     assert_match(/too many \*\./, @log_io.string)
   end
 
@@ -1103,7 +1104,7 @@ EOS
 
 //}
 EOS
-      assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_raises(ReVIEW::CompileError) { compile_block(src) }
     end
   end
 
@@ -1118,7 +1119,7 @@ EOS
 
 //}
 EOS
-      assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_raises(ReVIEW::CompileError) { compile_block(src) }
     end
   end
 
@@ -1132,7 +1133,7 @@ EOS
 
 //}
 EOS
-      assert_raises(ReVIEW::ApplicationError) { compile_block(src) }
+      assert_raises(ReVIEW::CompileError) { compile_block(src) }
     end
   end
 

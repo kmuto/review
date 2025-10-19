@@ -74,13 +74,6 @@ module ReVIEW
 
       attr_reader :ast_root, :current_ast_node
 
-      # Compile content string directly to AST
-      def compile(content)
-        # Create a temporary chapter-like object
-        temp_chapter = Struct.new(:content, :basename, :title).new(content, 'temp', '')
-        compile_to_ast(temp_chapter)
-      end
-
       # Lazy-loaded processors
       def inline_processor
         @inline_processor ||= InlineProcessor.new(self)
@@ -121,7 +114,7 @@ module ReVIEW
 
         # Check for accumulated errors (similar to HTMLBuilder's Compiler)
         if @compile_errors
-          raise ApplicationError, "#{chapter.basename} cannot be compiled."
+          raise CompileError, "#{chapter.basename} cannot be compiled."
         end
 
         # Return the compiled AST
@@ -701,9 +694,6 @@ module ReVIEW
         else
           debug("Reference resolution: #{result[:resolved]} references resolved successfully")
         end
-      rescue StandardError => e
-        # Log error but don't fail compilation
-        warn "Reference resolution failed: #{e.message}" if defined?(warn)
       end
     end
   end
