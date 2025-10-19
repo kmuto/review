@@ -106,8 +106,7 @@ class TestMarkdownCompiler < Test::Unit::TestCase
     # Unordered list
     ul = lists[0]
     assert_kind_of(ReVIEW::AST::ListNode, ul)
-    assert_equal :ul, ul.list_type
-    assert ul.unordered?
+    assert ul.ul?
     assert_equal 3, ul.children.size
 
     # Check first item
@@ -117,8 +116,7 @@ class TestMarkdownCompiler < Test::Unit::TestCase
     # Ordered list
     ol = lists[1]
     assert_kind_of(ReVIEW::AST::ListNode, ol)
-    assert_equal :ol, ol.list_type
-    assert ol.ordered?
+    assert ol.ol?
     assert_equal 3, ol.children.size
     assert_equal 1, ol.start_number
   end
@@ -320,7 +318,7 @@ class TestMarkdownCompiler < Test::Unit::TestCase
     # Count different node types
     headlines = ast.children.select { |n| n.is_a?(ReVIEW::AST::HeadlineNode) }
     paragraphs = ast.children.select { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
-    lists = ast.children.select { |n| n.is_a?(ReVIEW::AST::ListNode) && n.unordered? }
+    lists = ast.children.select { |n| n.is_a?(ReVIEW::AST::ListNode) && n.ul? }
     code_blocks = ast.children.select { |n| n.is_a?(ReVIEW::AST::CodeBlockNode) }
     quotes = ast.children.select { |n| n.is_a?(ReVIEW::AST::BlockNode) && n.block_type == :quote }
 

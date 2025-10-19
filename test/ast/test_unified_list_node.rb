@@ -16,9 +16,9 @@ class TestUnifiedListNode < Test::Unit::TestCase
     node = ReVIEW::AST::ListNode.new(location: @location, list_type: :ul)
     assert_equal :ul, node.list_type
     assert_nil(node.start_number)
-    assert node.unordered?
-    assert_false(node.ordered?)
-    assert_false(node.definition?)
+    assert node.ul?
+    assert_false(node.ol?)
+    assert_false(node.dl?)
   end
 
   def test_ordered_list_with_start_number
@@ -30,9 +30,9 @@ class TestUnifiedListNode < Test::Unit::TestCase
     )
     assert_equal :ol, node.list_type
     assert_equal 5, node.start_number
-    assert node.ordered?
-    assert_false(node.unordered?)
-    assert_false(node.definition?)
+    assert node.ol?
+    assert_false(node.ul?)
+    assert_false(node.dl?)
   end
 
   def test_definition_list
@@ -40,9 +40,9 @@ class TestUnifiedListNode < Test::Unit::TestCase
     node = ReVIEW::AST::ListNode.new(location: @location, list_type: :dl)
     assert_equal :dl, node.list_type
     assert_nil(node.start_number)
-    assert node.definition?
-    assert_false(node.ordered?)
-    assert_false(node.unordered?)
+    assert node.dl?
+    assert_false(node.ol?)
+    assert_false(node.ul?)
   end
 
   def test_convenience_methods
@@ -52,19 +52,19 @@ class TestUnifiedListNode < Test::Unit::TestCase
     dl = ReVIEW::AST::ListNode.new(location: @location, list_type: :dl)
 
     # Unordered list checks
-    assert ul.unordered?
-    assert_false(ul.ordered?)
-    assert_false(ul.definition?)
+    assert ul.ul?
+    assert_false(ul.ol?)
+    assert_false(ul.dl?)
 
     # Ordered list checks
-    assert_false(ol.unordered?)
-    assert ol.ordered?
-    assert_false(ol.definition?)
+    assert_false(ol.ul?)
+    assert ol.ol?
+    assert_false(ol.dl?)
 
     # Definition list checks
-    assert_false(dl.unordered?)
-    assert_false(dl.ordered?)
-    assert dl.definition?
+    assert_false(dl.ul?)
+    assert_false(dl.ol?)
+    assert dl.dl?
   end
 
   def test_to_h_serialization
@@ -148,9 +148,9 @@ class TestUnifiedListNode < Test::Unit::TestCase
 
     # New way (recommended)
     assert node.is_a?(ReVIEW::AST::ListNode)
-    assert node.unordered?
+    assert node.ul?
 
     # Type + attribute check
-    assert node.is_a?(ReVIEW::AST::ListNode) && node.list_type == :ul
+    assert node.is_a?(ReVIEW::AST::ListNode) && node.ul?
   end
 end

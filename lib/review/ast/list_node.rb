@@ -14,15 +14,15 @@ module ReVIEW
       end
 
       # Convenience methods for type checking
-      def ordered?
+      def ol?
         list_type == :ol
       end
 
-      def unordered?
+      def ul?
         list_type == :ul
       end
 
-      def definition?
+      def dl?
         list_type == :dl
       end
 

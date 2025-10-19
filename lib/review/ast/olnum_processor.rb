@@ -74,7 +74,7 @@ module ReVIEW
       end
 
       def ordered_list_node?(node)
-        node.is_a?(ListNode) && node.list_type == :ol
+        node.is_a?(ListNode) && node.ol?
       end
 
       def extract_olnum_value(olnum_node)

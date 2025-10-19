@@ -32,6 +32,8 @@ module ReVIEW
     # - AST mode management and rendering coordination
     # - Document structure management
     class Compiler
+      MAX_HEADLINE_LEVEL = 6
+
       # Factory method to create appropriate compiler based on file format
       def self.for_chapter(chapter)
         filename = chapter.respond_to?(:filename) ? chapter.filename : chapter.basename
@@ -99,8 +101,7 @@ module ReVIEW
         )
         @current_ast_node = @ast_root
 
-        # Full AST mode: build complete AST
-        do_compile_with_ast_building
+        build_ast
 
         # Resolve references after AST building but before post-processing
         # Skip if explicitly requested (e.g., during index building)
@@ -121,8 +122,7 @@ module ReVIEW
         @ast_root
       end
 
-      def do_compile_with_ast_building
-        # Full AST mode: parse the entire document into AST first
+      def build_ast
         f = LineInput.from_string(@chapter.content)
         @lineno = 0
 
@@ -160,7 +160,7 @@ module ReVIEW
         return nil unless level_match
 
         level = level_match[1].size
-        if level > 6 # MAX_HEADLINE_LEVEL
+        if level > MAX_HEADLINE_LEVEL
           raise CompileError, "Invalid header: max headline level is 6#{format_location_info}"
         end
 
@@ -255,13 +255,8 @@ module ReVIEW
       end
 
       def compile_block_command_to_ast(f)
-        # IO読み込みはCompilerが担当、処理はBlockProcessorに委譲
         block_data = read_block_command(f)
         block_processor.process_block_command(block_data)
-      end
-
-      def ast_result
-        @ast_root
       end
 
       # Compile unordered list to AST (delegates to list processor)
