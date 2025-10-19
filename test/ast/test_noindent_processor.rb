@@ -6,7 +6,7 @@ require 'review/ast/noindent_processor'
 require 'review/book'
 require 'review/book/chapter'
 
-class TestNoIndentProcessor < Test::Unit::TestCase
+class TestNoindentProcessor < Test::Unit::TestCase
   def setup
     @book = ReVIEW::Book::Base.new
     @config = ReVIEW::Configure.values

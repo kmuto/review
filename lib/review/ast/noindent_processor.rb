@@ -12,26 +12,22 @@ require_relative 'paragraph_node'
 
 module ReVIEW
   module AST
-    # NoIndentProcessor - Processes //noindent commands in AST
+    # NoindentProcessor - Processes //noindent commands in AST
     #
     # This processor finds //noindent block commands and applies the noindent
     # attribute to the next appropriate node (typically ParagraphNode).
     # The //noindent block node itself is removed from the AST.
     #
     # Usage:
-    #   processor = NoIndentProcessor.new
-    #   processor.process(ast_root)
-    class NoIndentProcessor
-      def initialize
-        # Track processing state if needed
+    #   NoindentProcessor.process(ast_root)
+    class NoindentProcessor
+      def self.process(ast_root)
+        new.process(ast_root)
       end
 
       # Process the AST to handle noindent commands
       def process(ast_root)
-        return ast_root unless ast_root
-
         process_node(ast_root)
-        ast_root
       end
 
       private
@@ -39,7 +35,7 @@ module ReVIEW
       def process_node(node)
         node.children.each_with_index do |child, idx|
           # Check if this is a noindent block command
-          if noindent_block?(child)
+          if noindent_command?(child)
             # Find the next target node for noindent attribute
             target_node = find_next_target_node(node.children, idx + 1)
             if target_node
@@ -48,16 +44,14 @@ module ReVIEW
 
             # Remove the noindent block node from AST
             node.children.delete_at(idx)
-            # Don't increment i since we removed an element
-            next
+          else
+            # Recursively process child nodes
+            process_node(child)
           end
-
-          # Recursively process child nodes
-          process_node(child)
         end
       end
 
-      def noindent_block?(node)
+      def noindent_command?(node)
         node.is_a?(BlockNode) && node.block_type == :noindent
       end
 

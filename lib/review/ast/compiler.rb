@@ -18,6 +18,8 @@ require 'review/snapshot_location'
 require 'review/ast/list_processor'
 require 'review/ast/footnote_node'
 require 'review/ast/reference_resolver'
+require 'review/ast/noindent_processor'
+require 'review/ast/olnum_processor'
 
 module ReVIEW
   module AST
@@ -110,8 +112,8 @@ module ReVIEW
         end
 
         # Post-process AST for noindent and olnum commands
-        process_noindent_commands
-        process_olnum_commands
+        NoindentProcessor.process(@ast_root)
+        OlnumProcessor.process(@ast_root)
 
         # Check for accumulated errors (similar to HTMLBuilder's Compiler)
         if @compile_errors
@@ -366,40 +368,11 @@ module ReVIEW
         current_block_context&.start_location || @current_location
       end
 
-      # Get location information for inline processing
-      # Always returns block start position within blocks
-      #
-      # @return [Location] Location information for inline processing
-      def inline_processing_location
-        current_block_location
-      end
-
       # Determine if within block context
       #
       # @return [Boolean] true if within block context
       def in_block_context?
         !@block_context_stack.empty?
-      end
-
-      # Temporary override of location information (Bang Methods)
-
-      # Temporarily save current location information and set to new location
-      # Used when temporarily changing location information during block or inline processing
-      #
-      # @param new_location [Location] New location information to set
-      # @return [Location] Previous location information (for restoration)
-      def override_location!(new_location)
-        old_location = @current_location
-        @current_location = new_location
-        old_location
-      end
-
-      # Restore location information to specified value
-      # Used when restoring location information saved by override_location!
-      #
-      # @param location [Location] Location information to restore
-      def restore_location!(location)
-        @current_location = location
       end
 
       # Temporarily override location information and execute block
@@ -409,33 +382,13 @@ module ReVIEW
       # @yield New location information is effective during block execution
       # @return [Object] Block execution result
       def with_temporary_location!(new_location)
-        old_location = override_location!(new_location)
+        old_location = @current_location
+        @current_location = new_location
         begin
           yield
         ensure
-          restore_location!(old_location)
+          @current_location = old_location
         end
-      end
-
-      # Temporary override of AST node context (Bang Methods)
-
-      # Temporarily save current AST node and set to new node
-      # Used when temporarily changing current AST node in nested block processing
-      #
-      # @param new_node [AST::Node] New AST node to set
-      # @return [AST::Node] Previous AST node (for restoration)
-      def override_current_ast_node!(new_node)
-        old_node = @current_ast_node
-        @current_ast_node = new_node
-        old_node
-      end
-
-      # Restore AST node to specified value
-      # Used when restoring AST node saved by override_current_ast_node!
-      #
-      # @param node [AST::Node] AST node to restore
-      def restore_current_ast_node!(node)
-        @current_ast_node = node
       end
 
       # Temporarily override AST node and execute block
@@ -445,11 +398,12 @@ module ReVIEW
       # @yield New AST node is effective during block execution
       # @return [Object] Block execution result
       def with_temporary_ast_node!(new_node)
-        old_node = override_current_ast_node!(new_node)
+        old_node = @current_ast_node
+        @current_ast_node = new_node
         begin
           yield
         ensure
-          restore_current_ast_node!(old_node)
+          @current_ast_node = old_node
         end
       end
 
@@ -494,25 +448,6 @@ module ReVIEW
         # Restore context
         @current_ast_node = saved_current_node
         @current_location = saved_location
-      end
-
-      # Helper method to create and add block nodes with inline processing
-      def create_and_add_block_node(block_type:, args: nil, lines: nil, caption: nil, **options)
-        lines ||= []
-        node = AST::BlockNode.new(
-          location: location,
-          block_type: block_type,
-          args: args,
-          caption: caption,
-          **options
-        )
-
-        lines.each do |line|
-          inline_processor.parse_inline_elements(line, node)
-        end
-
-        add_child_to_current_node(node)
-        node
       end
 
       # IO reading dedicated method - nesting support and error handling
@@ -655,28 +590,8 @@ module ReVIEW
         render_children_to_text(temp_paragraph)
       end
 
-      # Process noindent commands in the AST
-      def process_noindent_commands
-        return unless @ast_root
-
-        require_relative('noindent_processor')
-        processor = NoIndentProcessor.new
-        processor.process(@ast_root)
-      end
-
-      # Process olnum commands in the AST
-      def process_olnum_commands
-        return unless @ast_root
-
-        require_relative('olnum_processor')
-        processor = OlnumProcessor.new
-        processor.process(@ast_root)
-      end
-
       # Resolve references in the AST
       def resolve_references
-        return unless @ast_root
-
         # Skip reference resolution in test environments or when chapter lacks book context
         # Chapter objects always have book method (from BookUnit/Chapter)
         return unless @chapter.book

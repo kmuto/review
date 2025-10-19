@@ -19,47 +19,38 @@ module ReVIEW
     # removed. The //olnum block node itself is removed from the AST.
     #
     # Usage:
-    #   processor = OlnumProcessor.new
-    #   processor.process(ast_root)
+    #   OlnumProcessor.process(ast_root)
     class OlnumProcessor
-      def initialize
-        # Track processing state if needed
+      def self.process(ast_root)
+        new.process(ast_root)
       end
 
       # Process the AST to handle olnum commands
       def process(ast_root)
-        return ast_root unless ast_root
-
         process_node(ast_root)
-        ast_root
       end
 
       private
 
       def process_node(node)
         node.children.each_with_index do |child, idx|
-          # Check if this is an olnum block command
-          if olnum_block?(child)
+          if olnum_command?(child)
             # Find the next ordered list for olnum attribute
             target_list = find_next_ordered_list(node.children, idx + 1)
             if target_list
-              # Extract olnum value from args
               olnum_value = extract_olnum_value(child)
               target_list.add_attribute(:start_number, olnum_value)
             end
 
-            # Remove the olnum block node from AST
             node.children.delete_at(idx)
-            # Don't increment i since we removed an element
-            next
+          else
+            # Recursively process child nodes
+            process_node(child)
           end
-
-          # Recursively process child nodes
-          process_node(child)
         end
       end
 
-      def olnum_block?(node)
+      def olnum_command?(node)
         node.is_a?(BlockNode) && node.block_type == :olnum
       end
 
@@ -78,12 +69,7 @@ module ReVIEW
       end
 
       def extract_olnum_value(olnum_node)
-        # Extract number from olnum args
-        if olnum_node.args.first
-          olnum_node.args.first.to_i
-        else
-          1 # Default start number
-        end
+        (olnum_node.args.first || 1).to_i
       end
     end
   end

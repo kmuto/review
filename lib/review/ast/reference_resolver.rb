@@ -21,7 +21,6 @@ module ReVIEW
       def initialize(chapter)
         @chapter = chapter
         @book = chapter.book
-        @logger = ReVIEW.logger
       end
 
       def resolve_references(ast)
@@ -33,7 +32,9 @@ module ReVIEW
         error_count = 0
 
         visit_all_nodes(ast) do |node|
-          if node.is_a?(InlineNode) && reference_children?(node)
+          next unless node.is_a?(InlineNode)
+
+          if reference_children?(node)
             ref_type = node.inline_type
             node.children.each do |child|
               if child.is_a?(ReferenceNode) && !child.resolved?
@@ -47,7 +48,6 @@ module ReVIEW
           end
         end
 
-        @logger.debug("ReferenceResolver: #{resolve_count} references resolved, #{error_count} failed") if @logger
         { resolved: resolve_count, failed: error_count }
       end
 
@@ -62,7 +62,7 @@ module ReVIEW
         return false unless ref_types.include?(inline_node.inline_type)
 
         # Check if it has ReferenceNode children
-        inline_node.children&.any?(ReferenceNode)
+        inline_node.children.any?(ReferenceNode)
       end
 
       def build_indexes_from_ast(ast)
@@ -109,7 +109,7 @@ module ReVIEW
 
       # Traverse all nodes in AST
       def visit_all_nodes(node, &block)
-        yield node if block
+        yield node
 
         node.children.each { |child| visit_all_nodes(child, &block) }
       end
