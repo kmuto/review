@@ -286,11 +286,13 @@ module ReVIEW
           # Render column reference
           item = chapter.column(column_id)
 
+          compiled_caption = @parent_renderer.render_inline_text_for_renderer(item.caption)
+
           if @book.config['chapterlink']
             num = item.number
-            %Q(<link href="column-#{num}">#{I18n.t('column', item.caption)}</link>)
+            %Q(<link href="column-#{num}">#{I18n.t('column', compiled_caption)}</link>)
           else
-            I18n.t('column', item.caption)
+            I18n.t('column', compiled_caption)
           end
         rescue ReVIEW::KeyError
           app_error "unknown column: #{column_id}"
@@ -333,7 +335,7 @@ module ReVIEW
           begin
             %Q(<span type='bibref' idref='#{id}'>[#{@chapter.bibpaper(id).number}]</span>)
           rescue ReVIEW::KeyError
-            %Q(<span type='bibref' idref='#{id}'>[??]</span>)
+            app_error "unknown bib: #{id}"
           end
         end
 

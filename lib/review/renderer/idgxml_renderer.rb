@@ -28,6 +28,8 @@ require 'review/renderer/list_structure_normalizer'
 require 'review/htmlutils'
 require 'review/textutils'
 require 'review/sec_counter'
+require 'review/ast/caption_node'
+require 'review/ast/paragraph_node'
 require 'review/i18n'
 require 'review/loggable'
 require 'digest/sha2'
@@ -903,33 +905,6 @@ module ReVIEW
         content.end_with?("\n") ? content.chomp : content
       end
 
-      def render_nodes(nodes)
-        return '' unless nodes && !nodes.empty?
-
-        nodes.map { |child| visit(child) }.join
-      end
-
-      def render_inline_nodes(nodes)
-        return '' unless nodes && !nodes.empty?
-
-        format_inline_buffer(nodes.map { |child| visit(child) })
-      end
-
-      def inline_node?(node)
-        node.is_a?(ReVIEW::AST::TextNode) || node.is_a?(ReVIEW::AST::InlineNode)
-      end
-
-      def format_inline_buffer(buffer)
-        return '' if buffer.empty?
-
-        content = buffer.join("\n")
-        if @book.config['join_lines_by_lang']
-          content.tr("\n", ' ')
-        else
-          content.delete("\n")
-        end
-      end
-
       def ast_compiler
         @ast_compiler ||= ReVIEW::AST::Compiler.for_chapter(@chapter)
       end
@@ -950,7 +925,57 @@ module ReVIEW
         render_inline_nodes(nodes)
       end
 
+      def render_inline_text_for_renderer(text)
+        render_inline_text(text)
+      end
+
       private
+
+      def render_inline_text(text)
+        return '' if text.blank?
+
+        caption_node = ReVIEW::AST::CaptionNode.parse(
+          text.to_s,
+          inline_processor: ast_compiler.inline_processor
+        )
+        return '' unless caption_node
+
+        parts = caption_node.children.map { |child| visit(child) }
+        content = parts.join
+
+        if @book.config['join_lines_by_lang']
+          content.gsub(/\n+/, ' ')
+        else
+          content.delete("\n")
+        end
+      end
+
+      def render_nodes(nodes)
+        return '' unless nodes && !nodes.empty?
+
+        nodes.map { |child| visit(child) }.join
+      end
+
+      def render_inline_nodes(nodes)
+        return '' unless nodes && !nodes.empty?
+
+        format_inline_buffer(nodes.map { |child| visit(child) })
+      end
+
+      def format_inline_buffer(buffer)
+        return '' if buffer.empty?
+
+        content = buffer.join("\n")
+        if @book.config['join_lines_by_lang']
+          content.tr("\n", ' ')
+        else
+          content.delete("\n")
+        end
+      end
+
+      def inline_node?(node)
+        node.is_a?(ReVIEW::AST::TextNode) || node.is_a?(ReVIEW::AST::InlineNode)
+      end
 
       # Close section tags based on level
       def output_close_sect_tags(level)
@@ -1872,18 +1897,6 @@ module ReVIEW
       # Render inline elements in caption
       def render_inline_in_caption(caption_text)
         render_inline_text(caption_text)
-      end
-
-      def render_inline_text(text)
-        # Create a temporary paragraph node and parse inline elements
-        require 'review/ast/compiler'
-        require 'review/lineinput'
-
-        temp_node = ReVIEW::AST::ParagraphNode.new(location: nil)
-        @ast_compiler ||= ReVIEW::AST::Compiler.for_chapter(@chapter)
-        @ast_compiler.inline_processor.parse_inline_elements(text.to_s, temp_node)
-
-        render_children(temp_node)
       end
 
       def resolve_bibpaper_number(bib_id)
