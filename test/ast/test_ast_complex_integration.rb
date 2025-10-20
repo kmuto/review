@@ -103,6 +103,8 @@ class TestASTComplexIntegration < Test::Unit::TestCase
 
       //footnote[footnote1][First footnote with @<b>{formatting}]
       //footnote[footnote2][Second footnote with @<code>{code}]
+      //footnote[processing-note][Processing footnote]
+      //footnote[data-note][Data note]
     EOB
 
     # Test AST compilation

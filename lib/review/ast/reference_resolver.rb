@@ -59,7 +59,7 @@ module ReVIEW
         return false unless inline_node.inline_type
 
         # Check reference-type inline_type
-        ref_types = %w[img list table eq fn endnote hd chap chapref sec secref labelref ref w wb]
+        ref_types = %w[img list table eq fn endnote column hd chap chapref sec secref labelref ref w wb]
         return false unless ref_types.include?(inline_node.inline_type)
 
         # Check if it has ReferenceNode children
@@ -89,6 +89,7 @@ module ReVIEW
                         when 'eq' then resolve_equation_ref(full_ref_id)
                         when 'fn' then resolve_footnote_ref(full_ref_id)
                         when 'endnote' then resolve_endnote_ref(full_ref_id)
+                        when 'column' then resolve_column_ref(full_ref_id)
                         when 'chap' then resolve_chapter_ref(full_ref_id)
                         when 'chapref' then resolve_chapter_ref_with_title(full_ref_id)
                         when 'hd' then resolve_headline_ref(full_ref_id)
@@ -230,6 +231,10 @@ module ReVIEW
       # Resolve footnote references
       def resolve_footnote_ref(id)
         if (item = find_index_item(@chapter.footnote_index, id))
+          if item.respond_to?(:footnote_node?) && !item.footnote_node?
+            raise CompileError, "Footnote reference not found: #{id}"
+          end
+
           number = item.respond_to?(:number) ? item.number : nil
           ResolvedData.footnote(
             item_number: number,
@@ -244,6 +249,10 @@ module ReVIEW
       # Resolve endnote references
       def resolve_endnote_ref(id)
         if (item = find_index_item(@chapter.endnote_index, id))
+          if item.respond_to?(:footnote_node?) && !item.footnote_node?
+            raise CompileError, "Endnote reference not found: #{id}"
+          end
+
           number = item.respond_to?(:number) ? item.number : nil
           ResolvedData.endnote(
             item_number: number,
@@ -252,6 +261,31 @@ module ReVIEW
           )
         else
           raise CompileError, "Endnote reference not found: #{id}"
+        end
+      end
+
+      def resolve_column_ref(id)
+        if id.include?('|')
+          chapter_id, item_id = split_cross_chapter_ref(id)
+          target_chapter = find_chapter_by_id(chapter_id)
+          raise CompileError, "Chapter not found for column reference: #{chapter_id}" unless target_chapter
+
+          item = safe_column_fetch(target_chapter, item_id)
+          ResolvedData.column(
+            chapter_number: target_chapter.number,
+            item_number: index_item_number(item),
+            chapter_id: chapter_id,
+            item_id: item_id,
+            caption: extract_caption(item)
+          )
+        else
+          item = safe_column_fetch(@chapter, id)
+          ResolvedData.column(
+            chapter_number: @chapter.number,
+            item_number: index_item_number(item),
+            item_id: id,
+            caption: extract_caption(item)
+          )
         end
       end
 
@@ -462,6 +496,14 @@ module ReVIEW
         end
       end
 
+      def safe_column_fetch(chapter, column_id)
+        raise CompileError, "Column reference not found: #{column_id}" unless chapter
+
+        chapter.column(column_id)
+      rescue ::KeyError, ReVIEW::KeyError
+        raise CompileError, "Column reference not found: #{column_id}"
+      end
+
       # Resolve word references (dictionary lookup)
       def resolve_word_ref(id)
         dictionary = @book.config['dictionary'] || {}
@@ -487,9 +529,16 @@ module ReVIEW
 
       # Find chapter by ID from book's chapter_index
       def find_chapter_by_id(id)
-        @book.chapter_index[id]&.content
-      rescue KeyError
-        nil
+        return nil unless @book
+
+        begin
+          item = @book.chapter_index[id]
+          return item.content if item
+        rescue KeyError
+          # fall through to contents search
+        end
+
+        Array(@book.contents).find { |chap| chap.id == id }
       end
     end
   end

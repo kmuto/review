@@ -29,6 +29,8 @@ class TestCodeBlockOriginalText < Test::Unit::TestCase
       # Comment with @<fn>{code-fn}
       normal line
       //}
+
+      //footnote[code-fn][Code block footnote]
     EOS
 
     @chapter.content = source

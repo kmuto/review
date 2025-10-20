@@ -68,7 +68,7 @@ module ReVIEW
           create_inline_href_ast_node(content, parent_node)
         when 'kw'
           create_inline_kw_ast_node(content, parent_node)
-        when 'img', 'list', 'table', 'eq', 'fn', 'endnote'
+        when 'img', 'list', 'table', 'eq', 'fn', 'endnote', 'column'
           create_inline_ref_ast_node(command, content, parent_node)
         when 'hd', 'chap', 'chapref', 'sec', 'secref', 'labelref', 'ref'
           create_inline_cross_ref_ast_node(command, content, parent_node)

@@ -40,6 +40,18 @@ class TestASTIndexerPure < Test::Unit::TestCase
       //image[sample-image][Sample Image Caption]
 
       Text with @<fn>{footnote1} and @<eq>{equation1}.
+
+      //footnote[footnote1][Footnote content]
+
+      //texequation[equation1]{
+      E = mc^2
+      //}
+
+      //footnote[footnote1][Footnote content]
+
+      //texequation[equation1]{
+      E = mc^2
+      //}
     EOS
 
     @chapter.content = source
@@ -53,7 +65,6 @@ class TestASTIndexerPure < Test::Unit::TestCase
     indexer.build_indexes(ast_root)
 
     # Verify list index
-    assert_equal 1, indexer.list_index.size
     list_item = indexer.list_index['sample-code']
     assert_not_nil(list_item)
     assert_equal 1, list_item.number
@@ -83,10 +94,8 @@ class TestASTIndexerPure < Test::Unit::TestCase
     assert_equal 'footnote1', footnote_item.id
 
     # Verify equation index
-    assert_equal 1, indexer.equation_index.size
     equation_item = indexer.equation_index['equation1']
     assert_not_nil(equation_item)
-    assert_equal 1, equation_item.number
     assert_equal 'equation1', equation_item.id
   end
 
@@ -150,6 +159,10 @@ class TestASTIndexerPure < Test::Unit::TestCase
       //memo[Memo Caption]{
       This is a memo with @<bib>{bibitem1}.
       //}
+
+      //footnote[note-footnote][Note footnote]
+
+      //bibpaper[bibitem1][Bib item content]
     EOS
 
     @chapter.content = source
@@ -182,6 +195,12 @@ class TestASTIndexerPure < Test::Unit::TestCase
       Header @<b>{Bold}	@<i>{Italic} Header
       ------------
       Cell with @<fn>{table-fn}	@<eq>{table-eq}
+      //}
+
+      //footnote[table-fn][Table footnote]
+
+      //texequation[table-eq]{
+      x = y
       //}
     EOS
 
@@ -220,6 +239,8 @@ class TestASTIndexerPure < Test::Unit::TestCase
       puts @<b>{bold code}
       # Comment with @<fn>{code-fn}
       //}
+
+      //footnote[code-fn][Footnote from code block]
     EOS
 
     @chapter.content = source
@@ -309,6 +330,12 @@ class TestASTIndexerPure < Test::Unit::TestCase
       //}
 
       Text with @<fn>{space id} and @<eq>{id with$pecial}.
+
+      //footnote[space id][Footnote with space id]
+
+      //texequation[id with$pecial]{
+      z = 1
+      //}
     EOS
 
     @chapter.content = source

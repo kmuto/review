@@ -31,6 +31,8 @@ class TestASTStructureDebug < Test::Unit::TestCase
       //note[Note Caption]{
       This is a note with @<fn>{footnote1}.
       //}
+
+      //footnote[footnote1][Footnote in note]
     EOS
 
     @chapter.content = source
@@ -65,6 +67,8 @@ class TestASTStructureDebug < Test::Unit::TestCase
       ------------
       Cell with @<fn>{table-fn}	Normal Cell
       //}
+
+      //footnote[table-fn][Footnote in table]
     EOS
 
     @chapter.content = source
@@ -110,6 +114,8 @@ class TestASTStructureDebug < Test::Unit::TestCase
       = Chapter Title
 
       This is a paragraph with @<fn>{footnote1} and @<b>{bold text}.
+
+      //footnote[footnote1][Paragraph footnote]
     EOS
 
     @chapter.content = source

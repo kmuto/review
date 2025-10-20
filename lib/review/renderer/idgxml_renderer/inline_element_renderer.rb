@@ -209,7 +209,7 @@ module ReVIEW
 
         # References
         def render_list(content, node)
-          id = node.args.first || content
+          id = node.reference_id || content
           begin
             # Get list reference using parent renderer's method
             base_ref = @parent_renderer.send(:get_list_reference, id)
@@ -220,7 +220,7 @@ module ReVIEW
         end
 
         def render_table(content, node)
-          id = node.args.first || content
+          id = node.reference_id || content
           begin
             # Get table reference using parent renderer's method
             base_ref = @parent_renderer.send(:get_table_reference, id)
@@ -231,7 +231,7 @@ module ReVIEW
         end
 
         def render_img(content, node)
-          id = node.args.first || content
+          id = node.reference_id || content
           begin
             # Get image reference using parent renderer's method
             base_ref = @parent_renderer.send(:get_image_reference, id)
@@ -242,7 +242,7 @@ module ReVIEW
         end
 
         def render_eq(content, node)
-          id = node.args.first || content
+          id = node.reference_id || content
           begin
             # Get equation reference using parent renderer's method
             base_ref = @parent_renderer.send(:get_equation_reference, id)
@@ -253,7 +253,7 @@ module ReVIEW
         end
 
         def render_imgref(content, node)
-          id = node.args.first || content
+          id = node.reference_id || content
           chapter, extracted_id = extract_chapter_id(id)
 
           if chapter.image(extracted_id).caption.blank?
@@ -269,51 +269,54 @@ module ReVIEW
 
         # Column reference
         def render_column(content, node)
-          id = node.args.first || content
+          id = node.reference_id || content
 
           # Parse chapter|id format
           m = /\A([^|]+)\|(.+)/.match(id)
           if m && m[1]
-            chapter = @book.contents.detect { |chap| chap.id == m[1] }
+            chapter = find_chapter_by_id(m[1])
             column_id = m[2]
           else
             chapter = @chapter
             column_id = id
           end
 
-          return escape(content) unless chapter
+          app_error "unknown chapter: #{m[1]}" unless chapter
 
           # Render column reference
+          item = chapter.column(column_id)
+
           if @book.config['chapterlink']
-            num = chapter.column(column_id).number
-            %Q(<link href="column-#{num}">#{I18n.t('column', chapter.column(column_id).caption)}</link>)
+            num = item.number
+            %Q(<link href="column-#{num}">#{I18n.t('column', item.caption)}</link>)
           else
-            I18n.t('column', chapter.column(column_id).caption)
+            I18n.t('column', item.caption)
           end
-        rescue StandardError
-          escape(content)
+        rescue KeyError
+          app_error "unknown column: #{column_id}"
         end
 
         # Footnotes
         def render_fn(content, node)
-          id = node.args.first || content
+          id = node.reference_id || content
           begin
-            fn_content = @chapter.footnote(id).content.strip
+            fn_entry = @chapter.footnote(id)
+            fn_content = fn_entry.content.to_s.strip
             # Compile inline elements in footnote content
             compiled_content = fn_content # TODO: may need to compile inline
             %Q(<footnote>#{compiled_content}</footnote>)
           rescue KeyError
-            %Q(<footnote>#{escape(id)}</footnote>)
+            app_error "unknown footnote: #{id}"
           end
         end
 
         # Endnotes
         def render_endnote(content, node)
-          id = node.args.first || content
+          id = node.reference_id || content
           begin
             %Q(<span type='endnoteref' idref='endnoteb-#{normalize_id(id)}'>(#{@chapter.endnote(id).number})</span>)
           rescue KeyError
-            %Q(<span type='endnoteref' idref='endnoteb-#{normalize_id(id)}'>(??)</span>)
+            app_error "unknown endnote: #{id}"
           end
         end
 
@@ -546,6 +549,26 @@ module ReVIEW
             return [ch, m[2]]
           end
           [@chapter, chap_ref]
+        end
+
+        def find_chapter_by_id(chapter_id)
+          return nil unless @book
+
+          if @book.respond_to?(:chapter_index)
+            index = @book.chapter_index
+            if index
+              begin
+                item = index[chapter_id]
+                return item.content if item.respond_to?(:content)
+              rescue KeyError
+                # fall through to contents search
+              end
+            end
+          end
+
+          if @book.respond_to?(:contents)
+            Array(@book.contents).find { |chap| chap.id == chapter_id }
+          end
         end
 
         def get_chap(chapter = @chapter)

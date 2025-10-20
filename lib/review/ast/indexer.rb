@@ -425,11 +425,6 @@ module ReVIEW
           if node.args.first
             eq_id = node.args.first
             check_id(eq_id)
-            # Add to index if not already present (for compatibility with tests and IndexBuilder behavior)
-            unless @equation_index.key?(eq_id)
-              item = ReVIEW::Book::Index::Item.new(eq_id, @equation_index.size + 1)
-              @equation_index.add_item(item)
-            end
           end
         when 'img'
           # Image references are handled when the actual image blocks are processed
@@ -458,20 +453,16 @@ module ReVIEW
       def extract_caption_text(caption)
         return nil unless caption
 
-        if caption.respond_to?(:children)
-          caption.children.map do |child|
-            case child
-            when AST::TextNode
-              child.content
-            when AST::InlineNode
-              extract_inline_text(child)
-            else
-              child.to_s
-            end
-          end.join
-        else
-          caption.to_s
-        end
+        caption.children.map do |child|
+          case child
+          when AST::TextNode
+            child.content
+          when AST::InlineNode
+            extract_inline_text(child)
+          else
+            child.to_s
+          end
+        end.join
       end
 
       # Extract text content from inline nodes

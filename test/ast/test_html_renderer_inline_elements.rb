@@ -552,7 +552,13 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
 
   # Endnote reference
   def test_inline_endnote_basic
-    content = "= Chapter\n\nText @<endnote>{note1}.\n"
+    content = <<~REVIEW
+      = Chapter
+
+      Text @<endnote>{note1}.
+
+      //endnote[note1][Endnote content]
+    REVIEW
     output = render_inline(content)
     # Should contain endnote reference markup
     assert_match(/note1/, output)

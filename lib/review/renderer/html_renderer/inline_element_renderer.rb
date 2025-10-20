@@ -143,8 +143,8 @@ module ReVIEW
           end
         end
 
-        def render_inline_chap(_type, content, node)
-          id = node.args.first || content
+        def render_inline_chap(_type, _content, node)
+          id = node.reference_id
           begin
             chapter_num = @book.chapter_index.number(id)
             if config['chapterlink']
@@ -157,11 +157,11 @@ module ReVIEW
           end
         end
 
-        def render_inline_title(_type, content, node)
-          id = node.args.first || content
+        def render_inline_title(_type, _content, node)
+          id = node.reference_id
           begin
             # Find the chapter and get its title
-            chapter = @book.contents.detect { |chap| chap.id == id }
+            chapter = find_chapter_by_id(id)
             raise KeyError unless chapter
 
             title = compile_inline(chapter.title)
@@ -175,8 +175,8 @@ module ReVIEW
           end
         end
 
-        def render_inline_chapref(_type, content, node)
-          id = node.args.first || content
+        def render_inline_chapref(_type, _content, node)
+          id = node.reference_id
           begin
             # Use display_string like Builder to get chapter number + title
             # This returns formatted string like "第1章「タイトル」" from I18n.t('chapter_quote')
@@ -348,7 +348,7 @@ module ReVIEW
         def render_inline_labelref(_type, content, node)
           # Label reference: @<labelref>{id}
           # This should match HTMLBuilder's inline_labelref behavior
-          idref = node.args.first || content
+          idref = node.reference_id || content
           %Q(<a target='#{escape_content(idref)}'>「#{I18n.t('label_marker')}#{escape_content(idref)}」</a>)
         end
 
@@ -508,13 +508,13 @@ module ReVIEW
           end
         end
 
-        def render_inline_column(_type, content, node)
+        def render_inline_column(_type, _content, node)
           # Column reference: @<column>{id} or @<column>{chapter|id}
-          id = node.args.first || content
+          id = node.reference_id
           m = /\A([^|]+)\|(.+)/.match(id)
 
           chapter = if m && m[1]
-                      @book.chapters.detect { |chap| chap.id == m[1] }
+                      find_chapter_by_id(m[1])
                     else
                       @chapter
                     end
@@ -522,18 +522,20 @@ module ReVIEW
           column_id = m ? m[2] : id
 
           begin
+            app_error "unknown chapter: #{m[1]}" if m && !chapter
             return '' unless chapter
 
             column_caption = chapter.column(column_id).caption
             column_number = chapter.column(column_id).number
 
+            anchor = "column-#{column_number}"
             if config['chapterlink']
-              %Q(<a href="#{chapter.id}#{extname}#column-#{column_number}" class="columnref">#{I18n.t('column', escape_content(column_caption))}</a>)
+              %Q(<a href="#{chapter.id}#{extname}##{anchor}" class="columnref">#{I18n.t('column', escape_content(column_caption))}</a>)
             else
               I18n.t('column', escape_content(column_caption))
             end
-          rescue KeyError
-            content
+          rescue KeyError, ReVIEW::KeyError
+            app_error "unknown column: #{column_id}"
           end
         end
 
@@ -573,7 +575,7 @@ module ReVIEW
         def extract_chapter_id(chap_ref)
           m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
           if m
-            ch = @book.contents.detect { |chap| chap.id == m[1] }
+            ch = find_chapter_by_id(m[1])
             raise KeyError unless ch
 
             return [ch, m[2]]
@@ -591,6 +593,19 @@ module ReVIEW
             end
           end
           nil
+        end
+
+        def find_chapter_by_id(chapter_id)
+          return nil unless @book
+
+          begin
+            item = @book.chapter_index[chapter_id]
+            return item.content if item.respond_to?(:content)
+          rescue KeyError
+            # fall back to contents search
+          end
+
+          Array(@book.contents).find { |chap| chap.id == chapter_id }
         end
 
         def extname

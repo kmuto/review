@@ -839,9 +839,63 @@ EOS
   end
 
   def test_inline_unknown
-    pend('Unknown reference error handling - AST mode resolves references at different phase')
-    # AST mode resolves references during rendering, not during compilation
-    # This test is specific to HTMLBuilder's immediate reference resolution
+    error = assert_raise(ReVIEW::CompileError) { compile_block("@<img>{n}\n") }
+    assert_equal 'Image reference not found: n', error.message
+
+    error = assert_raise(ReVIEW::CompileError) { compile_block("@<hd>{n}\n") }
+    assert_equal 'Headline not found: n', error.message
+
+    %w[list table].each do |name|
+      error = assert_raise(ReVIEW::CompileError) { compile_block("@<#{name}>{n}\n") }
+      expected_message = "#{name.capitalize} reference not found: n"
+      assert_equal expected_message, error.message
+    end
+
+    %w[ref labelref].each do |name|
+      error = assert_raise(ReVIEW::CompileError) { compile_block("@<#{name}>{n}\n") }
+      assert_equal 'Label not found: n', error.message
+    end
+
+    %w[chap chapref].each do |name|
+      error = assert_raise(ReVIEW::CompileError) { compile_block("@<#{name}>{n}\n") }
+      assert_equal 'Chapter reference not found: n', error.message
+    end
+
+    error = assert_raise(ReVIEW::CompileError) { compile_block("@<secref>{n}\n") }
+    assert_equal 'Headline not found: n', error.message
+
+    error = assert_raise(KeyError) { compile_block("@<title>{n}\n") }
+    assert_equal 'key not found: "n"', error.message
+
+    error = assert_raise(ReVIEW::CompileError) { compile_block("@<fn>{n}\n") }
+    assert_equal 'Footnote reference not found: n', error.message
+
+    error = assert_raise(ReVIEW::CompileError) { compile_block("@<eq>{n}\n") }
+    assert_equal 'Equation reference not found: n', error.message
+
+    error = assert_raise(ReVIEW::CompileError) { compile_block("@<endnote>{n}\n") }
+    assert_equal 'Endnote reference not found: n', error.message
+
+    error = assert_raise(ReVIEW::CompileError) { compile_block("@<column>{n}\n") }
+    assert_equal 'Column reference not found: n', error.message
+
+    chap1 = Book::Chapter.new(@book, 1, 'chap1', nil, StringIO.new)
+    def chap1.column(id)
+      raise KeyError unless id == 'existing-column'
+
+      Book::Index::Item.new(id, 1, 'existing caption')
+    end
+
+    def @book.contents
+      @contents ||= []
+    end
+
+    @book.contents << chap1
+
+    error = assert_raise(ReVIEW::CompileError) { compile_block("@<column>{chap1|n}\n") }
+    assert_equal 'Column reference not found: n', error.message
+
+    @book.contents.delete(chap1)
   end
 
   def test_inline_imgref
@@ -953,6 +1007,8 @@ EOS
     chap1 = Book::Chapter.new(@book, 1, 'chap1', nil, StringIO.new)
 
     def chap1.column(id)
+      raise KeyError unless id == 'column'
+
       Book::Index::Item.new(id, 1, 'column_cap')
     end
 
