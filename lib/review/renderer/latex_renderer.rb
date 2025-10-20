@@ -9,6 +9,7 @@
 require 'review/renderer/base'
 require 'review/renderer/rendering_context'
 require 'review/renderer/list_structure_normalizer'
+require 'review/ast/caption_node'
 require 'review/latexutils'
 require 'review/sec_counter'
 require 'review/i18n'
@@ -1400,6 +1401,22 @@ module ReVIEW
                       "\\\\end{\\1}\n\\\\begin{\\2}")
 
         content
+      end
+
+      def render_inline_nodes(nodes)
+        nodes.map { |child| visit(child) }.join
+      end
+
+      def render_inline_text(text)
+        return '' if text.blank?
+
+        caption_node = ReVIEW::AST::CaptionNode.parse(
+          text.to_s,
+          inline_processor: ast_compiler.inline_processor
+        )
+        return '' unless caption_node
+
+        render_inline_nodes(caption_node.children)
       end
 
       # Render children with specific rendering context

@@ -453,16 +453,9 @@ module ReVIEW
       def extract_caption_text(caption)
         return nil unless caption
 
-        caption.children.map do |child|
-          case child
-          when AST::TextNode
-            child.content
-          when AST::InlineNode
-            extract_inline_text(child)
-          else
-            child.to_s
-          end
-        end.join
+        return caption.to_text if caption.respond_to?(:to_text)
+
+        caption.to_s
       end
 
       # Extract text content from inline nodes

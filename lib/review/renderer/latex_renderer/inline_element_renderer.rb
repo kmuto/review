@@ -860,7 +860,10 @@ module ReVIEW
             # Get column number like LatexRenderer#generate_column_label does
             num = column_item.number
             column_label = "column:#{chapter.id}:#{num}"
-            "\\reviewcolumnref{#{I18n.t('column', escape(caption))}}{#{column_label}}"
+
+            compiled_caption = @parent_renderer.render_inline_text(caption)
+            column_text = I18n.t('column', compiled_caption)
+            "\\reviewcolumnref{#{column_text}}{#{column_label}}"
           rescue ReVIEW::KeyError => e
             raise NotImplementedError, "Unknown column: #{id} in chapter #{chapter.id} - #{e.message}"
           end

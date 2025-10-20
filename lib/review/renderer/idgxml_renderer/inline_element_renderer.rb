@@ -301,10 +301,17 @@ module ReVIEW
           id = node.reference_id || content
           begin
             fn_entry = @chapter.footnote(id)
-            fn_content = fn_entry.content.to_s.strip
-            # Compile inline elements in footnote content
-            compiled_content = fn_content # TODO: may need to compile inline
-            %Q(<footnote>#{compiled_content}</footnote>)
+            fn_node = fn_entry&.footnote_node
+
+            if fn_node
+              # Render the stored AST node when available to preserve inline markup
+              rendered = @parent_renderer.render_inline_nodes_from_renderer(fn_node.children)
+              %Q(<footnote>#{rendered}</footnote>)
+            else
+              # Fallback: compile inline text (matches IDGXMLBuilder inline_fn)
+              rendered_text = escape(fn_entry.content.to_s.strip)
+              %Q(<footnote>#{rendered_text}</footnote>)
+            end
           rescue ReVIEW::KeyError
             app_error "unknown footnote: #{id}"
           end

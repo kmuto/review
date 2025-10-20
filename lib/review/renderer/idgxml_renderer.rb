@@ -805,8 +805,6 @@ module ReVIEW
         ''
       end
 
-      private
-
       def normalize_ast_structure(node)
         list_structure_normalizer.normalize(node)
       end
@@ -946,6 +944,13 @@ module ReVIEW
         )
         inline_renderer.render(type, content, node)
       end
+
+      # Provide inline renderer access to inline node rendering without exposing internals
+      def render_inline_nodes_from_renderer(nodes)
+        render_inline_nodes(nodes)
+      end
+
+      private
 
       # Close section tags based on level
       def output_close_sect_tags(level)
