@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'test_helper'
+require_relative '../test_helper'
 require 'review/ast/reference_resolver'
 require 'review/ast/reference_node'
 require 'review/ast/inline_node'
