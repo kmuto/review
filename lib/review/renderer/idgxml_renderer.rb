@@ -1694,7 +1694,7 @@ module ReVIEW
         else
           I18n.t('list') + I18n.t('format_number_without_chapter', [chapter.list(extracted_id).number])
         end
-      rescue KeyError
+      rescue ReVIEW::KeyError
         id
       end
 
@@ -1707,7 +1707,7 @@ module ReVIEW
         else
           I18n.t('table') + I18n.t('format_number_without_chapter', [chapter.table(extracted_id).number])
         end
-      rescue KeyError
+      rescue ReVIEW::KeyError
         id
       end
 
@@ -1720,7 +1720,7 @@ module ReVIEW
         else
           I18n.t('image') + I18n.t('format_number_without_chapter', [chapter.image(extracted_id).number])
         end
-      rescue KeyError
+      rescue ReVIEW::KeyError
         id
       end
 
@@ -1733,7 +1733,7 @@ module ReVIEW
         else
           I18n.t('equation') + I18n.t('format_number_without_chapter', [chapter.equation(extracted_id).number])
         end
-      rescue KeyError
+      rescue ReVIEW::KeyError
         id
       end
 
@@ -1742,7 +1742,7 @@ module ReVIEW
         m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
         if m
           ch = @book.contents.detect { |chap| chap.id == m[1] }
-          raise KeyError unless ch
+          raise ReVIEW::KeyError unless ch
 
           return [ch, m[2]]
         end

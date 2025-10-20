@@ -377,7 +377,7 @@ module ReVIEW
           # Add table label (line 919) - this needs table index
           begin
             result << "\\label{table:#{@chapter.id}:#{node.id}}"
-          rescue KeyError
+          rescue ReVIEW::KeyError
             # If table lookup fails, still continue
           end
         end
@@ -515,7 +515,7 @@ module ReVIEW
                       else
                         "\\#{command}[width=\\maxwidth]{#{image_path}}"
                       end
-          rescue KeyError
+          rescue ReVIEW::KeyError
             # Image not found - skip includegraphics command like LATEXBuilder would use image_dummy
             # But for regular image nodes, we still generate the structure without the includegraphics
           end
@@ -918,7 +918,7 @@ module ReVIEW
                              "\\reviewlistcaption{#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [list_num])}#{I18n.t('caption_prefix')}#{caption}}"
                            end
               result << captionstr
-            rescue KeyError
+            rescue ReVIEW::KeyError
               raise NotImplementedError, "no such list: #{node.id}"
             end
           else

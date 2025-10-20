@@ -144,7 +144,7 @@ module ReVIEW
         else
           raise CompileError, "Image reference not found: #{id}"
         end
-      rescue KeyError
+      rescue ReVIEW::KeyError
         raise CompileError, "Image reference not found: #{id}"
       end
 
@@ -224,7 +224,7 @@ module ReVIEW
         else
           raise CompileError, "Equation reference not found: #{id}"
         end
-      rescue KeyError
+      rescue ReVIEW::KeyError
         raise CompileError, "Equation reference not found: #{id}"
       end
 
@@ -331,7 +331,7 @@ module ReVIEW
             if target_chapter.headline_index
               begin
                 headline = target_chapter.headline_index[headline_id]
-              rescue KeyError
+              rescue ReVIEW::KeyError
                 headline = nil
               end
             end
@@ -353,7 +353,7 @@ module ReVIEW
           # Same-chapter reference
           begin
             headline = @chapter.headline_index[id]
-          rescue KeyError
+          rescue ReVIEW::KeyError
             headline = nil
           end
 
@@ -491,7 +491,7 @@ module ReVIEW
 
         begin
           index[id]
-        rescue KeyError
+        rescue ReVIEW::KeyError
           nil
         end
       end
@@ -500,7 +500,7 @@ module ReVIEW
         raise CompileError, "Column reference not found: #{column_id}" unless chapter
 
         chapter.column(column_id)
-      rescue ::KeyError, ReVIEW::KeyError
+      rescue ReVIEW::KeyError
         raise CompileError, "Column reference not found: #{column_id}"
       end
 
@@ -534,7 +534,7 @@ module ReVIEW
         begin
           item = @book.chapter_index[id]
           return item.content if item
-        rescue KeyError
+        rescue ReVIEW::KeyError
           # fall through to contents search
         end
 

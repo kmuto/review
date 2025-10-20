@@ -292,7 +292,7 @@ module ReVIEW
           else
             I18n.t('column', item.caption)
           end
-        rescue KeyError
+        rescue ReVIEW::KeyError
           app_error "unknown column: #{column_id}"
         end
 
@@ -305,7 +305,7 @@ module ReVIEW
             # Compile inline elements in footnote content
             compiled_content = fn_content # TODO: may need to compile inline
             %Q(<footnote>#{compiled_content}</footnote>)
-          rescue KeyError
+          rescue ReVIEW::KeyError
             app_error "unknown footnote: #{id}"
           end
         end
@@ -315,7 +315,7 @@ module ReVIEW
           id = node.reference_id || content
           begin
             %Q(<span type='endnoteref' idref='endnoteb-#{normalize_id(id)}'>(#{@chapter.endnote(id).number})</span>)
-          rescue KeyError
+          rescue ReVIEW::KeyError
             app_error "unknown endnote: #{id}"
           end
         end
@@ -325,7 +325,7 @@ module ReVIEW
           id = node.args.first || content
           begin
             %Q(<span type='bibref' idref='#{id}'>[#{@chapter.bibpaper(id).number}]</span>)
-          rescue KeyError
+          rescue ReVIEW::KeyError
             %Q(<span type='bibref' idref='#{id}'>[??]</span>)
           end
         end
@@ -362,7 +362,7 @@ module ReVIEW
           else
             @book.chapter_index.number(id)
           end
-        rescue KeyError
+        rescue ReVIEW::KeyError
           escape(id)
         end
 
@@ -393,7 +393,7 @@ module ReVIEW
               title
             end
           end
-        rescue KeyError
+        rescue ReVIEW::KeyError
           escape(id)
         end
 
@@ -405,7 +405,7 @@ module ReVIEW
           else
             title
           end
-        rescue KeyError
+        rescue ReVIEW::KeyError
           escape(id)
         end
 
@@ -544,7 +544,7 @@ module ReVIEW
           m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
           if m
             ch = @book.contents.detect { |chap| chap.id == m[1] }
-            raise KeyError unless ch
+            raise ReVIEW::KeyError unless ch
 
             return [ch, m[2]]
           end
@@ -560,7 +560,7 @@ module ReVIEW
               begin
                 item = index[chapter_id]
                 return item.content if item.respond_to?(:content)
-              rescue KeyError
+              rescue ReVIEW::KeyError
                 # fall through to contents search
               end
             end

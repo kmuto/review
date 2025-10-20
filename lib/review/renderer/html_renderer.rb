@@ -549,7 +549,7 @@ module ReVIEW
           else
             %Q(<span class="listref">#{list_number}</span>)
           end
-        rescue KeyError
+        rescue ReVIEW::KeyError
           # Use app_error for consistency with HTMLBuilder error handling
           app_error("unknown list: #{list_id}")
         end
@@ -576,7 +576,7 @@ module ReVIEW
           else
             %Q(<span class="imgref">#{image_number}</span>)
           end
-        rescue KeyError
+        rescue ReVIEW::KeyError
           # Use app_error for consistency with HTMLBuilder error handling
           app_error("unknown image: #{img_id}")
         end
@@ -603,7 +603,7 @@ module ReVIEW
           else
             %Q(<span class="tableref">#{table_number}</span>)
           end
-        rescue KeyError
+        rescue ReVIEW::KeyError
           # Use app_error for consistency with HTMLBuilder error handling
           app_error("unknown table: #{table_id}")
         end
@@ -1050,7 +1050,7 @@ module ReVIEW
         m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
         if m
           ch = @book.contents.detect { |chap| chap.id == m[1] }
-          raise KeyError unless ch
+          raise ReVIEW::KeyError unless ch
 
           return [ch, m[2]]
         end
@@ -1175,7 +1175,7 @@ module ReVIEW
           # Generate image number like HTMLBuilder using chapter image index
           image_item = @chapter&.image(id)
           unless image_item && image_item.number
-            raise KeyError, "image '#{id}' not found"
+            raise ReVIEW::KeyError, "image '#{id}' not found"
           end
 
           image_number = if get_chap
@@ -1201,7 +1201,7 @@ module ReVIEW
           # Generate image number like HTMLBuilder using chapter image index
           image_item = @chapter&.image(id)
           unless image_item && image_item.number
-            raise KeyError, "image '#{id}' not found"
+            raise ReVIEW::KeyError, "image '#{id}' not found"
           end
 
           image_number = if get_chap
@@ -1225,7 +1225,7 @@ module ReVIEW
         else
           "#{I18n.t('table')}#{I18n.t('format_number_header_without_chapter', [table_num])}#{I18n.t('caption_prefix')}#{caption}"
         end
-      rescue KeyError
+      rescue ReVIEW::KeyError
         raise NotImplementedError, "no such table: #{id}"
       end
 
@@ -1265,7 +1265,7 @@ module ReVIEW
           else
             %Q(<div#{id_attr} class="imgtable image">\n#{img_html}#{caption_html}</div>\n)
           end
-        rescue KeyError
+        rescue ReVIEW::KeyError
           app_error "no such table: #{id}"
         end
       end

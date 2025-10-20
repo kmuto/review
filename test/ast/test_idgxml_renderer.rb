@@ -881,7 +881,7 @@ EOS
 
     chap1 = Book::Chapter.new(@book, 1, 'chap1', nil, StringIO.new)
     def chap1.column(id)
-      raise KeyError unless id == 'existing-column'
+      raise ReVIEW::KeyError unless id == 'existing-column'
 
       Book::Index::Item.new(id, 1, 'existing caption')
     end

@@ -270,7 +270,7 @@ module ReVIEW
           else
             "#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [list_num])}#{I18n.t('caption_prefix')}#{caption}"
           end
-        rescue KeyError
+        rescue ReVIEW::KeyError
           raise NotImplementedError, "no such list: #{id}"
         end
 

@@ -152,7 +152,7 @@ module ReVIEW
             else
               chapter_num
             end
-          rescue KeyError
+          rescue ReVIEW::KeyError
             app_error "unknown chapter: #{id}"
           end
         end
@@ -162,7 +162,7 @@ module ReVIEW
           begin
             # Find the chapter and get its title
             chapter = find_chapter_by_id(id)
-            raise KeyError unless chapter
+            raise ReVIEW::KeyError unless chapter
 
             title = compile_inline(chapter.title)
             if config['chapterlink']
@@ -170,7 +170,7 @@ module ReVIEW
             else
               title
             end
-          rescue KeyError
+          rescue ReVIEW::KeyError
             app_error "unknown chapter: #{id}"
           end
         end
@@ -186,7 +186,7 @@ module ReVIEW
             else
               display_str
             end
-          rescue KeyError
+          rescue ReVIEW::KeyError
             app_error "unknown chapter: #{id}"
           end
         end
@@ -218,7 +218,7 @@ module ReVIEW
               else
                 %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref">*#{fn_number}</a>)
               end
-            rescue KeyError
+            rescue ReVIEW::KeyError
               # Fallback if footnote not found
               content
             end
@@ -336,7 +336,7 @@ module ReVIEW
             else
               section_number
             end
-          rescue KeyError
+          rescue ReVIEW::KeyError
             app_error "unknown headline: #{id}"
           end
         end
@@ -403,7 +403,7 @@ module ReVIEW
           id = node.args.first || content
           begin
             %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="[#{id}]" />)
-          rescue KeyError, NoMethodError
+          rescue ReVIEW::KeyError, NoMethodError
             warn "image not bound: #{id}"
             %Q(<pre>missing image: #{id}</pre>)
           end
@@ -433,7 +433,7 @@ module ReVIEW
             bib_file = @book.bib_file.gsub(/\.re\Z/, ".#{config['htmlext'] || 'html'}")
             number = @chapter.bibpaper(id).number
             %Q(<a href="#{bib_file}#bib-#{normalize_id(id)}">[#{number}]</a>)
-          rescue KeyError
+          rescue ReVIEW::KeyError
             %Q([#{id}])
           end
         end
@@ -444,7 +444,7 @@ module ReVIEW
           begin
             number = @chapter.endnote(id).number
             %Q(<a id="endnoteb-#{normalize_id(id)}" href="#endnote-#{normalize_id(id)}" class="noteref" epub:type="noteref">#{I18n.t('html_endnote_refmark', number)}</a>)
-          rescue KeyError
+          rescue ReVIEW::KeyError
             %Q(<a href="#endnote-#{normalize_id(id)}" class="noteref">#{content}</a>)
           end
         end
@@ -465,7 +465,7 @@ module ReVIEW
             else
               %Q(<span class="eqref">#{equation_number}</span>)
             end
-          rescue KeyError
+          rescue ReVIEW::KeyError
             %Q(<span class="eqref">#{content}</span>)
           end
         end
@@ -503,7 +503,7 @@ module ReVIEW
             else
               str
             end
-          rescue KeyError
+          rescue ReVIEW::KeyError
             app_error "unknown headline: #{id}"
           end
         end
@@ -534,7 +534,7 @@ module ReVIEW
             else
               I18n.t('column', escape_content(column_caption))
             end
-          rescue KeyError, ReVIEW::KeyError
+          rescue ReVIEW::KeyError
             app_error "unknown column: #{column_id}"
           end
         end
@@ -551,7 +551,7 @@ module ReVIEW
             else
               content
             end
-          rescue KeyError
+          rescue ReVIEW::KeyError
             content
           end
         end
@@ -576,7 +576,7 @@ module ReVIEW
           m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
           if m
             ch = find_chapter_by_id(m[1])
-            raise KeyError unless ch
+            raise ReVIEW::KeyError unless ch
 
             return [ch, m[2]]
           end
@@ -601,7 +601,7 @@ module ReVIEW
           begin
             item = @book.chapter_index[chapter_id]
             return item.content if item.respond_to?(:content)
-          rescue KeyError
+          rescue ReVIEW::KeyError
             # fall back to contents search
           end
 
