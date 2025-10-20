@@ -64,52 +64,52 @@ module ReVIEW
         alias_method :render_ttbold, :render_ttb
 
         def render_tti(content, _node)
-          %Q(<tt style='italic'>#{escape(content)}</tt>)
+          %Q(<tt style='italic'>#{content}</tt>)
         end
 
         def render_u(content, _node)
-          %Q(<underline>#{escape(content)}</underline>)
+          %Q(<underline>#{content}</underline>)
         end
 
         def render_ins(content, _node)
-          %Q(<ins>#{escape(content)}</ins>)
+          %Q(<ins>#{content}</ins>)
         end
 
         def render_del(content, _node)
-          %Q(<del>#{escape(content)}</del>)
+          %Q(<del>#{content}</del>)
         end
 
         def render_sup(content, _node)
-          %Q(<sup>#{escape(content)}</sup>)
+          %Q(<sup>#{content}</sup>)
         end
 
         def render_sub(content, _node)
-          %Q(<sub>#{escape(content)}</sub>)
+          %Q(<sub>#{content}</sub>)
         end
 
         def render_ami(content, _node)
-          %Q(<ami>#{escape(content)}</ami>)
+          %Q(<ami>#{content}</ami>)
         end
 
         def render_bou(content, _node)
-          %Q(<bou>#{escape(content)}</bou>)
+          %Q(<bou>#{content}</bou>)
         end
 
         def render_keytop(content, _node)
-          %Q(<keytop>#{escape(content)}</keytop>)
+          %Q(<keytop>#{content}</keytop>)
         end
 
         # Code
         def render_code(content, _node)
-          %Q(<tt type='inline-code'>#{escape(content)}</tt>)
+          %Q(<tt type='inline-code'>#{content}</tt>)
         end
 
         # Hints
         def render_hint(content, _node)
           if @book.config['nolf']
-            %Q(<hint>#{escape(content)}</hint>)
+            %Q(<hint>#{content}</hint>)
           else
-            %Q(\n<hint>#{escape(content)}</hint>)
+            %Q(\n<hint>#{content}</hint>)
           end
         end
 
@@ -143,7 +143,7 @@ module ReVIEW
             ruby = escape(node.args[1])
             %Q(<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>#{base}</aid:rb><aid:rt>#{ruby}</aid:rt></aid:ruby></GroupRuby>)
           else
-            escape(content)
+            content
           end
         end
 
@@ -203,7 +203,7 @@ module ReVIEW
             url = node.args[0].gsub('\,', ',').strip
             %Q(<a linkurl='#{escape(url)}'>#{escape(url)}</a>)
           else
-            %Q(<a linkurl='#{escape(content)}'>#{escape(content)}</a>)
+            %Q(<a linkurl='#{content}'>#{content}</a>)
           end
         end
 
@@ -345,13 +345,13 @@ module ReVIEW
                 I18n.t('hd_quote_without_number', chap.headline(headline_id).caption)
               end
             else
-              escape(content)
+              content
             end
           else
-            escape(content)
+            content
           end
         rescue StandardError
-          escape(content)
+          content
         end
 
         # Chapter reference
