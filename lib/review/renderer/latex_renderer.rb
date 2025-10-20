@@ -656,7 +656,7 @@ module ReVIEW
               begin
                 footnote_number = @chapter.footnote_index.number(footnote_id)
                 "\\footnotetext[#{footnote_number}]{#{footnote_content}}\n"
-              rescue StandardError => e
+              rescue ReVIEW::KeyError => e
                 raise NotImplementedError, "Footnote block processing failed for #{footnote_id}: #{e.message}"
               end
             else
@@ -1026,7 +1026,7 @@ module ReVIEW
             else
               equation_number.to_s
             end
-          rescue StandardError
+          rescue ReVIEW::KeyError
             # Fallback if equation not found in index
             '??'
           end
@@ -1052,7 +1052,7 @@ module ReVIEW
             begin
               bib_number = @chapter.bibpaper_index.number(bib_id)
               result << "[#{bib_number}] #{escape(bib_caption)}"
-            rescue StandardError => e
+            rescue ReVIEW::KeyError => e
               # Fallback if not found in index
               warn "Bibpaper #{bib_id} not found in index: #{e.message}" if $DEBUG
               result << "[??] #{escape(bib_caption)}"
@@ -1062,7 +1062,7 @@ module ReVIEW
             begin
               bib_number = @ast_indexer.bibpaper_index.number(bib_id)
               result << "[#{bib_number}] #{escape(bib_caption)}"
-            rescue StandardError
+            rescue ReVIEW::KeyError
               result << "[??] #{escape(bib_caption)}"
             end
           else

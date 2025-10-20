@@ -130,7 +130,7 @@ module ReVIEW
             begin
               footnote_number = @chapter.footnote_index.number(footnote_id)
               index_item = @chapter.footnote_index[footnote_id]
-            rescue StandardError
+            rescue ReVIEW::KeyError
               return "\\footnote{#{footnote_id}}"
             end
 
@@ -228,7 +228,7 @@ module ReVIEW
               else
                 "\\reviewequationref{#{equation_item}}"
               end
-            rescue StandardError => e
+            rescue ReVIEW::KeyError => e
               raise NotImplementedError, "Equation reference failed for #{equation_id}: #{e.message}"
             end
           else
@@ -253,7 +253,7 @@ module ReVIEW
               else
                 "\\reviewlistref{#{list_item}}"
               end
-            rescue StandardError => e
+            rescue ReVIEW::KeyError => e
               raise NotImplementedError, "List reference failed for #{list_ref}: #{e.message}"
             end
           else
@@ -272,7 +272,7 @@ module ReVIEW
           if bibpaper_index.nil? && @chapter
             begin
               bibpaper_index = @chapter.bibpaper_index
-            rescue StandardError
+            rescue ReVIEW::FileNotFound
               # Ignore errors when bib file doesn't exist
             end
           end
@@ -281,7 +281,7 @@ module ReVIEW
             begin
               bib_number = bibpaper_index.number(bib_id)
               "\\reviewbibref{[#{bib_number}]}{bib:#{bib_id}}"
-            rescue StandardError
+            rescue ReVIEW::KeyError
               # Fallback if bibpaper not found in index
               "\\cite{#{bib_id}}"
             end
@@ -309,7 +309,7 @@ module ReVIEW
               else
                 "\\reviewtableref{#{table_item}}{#{table_label}}"
               end
-            rescue StandardError => e
+            rescue ReVIEW::KeyError => e
               raise NotImplementedError, "Table reference failed for #{table_ref}: #{e.message}"
             end
           else
@@ -330,7 +330,7 @@ module ReVIEW
               else
                 "\\reviewimageref{#{image_item}}{#{image_label}}"
               end
-            rescue StandardError => e
+            rescue ReVIEW::KeyError => e
               raise NotImplementedError, "Image reference failed for #{image_ref}: #{e.message}"
             end
           else
@@ -362,7 +362,7 @@ module ReVIEW
             else
               "\\reviewlistref{#{list_item}}"
             end
-          rescue StandardError => e
+          rescue ReVIEW::KeyError => e
             raise NotImplementedError, "Cross-chapter list reference failed for #{chapter_id}|#{list_id}: #{e.message}"
           end
         end
@@ -391,7 +391,7 @@ module ReVIEW
             else
               "\\reviewtableref{#{table_item}}{#{table_label}}"
             end
-          rescue StandardError => e
+          rescue ReVIEW::KeyError => e
             raise NotImplementedError, "Cross-chapter table reference failed for #{chapter_id}|#{table_id}: #{e.message}"
           end
         end
@@ -420,7 +420,7 @@ module ReVIEW
             else
               "\\reviewimageref{#{image_item}}{#{image_label}}"
             end
-          rescue StandardError => e
+          rescue ReVIEW::KeyError => e
             raise NotImplementedError, "Cross-chapter image reference failed for #{chapter_id}|#{image_id}: #{e.message}"
           end
         end
@@ -434,7 +434,7 @@ module ReVIEW
             begin
               chapter_number = @book.chapter_index.number(chapter_id)
               "\\reviewchapref{#{chapter_number}}{chap:#{chapter_id}}"
-            rescue StandardError => e
+            rescue ReVIEW::KeyError => e
               raise NotImplementedError, "Chapter reference failed for #{chapter_id}: #{e.message}"
             end
           else
@@ -451,7 +451,7 @@ module ReVIEW
             begin
               title = @book.chapter_index.display_string(chapter_id)
               "\\reviewchapref{#{escape(title)}}{chap:#{chapter_id}}"
-            rescue StandardError => e
+            rescue ReVIEW::KeyError => e
               raise NotImplementedError, "Chapter title reference failed for #{chapter_id}: #{e.message}"
             end
           else
@@ -587,7 +587,7 @@ module ReVIEW
         def generate_yomi(text)
           require 'nkf'
           NKF.nkf('-w --hiragana', text).force_encoding('UTF-8').chomp
-        rescue LoadError, StandardError
+        rescue LoadError, ArgumentError, TypeError, RuntimeError
           # Fallback: use the original text as-is if NKF is unavailable
           text
         end
@@ -790,7 +790,7 @@ module ReVIEW
                 else
                   escape(title)
                 end
-              rescue StandardError => e
+              rescue ReVIEW::KeyError => e
                 raise NotImplementedError, "Chapter title reference failed for #{chapter_id}: #{e.message}"
               end
             else
@@ -812,7 +812,7 @@ module ReVIEW
                 # Use content directly from index item (no endnote_node in traditional index)
                 endnote_content = escape(index_item.content || '')
                 "\\endnote{#{endnote_content}}"
-              rescue StandardError => _e
+              rescue ReVIEW::KeyError => _e
                 "\\endnote{#{escape(ref_id)}}"
               end
             else
@@ -846,7 +846,7 @@ module ReVIEW
           else
             render_column_chap(@chapter, id)
           end
-        rescue StandardError => e
+        rescue ReVIEW::KeyError => e
           raise NotImplementedError, "Unknown column: #{id} - #{e.message}"
         end
 
@@ -861,7 +861,7 @@ module ReVIEW
             num = column_item.number
             column_label = "column:#{chapter.id}:#{num}"
             "\\reviewcolumnref{#{I18n.t('column', escape(caption))}}{#{column_label}}"
-          rescue StandardError => e
+          rescue ReVIEW::KeyError => e
             raise NotImplementedError, "Unknown column: #{id} in chapter #{chapter.id} - #{e.message}"
           end
         end
@@ -907,7 +907,7 @@ module ReVIEW
                   # Fallback when heading not found in target chapter
                   fallback_format % "#{chapter_id}-#{heading_parts.join('-')}"
                 end
-              rescue StandardError
+              rescue ReVIEW::KeyError
                 # Fallback on any error
                 fallback_format % "#{chapter_id}-#{heading_parts.join('-')}"
               end
@@ -942,7 +942,7 @@ module ReVIEW
                 # Fallback if headline not found in index
                 fallback_format % escape(heading_ref)
               end
-            rescue StandardError
+            rescue ReVIEW::KeyError
               # Fallback on any error
               fallback_format % escape(heading_ref)
             end
