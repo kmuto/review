@@ -1929,7 +1929,8 @@ module ReVIEW
           num = column_item.number
           column_label = "column:#{chapter.id}:#{num}"
 
-          compiled_caption = self.render_inline_text(caption)
+          # Use caption_node to render inline elements
+          compiled_caption = column_item.caption_node ? render_caption_inline(column_item.caption_node) : caption
           column_text = I18n.t('column', compiled_caption)
           "\\reviewcolumnref{#{column_text}}{#{column_label}}"
         rescue ReVIEW::KeyError => e
@@ -2313,20 +2314,11 @@ module ReVIEW
         content
       end
 
-      def render_inline_nodes(nodes)
-        nodes.map { |child| visit(child) }.join
-      end
-
-      def render_inline_text(text)
-        return '' if text.blank?
-
-        caption_node = ReVIEW::AST::CaptionNode.parse(
-          text.to_s,
-          inline_processor: ast_compiler.inline_processor
-        )
-        return '' unless caption_node
-
-        render_inline_nodes(caption_node.children)
+      # Render inline elements from caption_node
+      # @param caption_node [CaptionNode] Caption node to render
+      # @return [String] Rendered inline elements
+      def render_caption_inline(caption_node)
+        caption_node ? render_children(caption_node) : ''
       end
 
       # Render children with specific rendering context

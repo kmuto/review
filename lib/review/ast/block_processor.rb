@@ -659,9 +659,24 @@ module ReVIEW
         # preserve the original lines array for proper formatting
         preserve_lines = %i[box insn point term].include?(context.name)
 
+        # Determine caption index based on block type
+        caption_index = case context.name
+                        when :graph
+                          2 # //graph[id][command][caption]
+                        when :bibpaper
+                          1 # //bibpaper[id][caption]
+                        when :doorquote, :point, :shoot, :term, :box, :insn
+                          0 # //doorquote[caption], //point[caption], //box[caption], etc.
+                        end
+
+        # Process caption if applicable
+        caption_data = caption_index ? context.process_caption(context.args, caption_index) : nil
+
         node = context.create_node(AST::BlockNode,
                                    block_type: context.name,
                                    args: context.args,
+                                   caption: caption_text(caption_data),
+                                   caption_node: caption_node(caption_data),
                                    lines: preserve_lines ? context.lines.dup : nil)
 
         # Process content and nested blocks

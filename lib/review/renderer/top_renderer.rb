@@ -64,7 +64,7 @@ module ReVIEW
 
       def visit_headline(node)
         level = node.level
-        caption = render_caption_inlines(node.caption_node)
+        caption = render_caption_inline(node.caption_node)
 
         # Use headline prefix if available
         prefix = generate_headline_prefix(level)
@@ -190,7 +190,7 @@ module ReVIEW
         result += "◆→開始:#{block_title}←◆\n"
 
         # Add caption if present
-        caption = render_caption_inlines(node.caption_node)
+        caption = render_caption_inline(node.caption_node)
         unless caption.empty?
           result += if node.id
                       "■#{node.id}■#{caption}\n"
@@ -235,7 +235,7 @@ module ReVIEW
         result += "◆→開始:#{TITLES[:table]}←◆\n"
 
         # Add caption if present
-        caption = render_caption_inlines(node.caption_node)
+        caption = render_caption_inline(node.caption_node)
         unless caption.empty?
           result += if node.id
                       "■#{node.id}■#{caption}\n"
@@ -297,7 +297,7 @@ module ReVIEW
         result += "◆→開始:#{TITLES[:image]}←◆\n"
 
         # Add caption if present
-        caption = render_caption_inlines(node.caption_node)
+        caption = render_caption_inline(node.caption_node)
         unless caption.empty?
           result += if node.id
                       "■#{node.id}■#{caption}\n"
@@ -328,7 +328,7 @@ module ReVIEW
         result += "◆→開始:#{minicolumn_title}←◆\n"
 
         # Add caption if present
-        caption = render_caption_inlines(node.caption_node)
+        caption = render_caption_inline(node.caption_node)
         unless caption.empty?
           result += "■#{caption}\n"
           result += "\n"
@@ -467,7 +467,7 @@ module ReVIEW
         metrics
       end
 
-      def render_caption_inlines(caption_node)
+      def render_caption_inline(caption_node)
         caption_node ? render_children(caption_node) : ''
       end
 

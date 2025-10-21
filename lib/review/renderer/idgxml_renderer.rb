@@ -515,8 +515,9 @@ module ReVIEW
           # Convert children to paragraph-grouped content
           content = render_block_content_with_paragraphs(node)
           # These blocks use -t suffix when caption is present
-          if caption && !caption.empty?
-            caption_with_inline = render_inline_in_caption(caption)
+          if caption && !caption.empty? && node.caption_node
+            # Use caption_node to render inline elements
+            caption_with_inline = render_caption_inline(node.caption_node)
             captionblock("#{block_type}-t", content, caption_with_inline, "#{block_type}-title")
           else
             captionblock(block_type, content, nil)
@@ -606,7 +607,6 @@ module ReVIEW
         # Args: [id, command, caption]
         id = node.args[0]
         command = node.args[1]
-        caption_text = node.args[2]
 
         # Get graph content from lines
         lines = node.lines || []
@@ -669,7 +669,8 @@ module ReVIEW
         @chapter.image_index.image_finder.add_entry(file_path) if @chapter.image_index
 
         # Now render as a regular numbered image
-        caption_content = caption_text ? render_inline_in_caption(caption_text) : nil
+        # Use caption_node to render inline elements
+        caption_content = node.caption_node ? render_caption_inline(node.caption_node) : nil
 
         result = []
         result << '<img>'
@@ -701,7 +702,12 @@ module ReVIEW
         endnotes.each do |endnote_item|
           id = endnote_item.id
           number = endnote_item.number
-          content = render_inline_text(endnote_item.content)
+          # Use footnote_node.children if available to avoid re-parsing
+          content = if endnote_item.footnote_node?
+                      endnote_item.footnote_node.children.map { |child| visit(child) }.join
+                    else
+                      render_caption_inline(endnote_item.content)
+                    end
           result << %Q(<endnote id='endnoteb-#{normalize_id(id)}'><span type='endnotenumber'>(#{number})</span>\t#{content}</endnote>)
         end
 
@@ -715,13 +721,13 @@ module ReVIEW
         raise NotImplementedError, 'Malformed bibpaper block: insufficient arguments' if args.length < 2
 
         bib_id = args[0]
-        caption_text = args[1]
 
         result = []
         result << %Q(<bibitem id="bib-#{bib_id}">)
 
-        unless caption_text.nil? || caption_text.empty?
-          caption_inline = render_inline_in_caption(caption_text)
+        if node.caption_node
+          # Use caption_node to render inline elements
+          caption_inline = render_caption_inline(node.caption_node)
           bib_number = resolve_bibpaper_number(bib_id)
           result << %Q(<caption><span type='bibno'>[#{bib_number}] </span>#{caption_inline}</caption>)
         end
@@ -1167,7 +1173,8 @@ module ReVIEW
         # Render column reference
         item = chapter.column(column_id)
 
-        compiled_caption = render_inline_text(item.caption)
+        # Use caption_node to render inline elements
+        compiled_caption = item.caption_node ? render_caption_inline(item.caption_node) : item.caption
 
         if @book.config['chapterlink']
           num = item.number
@@ -1470,17 +1477,11 @@ module ReVIEW
 
       private
 
-      def render_inline_text(text)
-        return '' if text.blank?
-
-        caption_node = ReVIEW::AST::CaptionNode.parse(
-          text.to_s,
-          inline_processor: ast_compiler.inline_processor
-        )
-        return '' unless caption_node
-
-        parts = caption_node.children.map { |child| visit(child) }
-        content = parts.join
+      # Render inline elements from caption_node
+      # @param caption_node [CaptionNode] Caption node to render
+      # @return [String] Rendered inline elements
+      def render_caption_inline(caption_node)
+        content = caption_node ? render_children(caption_node) : ''
 
         if @book.config['join_lines_by_lang']
           content.gsub(/\n+/, ' ')
@@ -2320,19 +2321,18 @@ module ReVIEW
       # Visit syntaxblock (box, insn) - processes lines with listinfo
       def visit_syntaxblock(node)
         type = node.block_type.to_s
-        caption = node.args.first
 
         # Render caption if present
         captionstr = nil
-        if caption && !caption.empty?
+        if node.caption_node
           titleopentag = %Q(caption aid:pstyle="#{type}-title")
           titleclosetag = 'caption'
           if type == 'insn'
             titleopentag = %Q(floattitle type="insn")
             titleclosetag = 'floattitle'
           end
-          # Process inline elements in caption
-          caption_with_inline = render_inline_in_caption(caption)
+          # Use caption_node to render inline elements
+          caption_with_inline = render_caption_inline(node.caption_node)
           captionstr = %Q(<#{titleopentag}>#{caption_with_inline}</#{titleclosetag}>)
         end
 
@@ -2403,11 +2403,6 @@ module ReVIEW
 
           lines
         end
-      end
-
-      # Render inline elements in caption
-      def render_inline_in_caption(caption_text)
-        render_inline_text(caption_text)
       end
 
       def resolve_bibpaper_number(bib_id)
