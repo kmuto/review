@@ -2108,14 +2108,6 @@ module ReVIEW
         content.to_s.gsub(/<[^>]*>/, '')
       end
 
-      def compile_inline(content)
-        # Simple inline compilation for template use
-        return '' if content.nil? || content.empty?
-
-        content.to_s
-      end
-
-
       # Process raw embed content (//raw and @<raw>)
       def process_raw_embed(node)
         # Check if content should be output for this renderer

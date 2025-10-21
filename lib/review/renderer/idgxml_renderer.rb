@@ -1095,8 +1095,7 @@ module ReVIEW
       def render_inline_list(type, content, node)
         id = node.reference_id || content
         begin
-          # Get list reference using parent renderer's method
-          base_ref = self.send(:get_list_reference, id)
+          base_ref = get_list_reference(id)
           "<span type='list'>#{base_ref}</span>"
         rescue StandardError
           "<span type='list'>#{escape(id)}</span>"
@@ -1106,8 +1105,7 @@ module ReVIEW
       def render_inline_table(type, content, node)
         id = node.reference_id || content
         begin
-          # Get table reference using parent renderer's method
-          base_ref = self.send(:get_table_reference, id)
+          base_ref = get_table_reference(id)
           "<span type='table'>#{base_ref}</span>"
         rescue StandardError
           "<span type='table'>#{escape(id)}</span>"
@@ -1117,8 +1115,7 @@ module ReVIEW
       def render_inline_img(type, content, node)
         id = node.reference_id || content
         begin
-          # Get image reference using parent renderer's method
-          base_ref = self.send(:get_image_reference, id)
+          base_ref = get_image_reference(id)
           "<span type='image'>#{base_ref}</span>"
         rescue StandardError
           "<span type='image'>#{escape(id)}</span>"
@@ -1128,8 +1125,7 @@ module ReVIEW
       def render_inline_eq(type, content, node)
         id = node.reference_id || content
         begin
-          # Get equation reference using parent renderer's method
-          base_ref = self.send(:get_equation_reference, id)
+          base_ref = get_equation_reference(id)
           "<span type='eq'>#{base_ref}</span>"
         rescue StandardError
           "<span type='eq'>#{escape(id)}</span>"
@@ -1423,10 +1419,6 @@ module ReVIEW
       end
 
       # Helpers
-
-      def escape(str)
-        self.send(:escape, str.to_s)
-      end
 
       def normalize_id(id)
         # Normalize ID for XML attributes
