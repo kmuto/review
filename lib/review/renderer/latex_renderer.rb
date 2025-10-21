@@ -1049,9 +1049,9 @@ module ReVIEW
           result = []
 
           # Header with number and caption
-          if @chapter && @chapter.bibpaper_index
+          if @book&.bibpaper_index
             begin
-              bib_number = @chapter.bibpaper_index.number(bib_id)
+              bib_number = @book.bibpaper_index.number(bib_id)
               result << "[#{bib_number}] #{escape(bib_caption)}"
             rescue ReVIEW::KeyError => e
               # Fallback if not found in index
@@ -1113,7 +1113,6 @@ module ReVIEW
       def render_footnote_content(footnote_node)
         render_children(footnote_node)
       end
-
 
       # Inline element rendering methods (integrated from inline_element_renderer.rb)
 
@@ -1342,16 +1341,9 @@ module ReVIEW
         return content unless node.args.first
 
         bib_id = node.args.first.to_s
-        # Try to get bibpaper_index, either directly from instance variable or through method
-        # Use instance_variable_get first to avoid bib_exist? check in tests
-        bibpaper_index = @chapter&.instance_variable_get(:@bibpaper_index)
-        if bibpaper_index.nil? && @chapter
-          begin
-            bibpaper_index = @chapter.bibpaper_index
-          rescue ReVIEW::FileNotFound
-            # Ignore errors when bib file doesn't exist
-          end
-        end
+        # Get bibpaper_index from book (which has attr_accessor)
+        # This avoids bib_exist? check when bibpaper_index is set directly in tests
+        bibpaper_index = @book&.bibpaper_index
 
         if bibpaper_index
           begin
@@ -2035,6 +2027,7 @@ module ReVIEW
       def over_secnolevel?(num)
         @book.config['secnolevel'] >= num.to_s.split('.').size
       end
+
       private
 
       def normalize_ast_structure(node)

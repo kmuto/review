@@ -1258,7 +1258,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     bibpaper_index = ReVIEW::Book::BibpaperIndex.new
     item = ReVIEW::Book::Index::Item.new('lins', 1, 'Lins, 1992')
     bibpaper_index.add_item(item)
-    @chapter.instance_variable_set(:@bibpaper_index, bibpaper_index)
+    @book.bibpaper_index = bibpaper_index
 
     inline = AST::InlineNode.new(inline_type: 'bib', args: ['lins'])
     result = @renderer.visit(inline)
@@ -1272,7 +1272,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     item2 = ReVIEW::Book::Index::Item.new('knuth', 2, 'Knuth, 1997')
     bibpaper_index.add_item(item1)
     bibpaper_index.add_item(item2)
-    @chapter.instance_variable_set(:@bibpaper_index, bibpaper_index)
+    @book.bibpaper_index = bibpaper_index
 
     inline1 = AST::InlineNode.new(inline_type: 'bib', args: ['lins'])
     result1 = @renderer.visit(inline1)
@@ -1288,7 +1288,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     bibpaper_index = ReVIEW::Book::BibpaperIndex.new
     item = ReVIEW::Book::Index::Item.new('lins', 1, 'Lins, 1992')
     bibpaper_index.add_item(item)
-    @chapter.instance_variable_set(:@bibpaper_index, bibpaper_index)
+    @book.bibpaper_index = bibpaper_index
 
     inline = AST::InlineNode.new(inline_type: 'bibref', args: ['lins'])
     result = @renderer.visit(inline)
@@ -1297,7 +1297,7 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   def test_inline_bib_no_index
     # Test @<bib> when there's no bibpaper_index (should fallback to \cite)
-    @chapter.instance_variable_set(:@bibpaper_index, nil)
+    @book.bibpaper_index = nil
 
     inline = AST::InlineNode.new(inline_type: 'bib', args: ['lins'])
     result = @renderer.visit(inline)
@@ -1309,7 +1309,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     bibpaper_index = ReVIEW::Book::BibpaperIndex.new
     item = ReVIEW::Book::Index::Item.new('knuth', 1, 'Knuth, 1997')
     bibpaper_index.add_item(item)
-    @chapter.instance_variable_set(:@bibpaper_index, bibpaper_index)
+    @book.bibpaper_index = bibpaper_index
 
     inline = AST::InlineNode.new(inline_type: 'bib', args: ['lins'])
     result = @renderer.visit(inline)
