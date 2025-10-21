@@ -466,11 +466,11 @@ module ReVIEW
       end
 
       # IO reading dedicated method - nesting support and error handling
-      def read_block_command(f)
+      def read_block_command(f, initial_line = nil)
         # Save location information at block start
         block_start_location = @current_location
 
-        line = f.gets
+        line = initial_line || f.gets
         unless line
           raise CompileError, "Unexpected end of file while reading block command#{format_location_info}"
         end
@@ -541,9 +541,8 @@ module ReVIEW
           # Detect nested block commands
           elsif line.match?(%r{\A//[a-z]+})
             # Recursively read nested blocks
-            f.send(:ungets, line) # Return line and let read_block_command process it (private method call)
             begin
-              nested_block_data = read_block_command(f)
+              nested_block_data = read_block_command(f, line)
               nested_blocks << nested_block_data
             rescue CompileError => e
               # Add parent context information to nested block errors
