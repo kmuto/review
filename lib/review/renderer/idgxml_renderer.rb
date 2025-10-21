@@ -911,23 +911,574 @@ module ReVIEW
       end
 
       def render_inline_element(type, content, node)
-        require 'review/renderer/idgxml_renderer/inline_element_renderer'
-        inline_renderer = InlineElementRenderer.new(
-          self,
-          book: @book,
-          chapter: @chapter,
-          rendering_context: @rendering_context
-        )
-        inline_renderer.render(type, content, node)
+        method_name = "render_inline_#{type}"
+        if respond_to?(method_name, true)
+          send(method_name, type, content, node)
+        else
+          raise NotImplementedError, "Unknown inline element: #{type}"
+        end
       end
 
-      # Provide inline renderer access to inline node rendering without exposing internals
-      def render_inline_nodes_from_renderer(nodes)
-        render_inline_nodes(nodes)
+      # Basic formatting
+      # Note: content is already escaped by visit_text, so don't escape again
+      def render_inline_b(type, content, node)
+        %Q(<b>#{content}</b>)
       end
 
-      def render_inline_text_for_renderer(text)
-        render_inline_text(text)
+      def render_inline_i(type, content, node)
+        %Q(<i>#{content}</i>)
+      end
+
+      def render_inline_em(type, content, node)
+        %Q(<em>#{content}</em>)
+      end
+
+      def render_inline_strong(type, content, node)
+        %Q(<strong>#{content}</strong>)
+      end
+
+      def render_inline_tt(type, content, node)
+        %Q(<tt>#{content}</tt>)
+      end
+
+      def render_inline_ttb(type, content, node)
+        %Q(<tt style='bold'>#{content}</tt>)
+      end
+
+      alias_method :render_inline_ttbold, :render_inline_ttb
+
+      def render_inline_tti(type, content, node)
+        %Q(<tt style='italic'>#{content}</tt>)
+      end
+
+      def render_inline_u(type, content, node)
+        %Q(<underline>#{content}</underline>)
+      end
+
+      def render_inline_ins(type, content, node)
+        %Q(<ins>#{content}</ins>)
+      end
+
+      def render_inline_del(type, content, node)
+        %Q(<del>#{content}</del>)
+      end
+
+      def render_inline_sup(type, content, node)
+        %Q(<sup>#{content}</sup>)
+      end
+
+      def render_inline_sub(type, content, node)
+        %Q(<sub>#{content}</sub>)
+      end
+
+      def render_inline_ami(type, content, node)
+        %Q(<ami>#{content}</ami>)
+      end
+
+      def render_inline_bou(type, content, node)
+        %Q(<bou>#{content}</bou>)
+      end
+
+      def render_inline_keytop(type, content, node)
+        %Q(<keytop>#{content}</keytop>)
+      end
+
+      # Code
+      def render_inline_code(type, content, node)
+        %Q(<tt type='inline-code'>#{content}</tt>)
+      end
+
+      # Hints
+      def render_inline_hint(type, content, node)
+        if @book.config['nolf']
+          %Q(<hint>#{content}</hint>)
+        else
+          %Q(\n<hint>#{content}</hint>)
+        end
+      end
+
+      # Maru (circled numbers/letters)
+      def render_inline_maru(type, content, node)
+        str = node.args.first || content
+
+        if /\A\d+\Z/.match?(str)
+          sprintf('&#x%x;', 9311 + str.to_i)
+        elsif /\A[A-Z]\Z/.match?(str)
+          begin
+            sprintf('&#x%x;', 9398 + str.codepoints.to_a[0] - 65)
+          rescue NoMethodError
+            sprintf('&#x%x;', 9398 + str[0] - 65)
+          end
+        elsif /\A[a-z]\Z/.match?(str)
+          begin
+            sprintf('&#x%x;', 9392 + str.codepoints.to_a[0] - 65)
+          rescue NoMethodError
+            sprintf('&#x%x;', 9392 + str[0] - 65)
+          end
+        else
+          escape(str)
+        end
+      end
+
+      # Ruby (furigana)
+      def render_inline_ruby(type, content, node)
+        if node.args.length >= 2
+          base = escape(node.args[0])
+          ruby = escape(node.args[1])
+          %Q(<GroupRuby><aid:ruby xmlns:aid="http://ns.adobe.com/AdobeInDesign/3.0/"><aid:rb>#{base}</aid:rb><aid:rt>#{ruby}</aid:rt></aid:ruby></GroupRuby>)
+        else
+          content
+        end
+      end
+
+      # Keyword
+      def render_inline_kw(type, content, node)
+        if node.args.length >= 2
+          word = node.args[0]
+          alt = node.args[1]
+
+          result = '<keyword>'
+          result += if alt && !alt.empty?
+                      escape("#{word}（#{alt.strip}）")
+                    else
+                      escape(word)
+                    end
+          result += '</keyword>'
+
+          result += %Q(<index value="#{escape(word)}" />)
+
+          if alt && !alt.empty?
+            alt.split(/\s*,\s*/).each do |e|
+              result += %Q(<index value="#{escape(e.strip)}" />)
+            end
+          end
+
+          result
+        elsif node.args.length == 1
+          # Single argument case - get raw string from args
+          word = node.args[0]
+          result = %Q(<keyword>#{escape(word)}</keyword>)
+          result += %Q(<index value="#{escape(word)}" />)
+          result
+        else
+          # Fallback
+          %Q(<keyword>#{content}</keyword>)
+        end
+      end
+
+      # Index
+      def render_inline_idx(type, content, node)
+        str = node.args.first || content
+        %Q(#{escape(str)}<index value="#{escape(str)}" />)
+      end
+
+      def render_inline_hidx(type, content, node)
+        str = node.args.first || content
+        %Q(<index value="#{escape(str)}" />)
+      end
+
+      # Links
+      def render_inline_href(type, content, node)
+        if node.args.length >= 2
+          url = node.args[0].gsub('\,', ',').strip
+          label = node.args[1].gsub('\,', ',').strip
+          %Q(<a linkurl='#{escape(url)}'>#{escape(label)}</a>)
+        elsif node.args.length >= 1
+          url = node.args[0].gsub('\,', ',').strip
+          %Q(<a linkurl='#{escape(url)}'>#{escape(url)}</a>)
+        else
+          %Q(<a linkurl='#{content}'>#{content}</a>)
+        end
+      end
+
+      # References
+      def render_inline_list(type, content, node)
+        id = node.reference_id || content
+        begin
+          # Get list reference using parent renderer's method
+          base_ref = self.send(:get_list_reference, id)
+          "<span type='list'>#{base_ref}</span>"
+        rescue StandardError
+          "<span type='list'>#{escape(id)}</span>"
+        end
+      end
+
+      def render_inline_table(type, content, node)
+        id = node.reference_id || content
+        begin
+          # Get table reference using parent renderer's method
+          base_ref = self.send(:get_table_reference, id)
+          "<span type='table'>#{base_ref}</span>"
+        rescue StandardError
+          "<span type='table'>#{escape(id)}</span>"
+        end
+      end
+
+      def render_inline_img(type, content, node)
+        id = node.reference_id || content
+        begin
+          # Get image reference using parent renderer's method
+          base_ref = self.send(:get_image_reference, id)
+          "<span type='image'>#{base_ref}</span>"
+        rescue StandardError
+          "<span type='image'>#{escape(id)}</span>"
+        end
+      end
+
+      def render_inline_eq(type, content, node)
+        id = node.reference_id || content
+        begin
+          # Get equation reference using parent renderer's method
+          base_ref = self.send(:get_equation_reference, id)
+          "<span type='eq'>#{base_ref}</span>"
+        rescue StandardError
+          "<span type='eq'>#{escape(id)}</span>"
+        end
+      end
+
+      def render_inline_imgref(type, content, node)
+        id = node.reference_id || content
+        chapter, extracted_id = extract_chapter_id(id)
+
+        if chapter.image(extracted_id).caption.blank?
+          render_inline_img(type, content, node)
+        elsif get_chap(chapter).nil?
+          "<span type='image'>#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [chapter.image(extracted_id).number])}#{I18n.t('image_quote', chapter.image(extracted_id).caption)}</span>"
+        else
+          "<span type='image'>#{I18n.t('image')}#{I18n.t('format_number', [get_chap(chapter), chapter.image(extracted_id).number])}#{I18n.t('image_quote', chapter.image(extracted_id).caption)}</span>"
+        end
+      rescue StandardError
+        "<span type='image'>#{escape(id)}</span>"
+      end
+
+      # Column reference
+      def render_inline_column(type, content, node)
+        id = node.reference_id || content
+
+        # Parse chapter|id format
+        m = /\A([^|]+)\|(.+)/.match(id)
+        if m && m[1]
+          chapter = find_chapter_by_id(m[1])
+          column_id = m[2]
+        else
+          chapter = @chapter
+          column_id = id
+        end
+
+        app_error "unknown chapter: #{m[1]}" unless chapter
+
+        # Render column reference
+        item = chapter.column(column_id)
+
+        compiled_caption = render_inline_text(item.caption)
+
+        if @book.config['chapterlink']
+          num = item.number
+          %Q(<link href="column-#{num}">#{I18n.t('column', compiled_caption)}</link>)
+        else
+          I18n.t('column', compiled_caption)
+        end
+      rescue ReVIEW::KeyError
+        app_error "unknown column: #{column_id}"
+      end
+
+      # Footnotes
+      def render_inline_fn(type, content, node)
+        id = node.reference_id || content
+        begin
+          fn_entry = @chapter.footnote(id)
+          fn_node = fn_entry&.footnote_node
+
+          if fn_node
+            # Render the stored AST node when available to preserve inline markup
+            rendered = render_inline_nodes(fn_node.children)
+            %Q(<footnote>#{rendered}</footnote>)
+          else
+            # Fallback: compile inline text (matches IDGXMLBuilder inline_fn)
+            rendered_text = escape(fn_entry.content.to_s.strip)
+            %Q(<footnote>#{rendered_text}</footnote>)
+          end
+        rescue ReVIEW::KeyError
+          app_error "unknown footnote: #{id}"
+        end
+      end
+
+      # Endnotes
+      def render_inline_endnote(type, content, node)
+        id = node.reference_id || content
+        begin
+          %Q(<span type='endnoteref' idref='endnoteb-#{normalize_id(id)}'>(#{@chapter.endnote(id).number})</span>)
+        rescue ReVIEW::KeyError
+          app_error "unknown endnote: #{id}"
+        end
+      end
+
+      # Bibliography
+      def render_inline_bib(type, content, node)
+        id = node.args.first || content
+        begin
+          %Q(<span type='bibref' idref='#{id}'>[#{@chapter.bibpaper(id).number}]</span>)
+        rescue ReVIEW::KeyError
+          app_error "unknown bib: #{id}"
+        end
+      end
+
+      # Headline reference
+      def render_inline_hd(type, content, node)
+        if node.args.length >= 2
+          chapter_id = node.args[0]
+          headline_id = node.args[1]
+
+          chap = @book.contents.detect { |c| c.id == chapter_id }
+          if chap
+            n = chap.headline_index.number(headline_id)
+            if n.present? && chap.number && over_secnolevel?(n)
+              I18n.t('hd_quote', [n, chap.headline(headline_id).caption])
+            else
+              I18n.t('hd_quote_without_number', chap.headline(headline_id).caption)
+            end
+          else
+            content
+          end
+        else
+          content
+        end
+      rescue StandardError
+        content
+      end
+
+      # Chapter reference
+      def render_inline_chap(type, content, node)
+        id = node.args.first || content
+        if @book.config['chapterlink']
+          %Q(<link href="#{id}">#{@book.chapter_index.number(id)}</link>)
+        else
+          @book.chapter_index.number(id)
+        end
+      rescue ReVIEW::KeyError
+        escape(id)
+      end
+
+      def render_inline_chapref(type, content, node)
+        id = node.args.first || content
+
+        if @book.config.check_version('2', exception: false)
+          # Backward compatibility
+          chs = ['', '「', '」']
+          if @book.config['chapref']
+            chs2 = @book.config['chapref'].split(',')
+            if chs2.size == 3
+              chs = chs2
+            end
+          end
+          s = "#{chs[0]}#{@book.chapter_index.number(id)}#{chs[1]}#{@book.chapter_index.title(id)}#{chs[2]}"
+          if @book.config['chapterlink']
+            %Q(<link href="#{id}">#{s}</link>)
+          else
+            s
+          end
+        else
+          # Use parent renderer's method
+          title = @book.chapter_index.title(id)
+          if @book.config['chapterlink']
+            %Q(<link href="#{id}">#{title}</link>)
+          else
+            title
+          end
+        end
+      rescue ReVIEW::KeyError
+        escape(id)
+      end
+
+      def render_inline_title(type, content, node)
+        id = node.args.first || content
+        title = @book.chapter_index.title(id)
+        if @book.config['chapterlink']
+          %Q(<link href="#{id}">#{title}</link>)
+        else
+          title
+        end
+      rescue ReVIEW::KeyError
+        escape(id)
+      end
+
+      # Labels
+      def render_inline_labelref(type, content, node)
+        # Get idref from node.args (raw, not escaped)
+        idref = node.args.first || content
+        %Q(<ref idref='#{escape(idref)}'>「#{I18n.t('label_marker')}#{escape(idref)}」</ref>)
+      end
+
+      alias_method :render_inline_ref, :render_inline_labelref
+
+      def render_inline_pageref(type, content, node)
+        idref = node.args.first || content
+        %Q(<pageref idref='#{escape(idref)}'>●●</pageref>)
+      end
+
+      # Icon (inline image)
+      def render_inline_icon(type, content, node)
+        id = node.args.first || content
+        begin
+          %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A\./}, '')}" type="inline" />)
+        rescue StandardError
+          ''
+        end
+      end
+
+      # Balloon
+      def render_inline_balloon(type, content, node)
+        # Content is already escaped and rendered from children
+        # Need to get raw text from node to process @maru markers
+        # Since InlineNode processes children first, we need raw args
+        if node.args.first
+          # Get raw string from args (not escaped yet)
+          str = node.args.first
+          processed = escape(str).gsub(/@maru\[(\d+)\]/) do
+            # $1 is the captured number string
+            number = $1
+            # Generate maru character directly
+            if /\A\d+\Z/.match?(number)
+              sprintf('&#x%x;', 9311 + number.to_i)
+            else
+              "@maru[#{number}]"
+            end
+          end
+          %Q(<balloon>#{processed}</balloon>)
+        else
+          # Fallback: use content as-is
+          %Q(<balloon>#{content}</balloon>)
+        end
+      end
+
+      # Unicode character
+      def render_inline_uchar(type, content, node)
+        str = node.args.first || content
+        %Q(&#x#{str};)
+      end
+
+      # Math
+      def render_inline_m(type, content, node)
+        str = node.args.first || content
+
+        if @book.config['math_format'] == 'imgmath'
+          require 'review/img_math'
+          self.instance_variable_set(:@texinlineequation, self.instance_variable_get(:@texinlineequation) + 1)
+          self.instance_variable_get(:@texinlineequation)
+
+          math_str = '$' + str + '$'
+          key = Digest::SHA256.hexdigest(str)
+          img_math = self.instance_variable_get(:@img_math)
+          unless img_math
+            img_math = ReVIEW::ImgMath.new(@book.config)
+            self.instance_variable_set(:@img_math, img_math)
+          end
+          img_path = img_math.defer_math_image(math_str, key)
+          %Q(<inlineequation><Image href="file://#{img_path}" type="inline" /></inlineequation>)
+        else
+          self.instance_variable_set(:@texinlineequation, self.instance_variable_get(:@texinlineequation) + 1)
+          texinlineequation = self.instance_variable_get(:@texinlineequation)
+          %Q(<replace idref="texinline-#{texinlineequation}"><pre>#{escape(str)}</pre></replace>)
+        end
+      end
+
+      # DTP processing instruction
+      def render_inline_dtp(type, content, node)
+        str = node.args.first || content
+        "<?dtp #{str} ?>"
+      end
+
+      # Break
+      # Returns a protected newline marker that will be preserved through paragraph
+      # and nolf processing, then restored to an actual newline in visit_document
+      def render_inline_br(type, content, node)
+        "\x01IDGXML_INLINE_NEWLINE\x01"
+      end
+
+      # Raw
+      def render_inline_raw(type, content, node)
+        if node.args.first
+          raw_content = node.args.first
+          # Convert \\n to actual newlines
+          raw_content.gsub('\\n', "\n")
+        else
+          content.gsub('\\n', "\n")
+        end
+      end
+
+      # Comment
+      def render_inline_comment(type, content, node)
+        if @book.config['draft']
+          str = node.args.first || content
+          %Q(<msg>#{escape(str)}</msg>)
+        else
+          ''
+        end
+      end
+
+      # Recipe (FIXME placeholder)
+      def render_inline_recipe(type, content, node)
+        id = node.args.first || content
+        %Q(<recipe idref="#{escape(id)}">[XXX]「#{escape(id)}」　p.XX</recipe>)
+      end
+
+      # Helpers
+
+      def escape(str)
+        self.send(:escape, str.to_s)
+      end
+
+      def normalize_id(id)
+        # Normalize ID for XML attributes
+        id.to_s.gsub(/[^a-zA-Z0-9_-]/, '_')
+      end
+
+      def extract_chapter_id(chap_ref)
+        m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
+        if m
+          ch = @book.contents.detect { |chap| chap.id == m[1] }
+          raise ReVIEW::KeyError unless ch
+
+          return [ch, m[2]]
+        end
+        [@chapter, chap_ref]
+      end
+
+      def find_chapter_by_id(chapter_id)
+        return nil unless @book
+
+        if @book.respond_to?(:chapter_index)
+          index = @book.chapter_index
+          if index
+            begin
+              item = index[chapter_id]
+              return item.content if item.respond_to?(:content)
+            rescue ReVIEW::KeyError
+              # fall through to contents search
+            end
+          end
+        end
+
+        if @book.respond_to?(:contents)
+          Array(@book.contents).find { |chap| chap.id == chapter_id }
+        end
+      end
+
+      def get_chap(chapter = @chapter)
+        if @book&.config&.[]('secnolevel') && @book.config['secnolevel'] > 0 &&
+           !chapter.number.nil? && !chapter.number.to_s.empty?
+          if chapter.is_a?(ReVIEW::Book::Part)
+            return I18n.t('part_short', chapter.number)
+          else
+            return chapter.format_number(nil)
+          end
+        end
+        nil
+      end
+
+      def over_secnolevel?(n)
+        secnolevel = @book&.config&.[]('secnolevel') || 2
+        n.to_s.split('.').size >= secnolevel
       end
 
       private
