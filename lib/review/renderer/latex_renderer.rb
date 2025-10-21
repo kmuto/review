@@ -1904,18 +1904,35 @@ module ReVIEW
 
       # Render column reference
       def render_inline_column(_type, _content, node)
-        id = node.args.first
-        m = /\A([^|]+)\|(.+)/.match(id)
-        if m && m[1] && @book
-          chapter = @book.chapters.detect { |chap| chap.id == m[1] }
-        end
-        if chapter
-          render_column_chap(chapter, m[2])
+        # AST may provide args as array [chapter_id, column_id] or single string
+        if node.args.length == 2
+          # Cross-chapter reference: args = [chapter_id, column_id]
+          chapter_id, column_id = node.args
+          chapter = @book ? @book.chapters.detect { |chap| chap.id == chapter_id } : nil
+          if chapter
+            render_column_chap(chapter, column_id)
+          else
+            raise NotImplementedError, "Unknown chapter for column reference: #{chapter_id}"
+          end
         else
-          render_column_chap(@chapter, id)
+          # Same-chapter reference or string format "chapter|column"
+          id = node.args.first
+          m = /\A([^|]+)\|(.+)/.match(id)
+          if m && m[1] && m[2]
+            # Cross-chapter reference format: chapter|column
+            chapter = @book ? @book.chapters.detect { |chap| chap.id == m[1] } : nil
+            if chapter
+              render_column_chap(chapter, m[2])
+            else
+              raise NotImplementedError, "Unknown chapter for column reference: #{m[1]}"
+            end
+          else
+            # Same-chapter reference
+            render_column_chap(@chapter, id)
+          end
         end
       rescue ReVIEW::KeyError => e
-        raise NotImplementedError, "Unknown column: #{id} - #{e.message}"
+        raise NotImplementedError, "Unknown column: #{node.args.join('|')} - #{e.message}"
       end
 
       # Render column reference for specific chapter

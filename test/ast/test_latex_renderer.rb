@@ -1369,4 +1369,59 @@ class TestLatexRenderer < Test::Unit::TestCase
     # Both key and display should have @ escaped
     assert_match(/term@example\\index\{term"@example@term"@example\}/, result)
   end
+
+  def test_inline_column_same_chapter
+    # Test @<column>{column1} - same-chapter column reference
+    # Setup: add a column to the current chapter's column_index
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Test Column'))
+    column_item = ReVIEW::Book::Index::Item.new('column1', 1, 'Test Column', caption_node: caption_node)
+    @chapter.column_index.add_item(column_item)
+
+    inline = AST::InlineNode.new(inline_type: 'column', args: ['column1'])
+    result = @renderer.visit(inline)
+
+    # Should generate \reviewcolumnref with column text and label
+    assert_match(/\\reviewcolumnref\{/, result)
+    assert_match(/column:test:1/, result) # Label format: column:chapter_id:number
+  end
+
+  def test_inline_column_cross_chapter
+    # Test @<column>{ch03|column2} - cross-chapter column reference
+    # This tests the fix for the issue where args = ["ch03", "column2"]
+
+    # Create another chapter (ch03) and add it to the book via parts
+    ch03 = ReVIEW::Book::Chapter.new(@book, 3, 'ch03', 'ch03.re', StringIO.new)
+    ch03.generate_indexes
+
+    # Create a part and add both chapters to it
+    part = ReVIEW::Book::Part.new(@book, 1, [@chapter, ch03])
+    @book.instance_variable_set(:@parts, [part])
+
+    # Add a column to ch03's column_index
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Column in Ch03'))
+    column_item = ReVIEW::Book::Index::Item.new('column2', 1, 'Column in Ch03', caption_node: caption_node)
+    ch03.column_index.add_item(column_item)
+
+    # Create inline node with args as 2-element array (as AST parser does)
+    inline = AST::InlineNode.new(inline_type: 'column', args: ['ch03', 'column2'])
+    result = @renderer.visit(inline)
+
+    # Should generate \reviewcolumnref with column text and label from ch03
+    assert_match(/\\reviewcolumnref\{/, result)
+    assert_match(/column:ch03:1/, result) # Label format: column:ch03:number
+    assert_match(/Column in Ch03/, result) # Should include caption
+  end
+
+  def test_inline_column_cross_chapter_not_found
+    # Test @<column>{ch99|column1} - reference to non-existent chapter
+    # Should raise NotImplementedError
+
+    inline = AST::InlineNode.new(inline_type: 'column', args: ['ch99', 'column1'])
+
+    assert_raise(NotImplementedError) do
+      @renderer.visit(inline)
+    end
+  end
 end
