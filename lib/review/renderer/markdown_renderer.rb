@@ -324,7 +324,6 @@ module ReVIEW
         node.content || ''
       end
 
-
       def render_inline_b(_type, content, _node)
         "**#{escape_asterisks(content)}**"
       end

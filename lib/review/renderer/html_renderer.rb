@@ -577,7 +577,6 @@ module ReVIEW
         end
       end
 
-
       # Line numbering for code blocks like HTMLBuilder
       def line_num
         return 1 unless @first_line_num
@@ -1114,7 +1113,6 @@ module ReVIEW
       def config
         @book&.config || {}
       end
-
 
       # Helper methods for references
       def extract_chapter_id(chap_ref)
@@ -1782,7 +1780,7 @@ module ReVIEW
         escape_content(str.to_s)
       end
 
-      def render_table(id, node)
+      def render_table(id, _node)
         # Generate proper table reference exactly like HTMLBuilder's inline_table method
         table_id = id
 

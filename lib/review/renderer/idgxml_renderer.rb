@@ -921,75 +921,75 @@ module ReVIEW
 
       # Basic formatting
       # Note: content is already escaped by visit_text, so don't escape again
-      def render_inline_b(type, content, node)
+      def render_inline_b(_type, content, _node)
         %Q(<b>#{content}</b>)
       end
 
-      def render_inline_i(type, content, node)
+      def render_inline_i(_type, content, _node)
         %Q(<i>#{content}</i>)
       end
 
-      def render_inline_em(type, content, node)
+      def render_inline_em(_type, content, _node)
         %Q(<em>#{content}</em>)
       end
 
-      def render_inline_strong(type, content, node)
+      def render_inline_strong(_type, content, _node)
         %Q(<strong>#{content}</strong>)
       end
 
-      def render_inline_tt(type, content, node)
+      def render_inline_tt(_type, content, _node)
         %Q(<tt>#{content}</tt>)
       end
 
-      def render_inline_ttb(type, content, node)
+      def render_inline_ttb(_type, content, _node)
         %Q(<tt style='bold'>#{content}</tt>)
       end
 
       alias_method :render_inline_ttbold, :render_inline_ttb
 
-      def render_inline_tti(type, content, node)
+      def render_inline_tti(_type, content, _node)
         %Q(<tt style='italic'>#{content}</tt>)
       end
 
-      def render_inline_u(type, content, node)
+      def render_inline_u(_type, content, _node)
         %Q(<underline>#{content}</underline>)
       end
 
-      def render_inline_ins(type, content, node)
+      def render_inline_ins(_type, content, _node)
         %Q(<ins>#{content}</ins>)
       end
 
-      def render_inline_del(type, content, node)
+      def render_inline_del(_type, content, _node)
         %Q(<del>#{content}</del>)
       end
 
-      def render_inline_sup(type, content, node)
+      def render_inline_sup(_type, content, _node)
         %Q(<sup>#{content}</sup>)
       end
 
-      def render_inline_sub(type, content, node)
+      def render_inline_sub(_type, content, _node)
         %Q(<sub>#{content}</sub>)
       end
 
-      def render_inline_ami(type, content, node)
+      def render_inline_ami(_type, content, _node)
         %Q(<ami>#{content}</ami>)
       end
 
-      def render_inline_bou(type, content, node)
+      def render_inline_bou(_type, content, _node)
         %Q(<bou>#{content}</bou>)
       end
 
-      def render_inline_keytop(type, content, node)
+      def render_inline_keytop(_type, content, _node)
         %Q(<keytop>#{content}</keytop>)
       end
 
       # Code
-      def render_inline_code(type, content, node)
+      def render_inline_code(_type, content, _node)
         %Q(<tt type='inline-code'>#{content}</tt>)
       end
 
       # Hints
-      def render_inline_hint(type, content, node)
+      def render_inline_hint(_type, content, _node)
         if @book.config['nolf']
           %Q(<hint>#{content}</hint>)
         else
@@ -998,7 +998,7 @@ module ReVIEW
       end
 
       # Maru (circled numbers/letters)
-      def render_inline_maru(type, content, node)
+      def render_inline_maru(_type, content, node)
         str = node.args.first || content
 
         if /\A\d+\Z/.match?(str)
@@ -1021,7 +1021,7 @@ module ReVIEW
       end
 
       # Ruby (furigana)
-      def render_inline_ruby(type, content, node)
+      def render_inline_ruby(_type, content, node)
         if node.args.length >= 2
           base = escape(node.args[0])
           ruby = escape(node.args[1])
@@ -1032,7 +1032,7 @@ module ReVIEW
       end
 
       # Keyword
-      def render_inline_kw(type, content, node)
+      def render_inline_kw(_type, content, node)
         if node.args.length >= 2
           word = node.args[0]
           alt = node.args[1]
@@ -1067,18 +1067,18 @@ module ReVIEW
       end
 
       # Index
-      def render_inline_idx(type, content, node)
+      def render_inline_idx(_type, content, node)
         str = node.args.first || content
         %Q(#{escape(str)}<index value="#{escape(str)}" />)
       end
 
-      def render_inline_hidx(type, content, node)
+      def render_inline_hidx(_type, content, node)
         str = node.args.first || content
         %Q(<index value="#{escape(str)}" />)
       end
 
       # Links
-      def render_inline_href(type, content, node)
+      def render_inline_href(_type, content, node)
         if node.args.length >= 2
           url = node.args[0].gsub('\,', ',').strip
           label = node.args[1].gsub('\,', ',').strip
@@ -1092,7 +1092,7 @@ module ReVIEW
       end
 
       # References
-      def render_inline_list(type, content, node)
+      def render_inline_list(_type, content, node)
         id = node.reference_id || content
         begin
           base_ref = get_list_reference(id)
@@ -1102,7 +1102,7 @@ module ReVIEW
         end
       end
 
-      def render_inline_table(type, content, node)
+      def render_inline_table(_type, content, node)
         id = node.reference_id || content
         begin
           base_ref = get_table_reference(id)
@@ -1112,7 +1112,7 @@ module ReVIEW
         end
       end
 
-      def render_inline_img(type, content, node)
+      def render_inline_img(_type, content, node)
         id = node.reference_id || content
         begin
           base_ref = get_image_reference(id)
@@ -1122,7 +1122,7 @@ module ReVIEW
         end
       end
 
-      def render_inline_eq(type, content, node)
+      def render_inline_eq(_type, content, node)
         id = node.reference_id || content
         begin
           base_ref = get_equation_reference(id)
@@ -1148,7 +1148,7 @@ module ReVIEW
       end
 
       # Column reference
-      def render_inline_column(type, content, node)
+      def render_inline_column(_type, content, node)
         id = node.reference_id || content
 
         # Parse chapter|id format
@@ -1179,7 +1179,7 @@ module ReVIEW
       end
 
       # Footnotes
-      def render_inline_fn(type, content, node)
+      def render_inline_fn(_type, content, node)
         id = node.reference_id || content
         begin
           fn_entry = @chapter.footnote(id)
@@ -1200,7 +1200,7 @@ module ReVIEW
       end
 
       # Endnotes
-      def render_inline_endnote(type, content, node)
+      def render_inline_endnote(_type, content, node)
         id = node.reference_id || content
         begin
           %Q(<span type='endnoteref' idref='endnoteb-#{normalize_id(id)}'>(#{@chapter.endnote(id).number})</span>)
@@ -1210,7 +1210,7 @@ module ReVIEW
       end
 
       # Bibliography
-      def render_inline_bib(type, content, node)
+      def render_inline_bib(_type, content, node)
         id = node.args.first || content
         begin
           %Q(<span type='bibref' idref='#{id}'>[#{@chapter.bibpaper(id).number}]</span>)
@@ -1220,7 +1220,7 @@ module ReVIEW
       end
 
       # Headline reference
-      def render_inline_hd(type, content, node)
+      def render_inline_hd(_type, content, node)
         if node.args.length >= 2
           chapter_id = node.args[0]
           headline_id = node.args[1]
@@ -1244,7 +1244,7 @@ module ReVIEW
       end
 
       # Chapter reference
-      def render_inline_chap(type, content, node)
+      def render_inline_chap(_type, content, node)
         id = node.args.first || content
         if @book.config['chapterlink']
           %Q(<link href="#{id}">#{@book.chapter_index.number(id)}</link>)
@@ -1255,7 +1255,7 @@ module ReVIEW
         escape(id)
       end
 
-      def render_inline_chapref(type, content, node)
+      def render_inline_chapref(_type, content, node)
         id = node.args.first || content
 
         if @book.config.check_version('2', exception: false)
@@ -1286,7 +1286,7 @@ module ReVIEW
         escape(id)
       end
 
-      def render_inline_title(type, content, node)
+      def render_inline_title(_type, content, node)
         id = node.args.first || content
         title = @book.chapter_index.title(id)
         if @book.config['chapterlink']
@@ -1299,7 +1299,7 @@ module ReVIEW
       end
 
       # Labels
-      def render_inline_labelref(type, content, node)
+      def render_inline_labelref(_type, content, node)
         # Get idref from node.args (raw, not escaped)
         idref = node.args.first || content
         %Q(<ref idref='#{escape(idref)}'>「#{I18n.t('label_marker')}#{escape(idref)}」</ref>)
@@ -1307,13 +1307,13 @@ module ReVIEW
 
       alias_method :render_inline_ref, :render_inline_labelref
 
-      def render_inline_pageref(type, content, node)
+      def render_inline_pageref(_type, content, node)
         idref = node.args.first || content
         %Q(<pageref idref='#{escape(idref)}'>●●</pageref>)
       end
 
       # Icon (inline image)
-      def render_inline_icon(type, content, node)
+      def render_inline_icon(_type, content, node)
         id = node.args.first || content
         begin
           %Q(<Image href="file://#{@chapter.image(id).path.sub(%r{\A\./}, '')}" type="inline" />)
@@ -1323,7 +1323,7 @@ module ReVIEW
       end
 
       # Balloon
-      def render_inline_balloon(type, content, node)
+      def render_inline_balloon(_type, content, node)
         # Content is already escaped and rendered from children
         # Need to get raw text from node to process @maru markers
         # Since InlineNode processes children first, we need raw args
@@ -1348,13 +1348,13 @@ module ReVIEW
       end
 
       # Unicode character
-      def render_inline_uchar(type, content, node)
+      def render_inline_uchar(_type, content, node)
         str = node.args.first || content
         %Q(&#x#{str};)
       end
 
       # Math
-      def render_inline_m(type, content, node)
+      def render_inline_m(_type, content, node)
         str = node.args.first || content
 
         if @book.config['math_format'] == 'imgmath'
@@ -1379,7 +1379,7 @@ module ReVIEW
       end
 
       # DTP processing instruction
-      def render_inline_dtp(type, content, node)
+      def render_inline_dtp(_type, content, node)
         str = node.args.first || content
         "<?dtp #{str} ?>"
       end
@@ -1387,12 +1387,12 @@ module ReVIEW
       # Break
       # Returns a protected newline marker that will be preserved through paragraph
       # and nolf processing, then restored to an actual newline in visit_document
-      def render_inline_br(type, content, node)
+      def render_inline_br(_type, _content, _node)
         "\x01IDGXML_INLINE_NEWLINE\x01"
       end
 
       # Raw
-      def render_inline_raw(type, content, node)
+      def render_inline_raw(_type, content, node)
         if node.args.first
           raw_content = node.args.first
           # Convert \\n to actual newlines
@@ -1403,7 +1403,7 @@ module ReVIEW
       end
 
       # Comment
-      def render_inline_comment(type, content, node)
+      def render_inline_comment(_type, content, node)
         if @book.config['draft']
           str = node.args.first || content
           %Q(<msg>#{escape(str)}</msg>)
@@ -1413,7 +1413,7 @@ module ReVIEW
       end
 
       # Recipe (FIXME placeholder)
-      def render_inline_recipe(type, content, node)
+      def render_inline_recipe(_type, content, node)
         id = node.args.first || content
         %Q(<recipe idref="#{escape(id)}">[XXX]「#{escape(id)}」　p.XX</recipe>)
       end
