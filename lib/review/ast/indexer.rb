@@ -172,68 +172,46 @@ module ReVIEW
         }
       end
 
-      # Visit document node (root node)
       def visit_document(node)
-        # Process all children
         visit_all(node.children)
       end
 
-      # Visit paragraph node
       def visit_paragraph(node)
-        # Process all children
         visit_all(node.children)
       end
 
-      # Visit text node (leaf node - no children to process)
       def visit_text(node)
         # Text nodes have no children and don't contribute to indexes
       end
 
-      # Visit list node
       def visit_list(node)
-        # Process all children
         visit_all(node.children)
       end
 
-      # Visit list item node
       def visit_list_item(node)
-        # Process all children
         visit_all(node.children)
       end
 
-      # Visit caption node
       def visit_caption(node)
-        # Process all children
         visit_all(node.children)
       end
 
-      # Visit code line node
       def visit_code_line(node)
-        # Process all children
         visit_all(node.children)
       end
 
-      # Visit table row node
       def visit_table_row(node)
-        # Process all children
         visit_all(node.children)
       end
 
-      # Visit table cell node
       def visit_table_cell(node)
-        # Process all children
         visit_all(node.children)
       end
 
-      # Visit reference node (used in reference resolution)
       def visit_reference(node)
-        # Reference nodes don't contribute to indexes during index building phase
-        # They are resolved later by ReferenceResolver
-        # Process children if any
         visit_all(node.children)
       end
 
-      # Visit headline nodes (matches IndexBuilder behavior)
       def visit_headline(node)
         check_id(node.label)
         @sec_counter.inc(node.level)
@@ -254,15 +232,12 @@ module ReVIEW
           item = ReVIEW::Book::Index::Item.new(item_id, @sec_counter.number_list, caption_text, caption_node: node.caption_node)
           @headline_index.add_item(item)
 
-          # Process caption inline elements
           visit_all(node.caption_node.children) if node.caption_node
         end
 
-        # Process all children
         visit_all(node.children)
       end
 
-      # Visit column nodes
       def visit_column(node)
         # Extract caption text like IndexBuilder does
         caption_text = extract_caption_text(node.caption, node.caption_node)
@@ -272,31 +247,25 @@ module ReVIEW
 
         check_id(node.label) if node.label
 
-        # Create index item - use item_id as ID and caption text
         item = ReVIEW::Book::Index::Item.new(item_id, @column_index.size + 1, caption_text, caption_node: node.caption_node)
         @column_index.add_item(item)
 
-        # Process caption inline elements and children
         visit_all(node.caption_node.children) if node.caption_node
         visit_all(node.children)
       end
 
-      # Visit code block nodes (list, listnum, emlist, etc.)
       def visit_code_block(node)
         if node.id?
           check_id(node.id)
           item = ReVIEW::Book::Index::Item.new(node.id, @list_index.size + 1)
           @list_index.add_item(item)
 
-          # Process caption inline elements
           visit_all(node.caption_node.children) if node.caption_node
         end
 
-        # Process children
         visit_all(node.children)
       end
 
-      # Visit table nodes
       def visit_table(node)
         if node.id?
           check_id(node.id)
@@ -310,15 +279,12 @@ module ReVIEW
             @indepimage_index.add_item(image_item)
           end
 
-          # Process caption inline elements
           visit_all(node.caption_node.children) if node.caption_node
         end
 
-        # Process children
         visit_all(node.children)
       end
 
-      # Visit image nodes
       def visit_image(node)
         if node.id?
           check_id(node.id)
@@ -326,45 +292,34 @@ module ReVIEW
           item = ReVIEW::Book::Index::Item.new(node.id, @image_index.size + 1, caption_text, caption_node: node.caption_node)
           @image_index.add_item(item)
 
-          # Process caption inline elements
           visit_all(node.caption_node.children) if node.caption_node
         end
 
-        # Process children
         visit_all(node.children)
       end
 
-      # Visit minicolumn nodes (note, memo, tip, etc.)
       def visit_minicolumn(node)
         # Minicolumns are typically indexed by their type and content
-        # Process caption inline elements
         visit_all(node.caption_node.children) if node.caption_node
 
-        # Process children
         visit_all(node.children)
       end
 
-      # Visit embed nodes
       def visit_embed(node)
         case node.embed_type
         when :block
           # Embed blocks contain raw content that shouldn't be processed for inline elements
           # since it's meant to be output as-is for specific formats
-          # No inline processing needed
         end
 
-        # Process children
         visit_all(node.children)
       end
 
-      # Visit footnote nodes (simplified with AST::FootnoteIndex)
       def visit_footnote(node)
         check_id(node.id)
 
-        # Extract footnote content
         footnote_content = extract_footnote_content(node)
 
-        # Add or update footnote in appropriate index
         if node.footnote_type == :footnote
           @crossref[:footnote][node.id] ||= 0
           @footnote_index.add_or_update(node.id, content: footnote_content, footnote_node: node)
@@ -373,11 +328,9 @@ module ReVIEW
           @endnote_index.add_or_update(node.id, content: footnote_content, footnote_node: node)
         end
 
-        # Process children
         visit_all(node.children)
       end
 
-      # Visit texequation nodes
       def visit_tex_equation(node)
         if node.id?
           check_id(node.id)
@@ -386,11 +339,9 @@ module ReVIEW
           @equation_index.add_item(item)
         end
 
-        # Process children
         visit_all(node.children)
       end
 
-      # Visit block nodes
       def visit_block(node)
         if node.block_type
           case node.block_type.to_s
@@ -405,11 +356,9 @@ module ReVIEW
           end
         end
 
-        # Process children
         visit_all(node.children)
       end
 
-      # Visit inline nodes (matches IndexBuilder behavior)
       def visit_inline(node)
         case node.inline_type
         when 'fn'
@@ -462,7 +411,6 @@ module ReVIEW
           # These are references, already processed in their respective nodes
         end
 
-        # Process children
         visit_all(node.children)
       end
 
