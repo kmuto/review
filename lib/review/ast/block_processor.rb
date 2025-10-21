@@ -210,9 +210,12 @@ module ReVIEW
       end
 
       def compile_image_to_ast(type, args)
+        caption_data = process_caption(args, 1)
+
         create_and_add_node(AST::ImageNode,
                             id: args[0],
-                            caption: process_caption(args, 1),
+                            caption: caption_text(caption_data),
+                            caption_node: caption_node(caption_data),
                             metric: args[2],
                             image_type: type)
       end
@@ -220,26 +223,34 @@ module ReVIEW
       def compile_table_to_ast(type, args, lines)
         node = case type
                when :table
+                 caption_data = process_caption(args, 1)
                  create_node(AST::TableNode,
                              id: args[0],
-                             caption: process_caption(args, 1),
+                             caption: caption_text(caption_data),
+                             caption_node: caption_node(caption_data),
                              table_type: :table)
                when :emtable
+                 caption_data = process_caption(args, 0)
                  create_node(AST::TableNode,
                              id: nil, # emtable has no ID
-                             caption: process_caption(args, 0),
+                             caption: caption_text(caption_data),
+                             caption_node: caption_node(caption_data),
                              table_type: :emtable)
                when :imgtable
+                 caption_data = process_caption(args, 1)
                  create_node(AST::TableNode,
                              id: args[0],
-                             caption: process_caption(args, 1),
+                             caption: caption_text(caption_data),
+                             caption_node: caption_node(caption_data),
                              table_type: :imgtable,
                              metric: args[2])
                else
+                 caption_data = process_caption(args, 1)
                  # Fallback for unknown table types
                  create_node(AST::TableNode,
                              id: args[0],
-                             caption: process_caption(args, 1),
+                             caption: caption_text(caption_data),
+                             caption_node: caption_node(caption_data),
                              table_type: type)
                end
 
@@ -321,11 +332,14 @@ module ReVIEW
         end
 
         # Create a MinicolumnNode for note, memo, tip, etc.
+        caption_data = process_caption(args, caption_index)
+
         node = AST::MinicolumnNode.new(
           location: @ast_compiler.location,
           minicolumn_type: type.to_sym,
           id: id,
-          caption: process_caption(args, caption_index)
+          caption: caption_text(caption_data),
+          caption_node: caption_node(caption_data)
         )
 
         # Use the universal block processing method from Compiler for HTML Builder compatibility
@@ -364,10 +378,13 @@ module ReVIEW
         # Preserve original text
         original_text = context.lines ? context.lines.join("\n") : ''
 
+        caption_data = context.process_caption(context.args, config[:caption_index])
+
         # Create node using BlockContext (location automatically set to block start position)
         node = context.create_node(AST::CodeBlockNode,
                                    id: context.arg(config[:id_index]),
-                                   caption: context.process_caption(context.args, config[:caption_index]),
+                                   caption: caption_text(caption_data),
+                                   caption_node: caption_node(caption_data),
                                    lang: context.arg(config[:lang_index]) || config[:default_lang],
                                    line_numbers: config[:line_numbers] || false,
                                    code_type: context.name,
@@ -401,9 +418,12 @@ module ReVIEW
       end
 
       def build_image_ast(context)
+        caption_data = context.process_caption(context.args, 1)
+
         node = context.create_node(AST::ImageNode,
                                    id: context.arg(0),
-                                   caption: context.process_caption(context.args, 1),
+                                   caption: caption_text(caption_data),
+                                   caption_node: caption_node(caption_data),
                                    metric: context.arg(2),
                                    image_type: context.name)
         @ast_compiler.add_child_to_current_node(node)
@@ -413,25 +433,33 @@ module ReVIEW
       def build_table_ast(context)
         node = case context.name
                when :table
+                 caption_data = context.process_caption(context.args, 1)
                  context.create_node(AST::TableNode,
                                      id: context.arg(0),
-                                     caption: context.process_caption(context.args, 1),
+                                     caption: caption_text(caption_data),
+                                     caption_node: caption_node(caption_data),
                                      table_type: :table)
                when :emtable
+                 caption_data = context.process_caption(context.args, 0)
                  context.create_node(AST::TableNode,
                                      id: nil,
-                                     caption: context.process_caption(context.args, 0),
+                                     caption: caption_text(caption_data),
+                                     caption_node: caption_node(caption_data),
                                      table_type: :emtable)
                when :imgtable
+                 caption_data = context.process_caption(context.args, 1)
                  context.create_node(AST::TableNode,
                                      id: context.arg(0),
-                                     caption: context.process_caption(context.args, 1),
+                                     caption: caption_text(caption_data),
+                                     caption_node: caption_node(caption_data),
                                      table_type: :imgtable,
                                      metric: context.arg(2))
                else
+                 caption_data = context.process_caption(context.args, 1)
                  context.create_node(AST::TableNode,
                                      id: context.arg(0),
-                                     caption: context.process_caption(context.args, 1),
+                                     caption: caption_text(caption_data),
+                                     caption_node: caption_node(caption_data),
                                      table_type: context.name)
                end
 
@@ -575,10 +603,13 @@ module ReVIEW
           caption_index = 0
         end
 
+        caption_data = context.process_caption(context.args, caption_index)
+
         node = context.create_node(AST::MinicolumnNode,
                                    minicolumn_type: context.name,
                                    id: id,
-                                   caption: context.process_caption(context.args, caption_index))
+                                   caption: caption_text(caption_data),
+                                   caption_node: caption_node(caption_data))
 
         # Process structured content
         context.process_structured_content_with_blocks(node)
@@ -588,10 +619,13 @@ module ReVIEW
       end
 
       def build_column_ast(context)
+        caption_data = context.process_caption(context.args, 1)
+
         node = context.create_node(AST::ColumnNode,
                                    level: 2, # Default level for block columns
                                    label: context.arg(0),
-                                   caption: context.process_caption(context.args, 1),
+                                   caption: caption_text(caption_data),
+                                   caption_node: caption_node(caption_data),
                                    column_type: 'column')
 
         # Process structured content
@@ -674,9 +708,12 @@ module ReVIEW
                           ''
                         end
 
+        caption_data = context.process_caption(context.args, 1)
+
         node = context.create_node(AST::TexEquationNode,
                                    id: context.arg(0),
-                                   caption: context.process_caption(context.args, 1),
+                                   caption: caption_text(caption_data),
+                                   caption_node: caption_node(caption_data),
                                    latex_content: latex_content)
 
         @ast_compiler.add_child_to_current_node(node)
@@ -866,9 +903,12 @@ module ReVIEW
         # Preserve original text for builders that don't need inline processing
         original_text = lines ? lines.join("\n") : ''
 
+        caption_data = process_caption(args, config[:caption_index])
+
         node = create_and_add_node(AST::CodeBlockNode,
                                    id: safe_arg(args, config[:id_index]),
-                                   caption: process_caption(args, config[:caption_index]),
+                                   caption: caption_text(caption_data),
+                                   caption_node: caption_node(caption_data),
                                    lang: safe_arg(args, config[:lang_index]) || config[:default_lang],
                                    line_numbers: config[:line_numbers] || false,
                                    code_type: command_type,
@@ -899,21 +939,33 @@ module ReVIEW
       end
 
       def process_caption(args, caption_index, location = nil)
+        return nil if caption_index.nil?
+
         caption_text = safe_arg(args, caption_index)
         return nil if caption_text.nil?
 
         # Location information priority: argument > @ast_compiler.location
         caption_location = location || @ast_compiler.location
 
+        caption_node = AST::CaptionNode.new(location: caption_location)
+
         begin
-          AST::CaptionNode.parse(
-            caption_text,
-            location: caption_location,
-            inline_processor: @ast_compiler.inline_processor
-          )
+          @ast_compiler.with_temporary_location!(caption_location) do
+            @ast_compiler.inline_processor.parse_inline_elements(caption_text, caption_node)
+          end
         rescue StandardError => e
           raise CompileError, "Error processing caption '#{caption_text}': #{e.message}#{format_location_info(caption_location)}"
         end
+
+        { text: caption_text, node: caption_node }
+      end
+
+      def caption_text(caption_data)
+        caption_data && caption_data[:text]
+      end
+
+      def caption_node(caption_data)
+        caption_data && caption_data[:node]
       end
 
       # Extract argument safely

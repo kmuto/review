@@ -57,20 +57,20 @@ class TestLatexRenderer < Test::Unit::TestCase
   end
 
   def test_visit_headline_level1
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Chapter Title'))
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Chapter Title'))
 
-    headline = AST::HeadlineNode.new(level: 1, caption: caption, label: 'chap1')
+    headline = AST::HeadlineNode.new(level: 1, caption: 'Chapter Title', caption_node: caption_node, label: 'chap1')
     result = @renderer.visit(headline)
 
     assert_equal "\\chapter{Chapter Title}\n\\label{chap:test}\n\n", result
   end
 
   def test_visit_headline_level2
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Section Title'))
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Section Title'))
 
-    headline = AST::HeadlineNode.new(level: 2, caption: caption)
+    headline = AST::HeadlineNode.new(level: 2, caption: 'Section Title', caption_node: caption_node)
     result = @renderer.visit(headline)
 
     assert_equal "\\section{Section Title}\n\\label{sec:1-1}\n\n", result
@@ -79,10 +79,10 @@ class TestLatexRenderer < Test::Unit::TestCase
   def test_visit_headline_with_secnolevel_default
     # Default secnolevel is 2, so level 3 should be subsection*
     @config['secnolevel'] = 2
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Subsection Title'))
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Subsection Title'))
 
-    headline = AST::HeadlineNode.new(level: 3, caption: caption)
+    headline = AST::HeadlineNode.new(level: 3, caption: 'Subsection Title', caption_node: caption_node)
     result = @renderer.visit(headline)
 
     expected = "\\subsection*{Subsection Title}\n\\addcontentsline{toc}{subsection}{Subsection Title}\n\\label{sec:1-0-1}\n\n"
@@ -94,16 +94,16 @@ class TestLatexRenderer < Test::Unit::TestCase
     @config['secnolevel'] = 3
 
     # Level 3 - normal subsection
-    caption3 = AST::CaptionNode.new
-    caption3.add_child(AST::TextNode.new(content: 'Subsection Title'))
-    headline3 = AST::HeadlineNode.new(level: 3, caption: caption3)
+    caption_node3 = AST::CaptionNode.new
+    caption_node3.add_child(AST::TextNode.new(content: 'Subsection Title'))
+    headline3 = AST::HeadlineNode.new(level: 3, caption: 'Subsection Title', caption_node: caption_node3)
     result3 = @renderer.visit(headline3)
     assert_equal "\\subsection{Subsection Title}\n\\label{sec:1-0-1}\n\n", result3
 
     # Level 4 - subsubsection* without addcontentsline (exceeds default toclevel of 3)
-    caption4 = AST::CaptionNode.new
-    caption4.add_child(AST::TextNode.new(content: 'Subsubsection Title'))
-    headline4 = AST::HeadlineNode.new(level: 4, caption: caption4)
+    caption_node4 = AST::CaptionNode.new
+    caption_node4.add_child(AST::TextNode.new(content: 'Subsubsection Title'))
+    headline4 = AST::HeadlineNode.new(level: 4, caption: 'Subsubsection Title', caption_node: caption_node4)
     result4 = @renderer.visit(headline4)
     expected4 = "\\subsubsection*{Subsubsection Title}\n\\label{sec:1-0-1-1}\n\n"
     assert_equal expected4, result4
@@ -112,10 +112,10 @@ class TestLatexRenderer < Test::Unit::TestCase
   def test_visit_headline_with_secnolevel1
     # secnolevel 1, so level 2 and above should be section*
     @config['secnolevel'] = 1
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Section Title'))
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Section Title'))
 
-    headline = AST::HeadlineNode.new(level: 2, caption: caption)
+    headline = AST::HeadlineNode.new(level: 2, caption: 'Section Title', caption_node: caption_node)
     result = @renderer.visit(headline)
 
     expected = "\\section*{Section Title}\n\\addcontentsline{toc}{section}{Section Title}\n\\label{sec:1-1}\n\n"
@@ -127,10 +127,10 @@ class TestLatexRenderer < Test::Unit::TestCase
     @chapter.instance_variable_set(:@number, '') # Make chapter numberless
     @config['secnolevel'] = 3
 
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Section Title'))
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Section Title'))
 
-    headline = AST::HeadlineNode.new(level: 2, caption: caption)
+    headline = AST::HeadlineNode.new(level: 2, caption: 'Section Title', caption_node: caption_node)
     result = @renderer.visit(headline)
 
     expected = "\\section*{Section Title}\n\\addcontentsline{toc}{section}{Section Title}\n\\label{sec:-1}\n\n"
@@ -142,17 +142,17 @@ class TestLatexRenderer < Test::Unit::TestCase
     @config['secnolevel'] = 0
 
     # Level 1 - chapter*
-    caption1 = AST::CaptionNode.new
-    caption1.add_child(AST::TextNode.new(content: 'Chapter Title'))
-    headline1 = AST::HeadlineNode.new(level: 1, caption: caption1)
+    caption_node1 = AST::CaptionNode.new
+    caption_node1.add_child(AST::TextNode.new(content: 'Chapter Title'))
+    headline1 = AST::HeadlineNode.new(level: 1, caption: 'Chapter Title', caption_node: caption_node1)
     result1 = @renderer.visit(headline1)
     expected1 = "\\chapter*{Chapter Title}\n\\addcontentsline{toc}{chapter}{Chapter Title}\n\\label{chap:test}\n\n"
     assert_equal expected1, result1
 
     # Level 2 - section*
-    caption2 = AST::CaptionNode.new
-    caption2.add_child(AST::TextNode.new(content: 'Section Title'))
-    headline2 = AST::HeadlineNode.new(level: 2, caption: caption2)
+    caption_node2 = AST::CaptionNode.new
+    caption_node2.add_child(AST::TextNode.new(content: 'Section Title'))
+    headline2 = AST::HeadlineNode.new(level: 2, caption: 'Section Title', caption_node: caption_node2)
     result2 = @renderer.visit(headline2)
     expected2 = "\\section*{Section Title}\n\\addcontentsline{toc}{section}{Section Title}\n\\label{sec:1-1}\n\n"
     assert_equal expected2, result2
@@ -164,9 +164,9 @@ class TestLatexRenderer < Test::Unit::TestCase
     part.generate_indexes
     part_renderer = Renderer::LatexRenderer.new(part)
 
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Part Title'))
-    headline = AST::HeadlineNode.new(level: 1, caption: caption)
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Part Title'))
+    headline = AST::HeadlineNode.new(level: 1, caption: 'Part Title', caption_node: caption_node)
     result = part_renderer.visit(headline)
 
     expected = "\\begin{reviewpart}\n\\part{Part Title}\n\\label{chap:part1}\n\n"
@@ -180,9 +180,9 @@ class TestLatexRenderer < Test::Unit::TestCase
     part.generate_indexes
     part_renderer = Renderer::LatexRenderer.new(part)
 
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Part Title'))
-    headline = AST::HeadlineNode.new(level: 1, caption: caption)
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Part Title'))
+    headline = AST::HeadlineNode.new(level: 1, caption: 'Part Title', caption_node: caption_node)
     result = part_renderer.visit(headline)
 
     expected = "\\begin{reviewpart}\n\\part*{Part Title}\n\\addcontentsline{toc}{part}{Part Title}\n\\label{chap:part1}\n\n"
@@ -195,9 +195,9 @@ class TestLatexRenderer < Test::Unit::TestCase
     part.generate_indexes
     part_renderer = Renderer::LatexRenderer.new(part)
 
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Chapter in Part'))
-    headline = AST::HeadlineNode.new(level: 2, caption: caption)
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Chapter in Part'))
+    headline = AST::HeadlineNode.new(level: 2, caption: 'Chapter in Part', caption_node: caption_node)
     result = part_renderer.visit(headline)
 
     expected = "\\section{Chapter in Part}\n\\label{sec:1-1}\n\n"
@@ -211,9 +211,9 @@ class TestLatexRenderer < Test::Unit::TestCase
     part.generate_indexes
     part_renderer = Renderer::LatexRenderer.new(part)
 
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Chapter in Numberless Part'))
-    headline = AST::HeadlineNode.new(level: 2, caption: caption)
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Chapter in Numberless Part'))
+    headline = AST::HeadlineNode.new(level: 2, caption: 'Chapter in Numberless Part', caption_node: caption_node)
     result = part_renderer.visit(headline)
 
     expected = "\\section*{Chapter in Numberless Part}\n\\addcontentsline{toc}{section}{Chapter in Numberless Part}\n\\label{sec:-1}\n\n"
@@ -252,10 +252,11 @@ class TestLatexRenderer < Test::Unit::TestCase
   end
 
   def test_visit_code_block_with_caption
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Code Example'))
+    caption = 'Code Example'
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: caption))
 
-    code_block = AST::CodeBlockNode.new(caption: caption, code_type: 'emlist')
+    code_block = AST::CodeBlockNode.new(caption: caption, caption_node: caption_node, code_type: 'emlist')
     line1 = AST::CodeLineNode.new(location: nil)
     line1.add_child(AST::TextNode.new(content: 'puts "Hello"'))
     code_block.add_child(line1)
@@ -272,10 +273,10 @@ class TestLatexRenderer < Test::Unit::TestCase
   end
 
   def test_visit_table
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Test Table'))
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Test Table'))
 
-    table = AST::TableNode.new(id: 'table1', caption: caption)
+    table = AST::TableNode.new(id: 'table1', caption: 'Test Table', caption_node: caption_node)
 
     # Header row
     header_row = AST::TableRowNode.new(location: nil)
@@ -315,10 +316,10 @@ class TestLatexRenderer < Test::Unit::TestCase
   end
 
   def test_visit_image
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Test Image'))
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Test Image'))
 
-    image = AST::ImageNode.new(id: 'image1', caption: caption)
+    image = AST::ImageNode.new(id: 'image1', caption: 'Test Image', caption_node: caption_node)
     result = @renderer.visit(image)
 
     expected_lines = [
@@ -368,10 +369,10 @@ class TestLatexRenderer < Test::Unit::TestCase
   end
 
   def test_visit_minicolumn_note
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Note Caption'))
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Note Caption'))
 
-    minicolumn = AST::MinicolumnNode.new(minicolumn_type: :note, caption: caption)
+    minicolumn = AST::MinicolumnNode.new(minicolumn_type: :note, caption: 'Note Caption', caption_node: caption_node)
     minicolumn.add_child(AST::TextNode.new(content: 'This is a note.'))
 
     result = @renderer.visit(minicolumn)
@@ -433,9 +434,9 @@ class TestLatexRenderer < Test::Unit::TestCase
     document = AST::DocumentNode.new
 
     # Add level 1 headline (Part title)
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Part Title'))
-    headline = AST::HeadlineNode.new(level: 1, caption: caption)
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Part Title'))
+    headline = AST::HeadlineNode.new(level: 1, caption: 'Part Title', caption_node: caption_node)
     document.add_child(headline)
 
     # Add a paragraph
@@ -463,15 +464,15 @@ class TestLatexRenderer < Test::Unit::TestCase
     document = AST::DocumentNode.new
 
     # Add first level 1 headline
-    caption1 = AST::CaptionNode.new
-    caption1.add_child(AST::TextNode.new(content: 'Part Title'))
-    headline1 = AST::HeadlineNode.new(level: 1, caption: caption1)
+    caption_node1 = AST::CaptionNode.new
+    caption_node1.add_child(AST::TextNode.new(content: 'Part Title'))
+    headline1 = AST::HeadlineNode.new(level: 1, caption: 'Part Title', caption_node: caption_node1)
     document.add_child(headline1)
 
     # Add second level 1 headline (should not open reviewpart again)
-    caption2 = AST::CaptionNode.new
-    caption2.add_child(AST::TextNode.new(content: 'Another Part Title'))
-    headline2 = AST::HeadlineNode.new(level: 1, caption: caption2)
+    caption_node2 = AST::CaptionNode.new
+    caption_node2.add_child(AST::TextNode.new(content: 'Another Part Title'))
+    headline2 = AST::HeadlineNode.new(level: 1, caption: 'Another Part Title', caption_node: caption_node2)
     document.add_child(headline2)
 
     result = part_renderer.visit(document)
@@ -495,9 +496,9 @@ class TestLatexRenderer < Test::Unit::TestCase
     document = AST::DocumentNode.new
 
     # Add level 2 headline first (should not open reviewpart)
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Section Title'))
-    headline = AST::HeadlineNode.new(level: 2, caption: caption)
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Section Title'))
+    headline = AST::HeadlineNode.new(level: 2, caption: 'Section Title', caption_node: caption_node)
     document.add_child(headline)
 
     result = part_renderer.visit(document)
@@ -513,9 +514,9 @@ class TestLatexRenderer < Test::Unit::TestCase
     document = AST::DocumentNode.new
 
     # Add level 1 headline
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Chapter Title'))
-    headline = AST::HeadlineNode.new(level: 1, caption: caption)
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Chapter Title'))
+    headline = AST::HeadlineNode.new(level: 1, caption: 'Chapter Title', caption_node: caption_node)
     document.add_child(headline)
 
     # Add a paragraph
@@ -534,10 +535,10 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   def test_visit_headline_nonum
     # Test [nonum] option - unnumbered section with TOC entry
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Unnumbered Section'))
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Unnumbered Section'))
 
-    headline = AST::HeadlineNode.new(level: 2, caption: caption, tag: 'nonum')
+    headline = AST::HeadlineNode.new(level: 2, caption: 'Unnumbered Section', caption_node: caption_node, tag: 'nonum')
     result = @renderer.visit(headline)
 
     # nonum does NOT get labels (matching LATEXBuilder behavior)
@@ -549,10 +550,10 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   def test_visit_headline_notoc
     # Test [notoc] option - unnumbered section without TOC entry
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'No TOC Section'))
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'No TOC Section'))
 
-    headline = AST::HeadlineNode.new(level: 2, caption: caption, tag: 'notoc')
+    headline = AST::HeadlineNode.new(level: 2, caption: 'No TOC Section', caption_node: caption_node, tag: 'notoc')
     result = @renderer.visit(headline)
 
     # notoc does NOT get labels (matching LATEXBuilder behavior)
@@ -563,10 +564,10 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   def test_visit_headline_nodisp
     # Test [nodisp] option - TOC entry only, no visible heading
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Hidden Section'))
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Hidden Section'))
 
-    headline = AST::HeadlineNode.new(level: 2, caption: caption, tag: 'nodisp')
+    headline = AST::HeadlineNode.new(level: 2, caption: 'Hidden Section', caption_node: caption_node, tag: 'nodisp')
     result = @renderer.visit(headline)
 
     expected = "\\addcontentsline{toc}{section}{Hidden Section}\n"
@@ -576,10 +577,10 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   def test_visit_headline_nonum_level1
     # Test [nonum] option for level 1 (chapter)
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Unnumbered Chapter'))
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Unnumbered Chapter'))
 
-    headline = AST::HeadlineNode.new(level: 1, caption: caption, tag: 'nonum')
+    headline = AST::HeadlineNode.new(level: 1, caption: 'Unnumbered Chapter', caption_node: caption_node, tag: 'nonum')
     result = @renderer.visit(headline)
 
     # nonum does NOT get labels (matching LATEXBuilder behavior)
@@ -591,10 +592,10 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   def test_visit_headline_nonum_level3
     # Test [nonum] option for level 3 (subsection)
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Unnumbered Subsection'))
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Unnumbered Subsection'))
 
-    headline = AST::HeadlineNode.new(level: 3, caption: caption, tag: 'nonum')
+    headline = AST::HeadlineNode.new(level: 3, caption: 'Unnumbered Subsection', caption_node: caption_node, tag: 'nonum')
     result = @renderer.visit(headline)
 
     # nonum does NOT get labels (matching LATEXBuilder behavior)
@@ -610,9 +611,9 @@ class TestLatexRenderer < Test::Unit::TestCase
     part.generate_indexes
     part_renderer = Renderer::LatexRenderer.new(part)
 
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Unnumbered Part'))
-    headline = AST::HeadlineNode.new(level: 1, caption: caption, tag: 'nonum')
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Unnumbered Part'))
+    headline = AST::HeadlineNode.new(level: 1, caption: 'Unnumbered Part', caption_node: caption_node, tag: 'nonum')
     result = part_renderer.visit(headline)
 
     # Part level 1 with nonum does NOT get a label (matching LATEXBuilder behavior)
@@ -666,10 +667,11 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   def test_visit_column_basic
     # Test basic column rendering
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Test Column'))
+    caption = 'Test Column'
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: caption))
 
-    column = AST::ColumnNode.new(level: 3, caption: caption, column_type: 'column')
+    column = AST::ColumnNode.new(level: 3, caption: caption, caption_node: caption_node, column_type: 'column')
     paragraph = AST::ParagraphNode.new
     paragraph.add_child(AST::TextNode.new(content: 'Column content here.'))
     column.add_child(paragraph)
@@ -711,10 +713,11 @@ class TestLatexRenderer < Test::Unit::TestCase
     # Test column TOC entry based on toclevel setting
     @config['toclevel'] = 2 # Only levels 1-2 should get TOC entries
 
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Level 3 Column'))
+    caption = 'Level 3 Column'
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: caption))
 
-    column = AST::ColumnNode.new(level: 3, caption: caption, column_type: 'column')
+    column = AST::ColumnNode.new(level: 3, caption: caption, caption_node: caption_node, column_type: 'column')
     paragraph = AST::ParagraphNode.new
     paragraph.add_child(AST::TextNode.new(content: 'This should not get TOC entry.'))
     column.add_child(paragraph)
@@ -1143,11 +1146,11 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   # Integration test for image with metric
   def test_visit_image_with_metric
-    caption = AST::CaptionNode.new
-    caption.add_child(AST::TextNode.new(content: 'Test Image'))
+    caption_node = AST::CaptionNode.new
+    caption_node.add_child(AST::TextNode.new(content: 'Test Image'))
 
     # Create an image node with metric
-    image = AST::ImageNode.new(id: 'image1', caption: caption, metric: 'latex::width=80mm')
+    image = AST::ImageNode.new(id: 'image1', caption: 'Test Image', caption_node: caption_node, metric: 'latex::width=80mm')
     result = @renderer.visit(image)
 
     expected_lines = [
@@ -1205,10 +1208,10 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   def test_visit_table_with_empty_caption_node
     # Test table with empty caption node (should not output \begin{table} and \end{table})
-    empty_caption = AST::CaptionNode.new
+    empty_caption_node = AST::CaptionNode.new
     # Empty caption node with no children
 
-    table = AST::TableNode.new(id: 'table1', caption: empty_caption)
+    table = AST::TableNode.new(id: 'table1', caption: '', caption_node: empty_caption_node)
 
     # Header row
     header_row = AST::TableRowNode.new(location: nil)

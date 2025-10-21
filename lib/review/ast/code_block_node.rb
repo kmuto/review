@@ -6,11 +6,13 @@ require 'review/ast/caption_node'
 module ReVIEW
   module AST
     class CodeBlockNode < Node
+      attr_accessor :caption_node
       attr_reader :lang, :caption, :line_numbers, :code_type
 
-      def initialize(location: nil, lang: nil, id: nil, caption: nil, line_numbers: false, code_type: nil, **kwargs)
+      def initialize(location: nil, lang: nil, id: nil, caption: nil, caption_node: nil, line_numbers: false, code_type: nil, **kwargs)
         super(location: location, id: id, **kwargs)
         @lang = lang
+        @caption_node = caption_node
         @caption = caption
         @line_numbers = line_numbers
         @code_type = code_type
@@ -25,7 +27,9 @@ module ReVIEW
 
       # Get caption text for legacy Builder compatibility
       def caption_markup_text
-        @caption&.to_text || ''
+        return '' if caption.nil? && caption_node.nil?
+
+        caption || caption_node&.to_text || ''
       end
 
       # Get original lines as array (for builders that don't need inline processing)
@@ -64,7 +68,8 @@ module ReVIEW
       def to_h
         result = super.merge(
           lang: lang,
-          caption: caption&.to_h,
+          caption: caption,
+          caption_node: caption_node&.to_h,
           line_numbers: line_numbers,
           children: children.map(&:to_h)
         )
@@ -78,7 +83,8 @@ module ReVIEW
       def serialize_properties(hash, options)
         hash[:id] = id if id && !id.empty?
         hash[:lang] = lang
-        hash[:caption] = @caption&.serialize_to_hash(options) if @caption
+        hash[:caption] = caption if caption
+        hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
         hash[:line_numbers] = line_numbers
         hash[:code_type] = code_type if code_type
         hash[:original_text] = original_text if original_text

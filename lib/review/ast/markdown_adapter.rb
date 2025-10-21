@@ -122,12 +122,15 @@ module ReVIEW
           )
           process_inline_content(cm_node, caption_node)
 
+          caption_text = caption_node.to_text
+
           # Create headline node
           headline = HeadlineNode.new(
             location: current_location(cm_node),
             level: level,
             label: nil, # Markdown doesn't have explicit labels
-            caption: caption_node
+            caption: caption_text,
+            caption_node: caption_node
           )
 
           add_node_to_current_context(headline)
@@ -484,19 +487,20 @@ module ReVIEW
         title = html_node.column_title
 
         # Create caption node if title is provided
-        caption = if title && !title.empty?
-                    caption_node = CaptionNode.new(location: html_node.location)
-                    caption_node.add_child(TextNode.new(
-                                             location: html_node.location,
-                                             content: title
-                                           ))
-                    caption_node
-                  end
+        caption_node = if title && !title.empty?
+                         node = CaptionNode.new(location: html_node.location)
+                         node.add_child(TextNode.new(
+                                          location: html_node.location,
+                                          content: title
+                                        ))
+                         node
+                       end
 
         # Create column node
         column_node = ColumnNode.new(
           location: html_node.location,
-          caption: caption
+          caption: caption_node&.to_text,
+          caption_node: caption_node
         )
 
         # Push current context to stack
@@ -512,19 +516,20 @@ module ReVIEW
       # Start a new column context from heading syntax
       def start_column_from_heading(cm_node, title)
         # Create caption node if title is provided
-        caption = if title && !title.empty?
-                    caption_node = CaptionNode.new(location: current_location(cm_node))
-                    caption_node.add_child(TextNode.new(
-                                             location: current_location(cm_node),
-                                             content: title
-                                           ))
-                    caption_node
-                  end
+        caption_node = if title && !title.empty?
+                         node = CaptionNode.new(location: current_location(cm_node))
+                         node.add_child(TextNode.new(
+                                          location: current_location(cm_node),
+                                          content: title
+                                        ))
+                         node
+                       end
 
         # Create column node
         column_node = ColumnNode.new(
           location: current_location(cm_node),
-          caption: caption
+          caption: caption_node&.to_text,
+          caption_node: caption_node
         )
 
         # Push current context to stack
@@ -579,20 +584,21 @@ module ReVIEW
         alt_text = extract_text(image_node) # Extract alt text from children
 
         # Create caption if alt text exists
-        caption = if alt_text && !alt_text.empty?
-                    caption_node = CaptionNode.new(location: current_location(image_node))
-                    caption_node.add_child(TextNode.new(
-                                             location: current_location(image_node),
-                                             content: alt_text
-                                           ))
-                    caption_node
-                  end
+        caption_node = if alt_text && !alt_text.empty?
+                         node = CaptionNode.new(location: current_location(image_node))
+                         node.add_child(TextNode.new(
+                                          location: current_location(image_node),
+                                          content: alt_text
+                                        ))
+                         node
+                       end
 
         # Create ImageNode
         image_block = ImageNode.new(
           location: current_location(image_node),
           id: image_id,
-          caption: caption,
+          caption: caption_node&.to_text,
+          caption_node: caption_node,
           image_type: :image
         )
 

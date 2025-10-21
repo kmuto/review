@@ -6,24 +6,29 @@ require 'review/ast/caption_node'
 module ReVIEW
   module AST
     class ImageNode < Node
+      attr_accessor :caption_node
       attr_reader :caption, :metric, :image_type
 
-      def initialize(location: nil, id: nil, caption: nil, metric: nil, image_type: :image, **kwargs)
+      def initialize(location: nil, id: nil, caption: nil, caption_node: nil, metric: nil, image_type: :image, **kwargs)
         super(location: location, id: id, **kwargs)
-        @caption = CaptionNode.parse(caption, location: location)
+        @caption_node = caption_node
+        @caption = caption
         @metric = metric
         @image_type = image_type
       end
 
       # Get caption text for legacy Builder compatibility
       def caption_markup_text
-        @caption&.to_text || ''
+        return '' if caption.nil? && caption_node.nil?
+
+        caption || caption_node&.to_text || ''
       end
 
       # Override to_h to exclude children array for ImageNode
       def to_h
         result = super
-        result[:caption] = caption&.to_h
+        result[:caption] = caption if caption
+        result[:caption_node] = caption_node&.to_h if caption_node
         result[:metric] = metric
         result[:image_type] = image_type
         # ImageNode is a leaf node - remove children array if present
@@ -56,8 +61,9 @@ module ReVIEW
 
       def serialize_properties(hash, options)
         hash[:id] = id if id && !id.empty?
-        # For backward compatibility, serialize caption as its children array
-        hash[:caption] = @caption ? @caption.serialize_to_hash(options) : nil
+        hash[:caption] = caption if caption
+        # For backward compatibility, provide structured caption node
+        hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
         hash[:metric] = metric
         hash[:image_type] = image_type
         hash

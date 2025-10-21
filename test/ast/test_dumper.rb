@@ -43,7 +43,8 @@ class TestDumper < Test::Unit::TestCase
     # Check headline
     assert_equal 'HeadlineNode', json['children'][0]['type']
     assert_equal 1, json['children'][0]['level']
-    expected_caption = {
+    assert_equal 'Test Chapter', json['children'][0]['caption']
+    expected_caption_node = {
       'type' => 'CaptionNode',
       'location' => { 'filename' => 'test.re', 'lineno' => 1 },
       'children' => [
@@ -54,7 +55,7 @@ class TestDumper < Test::Unit::TestCase
         }
       ]
     }
-    assert_equal expected_caption, json['children'][0]['caption']
+    assert_equal expected_caption_node, json['children'][0]['caption_node']
 
     # Check paragraph
     assert_equal 'ParagraphNode', json['children'][1]['type']
@@ -73,7 +74,8 @@ class TestDumper < Test::Unit::TestCase
         }
       ]
     }
-    assert_equal expected_caption, json['children'][2]['caption']
+    assert_equal 'Sample Code', json['children'][2]['caption']
+    assert_equal expected_caption, json['children'][2]['caption_node']
   end
 
   def test_dump_with_compact_options

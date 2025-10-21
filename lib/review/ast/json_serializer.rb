@@ -78,11 +78,9 @@ module ReVIEW
         when ReVIEW::AST::HeadlineNode
           hash['level'] = node.level
           hash['label'] = node.label
-          hash['caption'] = extract_text(node.caption)
         when ReVIEW::AST::ParagraphNode
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
         when ReVIEW::AST::CodeBlockNode
-          hash['caption'] = extract_text(node.caption)
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
           hash['id'] = node.id if node.id
           hash['lang'] = node.lang if node.lang
@@ -91,7 +89,6 @@ module ReVIEW
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
           hash['line_number'] = node.line_number if node.line_number
         when ReVIEW::AST::TableNode
-          hash['caption'] = extract_text(node.caption)
           hash['id'] = node.id if node.id
           hash['header_rows'] = node.header_rows.map { |row| serialize_to_hash(row, options) } if node.header_rows&.any?
           hash['body_rows'] = node.body_rows.map { |row| serialize_to_hash(row, options) } if node.body_rows&.any?
@@ -100,7 +97,6 @@ module ReVIEW
         when ReVIEW::AST::TableCellNode # rubocop:disable Lint/DuplicateBranch
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
         when ReVIEW::AST::ImageNode
-          hash['caption'] = extract_text(node.caption)
           hash['id'] = node.id if node.id
           hash['metric'] = node.metric if node.metric
         when ReVIEW::AST::ListNode
@@ -137,11 +133,9 @@ module ReVIEW
         when ReVIEW::AST::ColumnNode
           hash['level'] = node.level
           hash['label'] = node.label
-          hash['caption'] = extract_text(node.caption)
           hash['content'] = node.children.map { |child| serialize_to_hash(child, options) }
         when ReVIEW::AST::MinicolumnNode
           hash['minicolumn_type'] = node.minicolumn_type.to_s if node.minicolumn_type
-          hash['caption'] = extract_text(node.caption) if node.caption
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
         else
           # Generic handling for unknown node types
@@ -149,6 +143,8 @@ module ReVIEW
             hash['children'] = node.children.map { |child| serialize_to_hash(child, options) }
           end
         end
+
+        assign_caption_fields(hash, node, options)
 
         hash
       end
@@ -168,6 +164,31 @@ module ReVIEW
         end
       end
 
+      def assign_caption_fields(hash, node, options)
+        return unless node.respond_to?(:caption) || node.respond_to?(:caption_node)
+
+        if node.respond_to?(:caption)
+          caption_value = node.caption
+          caption_string = case caption_value
+                           when String
+                             caption_value
+                           when nil
+                             nil
+                           else
+                             if caption_value.respond_to?(:to_text)
+                               caption_value.to_text
+                             else
+                               extract_text(caption_value)
+                             end
+                           end
+          hash['caption'] = caption_string unless caption_string.nil?
+        end
+
+        if node.respond_to?(:caption_node) && node.caption_node
+          hash['caption_node'] = serialize_to_hash(node.caption_node, options)
+        end
+      end
+
       def process_list_items(node, _list_type, options)
         return [] if node.children.empty?
 
@@ -180,6 +201,21 @@ module ReVIEW
       def deserialize(json_string)
         hash = JSON.parse(json_string)
         deserialize_from_hash(hash)
+      end
+
+      def deserialize_caption_fields(hash)
+        caption_value = hash['caption']
+        caption_node_value = hash['caption_node']
+
+        caption_node = if caption_node_value
+                         deserialize_from_hash(caption_node_value)
+                       elsif caption_value.is_a?(Hash) || caption_value.is_a?(Array)
+                         deserialize_from_hash(caption_value)
+                       end
+
+        caption_string = caption_value.is_a?(String) ? caption_value : nil
+
+        [caption_string, caption_node]
       end
 
       # Helper method to create location from hash or use a default
@@ -217,11 +253,12 @@ module ReVIEW
             end
             node
           when 'HeadlineNode'
-            caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
+            caption_text, caption_node = deserialize_caption_fields(hash)
             ReVIEW::AST::HeadlineNode.new(
               level: hash['level'],
               label: hash['label'],
-              caption: caption
+              caption: caption_text,
+              caption_node: caption_node
             )
           when 'ParagraphNode'
             node = ReVIEW::AST::ParagraphNode.new
@@ -281,10 +318,11 @@ module ReVIEW
             end
             node
           when 'CodeBlockNode'
-            caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
+            caption_text, caption_node = deserialize_caption_fields(hash)
             node = ReVIEW::AST::CodeBlockNode.new(
               id: hash['id'],
-              caption: caption,
+              caption: caption_text,
+              caption_node: caption_node,
               lang: hash['lang'],
               line_numbers: hash['numbered'] || hash['line_numbers'] || false,
               code_type: hash['code_type'],
@@ -298,10 +336,11 @@ module ReVIEW
             end
             node
           when 'TableNode'
-            caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
+            caption_text, caption_node = deserialize_caption_fields(hash)
             node = ReVIEW::AST::TableNode.new(
               id: hash['id'],
-              caption: caption,
+              caption: caption_text,
+              caption_node: caption_node,
               table_type: hash['table_type'] || :table,
               metric: hash['metric']
             )
@@ -317,10 +356,11 @@ module ReVIEW
 
             node
           when 'ImageNode'
-            caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
+            caption_text, caption_node = deserialize_caption_fields(hash)
             ReVIEW::AST::ImageNode.new(
               id: hash['id'],
-              caption: caption,
+              caption: caption_text,
+              caption_node: caption_node,
               metric: hash['metric']
             )
           when 'ListNode'
@@ -347,10 +387,11 @@ module ReVIEW
             end
             node
           when 'MinicolumnNode'
-            caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
+            caption_text, caption_node = deserialize_caption_fields(hash)
             node = ReVIEW::AST::MinicolumnNode.new(
               minicolumn_type: hash['minicolumn_type'] || hash['column_type'],
-              caption: caption
+              caption: caption_text,
+              caption_node: caption_node
             )
             if hash['children'] || hash['content']
               children = (hash['children'] || hash['content'] || []).map { |child| deserialize_from_hash(child) }
@@ -405,11 +446,12 @@ module ReVIEW
             end
             node
           when 'ColumnNode'
-            caption = hash['caption'] ? deserialize_from_hash(hash['caption']) : nil
+            caption_text, caption_node = deserialize_caption_fields(hash)
             ReVIEW::AST::ColumnNode.new(
               level: hash['level'],
               label: hash['label'],
-              caption: caption,
+              caption: caption_text,
+              caption_node: caption_node,
               column_type: hash['column_type']
             )
           else

@@ -32,7 +32,8 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       location: @location,
       level: 1,
       label: 'intro',
-      caption: AST::CaptionNode.parse('Introduction', location: @location)
+      caption: 'Introduction',
+      caption_node: AST::CaptionNode.parse('Introduction', location: @location)
     )
 
     json = node.to_json
@@ -41,12 +42,15 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     assert_equal 'HeadlineNode', parsed['type']
     assert_equal 1, parsed['level']
     assert_equal 'intro', parsed['label']
-    assert_equal({ 'children' =>
-  [{ 'content' => 'Introduction',
-     'location' => { 'filename' => 'test.re', 'lineno' => 42 },
-     'type' => 'TextNode' }],
-                   'location' => { 'filename' => 'test.re', 'lineno' => 42 },
-                   'type' => 'CaptionNode' }, parsed['caption'])
+    expected_caption_node = {
+      'children' => [{ 'content' => 'Introduction',
+                       'location' => { 'filename' => 'test.re', 'lineno' => 42 },
+                       'type' => 'TextNode' }],
+      'location' => { 'filename' => 'test.re', 'lineno' => 42 },
+      'type' => 'CaptionNode'
+    }
+    assert_equal 'Introduction', parsed['caption']
+    assert_equal expected_caption_node, parsed['caption_node']
   end
 
   def test_paragraph_with_inline_elements
@@ -109,7 +113,8 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     node = AST::CodeBlockNode.new(
       location: @location,
       id: 'example',
-      caption: AST::CaptionNode.parse('Example Code', location: @location),
+      caption: 'Example Code',
+      caption_node: AST::CaptionNode.parse('Example Code', location: @location),
       lang: 'ruby',
       original_text: lines_text,
       line_numbers: true
@@ -141,7 +146,8 @@ class TestASTJSONSerialization < Test::Unit::TestCase
         }
       ]
     }
-    assert_equal expected_caption, parsed['caption']
+    assert_equal 'Example Code', parsed['caption']
+    assert_equal expected_caption, parsed['caption_node']
     assert_equal 'ruby', parsed['lang']
     assert_equal lines_text, parsed['original_text']
     assert_equal true, parsed['line_numbers']
@@ -152,7 +158,8 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     node = AST::TableNode.new(
       location: @location,
       id: 'data',
-      caption: AST::CaptionNode.parse('Sample Data', location: @location)
+      caption: 'Sample Data',
+      caption_node: AST::CaptionNode.parse('Sample Data', location: @location)
     )
 
     # Add header row
@@ -191,7 +198,8 @@ class TestASTJSONSerialization < Test::Unit::TestCase
         }
       ]
     }
-    assert_equal expected_caption, parsed['caption']
+    assert_equal 'Sample Data', parsed['caption']
+    assert_equal expected_caption, parsed['caption_node']
     assert_equal 1, parsed['header_rows'].size  # Check we have 1 header row
     assert_equal 2, parsed['body_rows'].size    # Check we have 2 body rows
   end
@@ -256,7 +264,8 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(
       location: @location,
       level: 1,
-      caption: AST::CaptionNode.parse('Chapter 1', location: @location)
+      caption: 'Chapter 1',
+      caption_node: AST::CaptionNode.parse('Chapter 1', location: @location)
     )
     doc.add_child(headline)
 
@@ -280,7 +289,8 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     node = AST::HeadlineNode.new(
       location: @location,
       level: 2,
-      caption: AST::CaptionNode.parse('Section Title', location: @location)
+      caption: 'Section Title',
+      caption_node: AST::CaptionNode.parse('Section Title', location: @location)
     )
 
     options = AST::JSONSerializer::Options.new
@@ -289,19 +299,23 @@ class TestASTJSONSerialization < Test::Unit::TestCase
 
     assert_equal 'HeadlineNode', parsed['type']
     assert_equal 2, parsed['level']
-    assert_equal({ 'children' =>
-                  [{ 'content' => 'Section Title',
-                     'location' => { 'filename' => 'test.re', 'lineno' => 42 },
-                     'type' => 'TextNode' }],
-                   'location' => { 'filename' => 'test.re', 'lineno' => 42 },
-                   'type' => 'CaptionNode' }, parsed['caption'])
+    expected_caption = {
+      'children' => [{ 'content' => 'Section Title',
+                       'location' => { 'filename' => 'test.re', 'lineno' => 42 },
+                       'type' => 'TextNode' }],
+      'location' => { 'filename' => 'test.re', 'lineno' => 42 },
+      'type' => 'CaptionNode'
+    }
+    assert_equal 'Section Title', parsed['caption']
+    assert_equal expected_caption, parsed['caption_node']
   end
 
   def test_custom_json_serializer_without_location
     node = AST::HeadlineNode.new(
       location: @location,
       level: 2,
-      caption: AST::CaptionNode.parse('Section Title', location: @location)
+      caption: 'Section Title',
+      caption_node: AST::CaptionNode.parse('Section Title', location: @location)
     )
 
     options = AST::JSONSerializer::Options.new
@@ -312,8 +326,12 @@ class TestASTJSONSerialization < Test::Unit::TestCase
 
     assert_equal 'HeadlineNode', parsed['type']
     assert_equal 2, parsed['level']
-    assert_equal({ 'children' => [{ 'content' => 'Section Title', 'type' => 'TextNode' }],
-                   'type' => 'CaptionNode' }, parsed['caption'])
+    expected_caption = {
+      'children' => [{ 'content' => 'Section Title', 'type' => 'TextNode' }],
+      'type' => 'CaptionNode'
+    }
+    assert_equal 'Section Title', parsed['caption']
+    assert_equal expected_caption, parsed['caption_node']
     assert_nil(parsed['location'])
   end
 
@@ -321,7 +339,8 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     node = AST::HeadlineNode.new(
       location: @location,
       level: 2,
-      caption: AST::CaptionNode.parse('Section Title', location: @location)
+      caption: 'Section Title',
+      caption_node: AST::CaptionNode.parse('Section Title', location: @location)
     )
 
     options = AST::JSONSerializer::Options.new
@@ -363,7 +382,8 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(
       location: @location,
       level: 1,
-      caption: AST::CaptionNode.parse('Introduction', location: @location)
+      caption: 'Introduction',
+      caption_node: AST::CaptionNode.parse('Introduction', location: @location)
     )
     doc.add_child(headline)
 
@@ -403,7 +423,8 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     code = AST::CodeBlockNode.new(
       location: @location,
       id: 'example',
-      caption: AST::CaptionNode.parse('Code Example', location: @location),
+      caption: 'Code Example',
+      caption_node: AST::CaptionNode.parse('Code Example', location: @location),
       lang: 'ruby',
       original_text: 'puts "Hello, World!"'
     )
@@ -425,12 +446,13 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     headline_json = parsed['children'][0]
     assert_equal 'HeadlineNode', headline_json['type']
     assert_equal 1, headline_json['level']
+    assert_equal 'Introduction', headline_json['caption']
     assert_equal({ 'children' =>
   [{ 'content' => 'Introduction',
      'location' => { 'filename' => 'test.re', 'lineno' => 42 },
      'type' => 'TextNode' }],
                    'location' => { 'filename' => 'test.re', 'lineno' => 42 },
-                   'type' => 'CaptionNode' }, headline_json['caption'])
+                   'type' => 'CaptionNode' }, headline_json['caption_node'])
 
     # Check paragraph with inline elements
     para_json = parsed['children'][1]
@@ -457,7 +479,8 @@ class TestASTJSONSerialization < Test::Unit::TestCase
         }
       ]
     }
-    assert_equal expected_caption, code_json['caption']
+    assert_equal 'Code Example', code_json['caption']
+    assert_equal expected_caption, code_json['caption_node']
     assert_equal 'ruby', code_json['lang']
     assert_equal 'puts "Hello, World!"', code_json['original_text']
     assert_equal 1, code_json['children'].size # Check we have 1 code line node

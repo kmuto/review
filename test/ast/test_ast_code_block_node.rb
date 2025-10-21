@@ -202,13 +202,14 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
 
   def test_serialize_properties_includes_original_text
     # Create caption as proper CaptionNode
-    caption = ReVIEW::AST::CaptionNode.new(location: @location)
-    caption.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Test Caption'))
+    caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
+    caption_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Test Caption'))
 
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       id: 'test',
-      caption: caption,
+      caption: 'Test Caption',
+      caption_node: caption_node,
       original_text: 'puts hello'
     )
 
@@ -222,12 +223,13 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
 
     # Check that basic properties are included
     assert_equal 'test', hash[:id]
-    # Caption is now serialized as CaptionNode structure (Hash instead of Array)
-    assert_instance_of(Hash, hash[:caption])
-    assert_equal 'CaptionNode', hash[:caption][:type]
-    assert_equal 1, hash[:caption][:children].size
-    assert_equal 'TextNode', hash[:caption][:children][0][:type]
-    assert_equal 'Test Caption', hash[:caption][:children][0][:content]
+    # Caption string and structure are serialized separately
+    assert_equal 'Test Caption', hash[:caption]
+    assert_instance_of(Hash, hash[:caption_node])
+    assert_equal 'CaptionNode', hash[:caption_node][:type]
+    assert_equal 1, hash[:caption_node][:children].size
+    assert_equal 'TextNode', hash[:caption_node][:children][0][:type]
+    assert_equal 'Test Caption', hash[:caption_node][:children][0][:content]
   end
 
   private

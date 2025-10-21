@@ -7,10 +7,12 @@ require 'review/ast/json_serializer'
 module ReVIEW
   module AST
     class TableNode < Node
+      attr_accessor :caption_node
       attr_reader :caption, :table_type, :metric
 
-      def initialize(location: nil, id: nil, caption: nil, table_type: :table, metric: nil, **kwargs)
+      def initialize(location: nil, id: nil, caption: nil, caption_node: nil, table_type: :table, metric: nil, **kwargs)
         super(location: location, id: id, **kwargs)
+        @caption_node = caption_node
         @caption = caption
         @table_type = table_type # :table, :emtable, :imgtable
         @metric = metric
@@ -34,12 +36,15 @@ module ReVIEW
 
       # Get caption text for legacy Builder compatibility
       def caption_markup_text
-        @caption&.to_text || ''
+        return '' if caption.nil? && caption_node.nil?
+
+        caption || caption_node&.to_text || ''
       end
 
       def to_h
         result = super.merge(
-          caption: caption&.to_h,
+          caption: caption,
+          caption_node: caption_node&.to_h,
           table_type: table_type,
           header_rows: header_rows.map(&:to_h),
           body_rows: body_rows.map(&:to_h)
@@ -63,7 +68,8 @@ module ReVIEW
         # Add TableNode-specific properties (no children field)
         hash[:id] = id if id && !id.empty?
         hash[:table_type] = table_type
-        hash[:caption] = @caption ? @caption.serialize_to_hash(options) : nil
+        hash[:caption] = caption if caption
+        hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
         hash[:header_rows] = header_rows.map { |row| row.serialize_to_hash(options) }
         hash[:body_rows] = body_rows.map { |row| row.serialize_to_hash(options) }
         hash[:metric] = metric if metric

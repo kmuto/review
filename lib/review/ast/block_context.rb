@@ -56,22 +56,24 @@ module ReVIEW
       #
       # @param args [Array<String>] Arguments array
       # @param caption_index [Integer] Caption index
-      # @return [AST::CaptionNode, nil] Processed caption
+      # @return [Hash, nil] Processed caption data with :text and :node keys
       def process_caption(args, caption_index)
         return nil unless args && caption_index && caption_index >= 0 && args.size > caption_index
 
         caption_text = args[caption_index]
         return nil if caption_text.nil?
 
+        caption_node = AST::CaptionNode.new(location: @start_location)
+
         begin
-          AST::CaptionNode.parse(
-            caption_text,
-            location: @start_location,
-            inline_processor: @compiler.inline_processor
-          )
+          @compiler.with_temporary_location!(@start_location) do
+            @compiler.inline_processor.parse_inline_elements(caption_text, caption_node)
+          end
         rescue StandardError => e
           raise CompileError, "Error processing caption '#{caption_text}': #{e.message}#{format_location_info(@start_location)}"
         end
+
+        { text: caption_text, node: caption_node }
       end
 
       # Process nested blocks

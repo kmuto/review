@@ -120,9 +120,10 @@ class TestFullASTMode < Test::Unit::TestCase
     heading = ast['children'].find { |node| node['type'] == 'HeadlineNode' }
     assert_not_nil(heading, 'Heading node should exist')
 
-    # Caption is now a CaptionNode with children
-    assert_equal 'CaptionNode', heading['caption']['type'], 'Caption should be a CaptionNode'
-    caption_markup_text = heading['caption']['children'].first
+    # Caption string and node data are both available
+    assert_equal 'Chapter Title', heading['caption']
+    assert_equal 'CaptionNode', heading['caption_node']['type'], 'Caption should be a CaptionNode'
+    caption_markup_text = heading['caption_node']['children'].first
     assert_equal 'TextNode', caption_markup_text['type'], 'Caption should contain a TextNode'
     assert_equal 'Chapter Title', caption_markup_text['content'], "Caption text should be 'Chapter Title'"
 
@@ -147,8 +148,8 @@ class TestFullASTMode < Test::Unit::TestCase
     assert_equal 'note', note_block['minicolumn_type'], 'Note block should have correct minicolumn_type'
 
     # Check caption
-    assert_not_nil(note_block['caption'], 'Note block should have caption')
-    caption_text = note_block['caption']['children'].first['content']
+    assert_equal 'Note Caption', note_block['caption'], 'Note block should have caption text'
+    caption_text = note_block['caption_node']['children'].first['content']
     assert_equal 'Note Caption', caption_text, 'Note block should have correct caption'
 
     # Note block should have paragraphs due to structured processing
@@ -197,7 +198,7 @@ class TestFullASTMode < Test::Unit::TestCase
     assert_equal 'memo', memo_block['minicolumn_type'], 'Memo block should have correct minicolumn_type'
 
     # Check memo caption
-    memo_caption_text = memo_block['caption']['children'].first['content']
+    memo_caption_text = memo_block['caption_node']['children'].first['content']
     assert_equal 'Memo Title', memo_caption_text, 'Memo block should have correct title'
 
     # Check quote block - now contains paragraph with structured content processing

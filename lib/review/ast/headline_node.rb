@@ -6,19 +6,23 @@ require 'review/ast/caption_node'
 module ReVIEW
   module AST
     class HeadlineNode < Node
+      attr_accessor :caption_node
       attr_reader :level, :label, :caption, :tag
 
-      def initialize(location: nil, level: nil, label: nil, caption: nil, tag: nil, **kwargs)
+      def initialize(location: nil, level: nil, label: nil, caption: nil, caption_node: nil, tag: nil, **kwargs)
         super(location: location, **kwargs)
         @level = level
         @label = label
-        @caption = CaptionNode.parse(caption, location: location)
+        @caption_node = caption_node
+        @caption = caption
         @tag = tag
       end
 
       # Get caption text for legacy Builder compatibility
       def caption_markup_text
-        @caption&.to_text || ''
+        return '' if caption.nil? && caption_node.nil?
+
+        caption || caption_node&.to_text || ''
       end
 
       # Check if headline has specific tag option
@@ -43,7 +47,8 @@ module ReVIEW
         super.merge(
           level: level,
           label: label,
-          caption: caption&.to_h,
+          caption: caption,
+          caption_node: caption_node&.to_h,
           tag: tag
         )
       end
@@ -53,7 +58,8 @@ module ReVIEW
       def serialize_properties(hash, options)
         hash[:level] = level
         hash[:label] = label
-        hash[:caption] = caption&.serialize_to_hash(options)
+        hash[:caption] = caption if caption
+        hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
         hash[:tag] = tag if tag
         hash
       end

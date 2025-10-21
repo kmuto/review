@@ -186,11 +186,20 @@ module ReVIEW
           caption = remaining
         end
 
-        processed_caption = AST::CaptionNode.parse(
-          caption,
-          location: location,
-          inline_processor: inline_processor
-        )
+        caption_text = caption
+        caption_node = nil
+
+        if caption_text && !caption_text.empty?
+          caption_node = AST::CaptionNode.new(location: location)
+
+          begin
+            with_temporary_location!(location) do
+              inline_processor.parse_inline_elements(caption_text, caption_node)
+            end
+          rescue StandardError => e
+            raise CompileError, "Error processing caption '#{caption_text}': #{e.message}#{format_location_info(location)}"
+          end
+        end
 
         # Before creating new section, handle section nesting
         # Find appropriate parent level for this headline/section
@@ -201,7 +210,8 @@ module ReVIEW
             location: location,
             level: level,
             label: label,
-            caption: processed_caption,
+            caption: caption_text,
+            caption_node: caption_node,
             column_type: 'column',
             inline_processor: inline_processor
           )
@@ -227,7 +237,8 @@ module ReVIEW
             location: location,
             level: level,
             label: label,
-            caption: processed_caption,
+            caption: caption_text,
+            caption_node: caption_node,
             tag: tag
           )
           current_node.add_child(node)

@@ -18,10 +18,11 @@ module ReVIEW
   module Book
     class Index
       class Item
-        def initialize(id, number, caption = nil)
+        def initialize(id, number, caption = nil, caption_node: nil)
           @id = id
           @number = number
           @caption = caption
+          @caption_node = caption_node
           @path = nil
           @index = nil
         end
@@ -29,6 +30,7 @@ module ReVIEW
         attr_reader :id
         attr_reader :number
         attr_reader :caption
+        attr_accessor :caption_node
         attr_accessor :index # internal use only
 
         alias_method :content, :caption

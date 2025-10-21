@@ -46,10 +46,10 @@ class TestMarkdownCompiler < Test::Unit::TestCase
     assert_equal 6, headlines.size
 
     assert_equal 1, headlines[0].level
-    assert_equal 'Chapter Title', headlines[0].caption.children.first.content
+    assert_equal 'Chapter Title', headlines[0].caption_node.children.first.content
 
     assert_equal 2, headlines[1].level
-    assert_equal 'Section 1.1', headlines[1].caption.children.first.content
+    assert_equal 'Section 1.1', headlines[1].caption_node.children.first.content
 
     assert_equal 3, headlines[2].level
     assert_equal 4, headlines[3].level
@@ -207,7 +207,7 @@ class TestMarkdownCompiler < Test::Unit::TestCase
     image = ast.children.find { |n| n.is_a?(ReVIEW::AST::ImageNode) }
     assert_not_nil(image)
     assert_equal 'image', image.id
-    assert_equal 'Alt text', image.caption.children.first.content
+    assert_equal 'Alt text', image.caption_node.children.first.content
   end
 
   def test_inline_image_conversion

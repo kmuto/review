@@ -7,6 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/renderer/base'
+require 'review/ast/caption_node'
 require 'review/renderer/rendering_context'
 require 'review/htmlutils'
 require 'review/textutils'
@@ -75,7 +76,7 @@ module ReVIEW
 
       def visit_headline(node)
         level = node.level
-        caption = render_children(node.caption) if node.caption
+        caption = render_caption_markup(node.caption_node)
 
         if node.nonum? || node.notoc? || node.nodisp?
           @nonum_counter ||= 0
@@ -195,7 +196,7 @@ module ReVIEW
       end
 
       def visit_code_block(node)
-        code_block_renderer.render(node)
+        render_code_block(node)
       end
 
       def visit_code_line(node)
@@ -214,9 +215,9 @@ module ReVIEW
         id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
 
         # Process caption with proper context management
-        caption_html = if node.caption
+        caption_html = if node.caption_node
                          @rendering_context.with_child_context(:caption) do |caption_context|
-                           caption_content = render_children_with_context(node.caption, caption_context)
+                           caption_content = render_caption_with_context(node.caption_node, caption_context)
                            # Generate table number like HTMLBuilder using chapter table index
                            table_number = if node.id
                                             generate_table_header(node.id, caption_content)
@@ -268,15 +269,13 @@ module ReVIEW
         anchor_id = %Q(<a id="column-#{@column_counter}"></a>)
 
         # HTMLBuilder uses h4 tag for column headers
-        caption_html = if node.caption
-                         caption_content = render_children(node.caption)
-                         if node.label
-                           %Q(<h4#{id_attr}>#{anchor_id}#{caption_content}</h4>)
-                         else
-                           %Q(<h4>#{anchor_id}#{caption_content}</h4>)
-                         end
-                       else
+        caption_content = render_caption_markup(node.caption_node)
+        caption_html = if caption_content.empty?
                          node.label ? anchor_id : ''
+                       elsif node.label
+                         %Q(<h4#{id_attr}>#{anchor_id}#{caption_content}</h4>)
+                       else
+                         %Q(<h4>#{anchor_id}#{caption_content}</h4>)
                        end
 
         content = render_children(node)
@@ -288,13 +287,8 @@ module ReVIEW
         type = node.minicolumn_type.to_s
         id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
 
-        caption_html = if node.caption
-                         caption_content = render_children(node.caption)
-                         %Q(<p class="caption">#{caption_content}</p>
-)
-                       else
-                         ''
-                       end
+        caption_content = render_caption_markup(node.caption_node)
+        caption_html = caption_content.empty? ? '' : %Q(<p class="caption">#{caption_content}</p>\n)
 
         # Content already contains proper paragraph structure from ParagraphNode children
         content_html = render_children(node)
@@ -305,22 +299,24 @@ module ReVIEW
       def visit_image(node)
         id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
 
+        caption_node = node.caption_node
+
         # Process image with caption context management
-        if node.caption
+        if caption_node
           @rendering_context.with_child_context(:caption) do |caption_context|
             # Check if image is bound like HTMLBuilder does
             if @chapter&.image_bound?(node.id)
-              image_image_html_with_context(node.id, node.caption, nil, id_attr, caption_context, node.image_type)
+              image_image_html_with_context(node.id, caption_node, id_attr, caption_context, node.image_type)
             else
               # For dummy images, ImageNode doesn't have lines, so use empty array
-              image_dummy_html_with_context(node.id, node.caption, [], id_attr, caption_context, node.image_type)
+              image_dummy_html_with_context(node.id, caption_node, [], id_attr, caption_context, node.image_type)
             end
           end
         elsif @chapter&.image_bound?(node.id)
           # No caption, no special context needed
-          image_image_html(node.id, node.caption, nil, id_attr, node.image_type)
+          image_image_html(node.id, caption_node, id_attr, node.image_type)
         else
-          image_dummy_html(node.id, node.caption, [], id_attr, node.image_type)
+          image_dummy_html(node.id, caption_node, [], id_attr, node.image_type)
         end
       end
 
@@ -387,18 +383,17 @@ module ReVIEW
         return render_texequation_body(content, math_format) unless node.id?
 
         id_attr = %Q( id="#{normalize_id(node.id)}")
+        caption_content = render_caption_markup(node.caption_node)
         caption_html = if get_chap
-                         if node.caption?
-                           caption_content = render_children(node.caption)
-                           %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(node.id).number])}#{I18n.t('caption_prefix')}#{caption_content}</p>\n)
-                         else
+                         if caption_content.empty?
                            %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(node.id).number])}</p>\n)
+                         else
+                           %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(node.id).number])}#{I18n.t('caption_prefix')}#{caption_content}</p>\n)
                          end
-                       elsif node.caption?
-                         caption_content = render_children(node.caption)
-                         %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(node.id).number])}#{I18n.t('caption_prefix')}#{caption_content}</p>\n)
-                       else
+                       elsif caption_content.empty?
                          %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(node.id).number])}</p>\n)
+                       else
+                         %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(node.id).number])}#{I18n.t('caption_prefix')}#{caption_content}</p>\n)
                        end
 
         caption_top_html = caption_top?('equation') ? caption_html : ''
@@ -610,7 +605,6 @@ module ReVIEW
       end
 
       # Line numbering for code blocks like HTMLBuilder
-      # This method is public so CodeBlockRenderer can access it directly
       def line_num
         return 1 unless @first_line_num
 
@@ -621,9 +615,232 @@ module ReVIEW
 
       private
 
-      def code_block_renderer
-        require 'review/renderer/html_renderer/code_block_renderer'
-        @code_block_renderer ||= CodeBlockRenderer.new(@chapter, parent: self)
+      def render_code_block(node)
+        case node.code_type&.to_sym
+        when :emlist
+          render_emlist_code_block(node)
+        when :emlistnum
+          render_emlistnum_code_block(node)
+        when :list
+          render_list_code_block(node)
+        when :listnum
+          render_listnum_code_block(node)
+        when :source
+          render_source_code_block(node)
+        when :cmd
+          render_cmd_code_block(node)
+        else
+          render_fallback_code_block(node)
+        end
+      end
+
+      def render_emlist_code_block(node)
+        lines_content = render_children(node)
+        processed_content = format_code_content(lines_content, node.lang)
+
+        code_block_wrapper(
+          node,
+          div_class: 'emlist-code',
+          pre_class: build_pre_class('emlist', node.lang),
+          content: processed_content,
+          caption_style: :top_bottom
+        )
+      end
+
+      def render_emlistnum_code_block(node)
+        lines_content = render_children(node)
+        numbered_lines = format_emlistnum_content(lines_content, node.lang)
+
+        code_block_wrapper(
+          node,
+          div_class: 'emlistnum-code',
+          pre_class: build_pre_class('emlist', node.lang),
+          content: numbered_lines,
+          caption_style: :top_bottom
+        )
+      end
+
+      def render_list_code_block(node)
+        lines_content = render_children(node)
+        processed_content = format_code_content(lines_content, node.lang)
+
+        code_block_wrapper(
+          node,
+          div_class: 'caption-code',
+          pre_class: build_pre_class('list', node.lang),
+          content: processed_content,
+          caption_style: :numbered
+        )
+      end
+
+      def render_listnum_code_block(node)
+        lines_content = render_children(node)
+        numbered_lines = format_listnum_content(lines_content, node.lang)
+
+        code_block_wrapper(
+          node,
+          div_class: 'code',
+          pre_class: build_pre_class('list', node.lang, with_highlight: false),
+          content: numbered_lines,
+          caption_style: :numbered
+        )
+      end
+
+      def render_source_code_block(node)
+        lines_content = render_children(node)
+        processed_content = format_code_content(lines_content, node.lang)
+
+        code_block_wrapper(
+          node,
+          div_class: 'source-code',
+          pre_class: 'source',
+          content: processed_content,
+          caption_style: :top_bottom
+        )
+      end
+
+      def render_cmd_code_block(node)
+        lines_content = render_children(node)
+        processed_content = format_code_content(lines_content, node.lang)
+
+        code_block_wrapper(
+          node,
+          div_class: 'cmd-code',
+          pre_class: 'cmd',
+          content: processed_content,
+          caption_style: :top_bottom
+        )
+      end
+
+      def render_fallback_code_block(node)
+        lines_content = render_children(node)
+        processed_content = format_code_content(lines_content)
+
+        code_block_wrapper(
+          node,
+          div_class: 'caption-code',
+          pre_class: '',
+          content: processed_content,
+          caption_style: :none
+        )
+      end
+
+      def code_block_wrapper(node, div_class:, pre_class:, content:, caption_style:)
+        id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
+
+        caption_top = render_code_caption(node, caption_style, :top)
+        caption_bottom = render_code_caption(node, caption_style, :bottom)
+
+        %Q(<div#{id_attr} class="#{div_class}">
+#{caption_top}<pre class="#{pre_class}">#{content}</pre>
+#{caption_bottom}</div>
+)
+      end
+
+      def render_code_caption(node, style, position)
+        caption_node = node.caption_node
+        return '' unless caption_node
+
+        caption_content = render_caption_markup(caption_node)
+        return '' if caption_content.empty?
+
+        case style
+        when :top_bottom
+          return '' unless position == :top ? caption_top?('list') : !caption_top?('list')
+
+          %Q(<p class="caption">#{caption_content}</p>
+)
+        when :numbered
+          return '' unless position == :top
+
+          list_number = generate_list_header(node.id, caption_content)
+          %Q(<p class="caption">#{list_number}</p>
+)
+        else
+          ''
+        end
+      end
+
+      def build_pre_class(base_class, lang, with_highlight: true)
+        classes = [base_class]
+        classes << "language-#{lang}" if lang
+        classes << 'highlight' if with_highlight && highlight?
+        classes.join(' ')
+      end
+
+      def format_code_content(lines_content, lang = nil)
+        lines = lines_content.split("\n")
+        body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+
+        highlight(body: body, lexer: lang, format: 'html')
+      end
+
+      def format_emlistnum_content(lines_content, lang = nil)
+        lines = lines_content.split("\n")
+        lines.pop if lines.last && lines.last.empty?
+
+        body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+        first_line_number = line_num || 1
+
+        if highlight?
+          highlight(body: body, lexer: lang, format: 'html', linenum: true, options: { linenostart: first_line_number })
+        else
+          lines.map.with_index(first_line_number) do |line, i|
+            "#{i.to_s.rjust(2)}: #{detab(line)}"
+          end.join("\n") + "\n"
+        end
+      end
+
+      def format_listnum_content(lines_content, lang = nil)
+        lines = lines_content.split("\n")
+        lines.pop if lines.last && lines.last.empty?
+
+        body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+        first_line_number = line_num || 1
+
+        highlighted = highlight(body: body, lexer: lang, format: 'html', linenum: true,
+                                options: { linenostart: first_line_number })
+
+        if highlight?
+          highlighted
+        else
+          lines.map.with_index(first_line_number) do |line, i|
+            "#{i.to_s.rjust(2)}: #{detab(line)}"
+          end.join("\n") + "\n"
+        end
+      end
+
+      def highlight?
+        highlighter.highlight?('html')
+      end
+
+      def highlight(body:, lexer: nil, format: 'html', linenum: false, options: {}, location: nil)
+        highlighter.highlight(
+          body: body,
+          lexer: lexer,
+          format: format,
+          linenum: linenum,
+          options: options,
+          location: location
+        )
+      end
+
+      def highlighter
+        @highlighter ||= ReVIEW::Highlighter.new(config)
+      end
+
+      def generate_list_header(id, caption)
+        list_item = @chapter&.list(id)
+        raise NotImplementedError, "no such list: #{id}" unless list_item
+
+        list_num = list_item.number
+        chapter_num = @chapter&.number
+
+        if chapter_num
+          "#{I18n.t('list')}#{I18n.t('format_number_header', [chapter_num, list_num])}#{I18n.t('caption_prefix')}#{caption}"
+        else
+          "#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [list_num])}#{I18n.t('caption_prefix')}#{caption}"
+        end
       end
 
       def visit_reference(node)
@@ -897,12 +1114,8 @@ module ReVIEW
       def render_callout_block(node, type)
         id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
 
-        caption_html = if node.caption
-                         caption_content = render_children(node.caption)
-                         %Q(<div class="#{type}-header">#{caption_content}</div>)
-                       else
-                         ''
-                       end
+        caption_content = render_caption_markup(node.caption_node)
+        caption_html = caption_content.empty? ? '' : %Q(<div class="#{type}-header">#{caption_content}</div>)
 
         content = render_children(node)
 
@@ -1074,55 +1287,52 @@ module ReVIEW
       end
 
       # Image helper methods matching HTMLBuilder's implementation
-      def image_image_html(id, caption, _metric, id_attr, image_type = :image)
-        caption_html = image_header_html(id, caption, image_type)
+      def image_image_html(id, caption_node, id_attr, image_type = :image)
+        caption_html = image_header_html(id, caption_node, image_type)
+        caption_present = !caption_html.empty?
 
         begin
           image_path = @chapter.image(id).path.sub(%r{\A\./}, '')
-          caption_content = caption ? render_children(caption) : ''
+          alt_text = escape(render_caption_markup(caption_node))
 
-          img_html = %Q(<img src="#{image_path}" alt="#{escape(caption_content)}" />)
+          img_html = %Q(<img src="#{image_path}" alt="#{alt_text}" />)
 
           # Check caption positioning like HTMLBuilder
-          if caption_top?('image') && caption
+          if caption_top?('image') && caption_present
             %Q(<div#{id_attr} class="image">\n#{caption_html}#{img_html}\n</div>\n)
           else
             %Q(<div#{id_attr} class="image">\n#{img_html}\n#{caption_html}</div>\n)
           end
         rescue StandardError
           # If image loading fails, fall back to dummy
-          image_dummy_html(id, caption, [], id_attr, image_type)
+          image_dummy_html(id, caption_node, [], id_attr, image_type)
         end
       end
 
       # Context-aware version of image_image_html
-      def image_image_html_with_context(id, caption, _metric, id_attr, caption_context, image_type = :image)
-        caption_html = if caption
-                         image_header_html_with_context(id, caption, caption_context, image_type)
-                       else
-                         ''
-                       end
+      def image_image_html_with_context(id, caption_node, id_attr, caption_context, image_type = :image)
+        caption_html = image_header_html_with_context(id, caption_node, caption_context, image_type)
+        caption_present = !caption_html.empty?
 
         begin
           image_path = @chapter.image(id).path.sub(%r{\A\./}, '')
-          caption_content = caption ? render_children_with_context(caption, caption_context) : ''
-
-          img_html = %Q(<img src="#{image_path}" alt="#{escape(caption_content)}" />)
+          img_html = %Q(<img src="#{image_path}" alt="#{escape(render_caption_markup(caption_node))}" />)
 
           # Check caption positioning like HTMLBuilder
-          if caption_top?('image') && caption
+          if caption_top?('image') && caption_present
             %Q(<div#{id_attr} class="image">\n#{caption_html}#{img_html}\n</div>\n)
           else
             %Q(<div#{id_attr} class="image">\n#{img_html}\n#{caption_html}</div>\n)
           end
         rescue StandardError
           # If image loading fails, fall back to dummy
-          image_dummy_html_with_context(id, caption, [], id_attr, caption_context, image_type)
+          image_dummy_html_with_context(id, caption_node, [], id_attr, caption_context, image_type)
         end
       end
 
-      def image_dummy_html(id, caption, lines, id_attr, image_type = :image)
-        caption_html = image_header_html(id, caption, image_type)
+      def image_dummy_html(id, caption_node, lines, id_attr, image_type = :image)
+        caption_html = image_header_html(id, caption_node, image_type)
+        caption_present = !caption_html.empty?
 
         # Generate dummy image content exactly like HTMLBuilder
         # HTMLBuilder puts each line and adds newlines via 'puts'
@@ -1133,7 +1343,7 @@ module ReVIEW
                         end
 
         # Check caption positioning like HTMLBuilder
-        if caption_top?('image') && caption
+        if caption_top?('image') && caption_present
           %Q(<div#{id_attr} class="image">\n#{caption_html}<pre class="dummyimage">#{lines_content}</pre>\n</div>\n)
         else
           %Q(<div#{id_attr} class="image">\n<pre class="dummyimage">#{lines_content}</pre>\n#{caption_html}</div>\n)
@@ -1141,12 +1351,9 @@ module ReVIEW
       end
 
       # Context-aware version of image_dummy_html
-      def image_dummy_html_with_context(id, caption, lines, id_attr, caption_context, image_type = :image)
-        caption_html = if caption
-                         image_header_html_with_context(id, caption, caption_context, image_type)
-                       else
-                         ''
-                       end
+      def image_dummy_html_with_context(id, caption_node, lines, id_attr, caption_context, image_type = :image)
+        caption_html = image_header_html_with_context(id, caption_node, caption_context, image_type)
+        caption_present = !caption_html.empty?
 
         # Generate dummy image content exactly like HTMLBuilder
         lines_content = if lines.empty?
@@ -1156,17 +1363,16 @@ module ReVIEW
                         end
 
         # Check caption positioning like HTMLBuilder
-        if caption_top?('image') && caption
+        if caption_top?('image') && caption_present
           %Q(<div#{id_attr} class="image">\n#{caption_html}<pre class="dummyimage">#{lines_content}</pre>\n</div>\n)
         else
           %Q(<div#{id_attr} class="image">\n<pre class="dummyimage">#{lines_content}</pre>\n#{caption_html}</div>\n)
         end
       end
 
-      def image_header_html(id, caption, image_type = :image)
-        return '' unless caption
-
-        caption_content = render_children(caption)
+      def image_header_html(id, caption_node, image_type = :image)
+        caption_content = render_caption_markup(caption_node)
+        return '' if caption_content.empty?
 
         # For indepimage (numberless image), use numberless_image label like HTMLBuilder
         if image_type == :indepimage || image_type == :numberlessimage
@@ -1189,10 +1395,9 @@ module ReVIEW
       end
 
       # Context-aware version of image_header_html
-      def image_header_html_with_context(id, caption, caption_context, image_type = :image)
-        return '' unless caption
-
-        caption_content = render_children_with_context(caption, caption_context)
+      def image_header_html_with_context(id, caption_node, caption_context, image_type = :image)
+        caption_content = render_caption_with_context(caption_node, caption_context)
+        return '' if caption_content.empty?
 
         # For indepimage (numberless image), use numberless_image label like HTMLBuilder
         if image_type == :indepimage || image_type == :numberlessimage
@@ -1232,35 +1437,34 @@ module ReVIEW
       # Render imgtable (table as image) like HTMLBuilder's imgtable method
       def render_imgtable(node)
         id = node.id
-        caption = node.caption
+        caption_node = node.caption_node
 
         # Check if image is bound like HTMLBuilder does
         unless @chapter&.image_bound?(id)
           warn "image not bound: #{id}"
           # For dummy images, use empty array for lines (no lines in TableNode)
-          return render_imgtable_dummy(id, caption, [])
+          return render_imgtable_dummy(id, caption_node, [])
         end
 
         id_attr = id ? %Q( id="#{normalize_id(id)}") : ''
 
         # Generate table caption HTML if caption exists
-        caption_html = if caption
-                         caption_content = render_children(caption)
-                         # Use table_header format for imgtable like HTMLBuilder
+        caption_content = render_caption_markup(caption_node)
+        caption_html = if caption_content.empty?
+                         ''
+                       else
                          table_caption = generate_table_header(id, caption_content)
                          %Q(<p class="caption">#{table_caption}</p>\n)
-                       else
-                         ''
                        end
 
         # Render image tag
         begin
           image_path = @chapter.image(id).path.sub(%r{\A\./}, '')
-          alt_text = caption ? escape(render_children(caption)) : ''
+          alt_text = escape(caption_plain_text(caption_node))
           img_html = %Q(<img src="#{image_path}" alt="#{alt_text}" />\n)
 
           # Check caption positioning like HTMLBuilder (uses 'table' type for imgtable)
-          if caption_top?('table') && caption
+          if caption_top?('table') && !caption_content.empty?
             %Q(<div#{id_attr} class="imgtable image">\n#{caption_html}#{img_html}</div>\n)
           else
             %Q(<div#{id_attr} class="imgtable image">\n#{img_html}#{caption_html}</div>\n)
@@ -1271,17 +1475,16 @@ module ReVIEW
       end
 
       # Render dummy imgtable when image is not found
-      def render_imgtable_dummy(id, caption, lines)
+      def render_imgtable_dummy(id, caption_node, lines)
         id_attr = id ? %Q( id="#{normalize_id(id)}") : ''
 
         # Generate table caption HTML if caption exists
-        caption_html = if caption
-                         caption_content = render_children(caption)
-                         # Use table_header format for imgtable like HTMLBuilder
+        caption_content = render_caption_markup(caption_node)
+        caption_html = if caption_content.empty?
+                         ''
+                       else
                          table_caption = generate_table_header(id, caption_content)
                          %Q(<p class="caption">#{table_caption}</p>\n)
-                       else
-                         ''
                        end
 
         # Generate dummy content like image_dummy_html
@@ -1292,7 +1495,7 @@ module ReVIEW
                         end
 
         # Check caption positioning like HTMLBuilder
-        if caption_top?('table') && caption
+        if caption_top?('table') && !caption_content.empty?
           %Q(<div#{id_attr} class="imgtable image">\n#{caption_html}<pre class="dummyimage">#{lines_content}</pre>\n</div>\n)
         else
           %Q(<div#{id_attr} class="imgtable image">\n<pre class="dummyimage">#{lines_content}</pre>\n#{caption_html}</div>\n)
@@ -1316,6 +1519,22 @@ module ReVIEW
         end
 
         @ast_indexes_generated = true
+      end
+
+      def render_caption_markup(caption_node)
+        return '' unless caption_node
+
+        render_children(caption_node)
+      end
+
+      def render_caption_with_context(caption_node, caption_context)
+        return '' unless caption_node
+
+        render_children_with_context(caption_node, caption_context)
+      end
+
+      def caption_plain_text(caption_node)
+        caption_node&.to_text.to_s
       end
 
       # Helper methods for template variables

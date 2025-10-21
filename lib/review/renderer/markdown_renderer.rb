@@ -38,7 +38,7 @@ module ReVIEW
 
       def visit_headline(node)
         level = node.level
-        caption = render_children(node.caption)
+        caption = render_caption_inline(node.caption_node)
 
         # Use Markdown # syntax
         prefix = '#' * level
@@ -149,10 +149,8 @@ module ReVIEW
         lang = node.lang || ''
 
         # Add caption if present
-        if node.caption
-          caption = render_children(node.caption)
-          result += "**#{caption}**\n\n"
-        end
+        caption = render_caption_inline(node.caption_node)
+        result += "**#{caption}**\n\n" unless caption.empty?
 
         # Generate fenced code block
         result += "```#{lang}\n"
@@ -190,10 +188,8 @@ module ReVIEW
 
         # Add caption if present
         result = +''
-        if node.caption
-          caption = render_children(node.caption)
-          result += "**#{caption}**\n\n"
-        end
+        caption = render_caption_inline(node.caption_node)
+        result += "**#{caption}**\n\n" unless caption.empty?
 
         # Process table content
         render_children(node)
@@ -231,7 +227,7 @@ module ReVIEW
 
       def visit_image(node)
         image_path = node.image_path || node.id
-        caption = node.caption ? render_children(node.caption) : ''
+        caption = render_caption_inline(node.caption_node)
 
         # Remove ./ prefix if present
         image_path = image_path.sub(%r{\A\./}, '')
@@ -251,10 +247,8 @@ module ReVIEW
 
         result += %Q(<div class="#{css_class}">\n\n)
 
-        if node.caption
-          caption = render_children(node.caption)
-          result += "**#{caption}**\n\n"
-        end
+        caption = render_caption_inline(node.caption_node)
+        result += "**#{caption}**\n\n" unless caption.empty?
 
         result += render_children(node)
         result += "\n</div>\n\n"
@@ -316,6 +310,10 @@ module ReVIEW
           # Fallback for unknown elements
           content
         end
+      end
+
+      def render_caption_inline(caption_node)
+        caption_node ? render_children(caption_node) : ''
       end
 
       def visit_footnote(node)

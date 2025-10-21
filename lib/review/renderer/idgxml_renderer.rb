@@ -167,7 +167,7 @@ module ReVIEW
       def visit_headline(node)
         level = node.level
         label = node.label
-        caption = render_children(node.caption) if node.caption
+        caption = render_children(node.caption_node) if node.caption_node
 
         result = []
 
@@ -455,7 +455,7 @@ module ReVIEW
 
       def visit_minicolumn(node)
         type = node.minicolumn_type.to_s
-        caption = render_children(node.caption) if node.caption
+        caption = render_children(node.caption_node) if node.caption_node
         content = render_children(node)
 
         # notice uses -t suffix when caption is present
@@ -468,7 +468,7 @@ module ReVIEW
       end
 
       def visit_column(node)
-        caption = render_children(node.caption) if node.caption
+        caption = render_children(node.caption_node) if node.caption_node
         content = render_children(node)
 
         # Determine column type (empty string for regular column)
@@ -742,7 +742,8 @@ module ReVIEW
           result << '<equationblock>'
 
           # Render caption with inline elements
-          rendered_caption = render_children(node.caption)
+          caption_node = node.caption_node
+          rendered_caption = caption_node ? render_children(caption_node) : ''
 
           # Generate caption
           caption_str = if get_chap.nil?
@@ -1162,8 +1163,8 @@ module ReVIEW
 
         # Generate caption if present
         caption_content = nil
-        if node.caption && node.id?
-          caption_content = render_children(node.caption)
+        if node.caption_node && node.id?
+          caption_content = render_children(node.caption_node)
           list_header_output = generate_list_header(node.id, caption_content)
           result << list_header_output if caption_top?('list')
         end
@@ -1191,8 +1192,8 @@ module ReVIEW
 
         # Generate caption if present
         caption_content = nil
-        if node.caption && node.id?
-          caption_content = render_children(node.caption)
+        if node.caption_node && node.id?
+          caption_content = render_children(node.caption_node)
           list_header_output = generate_list_header(node.id, caption_content)
           result << list_header_output if caption_top?('list')
         end
@@ -1215,19 +1216,19 @@ module ReVIEW
 
       # Visit emlist code block
       def visit_emlist_code_block(node)
-        caption_content = node.caption ? render_children(node.caption) : nil
+        caption_content = node.caption_node ? render_children(node.caption_node) : nil
         quotedlist(node, 'emlist', caption_content)
       end
 
       # Visit emlistnum code block
       def visit_emlistnum_code_block(node)
-        caption_content = node.caption ? render_children(node.caption) : nil
+        caption_content = node.caption_node ? render_children(node.caption_node) : nil
         quotedlist_with_linenum(node, 'emlistnum', caption_content)
       end
 
       # Visit cmd code block
       def visit_cmd_code_block(node)
-        caption_content = node.caption ? render_children(node.caption) : nil
+        caption_content = node.caption_node ? render_children(node.caption_node) : nil
         quotedlist(node, 'cmd', caption_content)
       end
 
@@ -1236,7 +1237,8 @@ module ReVIEW
         result = []
         result << '<source>'
 
-        caption_content = node.caption ? render_children(node.caption) : nil
+        caption_content = node.caption_node ? render_children(node.caption_node) : nil
+        caption_content = nil if caption_content && caption_content.empty?
 
         if caption_top?('list') && caption_content
           result << %Q(<caption>#{caption_content}</caption>)
@@ -1391,7 +1393,7 @@ module ReVIEW
         result = []
         result << '<table>'
 
-        caption_content = node.caption ? render_children(node.caption) : nil
+        caption_content = node.caption_node ? render_children(node.caption_node) : nil
 
         # Caption at top if configured
         if caption_top?('table') && caption_content
@@ -1525,7 +1527,7 @@ module ReVIEW
 
       # Visit imgtable
       def visit_imgtable(node)
-        caption_content = node.caption ? render_children(node.caption) : nil
+        caption_content = node.caption_node ? render_children(node.caption_node) : nil
 
         if @chapter.image_bound?(node.id)
           metrics = parse_metric('idgxml', node.metric)
@@ -1554,7 +1556,7 @@ module ReVIEW
 
       # Visit regular image
       def visit_regular_image(node)
-        caption_content = node.caption ? render_children(node.caption) : nil
+        caption_content = node.caption_node ? render_children(node.caption_node) : nil
 
         if @chapter.image_bound?(node.id)
           metrics = parse_metric('idgxml', node.metric)
@@ -1583,7 +1585,8 @@ module ReVIEW
 
       # Visit indepimage
       def visit_indepimage(node)
-        caption_content = node.caption ? render_children(node.caption) : nil
+        caption_content = node.caption_node ? render_children(node.caption_node) : nil
+        caption_content = nil if caption_content && caption_content.empty?
         metrics = parse_metric('idgxml', node.metric)
 
         result = []

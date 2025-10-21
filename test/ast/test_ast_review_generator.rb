@@ -63,13 +63,14 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Create caption node
-    caption = ReVIEW::AST::CaptionNode.new(location: @location)
-    caption.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Hello Example'))
+    caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
+    caption_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Hello Example'))
 
     code = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       id: 'hello',
-      caption: caption,
+      caption: 'Hello Example',
+      caption_node: caption_node,
       original_text: "def hello\n  puts \"Hello\"\nend",
       lang: 'ruby'
     )
@@ -147,13 +148,14 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Create caption node
-    caption = ReVIEW::AST::CaptionNode.new(location: @location)
-    caption.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Sample Table'))
+    caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
+    caption_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Sample Table'))
 
     table = ReVIEW::AST::TableNode.new(
       location: @location,
       id: 'sample',
-      caption: caption
+      caption: 'Sample Table',
+      caption_node: caption_node
     )
 
     # Add header row

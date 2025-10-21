@@ -19,10 +19,12 @@ class TestCaptionInlineIntegration < Test::Unit::TestCase
 
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
-      caption: caption_node
+      caption: 'Simple Caption',
+      caption_node: caption_node
     )
 
-    assert_instance_of(ReVIEW::AST::CaptionNode, code_block.caption)
+    assert_equal 'Simple Caption', code_block.caption
+    assert_instance_of(ReVIEW::AST::CaptionNode, code_block.caption_node)
     assert_equal 'Simple Caption', code_block.caption_markup_text
   end
 
@@ -39,10 +41,12 @@ class TestCaptionInlineIntegration < Test::Unit::TestCase
 
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
-      caption: caption_node
+      caption: 'Caption with @<b>{bold} text',
+      caption_node: caption_node
     )
 
-    assert_instance_of(ReVIEW::AST::CaptionNode, code_block.caption)
+    assert_equal 'Caption with @<b>{bold} text', code_block.caption
+    assert_instance_of(ReVIEW::AST::CaptionNode, code_block.caption_node)
     assert_equal 'Caption with @<b>{bold} text', code_block.caption_markup_text
   end
 

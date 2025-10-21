@@ -6,17 +6,15 @@ require 'review/ast/caption_node'
 module ReVIEW
   module AST
     class ColumnNode < Node
+      attr_accessor :caption_node
       attr_reader :level, :label, :caption, :column_type
 
-      def initialize(location: nil, level: nil, label: nil, caption: nil, column_type: 'column', inline_processor: nil, **kwargs)
+      def initialize(location: nil, level: nil, label: nil, caption: nil, caption_node: nil, column_type: 'column', **kwargs)
         super(location: location, **kwargs)
         @level = level
         @label = label
-        @caption = if caption.is_a?(CaptionNode)
-                     caption
-                   else
-                     CaptionNode.parse(caption, location: location, inline_processor: inline_processor)
-                   end
+        @caption_node = caption_node
+        @caption = caption
         @column_type = column_type
       end
 
@@ -24,7 +22,8 @@ module ReVIEW
         super.merge(
           level: level,
           label: label,
-          caption: caption&.to_h,
+          caption: caption,
+          caption_node: caption_node&.to_h,
           column_type: column_type
         )
       end
@@ -35,7 +34,8 @@ module ReVIEW
         hash[:children] = children.map { |child| child.serialize_to_hash(options) }
         hash[:level] = level
         hash[:label] = label
-        hash[:caption] = caption&.serialize_to_hash(options)
+        hash[:caption] = caption if caption
+        hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
         hash[:column_type] = column_type
         hash
       end

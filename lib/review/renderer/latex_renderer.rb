@@ -97,7 +97,7 @@ module ReVIEW
 
       def visit_headline(node)
         level = node.level
-        caption = render_children(node.caption) if node.caption
+        caption = render_children(node.caption_node) if node.caption_node
 
         # For Part documents with legacy configuration, open reviewpart environment
         # on first level 1 headline (matching LATEXBuilder behavior)
@@ -187,9 +187,9 @@ module ReVIEW
         caption = nil
         caption_collector = nil
 
-        if node.caption
+        if node.caption_node
           @rendering_context.with_child_context(:caption) do |caption_context|
-            caption = render_children_with_context(node.caption, caption_context)
+            caption = render_children_with_context(node.caption_node, caption_context)
             # Save the collector for later processing
             caption_collector = caption_context.footnote_collector
           end
@@ -239,9 +239,9 @@ module ReVIEW
         caption = nil
         caption_collector = nil
 
-        if node.caption
+        if node.caption_node
           @rendering_context.with_child_context(:caption) do |caption_context|
-            caption = render_children_with_context(node.caption, caption_context)
+            caption = render_children_with_context(node.caption_node, caption_context)
             # Save the collector for later processing
             caption_collector = caption_context.footnote_collector
           end
@@ -465,9 +465,9 @@ module ReVIEW
         caption = nil
         caption_collector = nil
 
-        if node.caption
+        if node.caption_node
           @rendering_context.with_child_context(:caption) do |caption_context|
-            caption = render_children_with_context(node.caption, caption_context)
+            caption = render_children_with_context(node.caption_node, caption_context)
             # Save the collector for later processing
             caption_collector = caption_context.footnote_collector
           end
@@ -737,9 +737,9 @@ module ReVIEW
         caption = nil
         caption_collector = nil
 
-        if node.caption
+        if node.caption_node
           @rendering_context.with_child_context(:caption) do |caption_context|
-            caption = render_children_with_context(node.caption, caption_context)
+            caption = render_children_with_context(node.caption_node, caption_context)
             # Save the collector for later processing
             caption_collector = caption_context.footnote_collector
           end
@@ -818,7 +818,7 @@ module ReVIEW
       end
 
       def visit_column(node)
-        caption = render_children(node.caption) if node.caption
+        caption = render_children(node.caption_node) if node.caption_node
 
         # Increment column counter for this chapter
         @column_counter += 1
@@ -989,7 +989,7 @@ module ReVIEW
         if node.id? && node.caption?
           # Equation with ID and caption - use reviewequationblock like traditional compiler
           equation_num = get_equation_number(node.id)
-          caption_content = render_children(node.caption)
+          caption_content = render_children(node.caption_node)
           result = []
           result << '\\begin{reviewequationblock}'
           result << "\\reviewequationcaption{#{escape("式#{equation_num}: #{caption_content}")}}"

@@ -247,7 +247,7 @@ module ReVIEW
         # Build item_id exactly like IndexBuilder
         cursor = node.level - 2
         @headline_stack ||= []
-        caption_text = extract_caption_text(node.caption)
+        caption_text = extract_caption_text(node.caption, node.caption_node)
         @headline_stack[cursor] = (node.label || caption_text)
         if @headline_stack.size > cursor + 1
           @headline_stack = @headline_stack.take(cursor + 1)
@@ -256,17 +256,17 @@ module ReVIEW
         item_id = @headline_stack.join('|')
 
         # Always add to headline index like IndexBuilder does
-        item = ReVIEW::Book::Index::Item.new(item_id, @sec_counter.number_list, caption_text)
+        item = ReVIEW::Book::Index::Item.new(item_id, @sec_counter.number_list, caption_text, caption_node: node.caption_node)
         @headline_index.add_item(item)
 
         # Process caption inline elements
-        process_caption_inline_elements(node.caption) if node.caption
+        process_caption_inline_elements(node.caption_node) if node.caption_node
       end
 
       # Process column nodes
       def process_column(node)
         # Extract caption text like IndexBuilder does
-        caption_text = extract_caption_text(node.caption)
+        caption_text = extract_caption_text(node.caption, node.caption_node)
 
         # Use label if available, otherwise use caption as ID (like IndexBuilder does)
         item_id = node.label || caption_text
@@ -274,11 +274,11 @@ module ReVIEW
         check_id(node.label) if node.label
 
         # Create index item - use item_id as ID and caption text
-        item = ReVIEW::Book::Index::Item.new(item_id, @column_index.size + 1, caption_text)
+        item = ReVIEW::Book::Index::Item.new(item_id, @column_index.size + 1, caption_text, caption_node: node.caption_node)
         @column_index.add_item(item)
 
         # Process caption inline elements
-        process_caption_inline_elements(node.caption) if node.caption
+        process_caption_inline_elements(node.caption_node) if node.caption_node
       end
 
       # Process code block nodes (list, listnum, emlist, etc.)
@@ -290,7 +290,7 @@ module ReVIEW
         @list_index.add_item(item)
 
         # Process caption inline elements
-        process_caption_inline_elements(node.caption) if node.caption
+        process_caption_inline_elements(node.caption_node) if node.caption_node
 
         # Inline elements in code lines are now properly parsed as InlineNodes
         # and will be processed automatically by visit_children
@@ -301,8 +301,8 @@ module ReVIEW
         return unless node.id?
 
         check_id(node.id)
-        caption_text = extract_caption_text(node.caption)
-        item = ReVIEW::Book::Index::Item.new(node.id, @table_index.size + 1, caption_text)
+        caption_text = extract_caption_text(node.caption, node.caption_node)
+        item = ReVIEW::Book::Index::Item.new(node.id, @table_index.size + 1, caption_text, caption_node: node.caption_node)
         @table_index.add_item(item)
 
         # For imgtable, also add to indepimage_index (like IndexBuilder does)
@@ -312,7 +312,7 @@ module ReVIEW
         end
 
         # Process caption inline elements
-        process_caption_inline_elements(node.caption) if node.caption
+        process_caption_inline_elements(node.caption_node) if node.caption_node
 
         # Inline elements in table cells are now properly parsed as InlineNodes
         # and will be processed automatically by visit_children
@@ -323,19 +323,19 @@ module ReVIEW
         return unless node.id?
 
         check_id(node.id)
-        caption_text = extract_caption_text(node.caption)
-        item = ReVIEW::Book::Index::Item.new(node.id, @image_index.size + 1, caption_text)
+        caption_text = extract_caption_text(node.caption, node.caption_node)
+        item = ReVIEW::Book::Index::Item.new(node.id, @image_index.size + 1, caption_text, caption_node: node.caption_node)
         @image_index.add_item(item)
 
         # Process caption inline elements
-        process_caption_inline_elements(node.caption) if node.caption
+        process_caption_inline_elements(node.caption_node) if node.caption_node
       end
 
       # Process minicolumn nodes (note, memo, tip, etc.)
       def process_minicolumn(node)
         # Minicolumns are typically indexed by their type and content
         # Process caption inline elements
-        process_caption_inline_elements(node.caption) if node.caption
+        process_caption_inline_elements(node.caption_node) if node.caption_node
       end
 
       # Process embed nodes
@@ -370,8 +370,8 @@ module ReVIEW
         return unless node.id?
 
         check_id(node.id)
-        caption_text = node.caption? ? node.caption : ''
-        item = ReVIEW::Book::Index::Item.new(node.id, @equation_index.size + 1, caption_text)
+        caption_text = extract_caption_text(node.caption, node.caption_node) || ''
+        item = ReVIEW::Book::Index::Item.new(node.id, @equation_index.size + 1, caption_text, caption_node: node.caption_node)
         @equation_index.add_item(item)
       end
 
@@ -445,17 +445,27 @@ module ReVIEW
       end
 
       # Process inline elements in caption nodes
-      def process_caption_inline_elements(caption)
-        caption.children.each { |child| visit_node(child) }
+      def process_caption_inline_elements(caption_node)
+        return unless caption_node
+
+        caption_node.children.each { |child| visit_node(child) }
       end
 
       # Extract plain text from caption node
-      def extract_caption_text(caption)
-        return nil unless caption
+      def extract_caption_text(caption, caption_node = nil)
+        return nil if caption.nil? && caption_node.nil?
 
-        return caption.to_text if caption.respond_to?(:to_text)
-
-        caption.to_s
+        if caption.is_a?(String)
+          caption
+        elsif caption.respond_to?(:to_text)
+          caption.to_text
+        elsif caption_node.respond_to?(:to_text)
+          caption_node.to_text
+        elsif caption_node
+          caption_node.to_s
+        else
+          caption.to_s
+        end
       end
 
       # Extract text content from inline nodes

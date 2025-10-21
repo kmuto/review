@@ -61,7 +61,8 @@ class TestCodeBlockDebug < Test::Unit::TestCase
             },
             "level": 1,
             "label": null,
-            "caption": {
+            "caption": "Chapter Title",
+            "caption_node": {
               "type": "CaptionNode",
               "location": {
                 "filename": "debug_chapter.re",
@@ -87,7 +88,8 @@ class TestCodeBlockDebug < Test::Unit::TestCase
             },
             "id": "test-code",
             "lang": "ruby",
-            "caption": {
+            "caption": "Test Code",
+            "caption_node": {
               "type": "CaptionNode",
               "location": {
                 "filename": "debug_chapter.re",

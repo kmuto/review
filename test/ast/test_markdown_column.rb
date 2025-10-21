@@ -354,9 +354,9 @@ class TestMarkdownColumn < Test::Unit::TestCase
   end
 
   def extract_column_title(column_node)
-    return nil unless column_node.caption
+    return nil unless column_node.caption_node
 
-    first_child = column_node.caption.children.first
+    first_child = column_node.caption_node.children.first
     first_child&.content
   end
 
@@ -374,9 +374,9 @@ class TestMarkdownColumn < Test::Unit::TestCase
   end
 
   def extract_image_caption(image_node)
-    return nil unless image_node.caption
+    return nil unless image_node.caption_node
 
-    first_child = image_node.caption.children.first
+    first_child = image_node.caption_node.children.first
     first_child&.content
   end
 end
