@@ -48,28 +48,6 @@ module ReVIEW
         initialize_counters
       end
 
-      # Build book-wide indexes for cross-chapter references using BookIndexer
-      # This is a class method that can be used by any renderer
-      def self.build_book_indexes(book)
-        return unless book
-
-        require 'review/ast/book_indexer'
-
-        # Create BookIndexer and build all indexes
-        book_indexer = AST::BookIndexer.new(book)
-        book_indexer.build_all_chapter_indexes
-
-        # Build chapter index for compatibility
-        build_chapter_index(book)
-      end
-
-      # Build chapter index for compatibility with existing Book class expectations
-      def self.build_chapter_index(book)
-        # The book.chapter_index method has lazy initialization
-        # Calling it will trigger creation if not already set
-        book.chapter_index
-      end
-
       # Main index building method
       # Traverses the AST and builds all indexes
       def build_indexes(ast_root)

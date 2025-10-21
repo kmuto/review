@@ -27,9 +27,18 @@ module ReVIEW
     class BookIndexer
       attr_reader :book, :chapter_indexers
 
+      # Build book-wide indexes for cross-chapter references
+      # This is the main entry point for building indexes for an entire book
+      def self.build(book)
+        return unless book
+
+        indexer = new(book)
+        indexer.build_all_chapter_indexes
+        indexer
+      end
+
       def initialize(book)
         @book = book
-        @chapter_indexers = {}
       end
 
       # Build indexes for all chapters in the book
@@ -41,8 +50,6 @@ module ReVIEW
 
       # Build index for a specific chapter using AST::Indexer
       def build_chapter_index(chapter)
-        return if @chapter_indexers[chapter] # Already built
-
         begin
           # Compile chapter to AST
           ast = compile_chapter_to_ast(chapter)
@@ -51,47 +58,9 @@ module ReVIEW
           indexer = AST::Indexer.new(chapter)
           indexer.build_indexes(ast)
 
-          # Store the indexer
-          @chapter_indexers[chapter] = indexer
         rescue StandardError => e
-          warn "Failed to build index for chapter #{chapter.id}: #{e.message}" if $DEBUG
+          warn "Failed to build index for chapter #{chapter.id}: #{e.message}"
         end
-      end
-
-      # Get indexer for a specific chapter
-      def chapter_indexer(chapter)
-        @chapter_indexers[chapter]
-      end
-
-      # Find item across all chapters by ID and type
-      def find_item(type, id, context_chapter = nil)
-        # First try the context chapter if provided
-        if context_chapter && @chapter_indexers[context_chapter]
-          chapter_indexer = @chapter_indexers[context_chapter]
-          index = chapter_indexer.index_for(type)
-          item = index&.find_item(id)
-          return item if item
-        end
-
-        # Search all chapters
-        @chapter_indexers.each do |chapter, indexer|
-          next if chapter == context_chapter # Already checked
-
-          index = indexer.index_for(type)
-          item = index&.find_item(id)
-          return item if item
-        end
-
-        nil
-      end
-
-      # Get chapter that contains a specific item
-      def find_chapter_for_item(type, id)
-        @chapter_indexers.each do |chapter, indexer|
-          index = indexer.index_for(type)
-          return chapter if index&.find_item(id)
-        end
-        nil
       end
 
       private

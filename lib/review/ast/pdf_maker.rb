@@ -78,8 +78,8 @@ module ReVIEW
       def make_input_files(book)
         # Build indexes for all chapters to support cross-chapter references
         # This must be done before rendering any chapter
-        require 'review/ast/indexer'
-        ReVIEW::AST::Indexer.build_book_indexes(book)
+        require 'review/ast/book_indexer'
+        ReVIEW::AST::BookIndexer.build(book)
 
         @converter = create_converter(book)
 

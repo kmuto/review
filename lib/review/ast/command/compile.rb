@@ -198,8 +198,8 @@ module ReVIEW
           )
 
           # Initialize book-wide indexes early for cross-chapter references
-          require 'review/ast/indexer'
-          ReVIEW::AST::Indexer.build_book_indexes(book)
+          require 'review/ast/book_indexer'
+          ReVIEW::AST::BookIndexer.build(book)
 
           chapter
         end

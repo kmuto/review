@@ -11,7 +11,7 @@ require 'review/htmlbuilder'
 require 'review/renderer/html_renderer'
 require 'review/ast'
 require 'review/ast/compiler'
-require 'review/ast/indexer'
+require 'review/ast/book_indexer'
 require 'review/book'
 require 'review/configure'
 require 'review/i18n'
@@ -151,7 +151,7 @@ module ReVIEW
 
         # Initialize book-wide indexes early for cross-chapter references
         # This is the same approach used by bin/review-ast-compile
-        ReVIEW::AST::Indexer.build_book_indexes(book)
+        ReVIEW::AST::BookIndexer.build(book)
 
         book
       end
