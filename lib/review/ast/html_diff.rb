@@ -38,7 +38,11 @@ module ReVIEW
           when '='
             next
           when '-', '+'
-            tok = change.send(action == '-' ? :old_element : :new_element)
+            tok = if action == '-'
+                    change.old_element
+                  else
+                    change.new_element
+                  end
             "#{action} #{tok.inspect}"
           when '!'
             "- #{change.old_element.inspect}\n+ #{change.new_element.inspect}"
