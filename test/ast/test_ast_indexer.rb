@@ -347,6 +347,264 @@ class TestASTIndexer < Test::Unit::TestCase
     end
   end
 
+  def test_column_index_building
+    source = <<~EOS
+      = Chapter Title
+
+      Regular paragraph.
+
+      ===[column]{col1} Column Title
+
+      Column content with @<fn>{col-footnote}.
+
+      ===[/column]
+
+      More content.
+
+      //footnote[col-footnote][Column footnote content]
+    EOS
+
+    # Build AST using AST::Compiler directly
+    ast_root = compile_to_ast(source)
+
+    # Build indexes using AST::Indexer
+    indexer = ReVIEW::AST::Indexer.new(@chapter)
+    indexer.build_indexes(ast_root)
+
+    # Verify column index
+    assert_equal 1, indexer.column_index.size
+    column_item = indexer.column_index['col1']
+    assert_not_nil(column_item)
+    assert_equal 'col1', column_item.id
+    assert_equal 'Column Title', column_item.caption
+
+    # Verify inline elements within column are indexed
+    assert_equal 1, indexer.footnote_index.size
+    footnote_item = indexer.footnote_index['col-footnote']
+    assert_not_nil(footnote_item)
+    assert_equal 'col-footnote', footnote_item.id
+  end
+
+  def test_endnote_index_building
+    source = <<~EOS
+      = Chapter Title
+
+      Text with @<endnote>{endnote1} reference.
+
+      //endnote[endnote1][Endnote content here]
+    EOS
+
+    # Build AST using AST::Compiler directly
+    ast_root = compile_to_ast(source)
+
+    # Build indexes using AST::Indexer
+    indexer = ReVIEW::AST::Indexer.new(@chapter)
+    indexer.build_indexes(ast_root)
+
+    # Verify endnote index
+    assert_equal 1, indexer.endnote_index.size
+    endnote_item = indexer.endnote_index['endnote1']
+    assert_not_nil(endnote_item)
+    assert_equal 1, endnote_item.number
+    assert_equal 'endnote1', endnote_item.id
+  end
+
+  def test_icon_index_building
+    source = <<~EOS
+      = Chapter Title
+
+      Text with @<icon>{user-icon} and @<icon>{settings-icon}.
+    EOS
+
+    # Build AST using AST::Compiler directly
+    ast_root = compile_to_ast(source)
+
+    # Build indexes using AST::Indexer
+    indexer = ReVIEW::AST::Indexer.new(@chapter)
+    indexer.build_indexes(ast_root)
+
+    # Verify icon index
+    assert_equal 2, indexer.icon_index.size
+
+    icon1 = indexer.icon_index['user-icon']
+    assert_not_nil(icon1)
+    assert_equal 1, icon1.number
+    assert_equal 'user-icon', icon1.id
+
+    icon2 = indexer.icon_index['settings-icon']
+    assert_not_nil(icon2)
+    assert_equal 2, icon2.number
+    assert_equal 'settings-icon', icon2.id
+  end
+
+  def test_imgtable_index_building
+    source = <<~EOS
+      = Chapter Title
+
+      //imgtable[table-image][Table as Image Caption]{
+      dummy content
+      //}
+    EOS
+
+    # Build AST using AST::Compiler directly
+    ast_root = compile_to_ast(source)
+
+    # Build indexes using AST::Indexer
+    indexer = ReVIEW::AST::Indexer.new(@chapter)
+    indexer.build_indexes(ast_root)
+
+    # Verify table index
+    assert_equal 1, indexer.table_index.size
+    table_item = indexer.table_index['table-image']
+    assert_not_nil(table_item)
+    assert_equal 'table-image', table_item.id
+
+    # Verify imgtable also adds to indepimage_index
+    assert_equal 1, indexer.indepimage_index.size
+    indep_item = indexer.indepimage_index['table-image']
+    assert_not_nil(indep_item)
+    assert_equal 'table-image', indep_item.id
+  end
+
+  def test_bibpaper_block_index_building
+    source = <<~EOS
+      = Chapter Title
+
+      Citation @<bib>{ref1} in text.
+
+      //bibpaper[ref1][Author Name, "Book Title", Publisher, 2024]
+    EOS
+
+    # Build AST using AST::Compiler directly
+    ast_root = compile_to_ast(source)
+
+    # Build indexes using AST::Indexer
+    indexer = ReVIEW::AST::Indexer.new(@chapter)
+    indexer.build_indexes(ast_root)
+
+    # Verify bibpaper index
+    assert_equal 1, indexer.bibpaper_index.size
+    bib_item = indexer.bibpaper_index['ref1']
+    assert_not_nil(bib_item)
+    assert_equal 'ref1', bib_item.id
+    assert_equal 'Author Name, "Book Title", Publisher, 2024', bib_item.caption
+  end
+
+  def test_caption_inline_elements
+    source = <<~EOS
+      = Chapter Title
+
+      //list[code-id][Caption with @<fn>{cap-fn} and @<bib>{cap-bib}]{
+      code content
+      //}
+
+      //footnote[cap-fn][Caption footnote]
+      //bibpaper[cap-bib][Bibliography in caption]
+    EOS
+
+    # Build AST using AST::Compiler directly
+    ast_root = compile_to_ast(source)
+
+    # Build indexes using AST::Indexer
+    indexer = ReVIEW::AST::Indexer.new(@chapter)
+    indexer.build_indexes(ast_root)
+
+    # Verify list index
+    assert_equal 1, indexer.list_index.size
+
+    # Verify inline elements in caption are indexed
+    assert_equal 1, indexer.footnote_index.size
+    footnote_item = indexer.footnote_index['cap-fn']
+    assert_not_nil(footnote_item)
+    assert_equal 'cap-fn', footnote_item.id
+
+    assert_equal 1, indexer.bibpaper_index.size
+    bib_item = indexer.bibpaper_index['cap-bib']
+    assert_not_nil(bib_item)
+    assert_equal 'cap-bib', bib_item.id
+  end
+
+  def test_headline_caption_inline_elements
+    source = <<~EOS
+      = Chapter Title
+
+      =={sec1} Section with @<fn>{head-fn} in title
+
+      Content here.
+
+      //footnote[head-fn][Headline footnote]
+    EOS
+
+    # Build AST using AST::Compiler directly
+    ast_root = compile_to_ast(source)
+
+    # Build indexes using AST::Indexer
+    indexer = ReVIEW::AST::Indexer.new(@chapter)
+    indexer.build_indexes(ast_root)
+
+    # Verify headline index
+    assert_not_nil(indexer.headline_index['sec1'])
+
+    # Verify inline elements in headline caption are indexed
+    assert_equal 1, indexer.footnote_index.size
+    footnote_item = indexer.footnote_index['head-fn']
+    assert_not_nil(footnote_item)
+    assert_equal 'head-fn', footnote_item.id
+  end
+
+  def test_index_for_method
+    source = <<~EOS
+      = Chapter Title
+
+      //list[sample][Sample]{
+      code
+      //}
+
+      //table[tbl][Table]{
+      data
+      //}
+    EOS
+
+    # Build AST using AST::Compiler directly
+    ast_root = compile_to_ast(source)
+
+    # Build indexes using AST::Indexer
+    indexer = ReVIEW::AST::Indexer.new(@chapter)
+    indexer.build_indexes(ast_root)
+
+    # Test index_for method
+    assert_equal indexer.list_index, indexer.index_for(:list)
+    assert_equal indexer.table_index, indexer.index_for(:table)
+    assert_equal indexer.image_index, indexer.index_for(:image)
+    assert_equal indexer.footnote_index, indexer.index_for(:footnote)
+    assert_equal indexer.endnote_index, indexer.index_for(:endnote)
+    assert_equal indexer.equation_index, indexer.index_for(:equation)
+    assert_equal indexer.headline_index, indexer.index_for(:headline)
+    assert_equal indexer.column_index, indexer.index_for(:column)
+    assert_equal indexer.bibpaper_index, indexer.index_for(:bibpaper)
+    assert_equal indexer.icon_index, indexer.index_for(:icon)
+    assert_equal indexer.indepimage_index, indexer.index_for(:indepimage)
+    assert_equal indexer.numberless_image_index, indexer.index_for(:numberless_image)
+
+    # Test unknown type raises error
+    assert_raise(ArgumentError) do
+      indexer.index_for(:unknown_type)
+    end
+  end
+
+  def test_available_index_types
+    indexer = ReVIEW::AST::Indexer.new(@chapter)
+
+    types = indexer.available_index_types
+    assert_kind_of(Array, types)
+
+    expected_types = %i[list table equation footnote endnote image icon
+                        numberless_image indepimage headline column bibpaper]
+    expected_types.each do |type|
+      assert_include(types, type, "Should include #{type}")
+    end
+  end
+
   private
 
   # Helper method to compile content to AST using AST::Compiler

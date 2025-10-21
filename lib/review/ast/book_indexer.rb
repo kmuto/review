@@ -57,7 +57,6 @@ module ReVIEW
           # Create indexer and build indexes
           indexer = AST::Indexer.new(chapter)
           indexer.build_indexes(ast)
-
         rescue StandardError => e
           warn "Failed to build index for chapter #{chapter.id}: #{e.message}"
         end

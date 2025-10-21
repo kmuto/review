@@ -28,12 +28,10 @@ module ReVIEW
         visit_all(node.children).join
       end
 
-      # === Document Node ===
       def visit_document(node)
         visit_children(node)
       end
 
-      # === Headline Node ===
       def visit_headline(node)
         text = '=' * (node.level || 1)
         text += "[#{node.label}]" if node.label && !node.label.empty?
@@ -44,7 +42,6 @@ module ReVIEW
         text + "\n\n" + visit_children(node)
       end
 
-      # === Paragraph Node ===
       def visit_paragraph(node)
         content = visit_children(node)
         return '' if content.strip.empty?
@@ -52,12 +49,10 @@ module ReVIEW
         content + "\n\n"
       end
 
-      # === Text Node ===
       def visit_text(node)
         node.content || ''
       end
 
-      # === Inline Node ===
       def visit_inline(node)
         content = visit_children(node)
 
@@ -93,7 +88,6 @@ module ReVIEW
         end
       end
 
-      # === Code Block Node ===
       def visit_code_block(node)
         # Determine block type
         block_type = if node.id?
@@ -138,7 +132,6 @@ module ReVIEW
         text + "//}\n\n"
       end
 
-      # === List Node ===
       def visit_list(node)
         case node.list_type
         when :ul
@@ -152,13 +145,11 @@ module ReVIEW
         end
       end
 
-      # === List Item Node ===
       def visit_list_item(node)
         # This should be handled by parent list type
         visit_children(node)
       end
 
-      # === Table Node ===
       def visit_table(node)
         # Determine table type
         table_type = node.table_type || :table
@@ -196,7 +187,6 @@ module ReVIEW
         text + "//}\n\n"
       end
 
-      # === Image Node ===
       def visit_image(node)
         text = "//image[#{node.id || ''}]"
 
@@ -206,7 +196,6 @@ module ReVIEW
         text + "\n\n"
       end
 
-      # === Minicolumn Node ===
       def visit_minicolumn(node)
         text = "//#{node.minicolumn_type}"
 
@@ -234,7 +223,6 @@ module ReVIEW
         text + "//}\n\n"
       end
 
-      # === Block Node ===
       def visit_block(node) # rubocop:disable Metrics/CyclomaticComplexity
         case node.block_type
         when :quote
@@ -339,7 +327,6 @@ module ReVIEW
         end
       end
 
-      # === Embed Node ===
       def visit_embed(node)
         case node.embed_type
         when :block
@@ -358,12 +345,10 @@ module ReVIEW
         end
       end
 
-      # === Caption Node ===
       def visit_caption(node)
         visit_children(node)
       end
 
-      # === Column Node ===
       def visit_column(node)
         text = '=' * (node.level || 1)
         text += '[column]'
@@ -372,7 +357,6 @@ module ReVIEW
         text + "\n\n" + visit_children(node)
       end
 
-      # Helper method for unordered lists
       def visit_unordered_list(node)
         text = ''
         node.children&.each do |item|
@@ -383,7 +367,6 @@ module ReVIEW
         text + (text.empty? ? '' : "\n")
       end
 
-      # Helper method for ordered lists
       def visit_ordered_list(node)
         text = ''
         node.children&.each_with_index do |item, index|
@@ -395,7 +378,6 @@ module ReVIEW
         text + (text.empty? ? '' : "\n")
       end
 
-      # Helper method for definition lists
       def visit_definition_list(node)
         text = ''
         node.children&.each do |item|
