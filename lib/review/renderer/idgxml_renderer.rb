@@ -42,6 +42,7 @@ module ReVIEW
       include ReVIEW::Loggable
 
       attr_reader :chapter, :book, :logger
+      attr_accessor :img_math, :img_graph
 
       def initialize(chapter)
         super
@@ -1359,22 +1360,16 @@ module ReVIEW
 
         if @book.config['math_format'] == 'imgmath'
           require 'review/img_math'
-          self.instance_variable_set(:@texinlineequation, self.instance_variable_get(:@texinlineequation) + 1)
-          self.instance_variable_get(:@texinlineequation)
+          @texinlineequation += 1
 
           math_str = '$' + str + '$'
           key = Digest::SHA256.hexdigest(str)
-          img_math = self.instance_variable_get(:@img_math)
-          unless img_math
-            img_math = ReVIEW::ImgMath.new(@book.config)
-            self.instance_variable_set(:@img_math, img_math)
-          end
-          img_path = img_math.defer_math_image(math_str, key)
+          @img_math ||= ReVIEW::ImgMath.new(@book.config)
+          img_path = @img_math.defer_math_image(math_str, key)
           %Q(<inlineequation><Image href="file://#{img_path}" type="inline" /></inlineequation>)
         else
-          self.instance_variable_set(:@texinlineequation, self.instance_variable_get(:@texinlineequation) + 1)
-          texinlineequation = self.instance_variable_get(:@texinlineequation)
-          %Q(<replace idref="texinline-#{texinlineequation}"><pre>#{escape(str)}</pre></replace>)
+          @texinlineequation += 1
+          %Q(<replace idref="texinline-#{@texinlineequation}"><pre>#{escape(str)}</pre></replace>)
         end
       end
 

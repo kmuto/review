@@ -152,8 +152,8 @@ module ReVIEW
       private
 
       def inject_shared_resources(renderer)
-        renderer.instance_variable_set(:@img_math, @img_math) if @img_math
-        renderer.instance_variable_set(:@img_graph, @img_graph) if @img_graph
+        renderer.img_math = @img_math if @img_math
+        renderer.img_graph = @img_graph if @img_graph
       end
 
       def find_chapter(filename)
