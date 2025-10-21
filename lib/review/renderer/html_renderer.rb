@@ -1589,20 +1589,6 @@ module ReVIEW
         end
       end
 
-      def render_table_section(rows, section_tag, cell_tag)
-        return '' if rows.empty?
-
-        rows_html = rows.map do |row_node|
-          cells_html = row_node.children.map do |cell_node|
-            content = render_children(cell_node)
-            "<#{cell_tag}>#{content}</#{cell_tag}>"
-          end.join
-          "<tr>#{cells_html}</tr>"
-        end.join
-
-        "<#{section_tag}>#{rows_html}</#{section_tag}>"
-      end
-
       def render_note_block(node)
         render_callout_block(node, 'note')
       end
@@ -2186,21 +2172,6 @@ module ReVIEW
         end
 
         %Q(<div class="footnotes">#{footnote_items.join("\n")}</div>)
-      end
-
-      # Render headline reference
-      def render_headline_ref(content, _node)
-        %Q(<span class="headline-ref">#{escape_content(content)}</span>)
-      end
-
-      # Render section reference
-      def render_section_ref(content, _node)
-        %Q(<span class="section-ref">#{escape_content(content)}</span>)
-      end
-
-      # Render label reference
-      def render_label_ref(content, _node)
-        %Q(<span class="label-ref">#{escape_content(content)}</span>)
       end
     end
   end
