@@ -76,7 +76,7 @@ module ReVIEW
         @compile_errors = false
       end
 
-      attr_reader :ast_root, :current_ast_node
+      attr_reader :ast_root, :current_ast_node, :chapter
 
       # Lazy-loaded processors
       def inline_processor

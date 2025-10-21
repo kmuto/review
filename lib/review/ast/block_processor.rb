@@ -987,7 +987,7 @@ module ReVIEW
       def table_row_separator_regexp
         # Get config from chapter's book (same as Builder pattern)
         # Handle cases where chapter or book may not exist (e.g., in tests)
-        chapter = @ast_compiler.instance_variable_get(:@chapter)
+        chapter = @ast_compiler.chapter
         config = if chapter && chapter.respond_to?(:book) && chapter.book
                    chapter.book.config || {}
                  else
