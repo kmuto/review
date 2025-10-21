@@ -333,7 +333,8 @@ module ReVIEW
       end
 
       def format_headline_reference(data)
-        caption = data.headline_caption || ''
+        # Use caption_node to render inline elements like IDGXMLBuilder does
+        caption = render_caption_inline(data.caption_node)
         headline_numbers = Array(data.headline_number).compact
 
         if !headline_numbers.empty?

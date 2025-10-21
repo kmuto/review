@@ -347,7 +347,8 @@ module ReVIEW
             headline_number: headline.number,
             headline_caption: headline.caption || '',
             chapter_id: chapter_id,
-            item_id: headline_id
+            item_id: headline_id,
+            caption_node: headline.caption_node
           )
         elsif @chapter.headline_index
           # Same-chapter reference
@@ -364,7 +365,8 @@ module ReVIEW
           ResolvedData.headline(
             headline_number: headline.number,
             headline_caption: headline.caption || '',
-            item_id: id
+            item_id: id,
+            caption_node: headline.caption_node
           )
         else
           raise CompileError, "Headline not found: #{id}"
@@ -443,7 +445,8 @@ module ReVIEW
               headline_number: item.number,
               headline_caption: item.caption || '',
               item_id: id,
-              caption: extract_caption(item)
+              caption: extract_caption(item),
+              caption_node: item.caption_node
             )
           end
         end

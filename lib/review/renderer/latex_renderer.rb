@@ -1590,8 +1590,8 @@ module ReVIEW
         index_str = node.args.first
         # Process hierarchical index like LATEXBuilder's index method
         index_entry = process_index(index_str)
-        # Index entry like LATEXBuilder
-        "\\index{#{index_entry}}#{content}"
+        # Index entry like LATEXBuilder - content first, then index
+        "#{content}\\index{#{index_entry}}"
       end
 
       # Render hidden index entry

@@ -1322,7 +1322,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     inline = AST::InlineNode.new(inline_type: 'idx', args: ['keyword'])
     inline.add_child(AST::TextNode.new(content: 'keyword'))
     result = @renderer.visit(inline)
-    assert_equal '\\index{keyword}keyword', result
+    assert_equal 'keyword\\index{keyword}', result
   end
 
   def test_inline_idx_hierarchical
@@ -1332,7 +1332,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     result = @renderer.visit(inline)
     # Should process hierarchical index: split by <<>>, escape, and join with !
     # Japanese text should get yomi conversion
-    assert_match(/\\index\{.+!.+\}子項目/, result)
+    assert_match(/子項目\\index\{.+!.+\}/, result)
   end
 
   def test_inline_idx_ascii
@@ -1340,7 +1340,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     inline = AST::InlineNode.new(inline_type: 'idx', args: ['Ruby'])
     inline.add_child(AST::TextNode.new(content: 'Ruby'))
     result = @renderer.visit(inline)
-    assert_equal '\\index{Ruby}Ruby', result
+    assert_equal 'Ruby\\index{Ruby}', result
   end
 
   def test_inline_hidx_simple
@@ -1367,6 +1367,6 @@ class TestLatexRenderer < Test::Unit::TestCase
     # @ should be escaped as "@ by escape_index
     # Format: key@display where key is used for sorting, display is shown
     # Both key and display should have @ escaped
-    assert_match(/\\index\{term"@example@term"@example\}term@example/, result)
+    assert_match(/term@example\\index\{term"@example@term"@example\}/, result)
   end
 end

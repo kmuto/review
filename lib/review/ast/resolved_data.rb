@@ -16,7 +16,7 @@ module ReVIEW
     class ResolvedData
       attr_reader :chapter_number, :item_number, :chapter_id, :item_id
       attr_reader :chapter_title, :headline_number, :headline_caption, :word_content
-      attr_reader :caption
+      attr_reader :caption, :caption_node
 
       # Check if this is a cross-chapter reference
       # @return [Boolean] true if referencing an item in another chapter
@@ -136,13 +136,14 @@ module ReVIEW
       end
 
       # Create ResolvedData for a headline/section reference
-      def self.headline(headline_number:, headline_caption:, item_id:, chapter_id: nil, caption: nil)
+      def self.headline(headline_number:, headline_caption:, item_id:, chapter_id: nil, caption: nil, caption_node: nil)
         Headline.new(
           item_id: item_id,
           chapter_id: chapter_id,
           headline_number: headline_number, # Array format [1, 2, 3]
           headline_caption: headline_caption,
-          caption: caption || headline_caption
+          caption: caption || headline_caption,
+          caption_node: caption_node
         )
       end
 
@@ -256,13 +257,14 @@ module ReVIEW
 
     class ResolvedData
       class Headline < ResolvedData
-        def initialize(item_id:, headline_number:, headline_caption:, chapter_id: nil, caption: nil)
+        def initialize(item_id:, headline_number:, headline_caption:, chapter_id: nil, caption: nil, caption_node: nil)
           super()
           @item_id = item_id
           @chapter_id = chapter_id
           @headline_number = headline_number
           @headline_caption = headline_caption
           @caption = caption
+          @caption_node = caption_node
         end
       end
     end

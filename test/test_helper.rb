@@ -7,7 +7,7 @@ require 'fileutils'
 require 'review/yamlloader'
 require 'review/extentions'
 
-require_relative "ast/caption_parser_helper"
+require_relative 'ast/caption_parser_helper'
 
 def touch_file(path)
   FileUtils.touch(path)
