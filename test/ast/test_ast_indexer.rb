@@ -592,19 +592,6 @@ class TestASTIndexer < Test::Unit::TestCase
     end
   end
 
-  def test_available_index_types
-    indexer = ReVIEW::AST::Indexer.new(@chapter)
-
-    types = indexer.available_index_types
-    assert_kind_of(Array, types)
-
-    expected_types = %i[list table equation footnote endnote image icon
-                        numberless_image indepimage headline column bibpaper]
-    expected_types.each do |type|
-      assert_include(types, type, "Should include #{type}")
-    end
-  end
-
   private
 
   # Helper method to compile content to AST using AST::Compiler

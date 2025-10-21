@@ -181,12 +181,6 @@ module ReVIEW
       def comment_line?(line)
         /\A\#@/.match?(line)
       end
-
-      # Get current location for error reporting
-      # @return [Location, nil] Current location
-      def current_location
-        @location_provider&.location
-      end
     end
   end
 end

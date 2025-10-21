@@ -100,22 +100,6 @@ module ReVIEW
         end
       end
 
-      # Available index types
-      def available_index_types
-        %i[list table equation footnote endnote image icon numberless_image indepimage headline column bibpaper]
-      end
-
-      # Collect index items of specific type from this indexer for book-wide aggregation
-      def collect_index_items(type)
-        index = index_for(type)
-        return [] unless index
-
-        # Transform each item to add chapter context for book-wide reference
-        index.map do |item|
-          ReVIEW::Book::Index::Item.new(item.id, item.number, @chapter)
-        end
-      end
-
       private
 
       # Set indexes on chapter using public API
