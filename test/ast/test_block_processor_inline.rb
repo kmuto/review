@@ -160,7 +160,7 @@ class TestBlockProcessorInline < Test::Unit::TestCase
       location: @location,
       id: 'fig1',
       caption: caption,
-      caption_node: ReVIEW::AST::CaptionNode.parse(caption)
+      caption_node: CaptionParserHelper.parse(caption)
     )
 
     assert_not_nil(image.caption)
@@ -172,36 +172,39 @@ class TestBlockProcessorInline < Test::Unit::TestCase
   def test_caption_node_creation_directly
     # Test CaptionNode creation with various inputs
     # Simple string
-    caption_node1 = ReVIEW::AST::CaptionNode.parse('Simple text', location: @location)
+    caption_node1 = CaptionParserHelper.parse('Simple text', location: @location)
     assert_instance_of(ReVIEW::AST::CaptionNode, caption_node1)
     assert_equal 'Simple text', caption_node1.to_text
     assert_equal 1, caption_node1.children.size
     assert_instance_of(ReVIEW::AST::TextNode, caption_node1.children.first)
 
     # Nil caption
-    caption_node2 = ReVIEW::AST::CaptionNode.parse(nil, location: @location)
+    caption_node2 = CaptionParserHelper.parse(nil, location: @location)
     assert_nil(caption_node2)
 
     # Empty string
-    caption_node3 = ReVIEW::AST::CaptionNode.parse('', location: @location)
+    caption_node3 = CaptionParserHelper.parse('', location: @location)
     assert_nil(caption_node3)
 
     # Already a CaptionNode
     existing_caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
     existing_caption_node.add_child(ReVIEW::AST::TextNode.new(content: 'Existing'))
-    caption_node4 = ReVIEW::AST::CaptionNode.parse(existing_caption_node, location: @location)
+    caption_node4 = CaptionParserHelper.parse(existing_caption_node, location: @location)
     assert_equal existing_caption_node, caption_node4
   end
 
-  def test_caption_with_array_of_nodes
+  def test_caption_with_multiple_nodes
     # Test CaptionNode creation with array of nodes
+    caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
     text_node = ReVIEW::AST::TextNode.new(content: 'Text with ')
     inline_node = ReVIEW::AST::InlineNode.new(inline_type: 'b')
     inline_node.add_child(ReVIEW::AST::TextNode.new(content: 'bold'))
     text_node2 = ReVIEW::AST::TextNode.new(content: ' content')
+    caption_node.add_child(text_node)
+    caption_node.add_child(inline_node)
+    caption_node.add_child(text_node2)
 
-    nodes_array = [text_node, inline_node, text_node2]
-    caption_node = ReVIEW::AST::CaptionNode.parse(nodes_array, location: @location)
+    caption_node = CaptionParserHelper.parse(caption_node, location: @location)
 
     assert_instance_of(ReVIEW::AST::CaptionNode, caption_node)
     assert_equal 3, caption_node.children.size

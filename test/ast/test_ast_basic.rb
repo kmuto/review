@@ -30,7 +30,7 @@ class TestASTBasic < Test::Unit::TestCase
       level: 1,
       label: 'test-label',
       caption: 'Test Headline',
-      caption_node: ReVIEW::AST::CaptionNode.parse('Test Headline')
+      caption_node: CaptionParserHelper.parse('Test Headline')
     )
 
     hash = node.to_h
@@ -91,7 +91,7 @@ class TestASTBasic < Test::Unit::TestCase
     child_node = ReVIEW::AST::HeadlineNode.new(
       level: 1,
       caption: 'Test',
-      caption_node: ReVIEW::AST::CaptionNode.parse('Test')
+      caption_node: CaptionParserHelper.parse('Test')
     )
 
     node.add_child(child_node)

@@ -6,62 +6,6 @@ module ReVIEW
   module AST
     # Represents a caption that can contain both text and inline elements
     class CaptionNode < Node
-      # Parser class for caption processing
-      class Parser
-        def initialize(location: nil, inline_processor: nil)
-          @location = location
-          @inline_processor = inline_processor
-        end
-
-        def parse(caption)
-          return nil if caption.nil? || caption == ''
-          return caption if caption.is_a?(CaptionNode)
-
-          case caption
-          when String
-            parse_string(caption)
-          when Array
-            parse_array(caption)
-          else
-            parse_fallback(caption)
-          end
-        end
-
-        private
-
-        def parse_string(caption)
-          caption_node = CaptionNode.new(location: @location)
-          if @inline_processor && caption.include?('@<')
-            @inline_processor.parse_inline_elements(caption, caption_node)
-          else
-            caption_node.add_child(TextNode.new(location: @location, content: caption))
-          end
-          caption_node
-        end
-
-        def parse_array(caption)
-          return nil if caption.empty?
-
-          caption_node = CaptionNode.new(location: @location)
-          caption.each { |child| caption_node.add_child(child) }
-          caption_node
-        end
-
-        def parse_fallback(caption)
-          return nil if caption.to_s.empty?
-
-          caption_node = CaptionNode.new(location: @location)
-          caption_node.add_child(TextNode.new(location: @location, content: caption.to_s))
-          caption_node
-        end
-      end
-
-      # Factory method for creating CaptionNode from various input types
-      def self.parse(caption, location: nil, inline_processor: nil)
-        parser = Parser.new(location: location, inline_processor: inline_processor)
-        parser.parse(caption)
-      end
-
       def initialize(location: nil, **kwargs)
         super
       end

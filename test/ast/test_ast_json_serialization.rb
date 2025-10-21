@@ -33,7 +33,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       level: 1,
       label: 'intro',
       caption: 'Introduction',
-      caption_node: AST::CaptionNode.parse('Introduction', location: @location)
+      caption_node: CaptionParserHelper.parse('Introduction', location: @location)
     )
 
     json = node.to_json
@@ -114,7 +114,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       location: @location,
       id: 'example',
       caption: 'Example Code',
-      caption_node: AST::CaptionNode.parse('Example Code', location: @location),
+      caption_node: CaptionParserHelper.parse('Example Code', location: @location),
       lang: 'ruby',
       original_text: lines_text,
       line_numbers: true
@@ -159,7 +159,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       location: @location,
       id: 'data',
       caption: 'Sample Data',
-      caption_node: AST::CaptionNode.parse('Sample Data', location: @location)
+      caption_node: CaptionParserHelper.parse('Sample Data', location: @location)
     )
 
     # Add header row
@@ -265,7 +265,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       location: @location,
       level: 1,
       caption: 'Chapter 1',
-      caption_node: AST::CaptionNode.parse('Chapter 1', location: @location)
+      caption_node: CaptionParserHelper.parse('Chapter 1', location: @location)
     )
     doc.add_child(headline)
 
@@ -290,7 +290,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       location: @location,
       level: 2,
       caption: 'Section Title',
-      caption_node: AST::CaptionNode.parse('Section Title', location: @location)
+      caption_node: CaptionParserHelper.parse('Section Title', location: @location)
     )
 
     options = AST::JSONSerializer::Options.new
@@ -315,7 +315,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       location: @location,
       level: 2,
       caption: 'Section Title',
-      caption_node: AST::CaptionNode.parse('Section Title', location: @location)
+      caption_node: CaptionParserHelper.parse('Section Title', location: @location)
     )
 
     options = AST::JSONSerializer::Options.new
@@ -340,7 +340,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       location: @location,
       level: 2,
       caption: 'Section Title',
-      caption_node: AST::CaptionNode.parse('Section Title', location: @location)
+      caption_node: CaptionParserHelper.parse('Section Title', location: @location)
     )
 
     options = AST::JSONSerializer::Options.new
@@ -383,7 +383,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       location: @location,
       level: 1,
       caption: 'Introduction',
-      caption_node: AST::CaptionNode.parse('Introduction', location: @location)
+      caption_node: CaptionParserHelper.parse('Introduction', location: @location)
     )
     doc.add_child(headline)
 
@@ -424,7 +424,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       location: @location,
       id: 'example',
       caption: 'Code Example',
-      caption_node: AST::CaptionNode.parse('Code Example', location: @location),
+      caption_node: CaptionParserHelper.parse('Code Example', location: @location),
       lang: 'ruby',
       original_text: 'puts "Hello, World!"'
     )
