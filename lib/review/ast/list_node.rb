@@ -5,7 +5,8 @@ require 'review/ast/node'
 module ReVIEW
   module AST
     class ListNode < Node
-      attr_reader :list_type, :start_number
+      attr_reader :list_type
+      attr_accessor :start_number
 
       def initialize(location: nil, list_type: nil, start_number: nil, **kwargs)
         super(location: location, **kwargs)
@@ -48,6 +49,7 @@ module ReVIEW
 
     class ListItemNode < Node
       attr_reader :level, :number, :item_type, :term_children
+      attr_accessor :item_number
 
       def initialize(location: nil, level: 1, number: nil, item_type: nil, term_children: [], **kwargs)
         super(location: location, **kwargs)
@@ -55,6 +57,7 @@ module ReVIEW
         @number = number
         @item_type = item_type # :dt, :dd, or nil for regular list items
         @term_children = term_children # For definition lists: stores processed term content separately
+        @item_number = nil # Absolute item number for ordered lists (set by ListItemNumberingProcessor)
       end
 
       def to_h

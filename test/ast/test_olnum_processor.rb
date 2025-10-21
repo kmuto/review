@@ -41,10 +41,9 @@ class TestOlnumProcessor < Test::Unit::TestCase
     # Find the ordered list
     ordered_lists = find_list_nodes(ast_root, :ol)
 
-    # List should have start_number attribute
+    # List should have start_number set
     assert_equal 1, ordered_lists.length
-    assert_true(ordered_lists[0].attribute?(:start_number))
-    assert_equal 5, ordered_lists[0].fetch_attribute(:start_number)
+    assert_equal 5, ordered_lists[0].start_number
   end
 
   def test_olnum_without_following_list
@@ -97,13 +96,10 @@ class TestOlnumProcessor < Test::Unit::TestCase
     # Find the ordered lists
     ordered_lists = find_list_nodes(ast_root, :ol)
 
-    # Both lists should have start_number attributes
+    # Both lists should have start_number set
     assert_equal 2, ordered_lists.length
-    assert_true(ordered_lists[0].attribute?(:start_number))
-    assert_equal 10, ordered_lists[0].fetch_attribute(:start_number)
-
-    assert_true(ordered_lists[1].attribute?(:start_number))
-    assert_equal 20, ordered_lists[1].fetch_attribute(:start_number)
+    assert_equal 10, ordered_lists[0].start_number
+    assert_equal 20, ordered_lists[1].start_number
   end
 
   private

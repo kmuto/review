@@ -35,11 +35,11 @@ module ReVIEW
       def process_node(node)
         node.children.each_with_index do |child, idx|
           if olnum_command?(child)
-            # Find the next ordered list for olnum attribute
+            # Find the next ordered list for olnum
             target_list = find_next_ordered_list(node.children, idx + 1)
             if target_list
               olnum_value = extract_olnum_value(child)
-              target_list.add_attribute(:start_number, olnum_value)
+              target_list.start_number = olnum_value
             end
 
             node.children.delete_at(idx)

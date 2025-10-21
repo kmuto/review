@@ -21,8 +21,6 @@ module ReVIEW
       def normalize_node(node)
         return if node.children.empty?
 
-        assign_ordered_offsets(node)
-
         normalized_children = []
         children = node.children.dup
         idx = 0
@@ -65,17 +63,6 @@ module ReVIEW
         end
 
         node.children.replace(merge_consecutive_lists(normalized_children))
-      end
-
-      def assign_ordered_offsets(node)
-        return unless node.is_a?(ReVIEW::AST::ListNode)
-        return unless node.list_type == :ol
-
-        base = node.start_number || 1
-        node.children&.each_with_index do |item, index|
-          offset = base + index
-          item.instance_variable_set(:@idgxml_ol_offset, offset)
-        end
       end
 
       def extract_nested_child_sequence(children, begin_index, initial_list_context = nil)

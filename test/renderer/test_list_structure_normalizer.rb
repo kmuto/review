@@ -88,7 +88,7 @@ REVIEW
     assert_equal 'UL2-PARA', paragraph.children.first.content
 
     ordered.children.each_with_index do |item, index|
-      assert_equal index + 1, item.instance_variable_get(:@idgxml_ol_offset)
+      assert_equal index + 1, item.item_number
     end
   end
 

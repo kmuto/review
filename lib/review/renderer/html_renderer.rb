@@ -22,7 +22,7 @@ require 'review/template'
 
 module ReVIEW
   module Renderer
-    class HtmlRenderer < Base
+    class HtmlRenderer < Base # rubocop:disable Metrics/ClassLength
       include ReVIEW::HTMLUtils
       include ReVIEW::TextUtils
       include ReVIEW::EscapeUtils
@@ -141,11 +141,10 @@ module ReVIEW
                 raise NotImplementedError, "HTMLRenderer does not support list_type #{node.list_type}."
               end
 
-        # Check for start_number attribute for ordered lists
+        # Check for start_number for ordered lists
         start_attr = ''
-        if node.list_type == :ol && node.attribute?(:start_number)
-          start_num = node.fetch_attribute(:start_number)
-          start_attr = %Q( start="#{start_num}")
+        if node.list_type == :ol && node.start_number
+          start_attr = %Q( start="#{node.start_number}")
         end
 
         content = render_children(node)
@@ -1820,34 +1819,6 @@ module ReVIEW
         anchor = @sec_counter.anchor(level)
         prefix = @sec_counter.prefix(level, config['secnolevel'])
         [prefix, anchor]
-      end
-
-      # Builder-compatible methods for list reference handling
-      def extract_chapter_id(chap_ref)
-        m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
-        if m
-          ch = @book.contents.detect { |chap| chap.id == m[1] }
-          raise ReVIEW::KeyError unless ch
-
-          return [ch, m[2]]
-        end
-        [@chapter, chap_ref]
-      end
-
-      def get_chap(chapter = @chapter)
-        if config['secnolevel'] && config['secnolevel'] > 0 &&
-           !chapter.number.nil? && !chapter.number.to_s.empty?
-          if chapter.is_a?(ReVIEW::Book::Part)
-            return I18n.t('part_short', chapter.number)
-          else
-            return chapter.format_number(nil)
-          end
-        end
-        nil
-      end
-
-      def extname
-        ".#{config['htmlext'] || 'html'}"
       end
 
       # Image helper methods matching HTMLBuilder's implementation

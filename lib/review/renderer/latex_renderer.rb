@@ -17,7 +17,7 @@ require 'review/textutils'
 
 module ReVIEW
   module Renderer
-    class LatexRenderer < Base
+    class LatexRenderer < Base # rubocop:disable Metrics/ClassLength
       include ReVIEW::LaTeXUtils
       include ReVIEW::TextUtils
 
@@ -602,10 +602,10 @@ module ReVIEW
           # Ordered list - generate LaTeX enumerate environment
           items = node.children.map { |item| "\\item #{render_children(item)}" }.join("\n")
 
-          # Check if this list has olnum start number
-          if node.attribute?(:start_number)
-            # Generate enumerate with setcounter for olnum
-            start_num = node.fetch_attribute(:start_number) - 1 # LaTeX counter is 0-based
+          # Check if this list has start_number
+          if node.start_number && node.start_number != 1
+            # Generate enumerate with setcounter for non-default start
+            start_num = node.start_number - 1 # LaTeX counter is 0-based
             "\n\\begin{enumerate}\n\\setcounter{enumi}{#{start_num}}\n#{items}\n\\end{enumerate}\n\n"
           else
             "\n\\begin{enumerate}\n#{items}\n\\end{enumerate}\n\n"
@@ -2349,7 +2349,7 @@ module ReVIEW
 
       def normalize_id(id)
         # LaTeX-safe ID normalization
-        id.gsub(/[^a-zA-Z0-9_-]/, '_')
+        id.to_s.gsub(/[^a-zA-Z0-9_-]/, '_')
       end
 
       # Check if content looks like list item content

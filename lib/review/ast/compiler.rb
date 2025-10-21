@@ -20,6 +20,7 @@ require 'review/ast/footnote_node'
 require 'review/ast/reference_resolver'
 require 'review/ast/noindent_processor'
 require 'review/ast/olnum_processor'
+require 'review/ast/list_item_numbering_processor'
 
 module ReVIEW
   module AST
@@ -114,6 +115,9 @@ module ReVIEW
         # Post-process AST for noindent and olnum commands
         NoindentProcessor.process(@ast_root)
         OlnumProcessor.process(@ast_root)
+
+        # Assign item numbers to ordered list items
+        ListItemNumberingProcessor.process(@ast_root)
 
         # Check for accumulated errors (similar to HTMLBuilder's Compiler)
         if @compile_errors

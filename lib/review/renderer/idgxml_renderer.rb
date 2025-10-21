@@ -36,7 +36,7 @@ require 'digest/sha2'
 
 module ReVIEW
   module Renderer
-    class IdgxmlRenderer < Base
+    class IdgxmlRenderer < Base # rubocop:disable Metrics/ClassLength
       include ReVIEW::HTMLUtils
       include ReVIEW::TextUtils
       include ReVIEW::Loggable
@@ -863,8 +863,8 @@ module ReVIEW
       end
 
       def render_ordered_item(item, current_number)
-        offset = item.instance_variable_get(:@idgxml_ol_offset)
-        olnum_attr = offset || current_number
+        # Use item_number set by ListItemNumberingProcessor, fallback to current_number
+        olnum_attr = item.item_number || current_number
         display_number = item.respond_to?(:number) && item.number ? item.number : current_number
         content = render_list_item_body(item)
         %Q(<li aid:pstyle="ol-item" olnum="#{olnum_attr}" num="#{display_number}">#{content}</li>)
@@ -1542,19 +1542,6 @@ module ReVIEW
         anchor = @sec_counter.anchor(level)
         prefix = @sec_counter.prefix(level, @book&.config&.[]('secnolevel'))
         [prefix, anchor]
-      end
-
-      # Get chapter number for numbering
-      def get_chap(chapter = @chapter)
-        if @book&.config&.[]('secnolevel') && @book.config['secnolevel'] > 0 &&
-           !chapter.number.nil? && !chapter.number.to_s.empty?
-          if chapter.is_a?(ReVIEW::Book::Part)
-            return I18n.t('part_short', chapter.number)
-          else
-            return chapter.format_number(nil)
-          end
-        end
-        nil
       end
 
       # Check caption position
@@ -2311,23 +2298,6 @@ module ReVIEW
         end
       rescue ReVIEW::KeyError
         id
-      end
-
-      # Extract chapter ID from reference
-      def extract_chapter_id(chap_ref)
-        m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
-        if m
-          ch = @book.contents.detect { |chap| chap.id == m[1] }
-          raise ReVIEW::KeyError unless ch
-
-          return [ch, m[2]]
-        end
-        [@chapter, chap_ref]
-      end
-
-      # Normalize ID for XML attributes
-      def normalize_id(id)
-        id.to_s.gsub(/[^a-zA-Z0-9_-]/, '_')
       end
 
       # Count ul nesting depth by traversing parent contexts
