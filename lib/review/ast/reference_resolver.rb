@@ -10,6 +10,7 @@ require 'review/ast/reference_node'
 require 'review/ast/resolved_data'
 require 'review/ast/inline_node'
 require 'review/ast/indexer'
+require 'review/ast/visitor'
 require 'review/exception'
 
 module ReVIEW
@@ -18,8 +19,9 @@ module ReVIEW
     #
     # Traverses ReferenceNodes contained in AST and resolves them to
     # appropriate reference content using index information.
-    class ReferenceResolver
+    class ReferenceResolver < Visitor
       def initialize(chapter)
+        super()
         @chapter = chapter
         @book = chapter.book
       end
@@ -28,42 +30,21 @@ module ReVIEW
         # First build indexes (using existing mechanism)
         build_indexes_from_ast(ast)
 
-        # Traverse InlineNodes and resolve their child ReferenceNodes
-        resolve_count = 0
-        error_count = 0
+        # Initialize counters
+        @resolve_count = 0
+        @error_count = 0
 
-        visit_all_nodes(ast) do |node|
-          next unless node.is_a?(InlineNode)
+        # Traverse AST using Visitor pattern
+        visit(ast)
 
-          if reference_children?(node)
-            ref_type = node.inline_type
-            node.children.each do |child|
-              if child.is_a?(ReferenceNode) && !child.resolved?
-                if resolve_node(child, ref_type)
-                  resolve_count += 1
-                else
-                  error_count += 1
-                end
-              end
-            end
-          end
-        end
-
-        { resolved: resolve_count, failed: error_count }
+        { resolved: @resolve_count, failed: @error_count }
       end
 
       private
 
-      # Check if InlineNode is reference-type with ReferenceNode children
-      def reference_children?(inline_node)
-        return false unless inline_node.inline_type
-
-        # Check reference-type inline_type
-        ref_types = %w[img list table eq fn endnote column hd chap chapref sec secref labelref ref w wb]
-        return false unless ref_types.include?(inline_node.inline_type)
-
-        # Check if it has ReferenceNode children
-        inline_node.children.any?(ReferenceNode)
+      # Visit caption_node if present on the given node
+      def visit_caption_if_present(node)
+        visit(node.caption_node) if node.respond_to?(:caption_node) && node.caption_node
       end
 
       def build_indexes_from_ast(ast)
@@ -107,11 +88,128 @@ module ReVIEW
         !resolved_data.nil?
       end
 
-      # Traverse all nodes in AST
-      def visit_all_nodes(node, &block)
-        yield node
+      # Visit document node (root)
+      def visit_document(node)
+        visit_all(node.children)
+      end
 
-        node.children.each { |child| visit_all_nodes(child, &block) }
+      # Visit paragraph node
+      def visit_paragraph(node)
+        visit_all(node.children)
+      end
+
+      # Visit text node (leaf node)
+      def visit_text(node)
+        # Text nodes don't need processing
+      end
+
+      # Visit headline node
+      def visit_headline(node)
+        visit_caption_if_present(node)
+        visit_all(node.children)
+      end
+
+      # Visit column node
+      def visit_column(node)
+        visit_caption_if_present(node)
+        visit_all(node.children)
+      end
+
+      # Visit code block node
+      def visit_code_block(node)
+        visit_caption_if_present(node)
+        visit_all(node.children)
+      end
+
+      # Visit table node
+      def visit_table(node)
+        visit_caption_if_present(node)
+        visit_all(node.children)
+      end
+
+      # Visit image node
+      def visit_image(node)
+        visit_caption_if_present(node)
+        visit_all(node.children)
+      end
+
+      # Visit minicolumn node
+      def visit_minicolumn(node)
+        visit_caption_if_present(node)
+        visit_all(node.children)
+      end
+
+      # Visit embed node
+      def visit_embed(node)
+        visit_all(node.children)
+      end
+
+      # Visit footnote node
+      def visit_footnote(node)
+        visit_all(node.children)
+      end
+
+      # Visit tex equation node
+      def visit_tex_equation(node)
+        visit_caption_if_present(node)
+        visit_all(node.children)
+      end
+
+      # Visit block node
+      def visit_block(node)
+        visit_all(node.children)
+      end
+
+      # Visit list node
+      def visit_list(node)
+        visit_all(node.children)
+      end
+
+      # Visit list item node
+      def visit_list_item(node)
+        visit_all(node.children)
+      end
+
+      # Visit caption node
+      def visit_caption(node)
+        visit_all(node.children)
+      end
+
+      # Visit code line node
+      def visit_code_line(node)
+        visit_all(node.children)
+      end
+
+      # Visit table row node
+      def visit_table_row(node)
+        visit_all(node.children)
+      end
+
+      # Visit table cell node
+      def visit_table_cell(node)
+        visit_all(node.children)
+      end
+
+      # Visit inline node
+      def visit_inline(node)
+        visit_all(node.children)
+      end
+
+      # Visit reference node - main reference resolution logic
+      def visit_reference(node)
+        return if node.resolved?
+
+        # Get reference type from parent InlineNode
+        parent_inline = node.parent
+        return unless parent_inline.is_a?(InlineNode)
+
+        ref_type = parent_inline.inline_type
+
+        if resolve_node(node, ref_type)
+          @resolve_count += 1
+        else
+          @error_count += 1
+        end
       end
 
       # Resolve image references
@@ -523,11 +621,6 @@ module ReVIEW
       # Split cross-chapter reference ID into chapter_id and item_id
       def split_cross_chapter_ref(id)
         id.split('|', 2).map(&:strip)
-      end
-
-      # Format chapter item number (e.g., "図1.2", "表3.4")
-      def format_chapter_item_number(prefix, chapter_num, item_num)
-        "#{prefix}#{chapter_num || ''}.#{item_num}"
       end
 
       # Find chapter by ID from book's chapter_index
