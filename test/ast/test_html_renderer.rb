@@ -470,4 +470,143 @@ class TestHtmlRenderer < Test::Unit::TestCase
     # Check that equation content is present
     assert_match(/\\int_/, html_output)
   end
+
+  def test_nest_ul
+    content = <<~EOS
+      = Chapter
+
+       * UL1
+
+      //beginchild
+
+       1. UL1-OL1
+       2. UL1-OL2
+
+       * UL1-UL1
+       * UL1-UL2
+
+       : UL1-DL1
+      \tUL1-DD1
+       : UL1-DL2
+      \tUL1-DD2
+
+      //endchild
+
+       * UL2
+
+      //beginchild
+
+      UL2-PARA
+
+      //endchild
+    EOS
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
+    chapter.generate_indexes
+    @book.generate_indexes
+    ast_root = @compiler.compile_to_ast(chapter)
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    html_output = renderer.render(ast_root)
+
+    # Verify that nested structure is present
+    assert_match(/<li>UL1/, html_output)
+    assert_match(/<li>UL2/, html_output)
+    assert_match(/<li>UL1-OL1/, html_output)
+    assert_match(/<li>UL1-UL1/, html_output)
+    assert_match(/<dt>UL1-DL1/, html_output)
+  end
+
+  def test_nest_ol
+    content = <<~EOS
+      = Chapter
+
+       1. OL1
+
+      //beginchild
+
+       1. OL1-OL1
+       2. OL1-OL2
+
+       * OL1-UL1
+       * OL1-UL2
+
+       : OL1-DL1
+      \tOL1-DD1
+       : OL1-DL2
+      \tOL1-DD2
+
+      //endchild
+
+       2. OL2
+
+      //beginchild
+
+      OL2-PARA
+
+      //endchild
+    EOS
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
+    chapter.generate_indexes
+    @book.generate_indexes
+    ast_root = @compiler.compile_to_ast(chapter)
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    html_output = renderer.render(ast_root)
+
+    # Verify that nested structure is present
+    assert_match(/<li>OL1/, html_output)
+    assert_match(/<li>OL2/, html_output)
+    assert_match(/<li>OL1-OL1/, html_output)
+    assert_match(/<li>OL1-UL1/, html_output)
+    assert_match(/<dt>OL1-DL1/, html_output)
+  end
+
+  def test_nest_dl
+    content = <<~EOS
+      = Chapter
+
+       : DL1
+
+      //beginchild
+
+       1. DL1-OL1
+       2. DL1-OL2
+
+       * DL1-UL1
+       * DL1-UL2
+
+       : DL1-DL1
+      \tDL1-DD1
+       : DL1-DL2
+      \tDL1-DD2
+
+      //endchild
+
+       : DL2
+      \tDD2
+
+      //beginchild
+
+       * DD2-UL1
+       * DD2-UL2
+
+      DD2-PARA
+
+      //endchild
+    EOS
+
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
+    chapter.generate_indexes
+    @book.generate_indexes
+    ast_root = @compiler.compile_to_ast(chapter)
+    renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+    html_output = renderer.render(ast_root)
+
+    # Verify that nested structure is present
+    assert_match(/<dt>DL1/, html_output)
+    assert_match(/<dt>DL2/, html_output)
+    assert_match(/<li>DL1-OL1/, html_output)
+    assert_match(/<li>DL1-UL1/, html_output)
+    assert_match(/<li>DD2-UL1/, html_output)
+  end
 end

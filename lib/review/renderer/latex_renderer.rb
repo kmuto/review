@@ -8,7 +8,6 @@
 
 require 'review/renderer/base'
 require 'review/renderer/rendering_context'
-require 'review/renderer/list_structure_normalizer'
 require 'review/ast/caption_node'
 require 'review/latexutils'
 require 'review/sec_counter'
@@ -59,9 +58,6 @@ module ReVIEW
       end
 
       def visit_document(node)
-        # Normalize nested list structure before any processing
-        normalize_ast_structure(node)
-
         # Build indexes using AST::Indexer for proper footnote support
         if @chapter && !@ast_indexer
           require 'review/ast/indexer'
@@ -2037,14 +2033,6 @@ module ReVIEW
       end
 
       private
-
-      def normalize_ast_structure(node)
-        list_structure_normalizer.normalize(node)
-      end
-
-      def list_structure_normalizer
-        @list_structure_normalizer ||= ListStructureNormalizer.new(self)
-      end
 
       def ast_compiler
         @ast_compiler ||= ReVIEW::AST::Compiler.for_chapter(@chapter)

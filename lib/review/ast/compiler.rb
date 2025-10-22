@@ -21,6 +21,7 @@ require 'review/ast/reference_resolver'
 require 'review/ast/tsize_processor'
 require 'review/ast/noindent_processor'
 require 'review/ast/olnum_processor'
+require 'review/ast/list_structure_normalizer'
 require 'review/ast/list_item_numbering_processor'
 
 module ReVIEW
@@ -121,6 +122,9 @@ module ReVIEW
         # Post-process AST for noindent and olnum commands
         NoindentProcessor.process(@ast_root)
         OlnumProcessor.process(@ast_root)
+
+        # Normalize list structures (process //beginchild and //endchild)
+        ListStructureNormalizer.process(@ast_root)
 
         # Assign item numbers to ordered list items
         ListItemNumberingProcessor.process(@ast_root)

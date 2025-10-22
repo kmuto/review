@@ -65,6 +65,11 @@ module ReVIEW
       def build_ordered_list(items)
         root_list = create_list_node(:ol)
 
+        # Set start_number based on the first item's number if available
+        if items.first && items.first.metadata[:number]
+          root_list.start_number = items.first.metadata[:number]
+        end
+
         build_proper_nested_structure(items, root_list, :ol)
         root_list
       end

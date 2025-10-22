@@ -1359,7 +1359,7 @@ OL2-PARA
 EOS
 
     expected = <<-EOS.chomp
-<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1-OL1</li><li aid:pstyle="ol-item" olnum="2" num="2">OL1-OL2</li></ol><ul><li aid:pstyle="ul-item">OL1-UL1</li><li aid:pstyle="ul-item">OL1-UL2</li></ul><dl><dt>OL1-DL1</dt><dd>OL1-DD1</dd><dt>OL1-DL2</dt><dd>OL1-DD2</dd></dl></li><li aid:pstyle="ol-item" olnum="1" num="2">OL2<p>OL2-PARA</p></li></ol>
+<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1-OL1</li><li aid:pstyle="ol-item" olnum="2" num="2">OL1-OL2</li></ol><ul><li aid:pstyle="ul-item">OL1-UL1</li><li aid:pstyle="ul-item">OL1-UL2</li></ul><dl><dt>OL1-DL1</dt><dd>OL1-DD1</dd><dt>OL1-DL2</dt><dd>OL1-DD2</dd></dl></li><li aid:pstyle="ol-item" olnum="2" num="2">OL2<p>OL2-PARA</p></li></ol>
 EOS
     actual = compile_block(src)
     assert_equal expected, actual
@@ -1439,7 +1439,7 @@ OL1-UL1-PARA
 EOS
 
     expected = <<-EOS.chomp
-<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1-OL1<ul><li aid:pstyle="ul-item">OL1-OL1-UL1</li></ul><p>OL1-OL1-PARA</p></li><li aid:pstyle="ol-item" olnum="1" num="2">OL1-OL2</li></ol><ul><li aid:pstyle="ul-item">OL1-UL1<dl><dt>OL1-UL1-DL1</dt><dd>OL1-UL1-DD1</dd></dl><p>OL1-UL1-PARA</p></li><li aid:pstyle="ul-item">OL1-UL2</li></ul></li></ol>
+<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1<ol><li aid:pstyle="ol-item" olnum="1" num="1">OL1-OL1<ul><li aid:pstyle="ul-item">OL1-OL1-UL1</li></ul><p>OL1-OL1-PARA</p></li><li aid:pstyle="ol-item" olnum="2" num="2">OL1-OL2</li></ol><ul><li aid:pstyle="ul-item">OL1-UL1<dl><dt>OL1-UL1-DL1</dt><dd>OL1-UL1-DD1</dd></dl><p>OL1-UL1-PARA</p></li><li aid:pstyle="ul-item">OL1-UL2</li></ul></li></ol>
 EOS
     actual = compile_block(src)
     assert_equal expected, actual

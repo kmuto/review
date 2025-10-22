@@ -1,19 +1,52 @@
 # frozen_string_literal: true
 
-require 'review/ast/compiler'
-require 'review/ast/list_node'
-require 'review/ast/paragraph_node'
-require 'review/ast/text_node'
+# Copyright (c) 2024 Minero Aoki, Kenshi Muto
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+
+require_relative 'node'
+require_relative 'block_node'
+require_relative 'list_node'
+require_relative 'paragraph_node'
+require_relative 'text_node'
+require_relative 'inline_processor'
 
 module ReVIEW
-  module Renderer
+  module AST
+    # ListStructureNormalizer - Processes //beginchild and //endchild commands in AST
+    #
+    # This processor transforms the flat structure created by //beginchild and //endchild
+    # into proper nested list structures. It also handles definition list paragraph splitting.
+    #
+    # Processing:
+    # 1. Finds //beginchild and //endchild block pairs
+    # 2. Moves nodes between them into the last list item
+    # 3. Removes the //beginchild and //endchild block nodes
+    # 4. Merges consecutive lists of the same type
+    # 5. Splits definition list paragraphs into separate terms
+    #
+    # Execution Order (in AST::Compiler):
+    # 1. OlnumProcessor - Sets start_number on ordered lists
+    # 2. ListStructureNormalizer - Normalizes list structure (this class)
+    # 3. ListItemNumberingProcessor - Assigns item_number to each list item
+    #
+    # This processor only handles structural transformations and does not deal with
+    # item numbering. Item numbers are assigned later by ListItemNumberingProcessor
+    # based on the normalized structure.
+    #
+    # Usage:
+    #   ListStructureNormalizer.process(ast_root)
     class ListStructureNormalizer
-      def initialize(renderer)
-        @renderer = renderer
+      def self.process(ast_root)
+        new.process(ast_root)
       end
 
-      def normalize(node)
-        normalize_node(node)
+      # Process the AST to normalize list structures
+      def process(ast_root)
+        normalize_node(ast_root)
+        ast_root
       end
 
       private
@@ -140,6 +173,8 @@ module ReVIEW
           if child.is_a?(ReVIEW::AST::ListNode) &&
              merged.last.is_a?(ReVIEW::AST::ListNode) &&
              merged.last.list_type == child.list_type
+            # Merge the children from the second list into the first
+            # Note: item_number will be assigned later by ListItemNumberingProcessor
             merged.last.children.concat(child.children)
           else
             merged << child
@@ -188,12 +223,12 @@ module ReVIEW
         return [] if text.nil? || text.empty?
 
         temp_node = ReVIEW::AST::ParagraphNode.new(location: nil)
-        ast_compiler.inline_processor.parse_inline_elements(text, temp_node)
+        inline_processor.parse_inline_elements(text, temp_node)
         temp_node.children
       end
 
-      def ast_compiler
-        @renderer.ast_compiler
+      def inline_processor
+        @inline_processor ||= InlineProcessor.new(nil)
       end
     end
   end

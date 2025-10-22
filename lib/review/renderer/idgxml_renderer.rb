@@ -24,7 +24,6 @@
 # The markers are restored to actual newlines at the end of visit_document.
 require 'review/renderer/base'
 require 'review/renderer/rendering_context'
-require 'review/renderer/list_structure_normalizer'
 require 'review/htmlutils'
 require 'review/textutils'
 require 'review/sec_counter'
@@ -100,13 +99,9 @@ module ReVIEW
         # Initialize AST helpers
         @ast_indexer = nil
         @ast_compiler = nil
-        @list_structure_normalizer = nil
       end
 
       def visit_document(node)
-        # Normalize beginchild/endchild structure before any processing
-        normalize_ast_structure(node)
-
         # Build indexes using AST::Indexer
         if @chapter && !@ast_indexer
           require 'review/ast/indexer'
@@ -807,14 +802,6 @@ module ReVIEW
         ''
       end
 
-      def normalize_ast_structure(node)
-        list_structure_normalizer.normalize(node)
-      end
-
-      def list_structure_normalizer
-        @list_structure_normalizer ||= ListStructureNormalizer.new(self)
-      end
-
       def render_list(node, list_type)
         tag_name = list_tag_name(node, list_type)
 
@@ -850,10 +837,12 @@ module ReVIEW
       def render_ordered_items(node)
         start_number = @ol_num || node.start_number || 1
         current_number = start_number
+        olnum_counter = 1 # Counter for olnum attribute (always starts at 1 per list)
 
         items = node.children.map do |item|
-          rendered = render_ordered_item(item, current_number)
+          rendered = render_ordered_item(item, current_number, olnum_counter)
           current_number += 1
+          olnum_counter += 1
           rendered
         end
 
@@ -861,12 +850,12 @@ module ReVIEW
         items.join
       end
 
-      def render_ordered_item(item, current_number)
-        # Use item_number set by ListItemNumberingProcessor, fallback to current_number
-        olnum_attr = item.item_number || current_number
+      def render_ordered_item(item, current_number, olnum_value)
+        # olnum: sequential number within this list (always starts at 1)
+        # num: display number from source or calculated absolute number
         display_number = item.respond_to?(:number) && item.number ? item.number : current_number
         content = render_list_item_body(item)
-        %Q(<li aid:pstyle="ol-item" olnum="#{olnum_attr}" num="#{display_number}">#{content}</li>)
+        %Q(<li aid:pstyle="ol-item" olnum="#{olnum_value}" num="#{display_number}">#{content}</li>)
       end
 
       def render_definition_items(node)
