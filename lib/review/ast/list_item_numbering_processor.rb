@@ -17,9 +17,6 @@ module ReVIEW
     # ListItemNode in ordered lists (ol). The item number is calculated based on
     # the list's start_number (default: 1) and the item's position in the list.
     #
-    # This ensures that each list item has its correct number even after list
-    # merging operations in renderers like ListStructureNormalizer.
-    #
     # Usage:
     #   ListItemNumberingProcessor.process(ast_root)
     class ListItemNumberingProcessor
@@ -27,24 +24,15 @@ module ReVIEW
         new.process(ast_root)
       end
 
-      # Process the AST to assign item numbers
-      def process(ast_root)
-        process_node(ast_root)
-      end
-
-      private
-
-      def process_node(node)
-        # Process ordered lists
+      def process(node)
         if ordered_list_node?(node)
           assign_item_numbers(node)
         end
 
-        # Recursively process children
-        if node.respond_to?(:children)
-          node.children.each { |child| process_node(child) }
-        end
+        node.children.each { |child| process(child) }
       end
+
+      private
 
       def ordered_list_node?(node)
         node.is_a?(ListNode) && node.ol?
