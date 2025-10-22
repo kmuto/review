@@ -2120,20 +2120,6 @@ module ReVIEW
         @rendering_context = old_context
         result
       end
-
-      # Generate HTML footnotes from collected footnotes
-      # @param collector [FootnoteCollector] the footnote collector
-      # @return [String] HTML footnote output
-      def generate_footnotes_from_collector(collector)
-        return '' unless collector.any?
-
-        footnote_items = collector.map do |entry|
-          content = render_footnote_content(entry.node)
-          %Q(<div class="footnote" id="fn#{entry.number}">#{content}</div>)
-        end
-
-        %Q(<div class="footnotes">#{footnote_items.join("\n")}</div>)
-      end
     end
   end
 end
