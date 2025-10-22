@@ -21,6 +21,8 @@ module ReVIEW
     # - Generate appropriate footnote output for HTML
     # - Track footnote order and numbering
     class FootnoteCollector
+      include Enumerable
+
       # Footnote data structure
       FootnoteEntry = Struct.new(:node, :number, :content, keyword_init: true)
 
@@ -40,12 +42,6 @@ module ReVIEW
         @footnotes << entry
       end
 
-      # Check if any footnotes have been collected
-      # @return [Boolean] true if footnotes exist
-      def any?
-        !@footnotes.empty?
-      end
-
       # Get the number of collected footnotes
       # @return [Integer] number of footnotes
       def size
@@ -57,23 +53,10 @@ module ReVIEW
         @footnotes.clear
       end
 
-      # Get all footnote entries
-      # @return [Array<FootnoteEntry>] array of footnote entries
-      def entries
-        @footnotes.dup
-      end
-
       # Iterate over collected footnotes
       # @yield [FootnoteEntry] each footnote entry
       def each(&block)
         @footnotes.each(&block)
-      end
-
-      # Get footnote by number
-      # @param number [Integer] the footnote number
-      # @return [FootnoteEntry, nil] the footnote entry or nil if not found
-      def find_by_number(number)
-        @footnotes.find { |entry| entry.number == number }
       end
 
       # Get all footnote numbers in order
@@ -113,21 +96,6 @@ module ReVIEW
           numbers_str = numbers.join(', ')
           "FootnoteCollector[#{size} footnotes: #{numbers_str}]"
         end
-      end
-
-      # Merge footnotes from another collector
-      # @param other [FootnoteCollector] another collector
-      def merge!(other)
-        @footnotes.concat(other.entries)
-        self
-      end
-
-      # Create a copy with the same footnotes
-      # @return [FootnoteCollector] a new collector with copied footnotes
-      def dup
-        new_collector = FootnoteCollector.new
-        new_collector.merge!(self)
-        new_collector
       end
     end
   end
