@@ -73,10 +73,10 @@ module ReVIEW
         @first_line_num = nil
 
         # Initialize table state
-        @tsize = nil
         @tablewidth = nil
         @table_id = nil
         @col = 0
+        @table_node_cellwidth = nil # Temporarily stores cellwidth from TableNode during table processing
 
         # Initialize equation counters
         @texblockequation = 0
@@ -571,18 +571,9 @@ module ReVIEW
           @first_line_num = node.args.first&.to_i
           ''
         when 'tsize'
-          # Set table size for next table
-          # Handle target specification like //tsize[|idgxml|2]
-          tsize_arg = node.args.first
-          if tsize_arg && tsize_arg.start_with?('|')
-            # Parse target specification
-            targets, value = parse_tsize_target(tsize_arg)
-            if targets.nil? || targets.include?('idgxml')
-              @tsize = value
-            end
-          else
-            @tsize = tsize_arg
-          end
+          # tsize is now processed by TsizeProcessor during AST compilation
+          # The tsize block nodes are removed from AST by TsizeProcessor,
+          # so this case should not be reached. Return empty string for safety.
           ''
         when 'graph'
           visit_graph(node)
@@ -1935,6 +1926,11 @@ module ReVIEW
                   end
 
         @table_id = node.id
+
+        # Get cellwidth from TableNode (set by TsizeProcessor) for use in generate_table_rows
+        # This is a raw array of width specifications (e.g., ["10", "20", "30"] for simple format)
+        @table_node_cellwidth = node.cellwidth
+
         result << generate_table_rows(rows_data, node.header_rows.length)
 
         result << '</tbody>'
@@ -1945,9 +1941,6 @@ module ReVIEW
         end
 
         result << '</table>'
-
-        # Clear tsize after use
-        @tsize = nil
 
         result.join("\n") + "\n"
       end
@@ -2001,10 +1994,25 @@ module ReVIEW
         # Calculate cell widths
         cellwidth = []
         if @tablewidth
-          if @tsize.nil?
+          if @table_node_cellwidth.nil?
+            # No tsize specified - distribute width equally
             @col.times { |n| cellwidth[n] = @tablewidth / @col }
           else
-            cellwidth = @tsize.split(/\s*,\s*/)
+            # Extract numeric values from cellwidth specifications
+            # For simple format: ["p{10mm}", "p{20mm}", "p{30mm}"] -> ["10", "20", "30"]
+            # For IDGXML simple format: ["10", "20", "30"] (already numeric)
+            cellwidth = @table_node_cellwidth.map do |spec|
+              # Extract numeric part from p{Nmm} format or use as-is if already numeric
+              if /\A(\d+(?:\.\d+)?)\z/.match?(spec)
+                spec
+              elsif spec =~ /p\{(\d+(?:\.\d+)?)mm\}/
+                $1
+              else # rubocop:disable Style/EmptyElse
+                # Unknown format - use default
+                nil
+              end
+            end.compact
+
             totallength = 0
             cellwidth.size.times do |n|
               cellwidth[n] = cellwidth[n].to_f / @book.config['pt_to_mm_unit']

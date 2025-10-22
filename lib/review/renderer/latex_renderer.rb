@@ -48,10 +48,6 @@ module ReVIEW
         # Initialize first line number state like LATEXBuilder
         @first_line_num = nil
 
-        # Initialize table column width state like Builder
-        @tsize = nil
-        @cellwidth = nil
-
         # Initialize RenderingContext for cleaner state management
         @rendering_context = RenderingContext.new(:document)
 
@@ -268,17 +264,17 @@ module ReVIEW
           old_context = @rendering_context
           @rendering_context = table_context
 
-          # Calculate column count from first row
+          # Get column specification from TableNode (set by TsizeProcessor)
+          # or use default values if not set
+          col_spec = node.col_spec || node.default_col_spec
+          cellwidth = node.cellwidth || node.default_cellwidth
+
+          # Store cellwidth temporarily for visit_table_cell_with_index to access
+          # This is needed because cell rendering happens in nested visitor calls
+          @current_table_cellwidth = cellwidth
+
+          # Get all rows for processing
           all_rows = node.header_rows + node.body_rows
-          col_count = all_rows.first ? all_rows.first.children.length : 1
-
-          # Generate column specification and cellwidth array using TableColumnWidthParser
-          parsed = TableColumnWidthParser.parse(@tsize, col_count)
-          col_spec = parsed[:col_spec]
-          @cellwidth = parsed[:cellwidth]
-
-          # Clear @tsize after use like Builder does
-          @tsize = nil
 
           result = []
 
@@ -327,9 +323,6 @@ module ReVIEW
 
           # Restore the previous context
           @rendering_context = old_context
-
-          # Clear @cellwidth after use like LATEXBuilder does
-          @cellwidth = nil
 
           result.join("\n") + "\n"
         end
@@ -431,14 +424,14 @@ module ReVIEW
         # Note: table context should already be set by visit_table
         content = render_children(node)
 
-        # Get cellwidth for this column if available
-        cellwidth = @cellwidth && @cellwidth[col_index] ? @cellwidth[col_index] : 'l'
+        # Get cellwidth for this column from current table's cellwidth array
+        cellwidth = @current_table_cellwidth && @current_table_cellwidth[col_index] ? @current_table_cellwidth[col_index] : 'l'
 
         # Check if content contains line breaks (from @<br>{})
         # Like LATEXBuilder: use \newline{} for fixed-width cells (p{...}), otherwise use \shortstack
         if /\\\\/.match?(content)
-          # Check if cellwidth is fixed-width format using TableColumnWidthParser
-          if TableColumnWidthParser.fixed_width?(cellwidth)
+          # Check if cellwidth is fixed-width format (contains `{`)
+          if AST::TableColumnWidthParser.fixed_width?(cellwidth)
             # Fixed-width cell: replace \\\n with \newline{}
             content = content.gsub("\\\\\n", '\\newline{}')
             if node.cell_type == :th
@@ -675,12 +668,9 @@ module ReVIEW
           # firstlinenum itself produces no output
           ''
         when 'tsize'
-          # tsize sets table column widths for subsequent tables
-          # Parse and store the value in @tsize like Builder does
-          if node.args.first
-            process_tsize_command(node.args.first)
-          end
-          # tsize itself produces no output
+          # tsize is now processed by TsizeProcessor during AST compilation
+          # The tsize block nodes are removed from AST by TsizeProcessor,
+          # so this case should not be reached. Return empty string for safety.
           ''
         when 'texequation'
           # Handle mathematical equation blocks - output content directly
@@ -689,7 +679,7 @@ module ReVIEW
         when 'comment'
           # Handle comment blocks - only output in draft mode
           visit_comment_block(node)
-        when 'beginchild', 'endchild'
+        when 'beginchild', 'endchild' # rubocop:disable Lint/DuplicateBranch
           # Child nesting control commands - produce no output
           ''
         when 'centering'
@@ -2522,23 +2512,6 @@ module ReVIEW
         # Convert \n to actual newlines
         content.gsub('\\n', "\n")
       end
-
-      # Process tsize command - set table column widths for subsequent tables
-      # This implements the same logic as Builder#tsize
-      def process_tsize_command(str)
-        if matched = str.match(/\A\|(.*?)\|(.*)/)
-          builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }
-          # Check if latex builder is in the target list
-          if builders.include?('latex')
-            @tsize = matched[2]
-          end
-        else
-          @tsize = str
-        end
-      end
     end
   end
 end
-
-# Load nested classes
-require_relative 'latex_renderer/table_column_width_parser'

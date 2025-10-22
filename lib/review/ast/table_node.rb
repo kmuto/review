@@ -7,15 +7,17 @@ require 'review/ast/json_serializer'
 module ReVIEW
   module AST
     class TableNode < Node
-      attr_accessor :caption_node
+      attr_accessor :caption_node, :col_spec, :cellwidth
       attr_reader :caption, :table_type, :metric
 
-      def initialize(location: nil, id: nil, caption: nil, caption_node: nil, table_type: :table, metric: nil, **kwargs)
+      def initialize(location: nil, id: nil, caption: nil, caption_node: nil, table_type: :table, metric: nil, col_spec: nil, cellwidth: nil, **kwargs) # rubocop:disable Metrics/ParameterLists
         super(location: location, id: id, **kwargs)
         @caption_node = caption_node
         @caption = caption
         @table_type = table_type # :table, :emtable, :imgtable
         @metric = metric
+        @col_spec = col_spec # Column specification string (e.g., "|l|c|r|")
+        @cellwidth = cellwidth # Array of column width specifications
         @header_rows = []
         @body_rows = []
       end
@@ -41,6 +43,32 @@ module ReVIEW
         caption || caption_node&.to_text || ''
       end
 
+      # Get column count from table rows
+      def column_count
+        all_rows = header_rows + body_rows
+        all_rows.first&.children&.length || 1
+      end
+
+      # Get default column specification (left-aligned with borders)
+      def default_col_spec
+        '|' + ('l|' * column_count)
+      end
+
+      # Get default cellwidth array (all left-aligned)
+      def default_cellwidth
+        ['l'] * column_count
+      end
+
+      # Parse tsize value and set col_spec and cellwidth on this table
+      # @param tsize_value [String] tsize specification
+      def parse_and_set_tsize(tsize_value)
+        require_relative('table_column_width_parser')
+        parser = TableColumnWidthParser.new(tsize_value, column_count)
+        result = parser.parse
+        @col_spec = result.col_spec
+        @cellwidth = result.cellwidth
+      end
+
       def to_h
         result = super.merge(
           caption: caption,
@@ -50,6 +78,8 @@ module ReVIEW
           body_rows: body_rows.map(&:to_h)
         )
         result[:metric] = metric if metric
+        result[:col_spec] = col_spec if col_spec
+        result[:cellwidth] = cellwidth if cellwidth
         result
       end
 
@@ -73,6 +103,8 @@ module ReVIEW
         hash[:header_rows] = header_rows.map { |row| row.serialize_to_hash(options) }
         hash[:body_rows] = body_rows.map { |row| row.serialize_to_hash(options) }
         hash[:metric] = metric if metric
+        hash[:col_spec] = col_spec if col_spec
+        hash[:cellwidth] = cellwidth if cellwidth
 
         hash
       end

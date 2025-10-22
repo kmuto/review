@@ -15,6 +15,7 @@ class IdgxmlRendererTest < Test::Unit::TestCase
     @config = ReVIEW::Configure.values
     @config['secnolevel'] = 2
     @config['tableopt'] = '10'
+    @config['builder'] = 'idgxml' # Set builder for tsize processing
     @book = Book::Base.new
     @book.config = @config
     @log_io = StringIO.new
