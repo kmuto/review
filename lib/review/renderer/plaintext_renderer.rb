@@ -1,0 +1,686 @@
+# frozen_string_literal: true
+
+# Copyright (c) 2024 Minero Aoki, Kenshi Muto
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+
+require 'review/renderer/base'
+require 'review/textutils'
+require 'review/loggable'
+
+module ReVIEW
+  module Renderer
+    class PlaintextRenderer < Base
+      include ReVIEW::TextUtils
+      include ReVIEW::Loggable
+
+      def initialize(chapter)
+        super
+        @blank_seen = true
+        @first_line_num = nil
+        @ol_num = nil
+        @logger = ReVIEW.logger
+      end
+
+      def target_name
+        'plaintext'
+      end
+
+      def visit_document(node)
+        render_children(node)
+      end
+
+      def visit_headline(node)
+        level = node.level
+        caption = render_caption_inline(node.caption_node)
+
+        # Get headline prefix like PLAINTEXTBuilder
+        prefix = headline_prefix(level)
+        "#{prefix}#{caption}\n"
+      end
+
+      def visit_paragraph(node)
+        content = render_children(node)
+        # Join lines to single paragraph like PLAINTEXTBuilder's join_lines_to_paragraph
+        lines = content.split("\n")
+        result = lines.join
+        "#{result}\n"
+      end
+
+      def visit_list(node)
+        result = +''
+
+        case node.list_type
+        when :ul
+          node.children.each do |item|
+            result += visit_list_item(item, :ul)
+          end
+        when :ol
+          # Reset ol counter
+          @ol_num = node.start_number || 1
+          node.children.each do |item|
+            result += visit_list_item(item, :ol)
+            @ol_num += 1
+          end
+          @ol_num = nil
+        when :dl
+          node.children.each do |item|
+            result += visit_definition_item(item)
+          end
+        else
+          raise NotImplementedError, "PlaintextRenderer does not support list_type #{node.list_type}."
+        end
+
+        "\n#{result}\n"
+      end
+
+      def visit_list_item(node, type = :ul)
+        content = render_children(node)
+        # Remove paragraph newlines and join
+        text = content.gsub(/\n+/, ' ').strip
+
+        case type
+        when :ul
+          "#{text}\n"
+        when :ol
+          "#{@ol_num}　#{text}\n"
+        end
+      end
+
+      def visit_definition_item(node)
+        # Handle definition term
+        term = if node.term_children && !node.term_children.empty?
+                 node.term_children.map { |child| visit(child) }.join
+               else
+                 ''
+               end
+
+        # Handle definition content
+        definition_parts = node.children.map { |child| visit(child) }
+        definition = definition_parts.join.delete("\n")
+
+        "#{term}\n#{definition}\n"
+      end
+
+      def visit_code_block(node) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+        result = +''
+
+        # Add caption if present (at top or bottom based on config)
+        caption = render_caption_inline(node.caption_node)
+
+        # Check if this is a numbered list/listnum block
+        lines_content = render_children(node)
+        if node.code_type&.to_sym == :listnum || node.code_type&.to_sym == :emlistnum
+          # Numbered code block
+          lines = lines_content.split("\n")
+          lines.pop if lines.last && lines.last.empty?
+
+          first_line_number = line_num
+
+          result += "\n" if caption_top?('list') && !caption.empty?
+          result += "#{caption}\n" if caption_top?('list') && !caption.empty?
+          result += "\n" if caption_top?('list') && !caption.empty?
+
+          lines.each_with_index do |line, i|
+            result += "#{(i + first_line_number).to_s.rjust(2)}: #{detab(line)}\n"
+          end
+
+          result += "\n" unless caption_top?('list')
+          result += "#{caption}\n" unless caption_top?('list') || caption.empty?
+        elsif node.code_type&.to_sym == :list
+          # Regular list code block with ID and caption
+
+          result += "\n" if caption_top?('list') && !caption.empty?
+          result += generate_list_header(node.id, caption) + "\n" if caption_top?('list') && !caption.empty?
+          result += "\n" if caption_top?('list') && !caption.empty?
+
+          lines_content.each_line do |line|
+            result += detab(line.chomp) + "\n"
+          end
+
+          result += "\n" unless caption_top?('list')
+          result += generate_list_header(node.id, caption) + "\n" unless caption_top?('list') || caption.empty?
+        else
+          # Regular code block (emlist, cmd, source, etc.)
+
+          result += "\n" if caption_top?('list') && !caption.empty?
+          result += "#{caption}\n" if caption_top?('list') && !caption.empty?
+
+          lines_content.each_line do |line|
+            result += detab(line.chomp) + "\n"
+          end
+
+          result += "#{caption}\n" unless caption_top?('list') || caption.empty?
+        end
+        result += "\n"
+
+        result
+      end
+
+      def visit_code_line(node)
+        line_content = render_children(node)
+        # Add newline after each line
+        line_content + "\n"
+      end
+
+      def visit_table(node)
+        result = +''
+
+        # Check if this is an imgtable
+        if node.table_type == :imgtable
+          return render_imgtable(node)
+        end
+
+        # Add caption
+        caption = render_caption_inline(node.caption_node)
+        unless caption.empty?
+          result += "\n"
+          result += if node.id
+                      generate_table_header(node.id, caption) + "\n"
+                    else
+                      "#{caption}\n"
+                    end
+          result += "\n" if caption_top?('table')
+        end
+
+        # Process table rows
+        all_rows = node.header_rows + node.body_rows
+        all_rows.each do |row|
+          result += visit_table_row(row)
+        end
+
+        result += "\n" unless caption_top?('table')
+        result += "\n"
+
+        result
+      end
+
+      def visit_table_row(node)
+        cells = node.children.map { |cell| render_children(cell) }
+        cells.join("\t") + "\n"
+      end
+
+      def visit_table_cell(node)
+        render_children(node)
+      end
+
+      def visit_image(node)
+        result = +''
+        caption = render_caption_inline(node.caption_node)
+
+        result += "\n"
+        if node.id && @chapter
+          result += if get_chap
+                      "#{I18n.t('image')}#{I18n.t('format_number', [get_chap, @chapter.image(node.id).number])}#{I18n.t('caption_prefix_idgxml')}#{caption}\n"
+                    else
+                      "#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [@chapter.image(node.id).number])}#{I18n.t('caption_prefix_idgxml')}#{caption}\n"
+                    end
+        else
+          result += "図　#{caption}\n" unless caption.empty?
+        end
+        result += "\n"
+
+        result
+      end
+
+      def visit_minicolumn(node)
+        result = +''
+        caption = render_caption_inline(node.caption_node)
+
+        result += "\n"
+        result += "#{caption}\n" unless caption.empty?
+        result += render_children(node)
+        result += "\n"
+
+        result
+      end
+
+      def visit_column(node)
+        result = +''
+        caption = render_caption_inline(node.caption_node)
+
+        result += "\n"
+        result += "#{caption}\n" unless caption.empty?
+        result += render_children(node)
+        result += "\n"
+
+        result
+      end
+
+      def visit_block(node)
+        case node.block_type.to_sym
+        when :quote, :blockquote
+          visit_quote_block(node)
+        when :comment
+          # Comments are not rendered in plaintext
+          ''
+        when :blankline
+          "\n"
+        when :pagebreak # rubocop:disable Lint/DuplicateBranch
+          # Page breaks are not meaningful in plaintext
+          ''
+        when :label # rubocop:disable Lint/DuplicateBranch
+          # Labels are not rendered
+          ''
+        when :tsize # rubocop:disable Lint/DuplicateBranch
+          # Table size control is not meaningful in plaintext
+          ''
+        when :firstlinenum
+          # Set line number for next code block
+          visit_firstlinenum_block(node)
+        when :flushright
+          visit_flushright_block(node)
+        when :centering
+          visit_centering_block(node)
+        when :bibpaper
+          visit_bibpaper_block(node)
+        else
+          # Generic block handling (note, memo, tip, info, warning, etc.)
+          visit_generic_block(node)
+        end
+      end
+
+      def visit_quote_block(node)
+        result = +"\n"
+        result += render_children(node)
+        result += "\n"
+        result
+      end
+
+      def visit_firstlinenum_block(node)
+        line_num = node.args.first&.to_i || 1
+        firstlinenum(line_num)
+        ''
+      end
+
+      def visit_flushright_block(node)
+        result = +"\n"
+        result += render_children(node)
+        result += "\n"
+        result
+      end
+
+      def visit_centering_block(node)
+        result = +"\n"
+        result += render_children(node)
+        result += "\n"
+        result
+      end
+
+      def visit_bibpaper_block(node)
+        id = node.args[0]
+        caption_text = node.args[1]
+
+        result = +''
+        if id && @chapter
+          bibpaper_number = @chapter.bibpaper(id).number
+          result += "#{bibpaper_number} "
+        end
+        result += "#{caption_text}\n" if caption_text
+
+        content = render_children(node)
+        result += "#{content}\n" unless content.strip.empty?
+
+        result
+      end
+
+      def visit_generic_block(node)
+        result = +''
+        caption = render_caption_inline(node.caption_node) if node.respond_to?(:caption_node)
+
+        result += "\n"
+        result += "#{caption}\n" if caption && !caption.empty?
+        result += render_children(node)
+        result += "\n"
+
+        result
+      end
+
+      def visit_tex_equation(node)
+        result = +''
+        content = node.content
+
+        result += "\n"
+
+        if node.id? && @chapter
+          caption = render_caption_inline(node.caption_node)
+          if get_chap
+            result += "#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(node.id).number])}#{I18n.t('caption_prefix_idgxml')}#{caption}\n" if caption_top?('equation')
+          elsif caption_top?('equation')
+            result += "#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(node.id).number])}#{I18n.t('caption_prefix_idgxml')}#{caption}\n"
+          end
+        end
+
+        result += "#{content}\n"
+
+        if node.id? && @chapter
+          caption = render_caption_inline(node.caption_node)
+          if get_chap
+            result += "#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(node.id).number])}#{I18n.t('caption_prefix_idgxml')}#{caption}\n" unless caption_top?('equation')
+          else
+            result += "#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(node.id).number])}#{I18n.t('caption_prefix_idgxml')}#{caption}\n" unless caption_top?('equation')
+          end
+        end
+
+        result += "\n"
+        result
+      end
+
+      def visit_inline(node)
+        type = node.inline_type
+        content = render_children(node)
+
+        # Most inline elements just return content (like PLAINTEXTBuilder's nofunc_text)
+        method_name = "render_inline_#{type}"
+        if respond_to?(method_name, true)
+          send(method_name, type, content, node)
+        else
+          # Default: return content as-is
+          content
+        end
+      end
+
+      def visit_text(node)
+        node.content || ''
+      end
+
+      def visit_reference(node)
+        node.content || ''
+      end
+
+      def visit_footnote(node)
+        footnote_id = node.id
+        content = render_children(node)
+        footnote_number = @chapter&.footnote(footnote_id)&.number || '??'
+
+        "注#{footnote_number} #{content}\n"
+      end
+
+      def visit_embed(node)
+        # Check if content should be output for this renderer
+        return '' unless node.targeted_for?('plaintext') || node.targeted_for?('text')
+
+        # Get processed content and convert \\n to actual newlines
+        content = node.content || ''
+        content.gsub('\\n', "\n") + "\n"
+      end
+
+      # Inline rendering methods
+      def render_inline_fn(_type, _content, node)
+        fn_id = node.reference_id
+        return '' unless fn_id && @chapter
+
+        footnote_number = @chapter.footnote(fn_id).number
+        " 注#{footnote_number} "
+      rescue ReVIEW::KeyError
+        ''
+      end
+
+      def render_inline_kw(_type, _content, node)
+        if node.args.length >= 2
+          word = node.args[0]
+          alt = node.args[1].strip
+          "#{word}（#{alt}）"
+        else
+          node.args.first || ''
+        end
+      end
+
+      def render_inline_href(_type, _content, node)
+        args = node.args || []
+        if args.length >= 2
+          url = args[0]
+          label = args[1]
+          "#{label}（#{url}）"
+        else
+          args.first || ''
+        end
+      end
+
+      def render_inline_ruby(_type, _content, node)
+        # Ruby base text only, ignore ruby annotation
+        node.args.first || ''
+      end
+
+      def render_inline_br(_type, _content, _node)
+        "\n"
+      end
+
+      def render_inline_raw(_type, content, _node)
+        # Convert \n to actual newlines like PLAINTEXTBuilder
+        content.gsub('\\n', "\n")
+      end
+
+      def render_inline_hidx(_type, _content, _node)
+        ''
+      end
+
+      def render_inline_icon(_type, _content, _node)
+        ''
+      end
+
+      def render_inline_comment(_type, _content, _node)
+        ''
+      end
+
+      def render_inline_balloon(_type, content, _node)
+        "←#{content}"
+      end
+
+      def render_inline_uchar(_type, content, _node)
+        [content.to_i(16)].pack('U')
+      end
+
+      def render_inline_bib(_type, _content, node)
+        id = node.args.first
+        return '' unless id && @chapter
+
+        @chapter.bibpaper(id).number.to_s
+      rescue ReVIEW::KeyError
+        ''
+      end
+
+      def render_inline_hd(_type, _content, node)
+        # Headline reference
+        id = node.reference_id
+        return '' unless id
+
+        # Extract chapter and headline ID
+        m = /\A([^|]+)\|(.+)/.match(id)
+        chapter = if m && m[1]
+                    find_chapter_by_id(m[1])
+                  else
+                    @chapter
+                  end
+        headline_id = m ? m[2] : id
+
+        return '' unless chapter
+
+        n = chapter.headline_index.number(headline_id)
+        caption = chapter.headline(headline_id).caption
+
+        if n.present? && chapter.number && over_secnolevel?(n, chapter)
+          I18n.t('hd_quote', [n, caption])
+        else
+          I18n.t('hd_quote_without_number', caption)
+        end
+      rescue ReVIEW::KeyError
+        ''
+      end
+
+      def render_inline_labelref(_type, _content, _node)
+        '●'
+      end
+
+      alias_method :render_inline_ref, :render_inline_labelref
+
+      def render_inline_pageref(_type, _content, _node)
+        '●ページ'
+      end
+
+      def render_inline_chap(_type, content, _node)
+        content
+      end
+
+      def render_inline_chapref(_type, _content, node)
+        id = node.reference_id
+        return '' unless id && @book
+
+        if @book.config.check_version('2', exception: false)
+          # Backward compatibility
+          chs = ['', '「', '」']
+          if @book.config['chapref']
+            chs2 = @book.config['chapref'].split(',')
+            if chs2.size == 3
+              chs = chs2
+            end
+          end
+          "#{chs[0]}#{@book.chapter_index.number(id)}#{chs[1]}#{@book.chapter_index.title(id)}#{chs[2]}"
+        else
+          @book.chapter_index.display_string(id)
+        end
+      rescue ReVIEW::KeyError
+        ''
+      end
+
+      # Default inline rendering - just return content
+      alias_method :render_inline_b, :render_inline_element
+      alias_method :render_inline_strong, :render_inline_element
+      alias_method :render_inline_i, :render_inline_element
+      alias_method :render_inline_em, :render_inline_element
+      alias_method :render_inline_tt, :render_inline_element
+      alias_method :render_inline_code, :render_inline_element
+      alias_method :render_inline_ttb, :render_inline_element
+      alias_method :render_inline_ttbold, :render_inline_element
+      alias_method :render_inline_tti, :render_inline_element
+      alias_method :render_inline_ttibold, :render_inline_element
+      alias_method :render_inline_u, :render_inline_element
+      alias_method :render_inline_bou, :render_inline_element
+      alias_method :render_inline_keytop, :render_inline_element
+      alias_method :render_inline_m, :render_inline_element
+      alias_method :render_inline_ami, :render_inline_element
+      alias_method :render_inline_sup, :render_inline_element
+      alias_method :render_inline_sub, :render_inline_element
+      alias_method :render_inline_hint, :render_inline_element
+      alias_method :render_inline_maru, :render_inline_element
+      alias_method :render_inline_idx, :render_inline_element
+      alias_method :render_inline_ins, :render_inline_element
+      alias_method :render_inline_del, :render_inline_element
+      alias_method :render_inline_tcy, :render_inline_element
+
+      # Helper methods
+      def render_caption_inline(caption_node)
+        caption_node ? render_children(caption_node) : ''
+      end
+
+      def firstlinenum(num)
+        @first_line_num = num.to_i
+      end
+
+      def line_num
+        return 1 unless @first_line_num
+
+        line_n = @first_line_num
+        @first_line_num = nil
+        line_n
+      end
+
+      def headline_prefix(level)
+        return '' unless @chapter
+        return '' unless config['secnolevel'] && config['secnolevel'] > 0
+
+        # Generate headline prefix like PLAINTEXTBuilder
+        case level
+        when 1
+          if @chapter.number
+            "第#{@chapter.number}章　"
+          else
+            ''
+          end
+        when 2, 3, 4, 5
+          # For subsections, use section counter if available
+          ''
+        else # rubocop:disable Lint/DuplicateBranch
+          ''
+        end
+      end
+
+      def generate_list_header(id, caption)
+        return caption unless id && @chapter
+
+        list_item = @chapter.list(id)
+        if get_chap
+          "#{I18n.t('list')}#{I18n.t('format_number', [get_chap, list_item.number])}#{I18n.t('caption_prefix_idgxml')}#{caption}"
+        else
+          "#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [list_item.number])}#{I18n.t('caption_prefix_idgxml')}#{caption}"
+        end
+      rescue ReVIEW::KeyError
+        caption
+      end
+
+      def generate_table_header(id, caption)
+        return caption unless id && @chapter
+
+        table_item = @chapter.table(id)
+        if get_chap
+          "#{I18n.t('table')}#{I18n.t('format_number', [get_chap, table_item.number])}#{I18n.t('caption_prefix_idgxml')}#{caption}"
+        else
+          "#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [table_item.number])}#{I18n.t('caption_prefix_idgxml')}#{caption}"
+        end
+      rescue ReVIEW::KeyError
+        caption
+      end
+
+      def render_imgtable(node)
+        result = +''
+        caption = render_caption_inline(node.caption_node)
+
+        result += "\n"
+        if node.id && !caption.empty?
+          result += generate_table_header(node.id, caption) + "\n"
+          result += "\n"
+        end
+        result += "\n"
+
+        result
+      end
+
+      def get_chap(chapter = @chapter)
+        return nil unless chapter
+        return nil unless config['secnolevel'] && config['secnolevel'] > 0
+        return nil if chapter.number.nil? || chapter.number.to_s.empty?
+
+        if chapter.is_a?(ReVIEW::Book::Part)
+          I18n.t('part_short', chapter.number)
+        else
+          chapter.format_number(nil)
+        end
+      end
+
+      def find_chapter_by_id(chapter_id)
+        return nil unless @book
+
+        begin
+          item = @book.chapter_index[chapter_id]
+          return item.content if item.respond_to?(:content)
+        rescue ReVIEW::KeyError
+          # fall back to contents search
+        end
+
+        Array(@book.contents).find { |chap| chap.id == chapter_id }
+      end
+
+      def over_secnolevel?(n, _chapter = @chapter)
+        secnolevel = config['secnolevel'] || 0
+        secnolevel >= n.to_s.split('.').size
+      end
+
+      def escape(str)
+        # Plaintext doesn't need escaping
+        str.to_s
+      end
+    end
+  end
+end

@@ -27,6 +27,7 @@ module ReVIEW
     autoload :Base, 'review/renderer/base'
     autoload :HtmlRenderer, 'review/renderer/html_renderer'
     autoload :LatexRenderer, 'review/renderer/latex_renderer'
+    autoload :PlaintextRenderer, 'review/renderer/plaintext_renderer'
     # NOTE: JSONRenderer removed - use ReVIEW::AST::JSONSerializer instead
   end
 end
