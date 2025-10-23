@@ -260,7 +260,6 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
   end
 
   def test_syntax_book_pre01
-    # pend('pre01.re has unknown list references that cause errors')
     file_path = File.join(__dir__, '../../samples/syntax-book/pre01.re')
     source = File.read(file_path)
 
@@ -280,7 +279,6 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
   end
 
   def test_syntax_book_appA
-    # pend('appA.re has unknown list references that cause errors')
     file_path = File.join(__dir__, '../../samples/syntax-book/appA.re')
     source = File.read(file_path)
 
@@ -335,5 +333,101 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     end
 
     assert diff.same_hash?, 'bib.re should produce equivalent HTML'
+  end
+
+  # Tests with actual Re:VIEW files from samples/debug-book
+  def test_debug_book_advanced_features
+    file_path = File.join(__dir__, '../../samples/debug-book/advanced_features.re')
+    source = File.read(file_path)
+
+    builder_html = @converter.convert_with_builder(source)
+    renderer_html = @converter.convert_with_renderer(source)
+
+    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+
+    unless diff.same_hash?
+      puts 'advanced_features.re differences found:'
+      puts "Builder HTML length: #{builder_html.length}"
+      puts "Renderer HTML length: #{renderer_html.length}"
+      puts diff.pretty_diff
+    end
+
+    assert diff.same_hash?, 'advanced_features.re should produce equivalent HTML'
+  end
+
+  def test_debug_book_comprehensive
+    file_path = File.join(__dir__, '../../samples/debug-book/comprehensive.re')
+    source = File.read(file_path)
+
+    builder_html = @converter.convert_with_builder(source)
+    renderer_html = @converter.convert_with_renderer(source)
+
+    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+
+    unless diff.same_hash?
+      puts 'comprehensive.re differences found:'
+      puts "Builder HTML length: #{builder_html.length}"
+      puts "Renderer HTML length: #{renderer_html.length}"
+      puts diff.pretty_diff
+    end
+
+    assert diff.same_hash?, 'comprehensive.re should produce equivalent HTML'
+  end
+
+  def test_debug_book_edge_cases_test
+    file_path = File.join(__dir__, '../../samples/debug-book/edge_cases_test.re')
+    source = File.read(file_path)
+
+    builder_html = @converter.convert_with_builder(source)
+    renderer_html = @converter.convert_with_renderer(source)
+
+    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+
+    unless diff.same_hash?
+      puts 'edge_cases_test.re differences found:'
+      puts "Builder HTML length: #{builder_html.length}"
+      puts "Renderer HTML length: #{renderer_html.length}"
+      puts diff.pretty_diff
+    end
+
+    assert diff.same_hash?, 'edge_cases_test.re should produce equivalent HTML'
+  end
+
+  def test_debug_book_extreme_features
+    file_path = File.join(__dir__, '../../samples/debug-book/extreme_features.re')
+    source = File.read(file_path)
+
+    builder_html = @converter.convert_with_builder(source)
+    renderer_html = @converter.convert_with_renderer(source)
+
+    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+
+    unless diff.same_hash?
+      puts 'extreme_features.re differences found:'
+      puts "Builder HTML length: #{builder_html.length}"
+      puts "Renderer HTML length: #{renderer_html.length}"
+      puts diff.pretty_diff
+    end
+
+    assert diff.same_hash?, 'extreme_features.re should produce equivalent HTML'
+  end
+
+  def test_debug_book_multicontent_test
+    file_path = File.join(__dir__, '../../samples/debug-book/multicontent_test.re')
+    source = File.read(file_path)
+
+    builder_html = @converter.convert_with_builder(source)
+    renderer_html = @converter.convert_with_renderer(source)
+
+    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+
+    unless diff.same_hash?
+      puts 'multicontent_test.re differences found:'
+      puts "Builder HTML length: #{builder_html.length}"
+      puts "Renderer HTML length: #{renderer_html.length}"
+      puts diff.pretty_diff
+    end
+
+    assert diff.same_hash?, 'multicontent_test.re should produce equivalent HTML'
   end
 end
