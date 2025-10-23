@@ -29,7 +29,7 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
     if result.different?
       puts "Builder LaTeX: #{builder_latex.inspect}"
       puts "Renderer LaTeX: #{renderer_latex.inspect}"
-      puts "Differences: #{result.differences.inspect}"
+      puts result.pretty_diff
     end
 
     assert result.equal?, 'Simple paragraph should produce equivalent LaTeX'
@@ -46,7 +46,7 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
     if result.different?
       puts "Builder LaTeX: #{builder_latex.inspect}"
       puts "Renderer LaTeX: #{renderer_latex.inspect}"
-      puts "Differences: #{result.differences.inspect}"
+      puts result.pretty_diff
     end
 
     assert result.equal?, 'Headline should produce equivalent LaTeX'
@@ -63,7 +63,7 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
     if result.different?
       puts "Builder LaTeX: #{builder_latex.inspect}"
       puts "Renderer LaTeX: #{renderer_latex.inspect}"
-      puts "Differences: #{result.differences.inspect}"
+      puts result.pretty_diff
     end
 
     assert result.equal?
@@ -86,7 +86,7 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
     if result.different?
       puts "Builder LaTeX: #{builder_latex.inspect}"
       puts "Renderer LaTeX: #{renderer_latex.inspect}"
-      puts "Differences: #{result.differences.inspect}"
+      puts result.pretty_diff
     end
 
     assert result.equal?
@@ -110,7 +110,7 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
     if result.different?
       puts "Builder LaTeX: #{builder_latex.inspect}"
       puts "Renderer LaTeX: #{renderer_latex.inspect}"
-      puts "Differences: #{result.differences.inspect}"
+      puts result.pretty_diff
     end
 
     assert result.equal?
@@ -131,7 +131,7 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
     if result.different?
       puts "Builder LaTeX: #{builder_latex.inspect}"
       puts "Renderer LaTeX: #{renderer_latex.inspect}"
-      puts "Differences: #{result.differences.inspect}"
+      puts result.pretty_diff
     end
 
     assert result.equal?
@@ -152,7 +152,7 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
     if result.different?
       puts "Builder LaTeX: #{builder_latex.inspect}"
       puts "Renderer LaTeX: #{renderer_latex.inspect}"
-      puts "Differences: #{result.differences.inspect}"
+      puts result.pretty_diff
     end
 
     assert result.equal?
@@ -195,11 +195,9 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
       puts "Builder LaTeX length: #{builder_latex.length}"
       puts "Renderer LaTeX length: #{renderer_latex.length}"
       puts "Number of differences: #{result.differences.length}"
-
-      # Show first few differences
-      result.differences.first(3).each_with_index do |diff, i|
-        puts "Difference #{i + 1}: #{diff[:description]}"
-      end
+      puts
+      puts 'Pretty diff:'
+      puts result.pretty_diff
     end
 
     assert result.equal?
@@ -232,9 +230,67 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
     if result.different?
       puts "Builder LaTeX: #{builder_latex.inspect}"
       puts "Renderer LaTeX: #{renderer_latex.inspect}"
-      puts "Differences: #{result.differences.inspect}"
+      puts result.pretty_diff
     end
 
     assert result.equal?
+  end
+
+  # Tests with actual Re:VIEW files from samples/syntax-book
+  def test_syntax_book_ch01
+    file_path = File.join(__dir__, '../../samples/syntax-book/ch01.re')
+    source = File.read(file_path)
+
+    builder_latex = @converter.convert_with_builder(source)
+    renderer_latex = @converter.convert_with_renderer(source)
+
+    result = @comparator.compare(builder_latex, renderer_latex)
+
+    if result.different?
+      puts 'ch01.re differences found:'
+      puts "Builder LaTeX length: #{builder_latex.length}"
+      puts "Renderer LaTeX length: #{renderer_latex.length}"
+      puts result.pretty_diff
+    end
+
+    assert result.equal?, 'ch01.re should produce equivalent LaTeX'
+  end
+
+  def test_syntax_book_ch02
+    book_dir = File.join(__dir__, '../../samples/syntax-book')
+    result_hash = @converter.convert_chapter_with_book_context(book_dir, 'ch02')
+
+    builder_latex = result_hash[:builder]
+    renderer_latex = result_hash[:renderer]
+
+    result = @comparator.compare(builder_latex, renderer_latex)
+
+    if result.different?
+      puts 'ch02.re differences found:'
+      puts "Builder LaTeX length: #{builder_latex.length}"
+      puts "Renderer LaTeX length: #{renderer_latex.length}"
+      puts result.pretty_diff
+    end
+
+    assert result.equal?, 'ch02.re should produce equivalent LaTeX'
+  end
+
+  def test_syntax_book_ch03
+    file_path = File.join(__dir__, '../../samples/syntax-book/ch03.re')
+    source = File.read(file_path)
+
+    builder_latex = @converter.convert_with_builder(source)
+    renderer_latex = @converter.convert_with_renderer(source)
+
+    result = @comparator.compare(builder_latex, renderer_latex)
+
+    if result.different?
+      puts 'ch03.re differences found:'
+      puts "Builder LaTeX length: #{builder_latex.length}"
+      puts "Renderer LaTeX length: #{renderer_latex.length}"
+      puts result.pretty_diff
+    end
+
+    assert result.equal?, 'ch03.re should produce equivalent LaTeX'
   end
 end

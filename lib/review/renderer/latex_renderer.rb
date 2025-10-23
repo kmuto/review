@@ -9,6 +9,7 @@
 require 'review/renderer/base'
 require 'review/renderer/rendering_context'
 require 'review/ast/caption_node'
+require 'review/ast/table_column_width_parser'
 require 'review/latexutils'
 require 'review/sec_counter'
 require 'review/i18n'

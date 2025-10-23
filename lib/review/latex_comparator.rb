@@ -6,18 +6,21 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
+require 'diff/lcs'
+
 module ReVIEW
   # LATEXComparator compares two LaTeX strings, ignoring whitespace differences
   # and providing detailed diff information when content differs.
   class LATEXComparator
     class ComparisonResult
-      attr_reader :equal, :differences, :normalized_latex1, :normalized_latex2
+      attr_reader :equal, :differences, :normalized_latex1, :normalized_latex2, :line_diffs
 
-      def initialize(equal, differences = [], normalized_latex1 = nil, normalized_latex2 = nil)
+      def initialize(equal, differences, normalized_latex1, normalized_latex2, line_diffs)
         @equal = equal
         @differences = differences
         @normalized_latex1 = normalized_latex1
         @normalized_latex2 = normalized_latex2
+        @line_diffs = line_diffs
       end
 
       def equal?
@@ -35,11 +38,71 @@ module ReVIEW
           "LaTeX content differs: #{@differences.length} difference(s) found"
         end
       end
+
+      # Generate a pretty-printed diff output similar to HtmlDiff
+      #
+      # @return [String] Human-readable diff output
+      def pretty_diff
+        return '' if equal? || !@line_diffs
+
+        output = []
+        @line_diffs.each do |change|
+          action = change.action # '-'(remove) '+'(add) '!'(change) '='(same)
+          case action
+          when '='
+            # Skip unchanged lines for brevity
+            next
+          when '-'
+            output << "- #{change.old_element.inspect}"
+          when '+'
+            output << "+ #{change.new_element.inspect}"
+          when '!'
+            output << "- #{change.old_element.inspect}"
+            output << "+ #{change.new_element.inspect}"
+          end
+        end
+        output.join("\n")
+      end
+
+      # Get a detailed diff report with line numbers
+      #
+      # @return [String] Detailed diff report
+      def detailed_diff
+        return "LaTeX content is identical\n" if equal?
+
+        output = []
+        output << "LaTeX content differs (#{@differences.length} difference(s) found)"
+        output << ''
+
+        if @line_diffs
+          output << 'Line-by-line differences:'
+          line_num = 0
+          @line_diffs.each do |change|
+            case change.action
+            when '='
+              line_num += 1
+            when '-'
+              output << "  Line #{line_num + 1} (removed): #{change.old_element}"
+            when '+'
+              line_num += 1
+              output << "  Line #{line_num} (added): #{change.new_element}"
+            when '!'
+              line_num += 1
+              output << "  Line #{line_num} (changed):"
+              output << "    - #{change.old_element}"
+              output << "    + #{change.new_element}"
+            end
+          end
+        end
+
+        output.join("\n")
+      end
     end
 
     def initialize(options = {})
       @ignore_whitespace = options.fetch(:ignore_whitespace, true)
       @ignore_blank_lines = options.fetch(:ignore_blank_lines, true)
+      @ignore_paragraph_breaks = options.fetch(:ignore_paragraph_breaks, true)
       @normalize_commands = options.fetch(:normalize_commands, true)
     end
 
@@ -52,10 +115,15 @@ module ReVIEW
       normalized_latex1 = normalize_latex(latex1)
       normalized_latex2 = normalize_latex(latex2)
 
-      differences = find_differences(normalized_latex1, normalized_latex2)
+      # Generate line-by-line diff
+      lines1 = normalized_latex1.split("\n")
+      lines2 = normalized_latex2.split("\n")
+      line_diffs = Diff::LCS.sdiff(lines1, lines2)
+
+      differences = find_differences(normalized_latex1, normalized_latex2, line_diffs)
       equal = differences.empty?
 
-      ComparisonResult.new(equal, differences, normalized_latex1, normalized_latex2)
+      ComparisonResult.new(equal, differences, normalized_latex1, normalized_latex2, line_diffs)
     end
 
     # Quick comparison that returns boolean
@@ -75,8 +143,14 @@ module ReVIEW
 
       normalized = latex.dup
 
+      # Handle paragraph breaks before removing blank lines
+      if @ignore_paragraph_breaks
+        # Normalize paragraph breaks (multiple newlines) to single newlines
+        normalized = normalized.gsub(/\n\n+/, "\n")
+      end
+
       if @ignore_blank_lines
-        # Remove blank lines
+        # Remove blank lines (but preserve paragraph structure if configured)
         lines = normalized.split("\n")
         lines = lines.reject { |line| line.strip.empty? }
         normalized = lines.join("\n")
@@ -106,16 +180,50 @@ module ReVIEW
     end
 
     # Find differences between normalized LaTeX strings
-    def find_differences(latex1, latex2)
+    def find_differences(latex1, latex2, line_diffs)
       differences = []
 
       if latex1 != latex2
-        differences << {
-          type: :content_mismatch,
-          expected: latex1,
-          actual: latex2,
-          description: 'LaTeX content differs'
-        }
+        # Analyze line-level differences
+        line_diffs.each_with_index do |change, idx|
+          next if change.action == '='
+
+          case change.action
+          when '-'
+            differences << {
+              type: :line_removed,
+              line_number: idx,
+              content: change.old_element,
+              description: "Line #{idx + 1} removed: #{change.old_element}"
+            }
+          when '+'
+            differences << {
+              type: :line_added,
+              line_number: idx,
+              content: change.new_element,
+              description: "Line #{idx + 1} added: #{change.new_element}"
+            }
+          when '!'
+            differences << {
+              type: :line_changed,
+              line_number: idx,
+              old_content: change.old_element,
+              new_content: change.new_element,
+              description: "Line #{idx + 1} changed: #{change.old_element} -> #{change.new_element}"
+            }
+          end
+        end
+
+        # If no line-level differences were found but content differs,
+        # add a generic content mismatch
+        if differences.empty?
+          differences << {
+            type: :content_mismatch,
+            expected: latex1,
+            actual: latex2,
+            description: 'LaTeX content differs (no line-level differences detected)'
+          }
+        end
       end
 
       differences

@@ -14,6 +14,13 @@ module ReVIEW
       # Result struct for parse method
       Result = Struct.new(:col_spec, :cellwidth)
 
+      # Check if cellwidth is a fixed-width specification (contains '{')
+      # @param cellwidth [String] column width specification (e.g., "p{10mm}", "l", "c")
+      # @return [Boolean] true if fixed-width (contains braces)
+      def self.fixed_width?(cellwidth)
+        cellwidth && cellwidth.include?('{')
+      end
+
       # Initialize parser with tsize specification and column count
       # @param tsize [String] tsize specification (e.g., "10,18,50" or "p{10mm}p{18mm}|p{50mm}")
       # @param col_count [Integer] number of columns
