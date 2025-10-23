@@ -178,49 +178,81 @@ module ReVIEW
         render_inline_element(node.inline_type, content, node)
       end
 
-      def visit_code_block(node)
-        # Process caption with proper context management and collect footnotes
+      # Process caption for code blocks with proper context management
+      # @param node [CodeBlockNode] The code block node
+      # @return [Array<String, Object>] [caption, caption_collector]
+      def process_code_block_caption(node)
         caption = nil
         caption_collector = nil
 
         if node.caption_node
           @rendering_context.with_child_context(:caption) do |caption_context|
             caption = render_children_with_context(node.caption_node, caption_context)
-            # Save the collector for later processing
             caption_collector = caption_context.footnote_collector
           end
         end
 
-        # Process children to get properly escaped content while preserving structure
-        content = render_children(node)
-        code_type = node.code_type.to_s
+        [caption, caption_collector]
+      end
 
-        result = case code_type
-                 when 'list'
-                   visit_list_block(node, content, caption)
-                 when 'listnum'
-                   # listnum uses same environment as list but with line numbers in content
-                   visit_list_block(node, add_line_numbers(content), caption)
-                 when 'emlist'
-                   visit_emlist_block(node, content, caption)
-                 when 'emlistnum'
-                   # emlistnum uses same environment as emlist but with line numbers in content
-                   visit_emlist_block(node, add_line_numbers(content), caption)
-                 when 'cmd'
-                   visit_cmd_block(node, content, caption)
-                 when 'source'
-                   visit_source_block(node, content, caption)
-                 else
-                   raise NotImplementedError, "Unknown code block type: #{code_type}"
-                 end
-
-        # Add collected footnotetext commands from caption context
+      # Add footnotetext commands from collector to result
+      # @param result [String] The rendered result
+      # @param caption_collector [Object] The footnote collector
+      # @return [String] Result with footnotetext commands appended
+      def append_footnotetext_from_collector(result, caption_collector)
         if caption_collector && caption_collector.any?
           result += generate_footnotetext_from_collector(caption_collector)
           caption_collector.clear
         end
-
         result
+      end
+
+      # Visit list code block
+      def visit_code_block_list(node)
+        caption, caption_collector = process_code_block_caption(node)
+        content = render_children(node)
+        result = visit_list_block(node, content, caption)
+        append_footnotetext_from_collector(result, caption_collector)
+      end
+
+      # Visit listnum code block (list with line numbers)
+      def visit_code_block_listnum(node)
+        caption, caption_collector = process_code_block_caption(node)
+        content = render_children(node)
+        result = visit_list_block(node, add_line_numbers(content), caption)
+        append_footnotetext_from_collector(result, caption_collector)
+      end
+
+      # Visit emlist code block
+      def visit_code_block_emlist(node)
+        caption, caption_collector = process_code_block_caption(node)
+        content = render_children(node)
+        result = visit_emlist_block(node, content, caption)
+        append_footnotetext_from_collector(result, caption_collector)
+      end
+
+      # Visit emlistnum code block (emlist with line numbers)
+      def visit_code_block_emlistnum(node)
+        caption, caption_collector = process_code_block_caption(node)
+        content = render_children(node)
+        result = visit_emlist_block(node, add_line_numbers(content), caption)
+        append_footnotetext_from_collector(result, caption_collector)
+      end
+
+      # Visit cmd code block
+      def visit_code_block_cmd(node)
+        caption, caption_collector = process_code_block_caption(node)
+        content = render_children(node)
+        result = visit_cmd_block(node, content, caption)
+        append_footnotetext_from_collector(result, caption_collector)
+      end
+
+      # Visit source code block
+      def visit_code_block_source(node)
+        caption, caption_collector = process_code_block_caption(node)
+        content = render_children(node)
+        result = visit_source_block(node, content, caption)
+        append_footnotetext_from_collector(result, caption_collector)
       end
 
       def visit_code_line(node)
@@ -534,111 +566,195 @@ module ReVIEW
         raise NotImplementedError, 'List item processing should be handled by visit_list, not as standalone items'
       end
 
-      def visit_block(node) # rubocop:disable Metrics/CyclomaticComplexity
+      # Visit quote block
+      def visit_block_quote(node)
         content = render_children(node)
-        block_type = node.block_type.to_s
+        result = "\n\\begin{quote}\n#{content.chomp}\\end{quote}\n\n"
+        apply_noindent_if_needed(node, result)
+      end
 
-        case block_type
-        when 'quote'
-          result = "\n\\begin{quote}\n#{content.chomp}\\end{quote}\n\n"
-          apply_noindent_if_needed(node, result)
-        when 'source'
-          # Source code block without caption
-          "\\begin{reviewcmd}\n#{content}\\end{reviewcmd}\n"
-        when 'lead'
-          # Lead paragraph - use standard quotation environment like LATEXBuilder
-          result = "\n\\begin{quotation}\n#{content.chomp}\\end{quotation}\n\n"
-          apply_noindent_if_needed(node, result)
-        when 'olnum'
-          # olnum is now handled as metadata in list processing
-          # If we encounter it here, it means there was no following ordered list
-          # In this case, we should still generate the setcounter command for compatibility
-          if node.args.first
-            num = node.args.first.to_i
-            "\\setcounter{enumi}{#{num - 1}}\n"
-          else
-            "\\setcounter{enumi}{0}\n"
-          end
-        when 'footnote'
-          # Handle footnote blocks - generate \footnotetext LaTeX command
-          if node.args.length >= 2
-            footnote_id = node.args[0]
-            footnote_content = escape(node.args[1])
-            # Generate footnote number like LaTeXBuilder does
-            if @chapter && @chapter.footnote_index
-              begin
-                footnote_number = @chapter.footnote_index.number(footnote_id)
-                "\\footnotetext[#{footnote_number}]{#{footnote_content}}\n"
-              rescue ReVIEW::KeyError => e
-                raise NotImplementedError, "Footnote block processing failed for #{footnote_id}: #{e.message}"
-              end
-            else
-              raise NotImplementedError, 'Footnote processing requires chapter context but none provided'
+      # Visit source block (code block without caption)
+      def visit_block_source(node)
+        content = render_children(node)
+        "\\begin{reviewcmd}\n#{content}\\end{reviewcmd}\n"
+      end
+
+      # Visit lead block (lead paragraph)
+      def visit_block_lead(node)
+        content = render_children(node)
+        result = "\n\\begin{quotation}\n#{content.chomp}\\end{quotation}\n\n"
+        apply_noindent_if_needed(node, result)
+      end
+
+      # Visit olnum block (set ordered list counter)
+      def visit_block_olnum(node)
+        # olnum is now handled as metadata in list processing
+        # If we encounter it here, it means there was no following ordered list
+        # In this case, we should still generate the setcounter command for compatibility
+        if node.args.first
+          num = node.args.first.to_i
+          "\\setcounter{enumi}{#{num - 1}}\n"
+        else
+          "\\setcounter{enumi}{0}\n"
+        end
+      end
+
+      # Visit footnote block
+      def visit_block_footnote(node)
+        # Handle footnote blocks - generate \footnotetext LaTeX command
+        if node.args.length >= 2
+          footnote_id = node.args[0]
+          footnote_content = escape(node.args[1])
+          # Generate footnote number like LaTeXBuilder does
+          if @chapter && @chapter.footnote_index
+            begin
+              footnote_number = @chapter.footnote_index.number(footnote_id)
+              "\\footnotetext[#{footnote_number}]{#{footnote_content}}\n"
+            rescue ReVIEW::KeyError => e
+              raise NotImplementedError, "Footnote block processing failed for #{footnote_id}: #{e.message}"
             end
           else
-            raise NotImplementedError, 'Malformed footnote block: insufficient arguments'
+            raise NotImplementedError, 'Footnote processing requires chapter context but none provided'
           end
-        when 'firstlinenum'
-          # firstlinenum sets the starting line number for subsequent listnum blocks
-          # Store the value in @first_line_num like LaTeXBuilder does
-          if node.args.first
-            @first_line_num = node.args.first.to_i
-          end
-          # firstlinenum itself produces no output
-          ''
-        when 'tsize'
-          # tsize is now processed by TsizeProcessor during AST compilation
-          # The tsize block nodes are removed from AST by TsizeProcessor,
-          # so this case should not be reached. Return empty string for safety.
-          ''
-        when 'texequation'
-          # Handle mathematical equation blocks - output content directly
-          # without LaTeX environment wrapping since content is raw LaTeX math
-          content.strip.empty? ? '' : "\n#{content}\n\n"
-        when 'comment'
-          # Handle comment blocks - only output in draft mode
-          visit_comment_block(node)
-        when 'beginchild', 'endchild' # rubocop:disable Lint/DuplicateBranch
-          # Child nesting control commands - produce no output
-          ''
-        when 'centering'
-          # Center alignment
-          "\n\\begin{center}\n#{content.chomp}\\end{center}\n\n"
-        when 'flushright'
-          # Right alignment
-          "\n\\begin{flushright}\n#{content.chomp}\\end{flushright}\n\n"
-        when 'address' # rubocop:disable Lint/DuplicateBranch
-          # Address block - similar to flushright
-          "\n\\begin{flushright}\n#{content.chomp}\\end{flushright}\n\n"
-        when 'talk'
-          # Dialog/conversation block
-          "#{content}\n"
-        when 'read'
-          # Reading material block - use quotation environment
-          "\n\\begin{quotation}\n#{content.chomp}\\end{quotation}\n\n"
-        when 'blockquote'
-          # Block quotation - same as quote but different semantic meaning
-          "\n\\begin{quote}\n#{content.chomp}\\end{quote}\n\n"
-        when 'printendnotes'
-          # Print collected endnotes
-          "\n\\theendnotes\n\n"
-        when 'label'
-          # Label command - output \label{id}
-          if node.args.first
-            label_id = node.args.first
-            "\\label{#{escape(label_id)}}\n"
-          else
-            ''
-          end
-        when 'blankline', 'noindent', 'pagebreak', 'endnote', 'hr', 'bpo', 'parasep' # rubocop:disable Lint/DuplicateBranch
-          # Control commands that should not generate LaTeX environment blocks
-          ''
-        when 'bibpaper'
-          # Bibliography paper - delegate to specialized handler
-          visit_bibpaper(node)
         else
-          raise NotImplementedError, "Unknown block type: #{block_type}"
+          raise NotImplementedError, 'Malformed footnote block: insufficient arguments'
         end
+      end
+
+      # Visit firstlinenum block (set starting line number)
+      def visit_block_firstlinenum(node)
+        # firstlinenum sets the starting line number for subsequent listnum blocks
+        # Store the value in @first_line_num like LaTeXBuilder does
+        if node.args.first
+          @first_line_num = node.args.first.to_i
+        end
+        # firstlinenum itself produces no output
+        ''
+      end
+
+      # Visit tsize block (table size control)
+      def visit_block_tsize(_node)
+        # tsize is now processed by TsizeProcessor during AST compilation
+        # The tsize block nodes are removed from AST by TsizeProcessor,
+        # so this case should not be reached. Return empty string for safety.
+        ''
+      end
+
+      # Visit texequation block (mathematical equation)
+      def visit_block_texequation(node)
+        content = render_children(node)
+        # Handle mathematical equation blocks - output content directly
+        # without LaTeX environment wrapping since content is raw LaTeX math
+        content.strip.empty? ? '' : "\n#{content}\n\n"
+      end
+
+      # Visit comment block
+      def visit_block_comment(node)
+        # Handle comment blocks - only output in draft mode
+        visit_comment_block(node)
+      end
+
+      # Visit beginchild block (child nesting control)
+      def visit_block_beginchild(_node)
+        # Child nesting control commands - produce no output
+        ''
+      end
+
+      # Visit endchild block (child nesting control)
+      def visit_block_endchild(_node)
+        # Child nesting control commands - produce no output
+        ''
+      end
+
+      # Visit centering block (center alignment)
+      def visit_block_centering(node)
+        content = render_children(node)
+        "\n\\begin{center}\n#{content.chomp}\\end{center}\n\n"
+      end
+
+      # Visit flushright block (right alignment)
+      def visit_block_flushright(node)
+        content = render_children(node)
+        "\n\\begin{flushright}\n#{content.chomp}\\end{flushright}\n\n"
+      end
+
+      # Visit address block (similar to flushright)
+      def visit_block_address(node)
+        content = render_children(node)
+        "\n\\begin{flushright}\n#{content.chomp}\\end{flushright}\n\n"
+      end
+
+      # Visit talk block (dialog/conversation)
+      def visit_block_talk(node)
+        content = render_children(node)
+        "#{content}\n"
+      end
+
+      # Visit read block (reading material)
+      def visit_block_read(node)
+        content = render_children(node)
+        "\n\\begin{quotation}\n#{content.chomp}\\end{quotation}\n\n"
+      end
+
+      # Visit blockquote block
+      def visit_block_blockquote(node)
+        content = render_children(node)
+        "\n\\begin{quote}\n#{content.chomp}\\end{quote}\n\n"
+      end
+
+      # Visit printendnotes block (print collected endnotes)
+      def visit_block_printendnotes(_node)
+        "\n\\theendnotes\n\n"
+      end
+
+      # Visit label block (create label)
+      def visit_block_label(node)
+        if node.args.first
+          label_id = node.args.first
+          "\\label{#{escape(label_id)}}\n"
+        else
+          ''
+        end
+      end
+
+      # Visit blankline block (control command)
+      def visit_block_blankline(_node)
+        ''
+      end
+
+      # Visit noindent block (control command)
+      def visit_block_noindent(_node)
+        ''
+      end
+
+      # Visit pagebreak block (control command)
+      def visit_block_pagebreak(_node)
+        ''
+      end
+
+      # Visit endnote block (control command)
+      def visit_block_endnote(_node)
+        ''
+      end
+
+      # Visit hr block (control command)
+      def visit_block_hr(_node)
+        ''
+      end
+
+      # Visit bpo block (control command)
+      def visit_block_bpo(_node)
+        ''
+      end
+
+      # Visit parasep block (control command)
+      def visit_block_parasep(_node)
+        ''
+      end
+
+      # Visit bibpaper block (bibliography paper)
+      def visit_block_bibpaper(node)
+        visit_bibpaper(node)
       end
 
       def visit_minicolumn(node)

@@ -180,7 +180,8 @@ module ReVIEW
         result
       end
 
-      def visit_code_block(node)
+      # Common code block rendering method used by all code block types
+      def render_code_block_common(node)
         result = +''
         # Convert code_type to symbol if it's not already
         code_type = node.code_type.to_sym
@@ -221,6 +222,31 @@ module ReVIEW
         result += "\n"
 
         result
+      end
+
+      # Individual code block type visitors that delegate to common method
+      def visit_code_block_list(node)
+        render_code_block_common(node)
+      end
+
+      def visit_code_block_listnum(node)
+        render_code_block_common(node)
+      end
+
+      def visit_code_block_emlist(node)
+        render_code_block_common(node)
+      end
+
+      def visit_code_block_emlistnum(node)
+        render_code_block_common(node)
+      end
+
+      def visit_code_block_cmd(node)
+        render_code_block_common(node)
+      end
+
+      def visit_code_block_source(node)
+        render_code_block_common(node)
       end
 
       def visit_code_line(node)
@@ -344,16 +370,9 @@ module ReVIEW
         result
       end
 
-      def visit_block(node)
-        case node.block_type.to_sym
-        when :quote
-          visit_quote_block(node)
-        else
-          visit_generic_block(node)
-        end
-      end
+      # visit_block is now handled by Base renderer with dynamic method dispatch
 
-      def visit_quote_block(node)
+      def visit_block_quote(node)
         result = +''
 
         result += "\n"

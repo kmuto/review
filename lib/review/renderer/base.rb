@@ -145,6 +145,36 @@ module ReVIEW
         content
       end
 
+      # Visit a code block node.
+      # This method uses dynamic method dispatch to call format-specific handlers.
+      # Subclasses should implement visit_code_block_<type> methods for each code block type.
+      #
+      # @param node [Object] The code block node
+      # @return [String] The rendered code block
+      def visit_code_block(node)
+        method_name = "visit_code_block_#{node.code_type}"
+        if respond_to?(method_name, true)
+          send(method_name, node)
+        else
+          raise NotImplementedError, "Unknown code block type: #{node.code_type}"
+        end
+      end
+
+      # Visit a block node.
+      # This method uses dynamic method dispatch to call format-specific handlers.
+      # Subclasses should implement visit_block_<type> methods for each block type.
+      #
+      # @param node [Object] The block node
+      # @return [String] The rendered block
+      def visit_block(node)
+        method_name = "visit_block_#{node.block_type}"
+        if respond_to?(method_name, true)
+          send(method_name, node)
+        else
+          raise NotImplementedError, "Unknown block type: #{node.block_type}"
+        end
+      end
+
       # Parse metric option for images and tables
       #
       # @param type [String] Builder type (e.g., 'latex', 'html')

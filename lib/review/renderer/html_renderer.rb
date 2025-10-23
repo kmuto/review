@@ -219,9 +219,7 @@ module ReVIEW
         render_inline_element(node.inline_type, content, node)
       end
 
-      def visit_code_block(node)
-        render_code_block(node)
-      end
+      # visit_code_block is now handled by Base renderer with dynamic method dispatch
 
       def visit_code_line(node)
         # Process each line like HTMLBuilder - detab and preserve exact content
@@ -344,59 +342,91 @@ module ReVIEW
         end
       end
 
-      def visit_block(node)
-        block_type = node.block_type.to_s
-        case block_type
-        when 'note'
-          render_note_block(node)
-        when 'memo'
-          render_memo_block(node)
-        when 'tip'
-          render_tip_block(node)
-        when 'info'
-          render_info_block(node)
-        when 'warning'
-          render_warning_block(node)
-        when 'important'
-          render_important_block(node)
-        when 'caution'
-          render_caution_block(node)
-        when 'notice'
-          render_notice_block(node)
-        when 'quote', 'blockquote'
-          render_quote_block(node)
-        when 'comment'
-          render_comment_block(node)
-        when 'firstlinenum'
-          # Set line number for next code block, no HTML output
-          render_firstlinenum_block(node)
-        when 'blankline'
-          # Blank line control - no HTML output in most contexts
-          ''
-        when 'pagebreak'
-          # Page break - for HTML, output a div that can be styled
-          %Q(<div class="pagebreak"></div>\n)
-        when 'label'
-          # Label creates an anchor
-          render_label_block(node)
-        when 'tsize'
-          # Table size control - output as div for styling
-          render_tsize_block(node)
-        when 'printendnotes'
-          # Print collected endnotes
-          render_printendnotes_block(node)
-        when 'flushright'
-          # Right-align text like HTMLBuilder
-          render_flushright_block(node)
-        when 'centering'
-          # Center-align text like HTMLBuilder
-          render_centering_block(node)
-        when 'bibpaper'
-          # Bibliography paper reference
-          render_bibpaper_block(node)
-        else
-          render_generic_block(node)
-        end
+      # visit_block is now handled by Base renderer with dynamic method dispatch
+      # Individual visit_block_* methods delegate to existing render_*_block methods
+
+      def visit_block_note(node)
+        render_note_block(node)
+      end
+
+      def visit_block_memo(node)
+        render_memo_block(node)
+      end
+
+      def visit_block_tip(node)
+        render_tip_block(node)
+      end
+
+      def visit_block_info(node)
+        render_info_block(node)
+      end
+
+      def visit_block_warning(node)
+        render_warning_block(node)
+      end
+
+      def visit_block_important(node)
+        render_important_block(node)
+      end
+
+      def visit_block_caution(node)
+        render_caution_block(node)
+      end
+
+      def visit_block_notice(node)
+        render_notice_block(node)
+      end
+
+      def visit_block_quote(node)
+        render_quote_block(node)
+      end
+
+      def visit_block_blockquote(node)
+        render_quote_block(node)
+      end
+
+      def visit_block_lead(node)
+        render_lead_block(node)
+      end
+
+      def visit_block_comment(node)
+        render_comment_block(node)
+      end
+
+      def visit_block_firstlinenum(node)
+        render_firstlinenum_block(node)
+      end
+
+      def visit_block_blankline(_node)
+        ''
+      end
+
+      def visit_block_pagebreak(_node)
+        %Q(<div class="pagebreak"></div>\n)
+      end
+
+      def visit_block_label(node)
+        render_label_block(node)
+      end
+
+      def visit_block_tsize(node)
+        render_tsize_block(node)
+      end
+
+      def visit_block_printendnotes(node)
+        render_printendnotes_block(node)
+      end
+
+      def visit_block_flushright(node)
+        render_flushright_block(node)
+      end
+
+      def visit_block_centering(node)
+        render_centering_block(node)
+      end
+
+      def visit_block_bibpaper(node)
+        render_bibpaper_block(node)
       end
 
       def visit_tex_equation(node)
@@ -1194,26 +1224,9 @@ module ReVIEW
 
       private
 
-      def render_code_block(node)
-        case node.code_type&.to_sym
-        when :emlist
-          render_emlist_code_block(node)
-        when :emlistnum
-          render_emlistnum_code_block(node)
-        when :list
-          render_list_code_block(node)
-        when :listnum
-          render_listnum_code_block(node)
-        when :source
-          render_source_code_block(node)
-        when :cmd
-          render_cmd_code_block(node)
-        else
-          render_fallback_code_block(node)
-        end
-      end
+      # Code block visitors using dynamic method dispatch
 
-      def render_emlist_code_block(node)
+      def visit_code_block_emlist(node)
         lines_content = render_children(node)
         processed_content = format_code_content(lines_content, node.lang)
 
@@ -1226,7 +1239,7 @@ module ReVIEW
         )
       end
 
-      def render_emlistnum_code_block(node)
+      def visit_code_block_emlistnum(node)
         lines_content = render_children(node)
         numbered_lines = format_emlistnum_content(lines_content, node.lang)
 
@@ -1239,7 +1252,7 @@ module ReVIEW
         )
       end
 
-      def render_list_code_block(node)
+      def visit_code_block_list(node)
         lines_content = render_children(node)
         processed_content = format_code_content(lines_content, node.lang)
 
@@ -1252,7 +1265,7 @@ module ReVIEW
         )
       end
 
-      def render_listnum_code_block(node)
+      def visit_code_block_listnum(node)
         lines_content = render_children(node)
         numbered_lines = format_listnum_content(lines_content, node.lang)
 
@@ -1265,7 +1278,7 @@ module ReVIEW
         )
       end
 
-      def render_source_code_block(node)
+      def visit_code_block_source(node)
         lines_content = render_children(node)
         processed_content = format_code_content(lines_content, node.lang)
 
@@ -1278,7 +1291,7 @@ module ReVIEW
         )
       end
 
-      def render_cmd_code_block(node)
+      def visit_code_block_cmd(node)
         lines_content = render_children(node)
         processed_content = format_code_content(lines_content, node.lang)
 
@@ -1291,18 +1304,7 @@ module ReVIEW
         )
       end
 
-      def render_fallback_code_block(node)
-        lines_content = render_children(node)
-        processed_content = format_code_content(lines_content)
-
-        code_block_wrapper(
-          node,
-          div_class: 'caption-code',
-          pre_class: '',
-          content: processed_content,
-          caption_style: :none
-        )
-      end
+      # render_fallback_code_block removed - Base renderer will raise NotImplementedError for unknown code block types
 
       def code_block_wrapper(node, div_class:, pre_class:, content:, caption_style:)
         id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
@@ -1647,6 +1649,12 @@ module ReVIEW
         id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
         content = render_children(node)
         %Q(<blockquote#{id_attr}>#{content}</blockquote>)
+      end
+
+      def render_lead_block(node)
+        id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
+        content = render_children(node)
+        %Q(<div#{id_attr} class="lead">\n#{content}</div>\n)
       end
 
       def render_comment_block(node)

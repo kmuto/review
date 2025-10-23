@@ -104,59 +104,89 @@ module ReVIEW
         "#{term}\n#{definition}\n"
       end
 
-      def visit_code_block(node) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+      # Numbered code block (listnum, emlistnum)
+      def render_numbered_code_block(node)
         result = +''
-
-        # Add caption if present (at top or bottom based on config)
         caption = render_caption_inline(node.caption_node)
-
-        # Check if this is a numbered list/listnum block
         lines_content = render_children(node)
-        if node.code_type&.to_sym == :listnum || node.code_type&.to_sym == :emlistnum
-          # Numbered code block
-          lines = lines_content.split("\n")
-          lines.pop if lines.last && lines.last.empty?
 
-          first_line_number = line_num
+        lines = lines_content.split("\n")
+        lines.pop if lines.last && lines.last.empty?
 
-          result += "\n" if caption_top?('list') && !caption.empty?
-          result += "#{caption}\n" if caption_top?('list') && !caption.empty?
-          result += "\n" if caption_top?('list') && !caption.empty?
+        first_line_number = line_num
 
-          lines.each_with_index do |line, i|
-            result += "#{(i + first_line_number).to_s.rjust(2)}: #{detab(line)}\n"
-          end
+        result += "\n" if caption_top?('list') && !caption.empty?
+        result += "#{caption}\n" if caption_top?('list') && !caption.empty?
+        result += "\n" if caption_top?('list') && !caption.empty?
 
-          result += "\n" unless caption_top?('list')
-          result += "#{caption}\n" unless caption_top?('list') || caption.empty?
-        elsif node.code_type&.to_sym == :list
-          # Regular list code block with ID and caption
-
-          result += "\n" if caption_top?('list') && !caption.empty?
-          result += generate_list_header(node.id, caption) + "\n" if caption_top?('list') && !caption.empty?
-          result += "\n" if caption_top?('list') && !caption.empty?
-
-          lines_content.each_line do |line|
-            result += detab(line.chomp) + "\n"
-          end
-
-          result += "\n" unless caption_top?('list')
-          result += generate_list_header(node.id, caption) + "\n" unless caption_top?('list') || caption.empty?
-        else
-          # Regular code block (emlist, cmd, source, etc.)
-
-          result += "\n" if caption_top?('list') && !caption.empty?
-          result += "#{caption}\n" if caption_top?('list') && !caption.empty?
-
-          lines_content.each_line do |line|
-            result += detab(line.chomp) + "\n"
-          end
-
-          result += "#{caption}\n" unless caption_top?('list') || caption.empty?
+        lines.each_with_index do |line, i|
+          result += "#{(i + first_line_number).to_s.rjust(2)}: #{detab(line)}\n"
         end
+
+        result += "\n" unless caption_top?('list')
+        result += "#{caption}\n" unless caption_top?('list') || caption.empty?
         result += "\n"
 
         result
+      end
+
+      # Regular code block (emlist, cmd, source, etc.)
+      def render_regular_code_block(node)
+        result = +''
+        caption = render_caption_inline(node.caption_node)
+        lines_content = render_children(node)
+
+        result += "\n" if caption_top?('list') && !caption.empty?
+        result += "#{caption}\n" if caption_top?('list') && !caption.empty?
+
+        lines_content.each_line do |line|
+          result += detab(line.chomp) + "\n"
+        end
+
+        result += "#{caption}\n" unless caption_top?('list') || caption.empty?
+        result += "\n"
+
+        result
+      end
+
+      def visit_code_block_list(node)
+        result = +''
+        caption = render_caption_inline(node.caption_node)
+        lines_content = render_children(node)
+
+        result += "\n" if caption_top?('list') && !caption.empty?
+        result += generate_list_header(node.id, caption) + "\n" if caption_top?('list') && !caption.empty?
+        result += "\n" if caption_top?('list') && !caption.empty?
+
+        lines_content.each_line do |line|
+          result += detab(line.chomp) + "\n"
+        end
+
+        result += "\n" unless caption_top?('list')
+        result += generate_list_header(node.id, caption) + "\n" unless caption_top?('list') || caption.empty?
+        result += "\n"
+
+        result
+      end
+
+      def visit_code_block_listnum(node)
+        render_numbered_code_block(node)
+      end
+
+      def visit_code_block_emlist(node)
+        render_regular_code_block(node)
+      end
+
+      def visit_code_block_emlistnum(node)
+        render_numbered_code_block(node)
+      end
+
+      def visit_code_block_cmd(node)
+        render_regular_code_block(node)
+      end
+
+      def visit_code_block_source(node)
+        render_regular_code_block(node)
       end
 
       def visit_code_line(node)
@@ -249,64 +279,65 @@ module ReVIEW
         result
       end
 
-      def visit_block(node)
-        case node.block_type.to_sym
-        when :quote, :blockquote
-          visit_quote_block(node)
-        when :comment
-          # Comments are not rendered in plaintext
-          ''
-        when :blankline
-          "\n"
-        when :pagebreak # rubocop:disable Lint/DuplicateBranch
-          # Page breaks are not meaningful in plaintext
-          ''
-        when :label # rubocop:disable Lint/DuplicateBranch
-          # Labels are not rendered
-          ''
-        when :tsize # rubocop:disable Lint/DuplicateBranch
-          # Table size control is not meaningful in plaintext
-          ''
-        when :firstlinenum
-          # Set line number for next code block
-          visit_firstlinenum_block(node)
-        when :flushright
-          visit_flushright_block(node)
-        when :centering
-          visit_centering_block(node)
-        when :bibpaper
-          visit_bibpaper_block(node)
-        else
-          # Generic block handling (note, memo, tip, info, warning, etc.)
-          visit_generic_block(node)
-        end
-      end
+      # visit_block is now handled by Base renderer with dynamic method dispatch
 
-      def visit_quote_block(node)
+      def visit_block_quote(node)
         result = +"\n"
         result += render_children(node)
         result += "\n"
         result
       end
 
-      def visit_firstlinenum_block(node)
+      def visit_block_blockquote(node)
+        visit_block_quote(node)
+      end
+
+      def visit_block_comment(_node)
+        # Comments are not rendered in plaintext
+        ''
+      end
+
+      def visit_block_blankline(_node)
+        "\n"
+      end
+
+      def visit_block_pagebreak(_node)
+        # Page breaks are not meaningful in plaintext
+        ''
+      end
+
+      def visit_block_label(_node)
+        # Labels are not rendered
+        ''
+      end
+
+      def visit_block_tsize(_node)
+        # Table size control is not meaningful in plaintext
+        ''
+      end
+
+      def visit_block_firstlinenum(node)
         line_num = node.args.first&.to_i || 1
         firstlinenum(line_num)
         ''
       end
 
-      def visit_flushright_block(node)
+      def visit_block_flushright(node)
         result = +"\n"
         result += render_children(node)
         result += "\n"
         result
       end
 
-      def visit_centering_block(node)
+      def visit_block_centering(node)
         result = +"\n"
         result += render_children(node)
         result += "\n"
         result
+      end
+
+      def visit_block_bibpaper(node)
+        visit_bibpaper_block(node)
       end
 
       def visit_bibpaper_block(node)

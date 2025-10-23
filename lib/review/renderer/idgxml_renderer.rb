@@ -68,7 +68,6 @@ module ReVIEW
 
         # Initialize state flags
         @noindent = nil
-        @ol_num = nil
         @first_line_num = nil
 
         # Initialize table state
@@ -161,6 +160,9 @@ module ReVIEW
       end
 
       def visit_headline(node)
+        # Skip nodisp headlines (display: no, TOC: yes)
+        return '' if node.nodisp?
+
         level = node.level
         label = node.label
         caption = render_children(node.caption_node) if node.caption_node
@@ -394,24 +396,8 @@ module ReVIEW
         raise NotImplementedError, 'List item processing should be handled by visit_list'
       end
 
-      def visit_code_block(node)
-        case node.code_type
-        when :list
-          visit_list_code_block(node)
-        when :listnum
-          visit_listnum_code_block(node)
-        when :emlist
-          visit_emlist_code_block(node)
-        when :emlistnum
-          visit_emlistnum_code_block(node)
-        when :cmd
-          visit_cmd_code_block(node)
-        when :source
-          visit_source_code_block(node)
-        else
-          raise NotImplementedError, "Unknown code block type: #{node.code_type}"
-        end
-      end
+      # visit_code_block is now handled by Base renderer with dynamic method dispatch
+      # Aliases will be defined after the original methods
 
       def visit_code_line(node)
         # Render children and detab
@@ -486,99 +472,236 @@ module ReVIEW
         result.join("\n") + "\n"
       end
 
-      def visit_block(node) # rubocop:disable Metrics/CyclomaticComplexity
-        block_type = node.block_type.to_s
+      # visit_block is now handled by Base renderer with dynamic method dispatch
+      # Individual block type visitors
 
-        case block_type
-        when 'quote'
-          content = render_children(node)
-          # Content already contains <p> tags from paragraphs
-          "<quote>#{content}</quote>\n"
-        when 'lead', 'read'
-          content = render_children(node)
-          # Content already contains <p> tags from paragraphs
-          "<lead>#{content}</lead>\n"
-        when 'note', 'memo', 'tip', 'info', 'warning', 'important', 'caution'
-          caption = node.args.first
-          content = render_children(node)
-          captionblock(block_type, content, caption)
-        when 'planning', 'best', 'security', 'reference', 'link', 'practice', 'expert' # rubocop:disable Lint/DuplicateBranch
-          caption = node.args.first
-          content = render_children(node)
-          captionblock(block_type, content, caption)
-        when 'point', 'shoot', 'notice'
-          caption = node.args.first
-          # Convert children to paragraph-grouped content
-          content = render_block_content_with_paragraphs(node)
-          # These blocks use -t suffix when caption is present
-          if caption && !caption.empty? && node.caption_node
-            # Use caption_node to render inline elements
-            caption_with_inline = render_caption_inline(node.caption_node)
-            captionblock("#{block_type}-t", content, caption_with_inline, "#{block_type}-title")
-          else
-            captionblock(block_type, content, nil)
-          end
-        when 'term'
-          content = render_block_content_with_paragraphs(node)
-          captionblock('term', content, nil)
-        when 'insn', 'box'
-          visit_syntaxblock(node)
-        when 'flushright'
-          content = render_children(node)
-          # Content already contains <p> tags, just add align attribute
-          content.gsub('<p>', %Q(<p align='right'>)) + "\n"
-        when 'centering'
-          content = render_children(node)
-          # Content already contains <p> tags, just add align attribute
-          content.gsub('<p>', %Q(<p align='center'>)) + "\n"
-        when 'rawblock'
-          visit_rawblock(node)
-        when 'comment'
-          visit_comment_block(node)
-        when 'noindent'
-          @noindent = true
-          ''
-        when 'blankline'
-          "<p/>\n"
-        when 'pagebreak'
-          "<pagebreak />\n"
-        when 'hr'
-          "<hr />\n"
-        when 'label'
-          label_id = node.args.first
-          %Q(<label id='#{label_id}' />\n)
-        when 'dtp'
-          dtp_str = node.args.first
-          %Q(<?dtp #{dtp_str} ?>\n)
-        when 'bpo'
-          content = render_children(node)
-          %Q(<bpo>#{content.chomp}</bpo>\n)
-        when 'printendnotes'
-          visit_printendnotes(node)
-        when 'bibpaper'
-          visit_bibpaper(node)
-        when 'olnum'
-          # Set ordered list start number
-          @ol_num = node.args.first&.to_i
-          ''
-        when 'firstlinenum'
-          # Set first line number for code blocks
-          @first_line_num = node.args.first&.to_i
-          ''
-        when 'tsize'
-          # tsize is now processed by TsizeProcessor during AST compilation
-          # The tsize block nodes are removed from AST by TsizeProcessor,
-          # so this case should not be reached. Return empty string for safety.
-          ''
-        when 'graph'
-          visit_graph(node)
-        when 'beginchild'
-          visit_beginchild(node)
-        when 'endchild'
-          visit_endchild(node)
+      def visit_block_quote(node)
+        content = render_children(node)
+        "<quote>#{content}</quote>\n"
+      end
+
+      def visit_block_lead(node)
+        content = render_children(node)
+        "<lead>#{content}</lead>\n"
+      end
+
+      def visit_block_read(node)
+        content = render_children(node)
+        "<lead>#{content}</lead>\n"
+      end
+
+      def visit_block_note(node)
+        caption = node.args.first
+        content = render_children(node)
+        captionblock('note', content, caption)
+      end
+
+      def visit_block_memo(node)
+        caption = node.args.first
+        content = render_children(node)
+        captionblock('memo', content, caption)
+      end
+
+      def visit_block_tip(node)
+        caption = node.args.first
+        content = render_children(node)
+        captionblock('tip', content, caption)
+      end
+
+      def visit_block_info(node)
+        caption = node.args.first
+        content = render_children(node)
+        captionblock('info', content, caption)
+      end
+
+      def visit_block_warning(node)
+        caption = node.args.first
+        content = render_children(node)
+        captionblock('warning', content, caption)
+      end
+
+      def visit_block_important(node)
+        caption = node.args.first
+        content = render_children(node)
+        captionblock('important', content, caption)
+      end
+
+      def visit_block_caution(node)
+        caption = node.args.first
+        content = render_children(node)
+        captionblock('caution', content, caption)
+      end
+
+      def visit_block_planning(node)
+        caption = node.args.first
+        content = render_children(node)
+        captionblock('planning', content, caption)
+      end
+
+      def visit_block_best(node)
+        caption = node.args.first
+        content = render_children(node)
+        captionblock('best', content, caption)
+      end
+
+      def visit_block_security(node)
+        caption = node.args.first
+        content = render_children(node)
+        captionblock('security', content, caption)
+      end
+
+      def visit_block_reference(node)
+        caption = node.args.first
+        content = render_children(node)
+        captionblock('reference', content, caption)
+      end
+
+      def visit_block_link(node)
+        caption = node.args.first
+        content = render_children(node)
+        captionblock('link', content, caption)
+      end
+
+      def visit_block_practice(node)
+        caption = node.args.first
+        content = render_children(node)
+        captionblock('practice', content, caption)
+      end
+
+      def visit_block_expert(node)
+        caption = node.args.first
+        content = render_children(node)
+        captionblock('expert', content, caption)
+      end
+
+      def visit_block_point(node)
+        caption = node.args.first
+        content = render_block_content_with_paragraphs(node)
+        if caption && !caption.empty? && node.caption_node
+          caption_with_inline = render_caption_inline(node.caption_node)
+          captionblock('point-t', content, caption_with_inline, 'point-title')
         else
-          raise NotImplementedError, "Unknown block type: #{block_type}"
+          captionblock('point', content, nil)
         end
+      end
+
+      def visit_block_shoot(node)
+        caption = node.args.first
+        content = render_block_content_with_paragraphs(node)
+        if caption && !caption.empty? && node.caption_node
+          caption_with_inline = render_caption_inline(node.caption_node)
+          captionblock('shoot-t', content, caption_with_inline, 'shoot-title')
+        else
+          captionblock('shoot', content, nil)
+        end
+      end
+
+      def visit_block_notice(node)
+        caption = node.args.first
+        content = render_block_content_with_paragraphs(node)
+        if caption && !caption.empty? && node.caption_node
+          caption_with_inline = render_caption_inline(node.caption_node)
+          captionblock('notice-t', content, caption_with_inline, 'notice-title')
+        else
+          captionblock('notice', content, nil)
+        end
+      end
+
+      def visit_block_term(node)
+        content = render_block_content_with_paragraphs(node)
+        captionblock('term', content, nil)
+      end
+
+      def visit_block_insn(node)
+        visit_syntaxblock(node)
+      end
+
+      def visit_block_box(node)
+        visit_syntaxblock(node)
+      end
+
+      def visit_block_flushright(node)
+        content = render_children(node)
+        content.gsub('<p>', %Q(<p align='right'>)) + "\n"
+      end
+
+      def visit_block_centering(node)
+        content = render_children(node)
+        content.gsub('<p>', %Q(<p align='center'>)) + "\n"
+      end
+
+      def visit_block_rawblock(node)
+        visit_rawblock(node)
+      end
+
+      def visit_block_comment(node)
+        visit_comment_block(node)
+      end
+
+      def visit_block_noindent(_node)
+        @noindent = true
+        ''
+      end
+
+      def visit_block_blankline(_node)
+        "<p/>\n"
+      end
+
+      def visit_block_pagebreak(_node)
+        "<pagebreak />\n"
+      end
+
+      def visit_block_hr(_node)
+        "<hr />\n"
+      end
+
+      def visit_block_label(node)
+        label_id = node.args.first
+        %Q(<label id='#{label_id}' />\n)
+      end
+
+      def visit_block_dtp(node)
+        dtp_str = node.args.first
+        %Q(<?dtp #{dtp_str} ?>\n)
+      end
+
+      def visit_block_bpo(node)
+        content = render_children(node)
+        %Q(<bpo>#{content.chomp}</bpo>\n)
+      end
+
+      def visit_block_printendnotes(node)
+        visit_printendnotes(node)
+      end
+
+      def visit_block_bibpaper(node)
+        visit_bibpaper(node)
+      end
+
+      def visit_block_olnum(node)
+        ''
+      end
+
+      def visit_block_firstlinenum(node)
+        @first_line_num = node.args.first&.to_i
+        ''
+      end
+
+      def visit_block_tsize(_node)
+        # tsize is now processed by TsizeProcessor during AST compilation
+        ''
+      end
+
+      def visit_block_graph(node)
+        visit_graph(node)
+      end
+
+      def visit_block_beginchild(node)
+        visit_beginchild(node)
+      end
+
+      def visit_block_endchild(node)
+        visit_endchild(node)
       end
 
       def visit_beginchild(_node)
@@ -720,7 +843,11 @@ module ReVIEW
         end
 
         content = render_children(node)
-        result << content unless content.empty?
+        unless content.empty?
+          # Wrap content in <p> tag like Builder does with split_paragraph
+          content = content.strip
+          result << "<p>#{content}</p>"
+        end
 
         result << "</bibitem>\n"
         result.join("\n")
@@ -835,27 +962,31 @@ module ReVIEW
       end
 
       def render_ordered_items(node)
-        start_number = @ol_num || node.start_number || 1
+        # num attribute: display number from source (start_number or item.number)
+        # olnum attribute: InDesign's internal counter (set by OlnumProcessor)
+        #
+        # OlnumProcessor analyzes the list during AST compilation and sets:
+        # - start_number: the first item's display number
+        # - olnum_start: the starting value for InDesign's counter
+        #   - For //olnum[N] directive: olnum_start = N
+        #   - For explicit numbering: olnum_start = 1
+
+        start_number = node.start_number || 1
         current_number = start_number
-        olnum_counter = 1 # Counter for olnum attribute (always starts at 1 per list)
+        current_olnum = node.olnum_start || 1
 
         items = node.children.map do |item|
-          rendered = render_ordered_item(item, current_number, olnum_counter)
+          # num: the display number (from source or calculated)
+          display_number = item.respond_to?(:number) && item.number ? item.number : current_number
+
+          content = render_list_item_body(item)
+          rendered = %Q(<li aid:pstyle="ol-item" olnum="#{current_olnum}" num="#{display_number}">#{content}</li>)
           current_number += 1
-          olnum_counter += 1
+          current_olnum += 1
           rendered
         end
 
-        @ol_num = nil
         items.join
-      end
-
-      def render_ordered_item(item, current_number, olnum_value)
-        # olnum: sequential number within this list (always starts at 1)
-        # num: display number from source or calculated absolute number
-        display_number = item.respond_to?(:number) && item.number ? item.number : current_number
-        content = render_list_item_body(item)
-        %Q(<li aid:pstyle="ol-item" olnum="#{olnum_value}" num="#{display_number}">#{content}</li>)
       end
 
       def render_definition_items(node)
@@ -864,7 +995,40 @@ module ReVIEW
 
       def render_definition_item(item)
         term_content = render_inline_nodes(item.term_children)
-        definition_content = render_nodes(item.children)
+
+        # Definition content handling:
+        # - Initial inline content (paragraphs) are joined together without <p> tags
+        # - Block elements (lists) are rendered as-is
+        # - Paragraphs after block elements are wrapped in <p> tags
+        definition_parts = []
+        has_block_element = false
+
+        item.children.each do |child|
+          if child.is_a?(ReVIEW::AST::ParagraphNode)
+            # Render paragraph content
+            content = render_children(child)
+            # Join lines in paragraph by removing newlines (like join_lines in Builder)
+            content = if @book.config['join_lines_by_lang']
+                        content.tr("\n", ' ')
+                      else
+                        content.delete("\n")
+                      end
+
+            definition_parts << if has_block_element
+                                  # After a block element, wrap paragraphs in <p> tags
+                                  "<p>#{content}</p>"
+                                else
+                                  # Initial paragraphs are not wrapped
+                                  content
+                                end
+          else
+            # Block element (list, etc.)
+            definition_parts << visit(child)
+            has_block_element = true
+          end
+        end
+
+        definition_content = definition_parts.join
 
         if definition_content.empty?
           %Q(<dt>#{term_content}</dt><dd></dd>)
@@ -1210,26 +1374,77 @@ module ReVIEW
 
       # Headline reference
       def render_inline_hd(_type, content, node)
-        if node.args.length >= 2
-          chapter_id = node.args[0]
-          headline_id = node.args[1]
+        # Use reference_id if available (from ReferenceResolver)
+        id = node.reference_id || node.args.first || content
 
-          chap = @book.contents.detect { |c| c.id == chapter_id }
-          if chap
-            n = chap.headline_index.number(headline_id)
-            if n.present? && chap.number && over_secnolevel?(n)
-              I18n.t('hd_quote', [n, chap.headline(headline_id).caption])
-            else
-              I18n.t('hd_quote_without_number', chap.headline(headline_id).caption)
-            end
-          else
-            content
-          end
+        # Parse chapter|id format like Builder does
+        m = /\A([^|]+)\|(.+)/.match(id)
+        if m && m[1]
+          chapter = @book.contents.detect { |chap| chap.id == m[1] }
+          headline_id = m[2]
+        else
+          chapter = @chapter
+          headline_id = id
+        end
+
+        if chapter
+          render_hd_for_chapter(chapter, headline_id)
         else
           content
         end
+      rescue ReVIEW::KeyError
+        app_error "unknown headline: #{id}"
       rescue StandardError
         content
+      end
+
+      def render_hd_for_chapter(chapter, headline_id)
+        # headline_id is already in the correct format (e.g., "parent|child")
+        # The headline_index stores IDs in hierarchical format with |
+        # Don't split it further - just use it as-is to look up in headline_index
+        n = chapter.headline_index.number(headline_id)
+        caption = chapter.headline(headline_id).caption
+
+        if n.present? && chapter.number && over_secnolevel?(n)
+          I18n.t('hd_quote', [n, caption])
+        else
+          I18n.t('hd_quote_without_number', caption)
+        end
+      end
+
+      # Section number reference
+      def render_inline_sec(_type, _content, node)
+        id = node.reference_id
+        begin
+          chapter, extracted_id = extract_chapter_id(id)
+
+          # extracted_id is already in the correct format (e.g., "parent|child")
+          # Don't split it - use it as-is
+          n = chapter.headline_index.number(extracted_id)
+
+          # Get section number like Builder does
+          if n.present? && chapter.number && over_secnolevel?(n)
+            n
+          else
+            ''
+          end
+        rescue ReVIEW::KeyError
+          app_error "unknown headline: #{id}"
+        end
+      end
+
+      # Section title reference
+      def render_inline_sectitle(_type, content, node)
+        id = node.reference_id
+        begin
+          chapter, extracted_id = extract_chapter_id(id)
+
+          # extracted_id is already in the correct format (e.g., "parent|child")
+          # Don't split it - use it as-is
+          chapter.headline(extracted_id).caption
+        rescue ReVIEW::KeyError
+          content
+        end
       end
 
       # Chapter reference
@@ -1247,29 +1462,13 @@ module ReVIEW
       def render_inline_chapref(_type, content, node)
         id = node.args.first || content
 
-        if @book.config.check_version('2', exception: false)
-          # Backward compatibility
-          chs = ['', '「', '」']
-          if @book.config['chapref']
-            chs2 = @book.config['chapref'].split(',')
-            if chs2.size == 3
-              chs = chs2
-            end
-          end
-          s = "#{chs[0]}#{@book.chapter_index.number(id)}#{chs[1]}#{@book.chapter_index.title(id)}#{chs[2]}"
-          if @book.config['chapterlink']
-            %Q(<link href="#{id}">#{s}</link>)
-          else
-            s
-          end
+        # Use display_string like Builder base class does
+        display_str = @book.chapter_index.display_string(id)
+
+        if @book.config['chapterlink']
+          %Q(<link href="#{id}">#{display_str}</link>)
         else
-          # Use parent renderer's method
-          title = @book.chapter_index.title(id)
-          if @book.config['chapterlink']
-            %Q(<link href="#{id}">#{title}</link>)
-          else
-            title
-          end
+          display_str
         end
       rescue ReVIEW::KeyError
         escape(id)
@@ -1453,7 +1652,7 @@ module ReVIEW
 
       def over_secnolevel?(n)
         secnolevel = @book&.config&.[]('secnolevel') || 2
-        n.to_s.split('.').size >= secnolevel
+        secnolevel >= n.to_s.split('.').size
       end
 
       private
@@ -1664,7 +1863,7 @@ module ReVIEW
       end
 
       # Visit list code block
-      def visit_list_code_block(node)
+      def visit_code_block_list(node)
         result = []
         result << '<codelist>'
 
@@ -1693,7 +1892,7 @@ module ReVIEW
       end
 
       # Visit listnum code block
-      def visit_listnum_code_block(node)
+      def visit_code_block_listnum(node)
         result = []
         result << '<codelist>'
 
@@ -1722,25 +1921,25 @@ module ReVIEW
       end
 
       # Visit emlist code block
-      def visit_emlist_code_block(node)
+      def visit_code_block_emlist(node)
         caption_content = node.caption_node ? render_children(node.caption_node) : nil
         quotedlist(node, 'emlist', caption_content)
       end
 
       # Visit emlistnum code block
-      def visit_emlistnum_code_block(node)
+      def visit_code_block_emlistnum(node)
         caption_content = node.caption_node ? render_children(node.caption_node) : nil
         quotedlist_with_linenum(node, 'emlistnum', caption_content)
       end
 
       # Visit cmd code block
-      def visit_cmd_code_block(node)
+      def visit_code_block_cmd(node)
         caption_content = node.caption_node ? render_children(node.caption_node) : nil
         quotedlist(node, 'cmd', caption_content)
       end
 
       # Visit source code block
-      def visit_source_code_block(node)
+      def visit_code_block_source(node)
         result = []
         result << '<source>'
 
@@ -1840,7 +2039,8 @@ module ReVIEW
         result = []
         result << %Q(<list type='#{css_class}'>)
 
-        if caption_top?('list') && caption
+        # Use present? like Builder to avoid empty caption tags
+        if caption_top?('list') && caption.present?
           result << %Q(<caption aid:pstyle='#{css_class}-title'>#{caption}</caption>)
         end
 
@@ -1850,7 +2050,7 @@ module ReVIEW
         # This matches IDGXMLBuilder behavior: print '<pre>'; print lines; puts '</pre>'
         result << "<pre>#{code_content}</pre>"
 
-        if !caption_top?('list') && caption
+        if !caption_top?('list') && caption.present?
           result << %Q(<caption aid:pstyle='#{css_class}-title'>#{caption}</caption>)
         end
 
@@ -1864,7 +2064,8 @@ module ReVIEW
         result = []
         result << %Q(<list type='#{css_class}'>)
 
-        if caption_top?('list') && caption
+        # Use present? like Builder to avoid empty caption tags
+        if caption_top?('list') && caption.present?
           result << %Q(<caption aid:pstyle='#{css_class}-title'>#{caption}</caption>)
         end
 
@@ -1873,7 +2074,7 @@ module ReVIEW
         # Combine <pre>, code content, and </pre> in a single string
         result << "<pre>#{code_content}</pre>"
 
-        if !caption_top?('list') && caption
+        if !caption_top?('list') && caption.present?
           result << %Q(<caption aid:pstyle='#{css_class}-title'>#{caption}</caption>)
         end
 
@@ -2460,6 +2661,9 @@ module ReVIEW
       def system_graph_blockdiag(_id, file_path, tf_path, command)
         system("#{command} -Tpdf -o #{file_path} #{tf_path}")
       end
+
+      # Aliases for backward compatibility
+      alias_method :render_inline_secref, :render_inline_hd
     end
   end
 end

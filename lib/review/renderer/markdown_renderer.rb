@@ -144,7 +144,8 @@ module ReVIEW
         "<dt>#{term}</dt>\n<dd>#{definition}</dd>\n"
       end
 
-      def visit_code_block(node)
+      # Common code block rendering method used by all code block types
+      def render_code_block_common(node)
         result = ''
         lang = node.lang || ''
 
@@ -176,6 +177,31 @@ module ReVIEW
         result += "```\n\n"
 
         result
+      end
+
+      # Individual code block type visitors that delegate to common method
+      def visit_code_block_list(node)
+        render_code_block_common(node)
+      end
+
+      def visit_code_block_listnum(node)
+        render_code_block_common(node)
+      end
+
+      def visit_code_block_emlist(node)
+        render_code_block_common(node)
+      end
+
+      def visit_code_block_emlistnum(node)
+        render_code_block_common(node)
+      end
+
+      def visit_code_block_cmd(node)
+        render_code_block_common(node)
+      end
+
+      def visit_code_block_source(node)
+        render_code_block_common(node)
       end
 
       def visit_code_line(node)
@@ -256,25 +282,16 @@ module ReVIEW
         result
       end
 
-      def visit_block(node)
-        case node.block_type.to_sym
-        when :quote
-          visit_quote_block(node)
-        when :captionblock
-          visit_caption_block(node)
-        else
-          visit_generic_block(node)
-        end
-      end
+      # visit_block is now handled by Base renderer with dynamic method dispatch
 
-      def visit_quote_block(node)
+      def visit_block_quote(node)
         content = render_children(node).chomp
         lines = content.split("\n")
         quoted_lines = lines.map { |line| "> #{line}" }
         "#{quoted_lines.join("\n")}\n\n"
       end
 
-      def visit_caption_block(node)
+      def visit_block_captionblock(node)
         # Use HTML div for caption blocks
         result = %Q(<div class="captionblock">\n\n)
         result += render_children(node)
@@ -282,7 +299,9 @@ module ReVIEW
         result
       end
 
-      def visit_generic_block(node)
+      # Generic block handler for unknown block types in Markdown
+      # This is not called directly but kept for reference if needed
+      def render_generic_block(node)
         # Use HTML div for generic blocks
         css_class = node.block_type.to_s
         result = %Q(<div class="#{css_class}">\n\n)
