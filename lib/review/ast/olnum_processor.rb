@@ -25,14 +25,19 @@ module ReVIEW
         new.process(ast_root)
       end
 
-      # Process the AST to handle olnum commands
       def process(ast_root)
+        # First pass: process //olnum commands
         process_node(ast_root)
+        # Second pass: set olnum_start for all ordered lists
+        add_olnum_starts(ast_root)
       end
 
       private
 
       def process_node(node)
+        # Collect indices to delete (process in reverse to avoid index shifting)
+        indices_to_delete = []
+
         node.children.each_with_index do |child, idx|
           if olnum_command?(child)
             # Find the next ordered list for olnum
@@ -40,14 +45,39 @@ module ReVIEW
             if target_list
               olnum_value = extract_olnum_value(child)
               target_list.start_number = olnum_value
+              # Mark this list as explicitly set by //olnum
+              target_list.olnum_start = olnum_value
             end
 
-            node.children.delete_at(idx)
+            indices_to_delete << idx
           else
             # Recursively process child nodes
             process_node(child)
           end
         end
+
+        # Delete olnum nodes in reverse order to avoid index shifting
+        indices_to_delete.reverse_each { |idx| node.children.delete_at(idx) }
+      end
+
+      # Set olnum_start for lists without explicit //olnum
+      def add_olnum_starts(node)
+        if ordered_list_node?(node) && node.olnum_start.nil?
+          start_number = node.start_number || 1
+
+          # Check if items have consecutive increasing numbers
+          is_consecutive = node.children.each_with_index.all? do |item, idx|
+            next true unless item.is_a?(ListItemNode)
+
+            expected = start_number + idx
+            actual = item.number || expected
+            actual == expected
+          end
+
+          node.olnum_start = is_consecutive ? start_number : 1
+        end
+
+        node.children.each { |child| add_olnum_starts(child) }
       end
 
       def olnum_command?(node)

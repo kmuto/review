@@ -6,12 +6,13 @@ module ReVIEW
   module AST
     class ListNode < Node
       attr_reader :list_type
-      attr_accessor :start_number
+      attr_accessor :start_number, :olnum_start
 
-      def initialize(location: nil, list_type: nil, start_number: nil, **kwargs)
+      def initialize(location: nil, list_type: nil, start_number: nil, olnum_start: nil, **kwargs)
         super(location: location, **kwargs)
         @list_type = list_type # :ul, :ol, :dl
         @start_number = start_number
+        @olnum_start = olnum_start # InDesign's olnum starting value (for IDGXML)
       end
 
       # Convenience methods for type checking
