@@ -142,8 +142,9 @@ module ReVIEW
               end
 
         # Check for start_number for ordered lists
+        # Only output start attribute if it's not the default value (1)
         start_attr = ''
-        if node.list_type == :ol && node.start_number
+        if node.list_type == :ol && node.start_number && node.start_number != 1
           start_attr = %Q( start="#{node.start_number}")
         end
 
