@@ -22,7 +22,6 @@ module ReVIEW
         super
         @blank_seen = true
         @ul_indent = 0
-        @noindent = nil
         @table_rows = []
         @table_header_count = 0
         @rendering_context = nil
@@ -52,10 +51,6 @@ module ReVIEW
         lines = content.split("\n")
         result = lines.join(' ')
 
-        # Handle noindent directive
-        if @noindent
-          @noindent = nil
-        end
         "#{result}\n\n"
       end
 
