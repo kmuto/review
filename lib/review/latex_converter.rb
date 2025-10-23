@@ -164,6 +164,7 @@ module ReVIEW
         book_config['texstyle'] ||= 'reviewmacro'
         book_config['texdocumentclass'] ||= ['jsbook', 'oneside']
         book_config['language'] ||= 'ja'
+        book_config['builder'] ||= 'latex'  # Set builder for tsize processing
 
         # Convert relative paths in pdfmaker config to absolute paths
         # This is necessary because LATEXBuilder tries to read these files

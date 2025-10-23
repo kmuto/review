@@ -482,104 +482,23 @@ module ReVIEW
       end
 
       def visit_regular_image(node, caption)
-        result = []
-        # Use Re:VIEW image structure like LATEXBuilder
-        result << if node.id?
-                    "\\begin{reviewimage}%%#{node.id}"
-                  else
-                    '\\begin{reviewimage}'
-                  end
+        image_path = find_image_path(node.id)
 
-        # Add includegraphics command like LATEXBuilder
-        if node.id? && @chapter
-          begin
-            image_path = @chapter.image(node.id).path
-            # Parse metric option like LATEXBuilder
-            metrics = parse_metric('latex', node.metric)
-
-            # Determine command based on book version
-            command = 'reviewincludegraphics'
-
-            # Use metric if provided, otherwise use default width
-            result << if metrics && !metrics.empty?
-                        "\\#{command}[#{metrics}]{#{image_path}}"
-                      else
-                        "\\#{command}[width=\\maxwidth]{#{image_path}}"
-                      end
-          rescue ReVIEW::KeyError
-            # Image not found - skip includegraphics command like LATEXBuilder would use image_dummy
-            # But for regular image nodes, we still generate the structure without the includegraphics
-          end
+        if image_path
+          render_existing_image(node, image_path, caption, with_label: true)
+        else
+          render_dummy_image(node, caption, double_escape_id: false, with_label: true)
         end
-
-        if caption && !caption.empty?
-          result << "\\reviewimagecaption{#{caption}}"
-        end
-
-        if node.id?
-          # Generate label like LATEXBuilder: image:chapter:id
-          # Don't escape underscores in labels - they're allowed in LaTeX label names
-          result << if @chapter
-                      "\\label{image:#{@chapter.id}:#{node.id}}"
-                    else
-                      "\\label{image:test:#{node.id}}"
-                    end
-        end
-
-        result << '\\end{reviewimage}'
-
-        result.join("\n") + "\n"
       end
 
       def visit_indepimage(node, caption)
-        result = []
-
-        # Get image path
-        image_path = @chapter.image(node.id).path if @chapter&.image(node.id)
+        image_path = find_image_path(node.id)
 
         if image_path
-          result << "\\begin{reviewimage}%%#{node.id}"
-
-          # Add caption at top if configured
-          if caption_top?('image') && caption && !caption.empty?
-            caption_str = "\\reviewindepimagecaption{#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{caption}}"
-            result << caption_str
-          end
-
-          # Add image
-          command = 'reviewincludegraphics'
-
-          # Parse metric option like LATEXBuilder
-          metrics = parse_metric('latex', node.metric)
-
-          # Use metric if provided, otherwise use default width
-          result << if metrics && !metrics.empty?
-                      "\\#{command}[#{metrics}]{#{image_path}}"
-                    else
-                      "\\#{command}[width=\\maxwidth]{#{image_path}}"
-                    end
-
-          # Add caption at bottom if not at top
-          if !caption_top?('image') && caption && !caption.empty?
-            caption_str = "\\reviewindepimagecaption{#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{caption}}"
-            result << caption_str
-          end
-
-          result << '\\end{reviewimage}'
+          render_existing_indepimage(node, image_path, caption)
         else
-          # Fallback for missing image
-          result << "\\begin{reviewdummyimage}%%#{node.id}"
-          result << "% Image file not found: #{node.id}"
-
-          if caption && !caption.empty?
-            caption_str = "\\reviewindepimagecaption{#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{caption}}"
-            result << caption_str
-          end
-
-          result << '\\end{reviewdummyimage}'
+          render_dummy_image(node, caption, double_escape_id: true, with_label: false)
         end
-
-        result.join("\n") + "\n"
       end
 
       def visit_list(node)
@@ -1671,17 +1590,16 @@ module ReVIEW
 
       # Render icon
       def render_inline_icon(_type, content, node)
-        if node.args.first
-          icon_id = node.args.first
-          if @chapter&.image(icon_id)&.path
-            command = @book&.config&.check_version('2', exception: false) ? 'includegraphics' : 'reviewicon'
-            "\\#{command}{#{@chapter.image(icon_id).path}}"
-          else
-            # Fallback for missing image
-            "\\verb|--[[path = #{icon_id}]]--|"
-          end
+        return content unless node.args.first
+
+        icon_id = node.args.first
+        image_path = find_image_path(icon_id)
+
+        if image_path
+          command = @book&.config&.check_version('2', exception: false) ? 'includegraphics' : 'reviewicon'
+          "\\#{command}{#{image_path}}"
         else
-          content
+          "\\verb|--[[path = #{icon_id} (not exist)]]--|"
         end
       end
 
@@ -2034,6 +1952,110 @@ module ReVIEW
       end
 
       private
+
+      # Get image path, returning nil if image doesn't exist
+      def find_image_path(id)
+        path = @chapter.image(id).path
+        path && !path.empty? ? path : nil
+      rescue StandardError
+        nil
+      end
+
+      # Render existing image (for regular //image)
+      def render_existing_image(node, image_path, caption, with_label:)
+        result = []
+        result << if node.id?
+                    "\\begin{reviewimage}%%#{node.id}"
+                  else
+                    '\\begin{reviewimage}'
+                  end
+
+        metrics = parse_metric('latex', node.metric)
+        command = 'reviewincludegraphics'
+
+        result << if metrics && !metrics.empty?
+                    "\\#{command}[#{metrics}]{#{image_path}}"
+                  else
+                    "\\#{command}[width=\\maxwidth]{#{image_path}}"
+                  end
+
+        result << "\\reviewimagecaption{#{caption}}" if caption && !caption.empty?
+
+        if with_label && node.id?
+          result << if @chapter
+                      "\\label{image:#{@chapter.id}:#{node.id}}"
+                    else
+                      "\\label{image:test:#{node.id}}"
+                    end
+        end
+
+        result << '\\end{reviewimage}'
+        result.join("\n") + "\n"
+      end
+
+      # Render existing indepimage (for //indepimage)
+      def render_existing_indepimage(node, image_path, caption)
+        result = []
+        result << "\\begin{reviewimage}%%#{node.id}"
+
+        if caption_top?('image') && caption && !caption.empty?
+          caption_str = "\\reviewindepimagecaption{#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{caption}}"
+          result << caption_str
+        end
+
+        metrics = parse_metric('latex', node.metric)
+        command = 'reviewincludegraphics'
+
+        result << if metrics && !metrics.empty?
+                    "\\#{command}[#{metrics}]{#{image_path}}"
+                  else
+                    "\\#{command}[width=\\maxwidth]{#{image_path}}"
+                  end
+
+        if !caption_top?('image') && caption && !caption.empty?
+          caption_str = "\\reviewindepimagecaption{#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{caption}}"
+          result << caption_str
+        end
+
+        result << '\\end{reviewimage}'
+        result.join("\n") + "\n"
+      end
+
+      # Render dummy image for missing images
+      def render_dummy_image(node, caption, double_escape_id:, with_label:)
+        result = []
+        result << '\\begin{reviewdummyimage}'
+
+        if node.id?
+          # For regular images: single escape, for indepimage: double escape (like Builder)
+          if double_escape_id
+            result << escape_latex("--[[path = #{escape_latex(node.id)} (not exist)]]--")
+          else
+            result << escape_latex("--[[path = #{node.id} (not exist)]]--")
+          end
+        end
+
+        if with_label && node.id?
+          result << if @chapter
+                      "\\label{image:#{@chapter.id}:#{node.id}}"
+                    else
+                      "\\label{image:test:#{node.id}}"
+                    end
+        end
+
+        if caption && !caption.empty?
+          if double_escape_id
+            # indepimage uses reviewindepimagecaption
+            result << "\\reviewindepimagecaption{#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{caption}}"
+          else
+            # regular image uses reviewimagecaption
+            result << "\\reviewimagecaption{#{caption}}"
+          end
+        end
+
+        result << '\\end{reviewdummyimage}'
+        result.join("\n") + "\n"
+      end
 
       def ast_compiler
         @ast_compiler ||= ReVIEW::AST::Compiler.for_chapter(@chapter)

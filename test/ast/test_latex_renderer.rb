@@ -317,6 +317,7 @@ class TestLatexRenderer < Test::Unit::TestCase
   end
 
   def test_visit_image
+    # Test for missing image (no image file bound to chapter)
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(content: 'Test Image'))
 
@@ -324,10 +325,11 @@ class TestLatexRenderer < Test::Unit::TestCase
     result = @renderer.visit(image)
 
     expected_lines = [
-      '\\begin{reviewimage}%%image1',
-      '\\reviewimagecaption{Test Image}',
+      '\\begin{reviewdummyimage}',
+      '{-}{-}[[path = image1 (not exist)]]{-}{-}',
       '\\label{image:test:image1}',
-      '\\end{reviewimage}'
+      '\\reviewimagecaption{Test Image}',
+      '\\end{reviewdummyimage}'
     ]
 
     assert_equal expected_lines.join("\n") + "\n", result
@@ -1145,20 +1147,21 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_equal 'width=80mm', result
   end
 
-  # Integration test for image with metric
+  # Integration test for image with metric (missing image case)
   def test_visit_image_with_metric
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(content: 'Test Image'))
 
-    # Create an image node with metric
+    # Create an image node with metric (image doesn't exist)
     image = AST::ImageNode.new(id: 'image1', caption: 'Test Image', caption_node: caption_node, metric: 'latex::width=80mm')
     result = @renderer.visit(image)
 
     expected_lines = [
-      '\\begin{reviewimage}%%image1',
-      '\\reviewimagecaption{Test Image}',
+      '\\begin{reviewdummyimage}',
+      '{-}{-}[[path = image1 (not exist)]]{-}{-}',
       '\\label{image:test:image1}',
-      '\\end{reviewimage}'
+      '\\reviewimagecaption{Test Image}',
+      '\\end{reviewdummyimage}'
     ]
 
     assert_equal expected_lines.join("\n") + "\n", result
