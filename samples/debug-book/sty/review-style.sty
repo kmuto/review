@@ -1,0 +1,43 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{review-style}[2020/01/06]
+
+%% using Helvetica as sans-serif
+\renewcommand{\sfdefault}{phv}
+
+%% disable hyperlink color and border
+\hypersetup{hidelinks}
+
+% コードリスト用色
+\definecolor{shadecolor}{gray}{0.9}
+\definecolor{shadecolorb}{gray}{0.1}
+\definecolor{reviewgreen}{rgb}{0,0.4,0}
+\definecolor{reviewblue}{rgb}{0.2,0.2,0.4}
+\definecolor{reviewred}{rgb}{0.7,0,0}
+\definecolor{reviewdarkred}{rgb}{0.3,0,0}
+
+% ハイフネーション禁止。@M=10000。@m=1000
+% latexdef 〜 で確認
+\hyphenpenalty\@M\relax
+\exhyphenpenalty\@M\relax
+
+% 上下アキ
+% 引用
+\jlreqsetup{quote_beforeafter_space=\baselineskip}
+% 箇条書き
+\jlreqsetup{itemization_beforeafter_space=\baselineskip}
+
+% ヘッダスタイル
+\ModifyPageStyle{headings}{nombre_position={top-fore_edge},running_head_position={top-fore_edge}}
+\pagestyle{headings}
+
+% 図表フロートの配置
+\floatplacement{figure}{H}
+\floatplacement{table}{H}
+
+% リスト内和欧空き幅 (\z@は0で、空きなしを意味する。互換性で空きを入れたいときは以下の行をコメントアウトする)
+\def\reviewlistxkanjiskip{\z@}
+
+% boxsetting
+\ifdefined\reviewboxsetting
+  \reviewboxsetting
+\fi

@@ -1,0 +1,20 @@
+% 基本定義
+\usepackage{review-base}
+
+% スタイル装飾
+\usepackage{review-style}
+
+% 囲み飾りの設定
+\ifdefined\reviewboxsetting%
+  \RequirePackage{review-tcbox}
+\fi
+
+% ユーザー固有の定義
+\usepackage{review-custom}
+
+%% run \@endofreviewmacrohook at the end of reviewmacro style
+\@ifundefined{@endofreviewmacrohook}{}{%
+\let\AtEndOfReVIEWMacro\@firstofone
+\@endofreviewmacrohook}
+
+\endinput
