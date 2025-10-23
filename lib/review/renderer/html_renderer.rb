@@ -118,14 +118,38 @@ module ReVIEW
 
       def visit_paragraph(node)
         content = render_children(node)
-        # Remove newlines for HTMLBuilder compatibility
-        content = content.gsub(/\n+/, '').strip
+        content = join_paragraph_lines(content).strip
 
         # Check for noindent attribute
         if node.attribute?(:noindent)
           %Q(<p class="noindent">#{content}</p>\n)
         else
           "<p>#{content}</p>\n"
+        end
+      end
+
+      # Join paragraph lines according to join_lines_by_lang setting
+      # This matches HTMLBuilder's join_lines_to_paragraph behavior
+      #
+      # @param content [String] paragraph content with newlines
+      # @return [String] processed content with lines joined appropriately
+      def join_paragraph_lines(content)
+        if @book.config['join_lines_by_lang']
+          # Split by newlines to get individual lines
+          lines = content.split("\n")
+
+          # Add spaces between lines based on language rules
+          lazy = true
+          lang = @book.config['language'] || 'ja'
+          0.upto(lines.size - 2) do |n|
+            if add_space?(lines[n], lines[n + 1], lang, lazy)
+              lines[n] += ' '
+            end
+          end
+          lines.join
+        else
+          # Default: just remove newlines (no space added)
+          content.gsub(/\n+/, '')
         end
       end
 
