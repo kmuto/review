@@ -77,6 +77,9 @@ module ReVIEW
 
         # Error accumulation flag (similar to HTMLBuilder's Compiler)
         @compile_errors = false
+
+        # Commands that preserve content as-is (matching ReVIEW::Compiler behavior)
+        @non_parsed_commands = %i[embed texequation graph]
       end
 
       attr_reader :ast_root, :current_ast_node, :chapter
@@ -266,17 +269,18 @@ module ReVIEW
         f.until_match(%r{\A//|\A\#@}) do |line|
           break if line.strip.empty?
 
-          # Remove trailing newline and process indentation/content
-          processed_line = line.chomp.sub(/^(\t*)(.*)$/) { $1 + $2.rstrip }
+          # Match ReVIEW::Compiler behavior: preserve tabs, strip other whitespace
+          # Process: escape tabs -> strip -> restore tabs
+          processed_line = line.sub(/^(\t+)\s*/) { |m| '<!ESCAPETAB!>' * m.size }.strip.gsub('<!ESCAPETAB!>', "\t")
           raw_lines.push(processed_line)
         end
 
         return if raw_lines.empty?
 
         # Create single paragraph node with multiple lines joined by \n
-        # This matches Re:VIEW specification where only empty lines separate paragraphs
+        # AST preserves line breaks; HTMLRenderer removes them for Builder compatibility
         node = AST::ParagraphNode.new(location: location)
-        combined_text = raw_lines.join("\n") # Join lines with newline characters
+        combined_text = raw_lines.join("\n") # Join lines with newline (AST preserves structure)
         inline_processor.parse_inline_elements(combined_text, node)
         @current_ast_node.add_child(node)
       end
@@ -546,7 +550,12 @@ module ReVIEW
               break # Reached corresponding termination tag
             else
               # Nested termination tag - treat as content
-              lines << line.chomp
+              # Match ReVIEW::Compiler behavior
+              lines << if @non_parsed_commands.include?(parent_command)
+                         line.chomp
+                       else
+                         line.rstrip
+                       end
             end
           # Detect nested block commands
           elsif line.match?(%r{\A//[a-z]+})
@@ -563,7 +572,13 @@ module ReVIEW
             next
           else
             # Regular content line
-            lines << line.chomp
+            # Match ReVIEW::Compiler behavior: rstrip for most commands,
+            # but preserve whitespace for non-parsed commands (embed, texequation, graph)
+            lines << if @non_parsed_commands.include?(parent_command)
+                       line.chomp
+                     else
+                       line.rstrip
+                     end
           end
         end
 
