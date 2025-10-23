@@ -174,6 +174,12 @@ module ReVIEW
         normalized = normalized.gsub(/\\([a-zA-Z]+)\s*\{/, '\\\\\\1{')
         # Normalize environment spacing
         normalized = normalized.gsub(/\\(begin|end)\s*\{([^}]+)\}/, '\\\\\\1{\\2}')
+        # Add newlines around \begin{...} and \end{...}
+        # This makes diffs more readable by putting each environment on its own line
+        normalized = normalized.gsub(/([^\n])\\begin\{/, "\\1\n\\\\begin{")
+        normalized = normalized.gsub(/\\begin\{([^}]+)\}([^\n])/, "\\\\begin{\\1}\n\\2")
+        normalized = normalized.gsub(/([^\n])\\end\{/, "\\1\n\\\\end{")
+        normalized = normalized.gsub(/\\end\{([^}]+)\}([^\n])/, "\\\\end{\\1}\n\\2")
       end
 
       normalized

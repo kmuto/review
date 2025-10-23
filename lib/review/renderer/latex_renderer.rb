@@ -56,6 +56,9 @@ module ReVIEW
 
         # Initialize column counter for tracking column numbers
         @column_counter = 0
+
+        # Initialize index database and MeCab for Japanese text indexing
+        initialize_index_support
       end
 
       def visit_document(node)
@@ -1546,23 +1549,73 @@ module ReVIEW
         # If no escaping was needed, just return the item
         return item if mendex_escaped == item
 
-        # Generate key@display format for proper sorting
-        "#{escape_index(item)}@#{mendex_escaped}"
+        # Generate key@display format for proper sorting like LATEXBuilder (latexbuilder.rb:1418)
+        "#{escape_mendex_key(escape_index(item))}@#{escape_mendex_display(mendex_escaped)}"
+      end
+
+      # Initialize index support (database and MeCab) like LATEXBuilder
+      def initialize_index_support
+        @index_db = {}
+        @index_mecab = nil
+
+        return unless @book && @book.config['pdfmaker'] && @book.config['pdfmaker']['makeindex']
+
+        # Load index dictionary file
+        if @book.config['pdfmaker']['makeindex_dic']
+          @index_db = load_idxdb(@book.config['pdfmaker']['makeindex_dic'])
+        end
+
+        return unless @book.config['pdfmaker']['makeindex_mecab']
+
+        # Initialize MeCab for Japanese text indexing
+        begin
+          begin
+            require 'MeCab'
+          rescue LoadError
+            require 'mecab'
+          end
+          require 'nkf'
+          @index_mecab = MeCab::Tagger.new(@book.config['pdfmaker']['makeindex_mecab_opts'])
+        rescue LoadError
+          # MeCab not available, will fall back to text-only indexing
+        end
+      end
+
+      # Load index dictionary from file like LATEXBuilder (latexbuilder.rb:70-77)
+      def load_idxdb(file)
+        table = {}
+        File.foreach(file) do |line|
+          key, value = *line.strip.split(/\t+/, 2)
+          table[key] = value
+        end
+        table
       end
 
       # Format Japanese (non-ASCII) index item with yomi reading
       def format_japanese_index_item(item)
-        yomi = generate_yomi(item)
+        # Check dictionary first like LATEXBuilder (latexbuilder.rb:1411-1412)
+        yomi = if @index_db && @index_db[item]
+                 @index_db[item]
+               else
+                 # Generate yomi using MeCab like LATEXBuilder (latexbuilder.rb:1421-1422)
+                 generate_yomi(item)
+               end
         escaped_item = escape(item)
-        "#{escape_index(yomi)}@#{escape_index(escaped_item)}"
+        "#{escape_mendex_key(escape_index(yomi))}@#{escape_mendex_display(escape_index(escaped_item))}"
       end
 
-      # Generate yomi (reading) for Japanese text using NKF
+      # Generate yomi (reading) for Japanese text using MeCab + NKF like LATEXBuilder (latexbuilder.rb:1421)
       def generate_yomi(text)
-        require 'nkf'
-        NKF.nkf('-w --hiragana', text).force_encoding('UTF-8').chomp
+        # If MeCab is available, use it to parse and generate reading
+        if @index_mecab
+          require 'nkf'
+          NKF.nkf('-w --hiragana', @index_mecab.parse(text).force_encoding('UTF-8').chomp)
+        else
+          # Fallback: use the original text as-is if MeCab is unavailable
+          text
+        end
       rescue LoadError, ArgumentError, TypeError, RuntimeError
-        # Fallback: use the original text as-is if NKF is unavailable
+        # Fallback: use the original text as-is if processing fails
         text
       end
 
@@ -2028,11 +2081,11 @@ module ReVIEW
 
         if node.id?
           # For regular images: single escape, for indepimage: double escape (like Builder)
-          if double_escape_id
-            result << escape_latex("--[[path = #{escape_latex(node.id)} (not exist)]]--")
-          else
-            result << escape_latex("--[[path = #{node.id} (not exist)]]--")
-          end
+          result << if double_escape_id
+                      escape_latex("--[[path = #{escape_latex(node.id)} (not exist)]]--")
+                    else
+                      escape_latex("--[[path = #{node.id} (not exist)]]--")
+                    end
         end
 
         if with_label && node.id?
@@ -2044,13 +2097,13 @@ module ReVIEW
         end
 
         if caption && !caption.empty?
-          if double_escape_id
-            # indepimage uses reviewindepimagecaption
-            result << "\\reviewindepimagecaption{#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{caption}}"
-          else
-            # regular image uses reviewimagecaption
-            result << "\\reviewimagecaption{#{caption}}"
-          end
+          result << if double_escape_id
+                      # indepimage uses reviewindepimagecaption
+                      "\\reviewindepimagecaption{#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{caption}}"
+                    else
+                      # regular image uses reviewimagecaption
+                      "\\reviewimagecaption{#{caption}}"
+                    end
         end
 
         result << '\\end{reviewdummyimage}'
