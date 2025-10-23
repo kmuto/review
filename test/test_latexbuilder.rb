@@ -131,6 +131,16 @@ EOS
     assert_equal '\\href{mailto:takahashim@example.com}{takahashim@example.com}', actual
   end
 
+  def test_href_internal_with_label
+    actual = compile_inline('@<href>{#inlineop, inline operations}')
+    assert_equal '\\hyperref[inlineop]{inline operations}', actual
+  end
+
+  def test_href_internal_without_label
+    actual = compile_inline('@<href>{#inlineop}')
+    assert_equal '\\hyperref[inlineop]{\\#inlineop}', actual
+  end
+
   def test_inline_br
     actual = compile_inline('@<br>{}')
     assert_equal %Q(\\\\\n), actual

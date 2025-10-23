@@ -1435,7 +1435,15 @@ module ReVIEW
     end
 
     def compile_href(url, label)
-      if /\A[a-z]+:/.match?(url)
+      # Handle internal references (URLs starting with #)
+      if url.start_with?('#')
+        anchor = url.sub(/\A#/, '')
+        if label
+          "\\hyperref[#{escape(anchor)}]{#{escape(label)}}"
+        else
+          "\\hyperref[#{escape(anchor)}]{#{escape(url)}}"
+        end
+      elsif /\A[a-z]+:/.match?(url)
         if label
           macro('href', escape_url(url), escape(label))
         else
