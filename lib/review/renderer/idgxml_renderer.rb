@@ -66,10 +66,6 @@ module ReVIEW
         # Initialize column counter
         @column = 0
 
-        # Initialize state flags
-        @noindent = nil
-        @first_line_num = nil
-
         # Initialize table state
         @tablewidth = nil
         @table_id = nil
@@ -233,8 +229,7 @@ module ReVIEW
                   end
 
         # Handle noindent attribute
-        if node.attribute?(:noindent) || @noindent
-          @noindent = nil
+        if node.attribute?(:noindent)
           return %Q(<p aid:pstyle="noindent" noindent='1'>#{content}</p>)
         end
 
@@ -639,7 +634,6 @@ module ReVIEW
       end
 
       def visit_block_noindent(_node)
-        @noindent = true
         ''
       end
 
@@ -678,12 +672,7 @@ module ReVIEW
         visit_bibpaper(node)
       end
 
-      def visit_block_olnum(node)
-        ''
-      end
-
-      def visit_block_firstlinenum(node)
-        @first_line_num = node.args.first&.to_i
+      def visit_block_olnum(_node)
         ''
       end
 
@@ -2007,7 +1996,7 @@ module ReVIEW
 
         result = []
         no = 1
-        first_line_num = @first_line_num || 1
+        first_line_num = node.first_line_num || 1
 
         lines.each_with_index do |line, i|
           # Add line number span
@@ -2027,9 +2016,6 @@ module ReVIEW
           end
           no += 1
         end
-
-        # Clear @first_line_num after use
-        @first_line_num = nil
 
         result.join
       end
@@ -2432,15 +2418,6 @@ module ReVIEW
       # Escape for IDGXML (uses HTML escaping)
       def escape(str)
         escape_html(str.to_s)
-      end
-
-      # Get line number for code blocks
-      def line_num
-        return 1 unless @first_line_num
-
-        line_n = @first_line_num
-        @first_line_num = nil
-        line_n
       end
 
       # Get list reference for inline @<list>{}

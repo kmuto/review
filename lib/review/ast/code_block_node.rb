@@ -6,16 +6,17 @@ require 'review/ast/caption_node'
 module ReVIEW
   module AST
     class CodeBlockNode < Node
-      attr_accessor :caption_node
+      attr_accessor :caption_node, :first_line_num
       attr_reader :lang, :caption, :line_numbers, :code_type
 
-      def initialize(location: nil, lang: nil, id: nil, caption: nil, caption_node: nil, line_numbers: false, code_type: nil, **kwargs)
+      def initialize(location: nil, lang: nil, id: nil, caption: nil, caption_node: nil, line_numbers: false, code_type: nil, first_line_num: nil, **kwargs) # rubocop:disable Metrics/ParameterLists
         super(location: location, id: id, **kwargs)
         @lang = lang
         @caption_node = caption_node
         @caption = caption
         @line_numbers = line_numbers
         @code_type = code_type
+        @first_line_num = first_line_num
         @children = []
       end
 
@@ -74,6 +75,7 @@ module ReVIEW
           children: children.map(&:to_h)
         )
         result[:code_type] = code_type if code_type
+        result[:first_line_num] = first_line_num if first_line_num
         result[:original_text] = original_text if original_text
         result
       end
@@ -87,6 +89,7 @@ module ReVIEW
         hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
         hash[:line_numbers] = line_numbers
         hash[:code_type] = code_type if code_type
+        hash[:first_line_num] = first_line_num if first_line_num
         hash[:original_text] = original_text if original_text
         hash[:children] = children.map { |child| child.serialize_to_hash(options) } if children&.any?
         hash

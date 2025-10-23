@@ -19,6 +19,7 @@ require 'review/ast/list_processor'
 require 'review/ast/footnote_node'
 require 'review/ast/reference_resolver'
 require 'review/ast/tsize_processor'
+require 'review/ast/firstlinenum_processor'
 require 'review/ast/noindent_processor'
 require 'review/ast/olnum_processor'
 require 'review/ast/list_structure_normalizer'
@@ -121,6 +122,9 @@ module ReVIEW
         # Determine target format for tsize processing
         target_format = determine_target_format_for_tsize
         TsizeProcessor.process(@ast_root, target_format: target_format)
+
+        # Post-process AST for firstlinenum commands
+        FirstLineNumProcessor.process(@ast_root)
 
         # Post-process AST for noindent and olnum commands
         NoindentProcessor.process(@ast_root)

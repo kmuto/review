@@ -19,7 +19,6 @@ module ReVIEW
       def initialize(chapter)
         super
         @blank_seen = true
-        @first_line_num = nil
         @ol_num = nil
         @logger = ReVIEW.logger
       end
@@ -113,7 +112,7 @@ module ReVIEW
         lines = lines_content.split("\n")
         lines.pop if lines.last && lines.last.empty?
 
-        first_line_number = line_num
+        first_line_number = node.first_line_num || 1
 
         result += "\n" if caption_top?('list') && !caption.empty?
         result += "#{caption}\n" if caption_top?('list') && !caption.empty?
@@ -313,12 +312,6 @@ module ReVIEW
 
       def visit_block_tsize(_node)
         # Table size control is not meaningful in plaintext
-        ''
-      end
-
-      def visit_block_firstlinenum(node)
-        line_num = node.args.first&.to_i || 1
-        firstlinenum(line_num)
         ''
       end
 
@@ -604,18 +597,6 @@ module ReVIEW
       # Helper methods
       def render_caption_inline(caption_node)
         caption_node ? render_children(caption_node) : ''
-      end
-
-      def firstlinenum(num)
-        @first_line_num = num.to_i
-      end
-
-      def line_num
-        return 1 unless @first_line_num
-
-        line_n = @first_line_num
-        @first_line_num = nil
-        line_n
       end
 
       def headline_prefix(level)

@@ -43,7 +43,6 @@ module ReVIEW
         # Note: list counter is not used - we use chapter list index instead
         @table_counter = 0
         @image_counter = 0
-        @first_line_num = nil # For line numbering like HTMLBuilder
 
         # Flag to track if indexes have been generated using AST::Indexer
         @ast_indexes_generated = false
@@ -629,15 +628,6 @@ module ReVIEW
           # Use app_error for consistency with HTMLBuilder error handling
           app_error("unknown image: #{img_id}")
         end
-      end
-
-      # Line numbering for code blocks like HTMLBuilder
-      def line_num
-        return 1 unless @first_line_num
-
-        line_n = @first_line_num
-        @first_line_num = nil
-        line_n
       end
 
       def render_inline_b(_type, content, _node)
@@ -1241,7 +1231,7 @@ module ReVIEW
 
       def visit_code_block_emlistnum(node)
         lines_content = render_children(node)
-        numbered_lines = format_emlistnum_content(lines_content, node.lang)
+        numbered_lines = format_emlistnum_content(lines_content, node.lang, node)
 
         code_block_wrapper(
           node,
@@ -1267,7 +1257,7 @@ module ReVIEW
 
       def visit_code_block_listnum(node)
         lines_content = render_children(node)
-        numbered_lines = format_listnum_content(lines_content, node.lang)
+        numbered_lines = format_listnum_content(lines_content, node.lang, node)
 
         code_block_wrapper(
           node,
@@ -1356,12 +1346,12 @@ module ReVIEW
         highlight(body: body, lexer: lang, format: 'html')
       end
 
-      def format_emlistnum_content(lines_content, lang = nil)
+      def format_emlistnum_content(lines_content, lang = nil, node = nil)
         lines = lines_content.split("\n")
         lines.pop if lines.last && lines.last.empty?
 
         body = lines.inject('') { |i, j| i + detab(j) + "\n" }
-        first_line_number = line_num || 1
+        first_line_number = node&.first_line_num || 1
 
         if highlight?
           highlight(body: body, lexer: lang, format: 'html', linenum: true, options: { linenostart: first_line_number })
@@ -1372,12 +1362,12 @@ module ReVIEW
         end
       end
 
-      def format_listnum_content(lines_content, lang = nil)
+      def format_listnum_content(lines_content, lang = nil, node = nil)
         lines = lines_content.split("\n")
         lines.pop if lines.last && lines.last.empty?
 
         body = lines.inject('') { |i, j| i + detab(j) + "\n" }
-        first_line_number = line_num || 1
+        first_line_number = node&.first_line_num || 1
 
         highlighted = highlight(body: body, lexer: lang, format: 'html', linenum: true,
                                 options: { linenostart: first_line_number })
@@ -1698,14 +1688,6 @@ module ReVIEW
         %Q(<div class="#{escape(node.block_type)}"#{id_attr}>#{content}</div>)
       end
 
-      # Render firstlinenum control block
-      def render_firstlinenum_block(node)
-        # Extract line number from args (first arg is the line number)
-        line_num = node.args.first&.to_i || 1
-        firstlinenum(line_num)
-        '' # No HTML output
-      end
-
       # Render label control block
       def render_label_block(node)
         # Extract label from args
@@ -1837,11 +1819,6 @@ module ReVIEW
           # Use app_error for consistency with HTMLBuilder error handling
           app_error("unknown table: #{table_id}")
         end
-      end
-
-      # Line numbering for code blocks like HTMLBuilder
-      def firstlinenum(num)
-        @first_line_num = num.to_i
       end
 
       # Generate headline prefix and anchor like HTMLBuilder

@@ -45,9 +45,6 @@ module ReVIEW
         # Initialize section counter like LATEXBuilder
         @sec_counter = SecCounter.new(5, @chapter) if @chapter
 
-        # Initialize first line number state like LATEXBuilder
-        @first_line_num = nil
-
         # Initialize RenderingContext for cleaner state management
         @rendering_context = RenderingContext.new(:document)
 
@@ -219,7 +216,7 @@ module ReVIEW
       def visit_code_block_listnum(node)
         caption, caption_collector = process_code_block_caption(node)
         content = render_children(node)
-        result = visit_list_block(node, add_line_numbers(content), caption)
+        result = visit_list_block(node, add_line_numbers(content, node), caption)
         append_footnotetext_from_collector(result, caption_collector)
       end
 
@@ -235,7 +232,7 @@ module ReVIEW
       def visit_code_block_emlistnum(node)
         caption, caption_collector = process_code_block_caption(node)
         content = render_children(node)
-        result = visit_emlist_block(node, add_line_numbers(content), caption)
+        result = visit_emlist_block(node, add_line_numbers(content, node), caption)
         append_footnotetext_from_collector(result, caption_collector)
       end
 
@@ -619,17 +616,6 @@ module ReVIEW
         else
           raise NotImplementedError, 'Malformed footnote block: insufficient arguments'
         end
-      end
-
-      # Visit firstlinenum block (set starting line number)
-      def visit_block_firstlinenum(node)
-        # firstlinenum sets the starting line number for subsequent listnum blocks
-        # Store the value in @first_line_num like LaTeXBuilder does
-        if node.args.first
-          @first_line_num = node.args.first.to_i
-        end
-        # firstlinenum itself produces no output
-        ''
       end
 
       # Visit tsize block (table size control)
@@ -1113,21 +1099,18 @@ module ReVIEW
       end
 
       # Add line numbers to content like LATEXBuilder does
-      def add_line_numbers(content)
+      def add_line_numbers(content, node = nil)
         lines = content.split("\n")
         numbered_lines = []
 
-        # Use @first_line_num if set, otherwise start from 1
-        start_num = @first_line_num || 1
+        # Use node.first_line_num if set, otherwise start from 1
+        start_num = node&.first_line_num || 1
 
         lines.each_with_index do |line, i|
           next if line.strip.empty? && i == lines.length - 1 # Skip last empty line
 
           numbered_lines << sprintf('%2d: %s', start_num + i, line)
         end
-
-        # Clear @first_line_num after use like LaTeXBuilder does
-        @first_line_num = nil
 
         numbered_lines.join("\n")
       end
