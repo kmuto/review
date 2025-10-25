@@ -419,24 +419,22 @@ module ReVIEW
       end
 
       # Helper to extract text from caption nodes
-      def caption_to_text(caption, caption_node = nil)
+      def caption_to_text(caption, caption_node)
         if caption.is_a?(String)
           caption
         elsif caption.respond_to?(:to_text)
           caption.to_text
         elsif caption_node.respond_to?(:to_text)
           caption_node.to_text
-        elsif caption_node.respond_to?(:children)
-          caption_node.children.map { |child| visit(child) }.join
-        else
+        elsif caption_node.blank?
           ''
+        else
+          caption_node.children.map { |child| visit(child) }.join
         end
       end
 
       # Helper to render table cell content
       def render_cell_content(cell)
-        return '' unless cell.respond_to?(:children)
-
         cell.children.map do |child|
           case child
           when ReVIEW::AST::TextNode
