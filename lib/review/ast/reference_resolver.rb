@@ -167,6 +167,7 @@ module ReVIEW
 
       # Visit list item node
       def visit_list_item(node)
+        visit_all(node.term_children) if node.term_children&.any?
         visit_all(node.children)
       end
 

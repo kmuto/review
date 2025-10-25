@@ -383,13 +383,12 @@ module ReVIEW
         node.children&.each do |item|
           next unless item.is_a?(ReVIEW::AST::ListItemNode)
 
-          # First child is term, rest are definitions
-          next unless item.children&.any?
+          next unless item.term_children&.any? || item.children&.any?
 
-          term = visit(item.children.first)
+          term = item.term_children&.any? ? visit_all(item.term_children).join : ''
           text += ": #{term}\n"
 
-          item.children[1..-1].each do |defn|
+          item.children.each do |defn|
             defn_text = visit(defn)
             text += "\t#{defn_text}\n" unless defn_text.strip.empty?
           end

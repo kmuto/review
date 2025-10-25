@@ -314,8 +314,10 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
     list = ReVIEW::AST::ListNode.new(list_type: :dl)
 
-    item = ReVIEW::AST::ListItemNode.new(level: 1)
-    item.add_child(ReVIEW::AST::TextNode.new(content: 'Term'))
+    item = ReVIEW::AST::ListItemNode.new(
+      level: 1,
+      term_children: [ReVIEW::AST::TextNode.new(content: 'Term')]
+    )
     item.add_child(ReVIEW::AST::TextNode.new(content: 'Definition of the term'))
     list.add_child(item)
 
