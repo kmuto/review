@@ -305,7 +305,7 @@ class TestListProcessor < Test::Unit::TestCase
   end
 
   def test_builder_access
-    assert_instance_of(ReVIEW::AST::NestedListAssembler, @processor.builder)
+    assert_instance_of(ReVIEW::AST::ListProcessor::NestedListAssembler, @processor.builder)
   end
 
   # Test complex scenarios

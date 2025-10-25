@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
-require 'review/ast/nested_list_assembler'
+require 'review/ast/list_processor'
 require 'review/ast/list_parser'
 require 'review/ast/list_node'
 require 'review/ast/text_node'
@@ -30,7 +30,7 @@ class TestNestedListAssembler < Test::Unit::TestCase
     # Create location provider that provides consistent locations
     location_provider = compiler
 
-    @builder = ReVIEW::AST::NestedListAssembler.new(location_provider, inline_processor)
+    @builder = ReVIEW::AST::ListProcessor::NestedListAssembler.new(location_provider, inline_processor)
   end
 
   def create_list_item_data(type, level, content, continuation_lines = [], metadata = {})

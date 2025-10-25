@@ -7,7 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/ast/list_parser'
-require 'review/ast/nested_list_assembler'
+require 'review/ast/list_processor/nested_list_assembler'
 
 module ReVIEW
   module AST
