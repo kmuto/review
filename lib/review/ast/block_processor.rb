@@ -238,13 +238,7 @@ module ReVIEW
                                             line_number: config[:line_numbers] ? index + 1 : nil,
                                             original_text: line)
 
-            # When inline processing is needed (BlockContext properly manages location information)
-            if builder_needs_inline_processing?
-              context.process_inline_elements(line, line_node)
-            else
-              text_node = context.create_node(AST::TextNode, content: line)
-              line_node.add_child(text_node)
-            end
+            context.process_inline_elements(line, line_node)
 
             node.add_child(line_node)
           end
@@ -777,15 +771,8 @@ module ReVIEW
                                     line_number: config[:line_numbers] ? index + 1 : nil,
                                     original_text: line)
 
-            # Check if this builder needs inline processing
-            if builder_needs_inline_processing?
-              # Parse inline elements in code line
-              @ast_compiler.inline_processor.parse_inline_elements(line, line_node)
-            else
-              # Create simple TextNode for the entire line
-              text_node = create_node(AST::TextNode, content: line)
-              line_node.add_child(text_node)
-            end
+            # Parse inline elements in code line
+            @ast_compiler.inline_processor.parse_inline_elements(line, line_node)
 
             node.add_child(line_node)
           end
@@ -829,13 +816,6 @@ module ReVIEW
         return nil unless args && index && index.is_a?(Integer) && index >= 0 && args.size > index
 
         args[index]
-      end
-
-      # Check if the current builder needs inline processing in code blocks
-      def builder_needs_inline_processing?
-        # Always process inline elements to generate unified AST structure
-        # Individual builders will decide how to interpret them
-        true
       end
 
       # Get the regular expression for table row separator based on config
