@@ -33,7 +33,10 @@ module ReVIEW
       private
 
       def process_node(node)
-        node.children.each_with_index do |child, idx|
+        # Process in reverse order to safely delete nodes without index shifting issues
+        (node.children.length - 1).downto(0) do |idx|
+          child = node.children[idx]
+
           # Check if this is a noindent block command
           if noindent_command?(child)
             # Find the next target node for noindent attribute
