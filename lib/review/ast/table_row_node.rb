@@ -15,20 +15,28 @@ module ReVIEW
     # A table row contains multiple table cells (TableCellNode).
     # Each cell can contain text and inline elements.
     class TableRowNode < Node
+      ROW_TYPES = %i[header body]
+
       def initialize(location:, row_type: :body, **kwargs)
         super
         @children = []
-        @row_type = row_type
+        @row_type = row_type.to_sym
+
+        validate_row_type
       end
 
       attr_reader :children, :row_type
 
-      def add_child(node)
-        @children << node
-      end
-
       def accept(visitor)
         visitor.visit_table_row_node(self)
+      end
+
+      private
+
+      def validate_row_type
+        unless ROW_TYPES.include?(row_type)
+          raise ArgumentError, "invalid row_type in TableRowNode: `#{row_type}`"
+        end
       end
     end
   end
