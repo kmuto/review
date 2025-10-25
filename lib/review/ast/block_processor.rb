@@ -1026,7 +1026,7 @@ module ReVIEW
       # The is_header parameter determines if all cells should be header cells
       # The first_cell_header parameter determines if only the first cell should be a header
       def create_table_row_from_line(line, is_header: false, first_cell_header: false, block_location: nil)
-        row_node = create_node(AST::TableRowNode)
+        row_node = create_node(AST::TableRowNode, row_type: is_header ? :header : :body)
 
         # Split by configured separator to get cells
         cells = line.strip.split(table_row_separator_regexp).map { |s| s.sub(/\A\./, '') }

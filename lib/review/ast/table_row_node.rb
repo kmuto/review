@@ -27,6 +27,11 @@ module ReVIEW
 
       attr_reader :children, :row_type
 
+      def row_type=(value)
+        @row_type = value.to_sym
+        validate_row_type
+      end
+
       def accept(visitor)
         visitor.visit_table_row_node(self)
       end

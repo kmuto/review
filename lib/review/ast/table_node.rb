@@ -22,18 +22,31 @@ module ReVIEW
         @body_rows = []
       end
 
-      attr_reader :header_rows, :body_rows
+      def header_rows
+        @children.find_all do |node|
+          node.row_type == :header
+        end
+      end
+
+      def body_rows
+        @children.find_all do |node|
+          node.row_type == :body
+        end
+      end
 
       def add_header_row(row_node)
-        @header_rows << row_node
+        row_node.row_type = :header
+        idx = @children.index { |child| child.row_type == :body }
+        if idx
+          insert_child(idx, row_node)
+        else
+          add_child(row_node)
+        end
       end
 
       def add_body_row(row_node)
-        @body_rows << row_node
-      end
-
-      def children
-        @header_rows + @body_rows
+        row_node.row_type = :body
+        add_child(row_node)
       end
 
       # Get caption text for legacy Builder compatibility
