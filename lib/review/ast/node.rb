@@ -66,6 +66,13 @@ module ReVIEW
         true
       end
 
+      def insert_child(idx, *nodes)
+        nodes.each do |node|
+          node.parent = self
+        end
+        @children.insert(idx, *nodes)
+      end
+
       # Check if node has a non-empty id
       def id?
         @id && !@id.empty?
