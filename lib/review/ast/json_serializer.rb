@@ -108,8 +108,8 @@ module ReVIEW
           hash['element'] = node.inline_type
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
           hash['args'] = node.args if node.args
-        when ReVIEW::AST::CaptionNode
-          return extract_text(node)
+        when ReVIEW::AST::CaptionNode # rubocop:disable Lint/DuplicateBranch
+          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
         when ReVIEW::AST::BlockNode
           hash['block_type'] = node.block_type.to_s
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
@@ -165,24 +165,7 @@ module ReVIEW
       end
 
       def assign_caption_fields(hash, node, options)
-        return unless node.respond_to?(:caption) || node.respond_to?(:caption_node)
-
-        if node.respond_to?(:caption)
-          caption_value = node.caption
-          caption_string = case caption_value
-                           when String
-                             caption_value
-                           when nil
-                             nil
-                           else
-                             if caption_value.respond_to?(:to_text)
-                               caption_value.to_text
-                             else
-                               extract_text(caption_value)
-                             end
-                           end
-          hash['caption'] = caption_string unless caption_string.nil?
-        end
+        return unless node.respond_to?(:caption_node)
 
         if node.respond_to?(:caption_node) && node.caption_node
           hash['caption_node'] = serialize_to_hash(node.caption_node, options)
@@ -291,7 +274,12 @@ module ReVIEW
             if hash['children']
               hash['children'].each do |child_hash|
                 child = deserialize_from_hash(child_hash)
-                node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
+                if child.is_a?(ReVIEW::AST::Node)
+                  node.add_child(child)
+                elsif child.is_a?(String)
+                  # Convert plain string to TextNode
+                  node.add_child(ReVIEW::AST::TextNode.new(content: child))
+                end
               end
             end
             node

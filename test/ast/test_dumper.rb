@@ -21,7 +21,7 @@ class TestDumper < Test::Unit::TestCase
     path
   end
 
-  def test_dump_ast_mode
+  def test_dump_ast
     content = <<~REVIEW
       = Test Chapter
 
@@ -43,7 +43,6 @@ class TestDumper < Test::Unit::TestCase
     # Check headline
     assert_equal 'HeadlineNode', json['children'][0]['type']
     assert_equal 1, json['children'][0]['level']
-    assert_equal 'Test Chapter', json['children'][0]['caption']
     expected_caption_node = {
       'type' => 'CaptionNode',
       'location' => { 'filename' => 'test.re', 'lineno' => 1 },
@@ -74,7 +73,6 @@ class TestDumper < Test::Unit::TestCase
         }
       ]
     }
-    assert_equal 'Sample Code', json['children'][2]['caption']
     assert_equal expected_caption, json['children'][2]['caption_node']
   end
 

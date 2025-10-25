@@ -35,7 +35,6 @@ module ReVIEW
       def serialize_properties(hash, options)
         hash[:block_type] = block_type
         hash[:args] = args if args
-        hash[:caption] = caption if caption
         hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
         if options.include_empty_arrays || children.any?
           hash[:children] = children.map { |child| child.serialize_to_hash(options) }

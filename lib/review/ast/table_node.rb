@@ -111,7 +111,6 @@ module ReVIEW
         # Add TableNode-specific properties (no children field)
         hash[:id] = id if id && !id.empty?
         hash[:table_type] = table_type
-        hash[:caption] = caption if caption
         hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
         hash[:header_rows] = header_rows.map { |row| row.serialize_to_hash(options) }
         hash[:body_rows] = body_rows.map { |row| row.serialize_to_hash(options) }

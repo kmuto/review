@@ -58,7 +58,6 @@ module ReVIEW
       def serialize_properties(hash, options)
         hash[:level] = level
         hash[:label] = label
-        hash[:caption] = caption if caption
         hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
         hash[:tag] = tag if tag
         hash

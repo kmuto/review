@@ -34,7 +34,6 @@ module ReVIEW
         hash[:children] = children.map { |child| child.serialize_to_hash(options) }
         hash[:level] = level
         hash[:label] = label
-        hash[:caption] = caption if caption
         hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
         hash[:column_type] = column_type
         hash

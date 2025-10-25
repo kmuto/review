@@ -81,7 +81,6 @@ module ReVIEW
       def serialize_properties(hash, options)
         hash[:id] = id if id && !id.empty?
         hash[:lang] = lang
-        hash[:caption] = caption if caption
         hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
         hash[:line_numbers] = line_numbers
         hash[:code_type] = code_type if code_type

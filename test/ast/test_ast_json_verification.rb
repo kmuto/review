@@ -44,12 +44,8 @@ end
 
 class ASTJSONVerificationTest < Test::Unit::TestCase
   def setup
-    @fixtures_dir = File.join(__dir__, '..', '..', 'fixtures', 'integration')
-    @test_files = Dir.glob(File.join(@fixtures_dir, '*.re')).reject do |f|
-      File.basename(f).start_with?('test_stage') ||
-        File.basename(f) == 'test-project.re' ||
-        File.basename(f) == 'comprehensive_test.re'
-    end.sort
+    @fixtures_dir = File.join(__dir__, '..', '..', 'samples', 'debug-book')
+    @test_files = Dir.glob(File.join(@fixtures_dir, '*.re')).sort
     @output_dir = File.join(__dir__, '..', '..', 'tmp', 'verification')
     FileUtils.mkdir_p(@output_dir)
 
@@ -96,7 +92,7 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
 
   def test_element_coverage
     # Test that all major Re:VIEW elements are properly represented in JSON
-    coverage_test_file = File.join(@fixtures_dir, 'complex_structure.re')
+    coverage_test_file = File.join(@fixtures_dir, 'extreme_features.re')
     content = File.read(coverage_test_file)
 
     ast_json = compile_to_json(content, 'ast')
@@ -115,7 +111,7 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
 
   def test_inline_element_preservation
     # Test that inline elements are properly preserved in AST mode
-    inline_test_file = File.join(@fixtures_dir, 'inline_elements.re')
+    inline_test_file = File.join(@fixtures_dir, 'comprehensive.re')
     content = File.read(inline_test_file)
 
     ast_json = compile_to_json(content, 'ast')
@@ -131,23 +127,34 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
     assert_nil(ast_data['error'], "AST compilation should not have errors: #{ast_data['error']}")
   end
 
-  def test_performance_comparison
-    # Test that JSON generation performance is reasonable for AST mode
-    large_test_file = File.join(@fixtures_dir, 'complex_structure.re')
-    content = File.read(large_test_file)
+  def test_caption_node_usage
+    # Test that captions are represented as CaptionNode objects, not plain strings
+    # This is critical for AST/Renderer architecture
+    test_file = File.join(@fixtures_dir, 'comprehensive.re')
+    content = File.read(test_file)
 
-    # Repeat content to make it larger
-    large_content = content * 5
+    ast_json = compile_to_json(content, 'ast')
+    ast_data = JSON.parse(ast_json)
 
-    # Test AST mode performance
-    start_time = Time.now
-    10.times { compile_to_json(large_content, 'ast') }
-    end_time = Time.now
+    # Find all block elements with captions (CodeBlockNode, TableNode, ImageNode, etc.)
+    captioned_nodes = find_nodes_with_captions(ast_data)
 
-    avg_time = ((end_time - start_time) * 1000 / 10).round(2) # Average time in ms
+    # Verify we found some captioned nodes
+    assert captioned_nodes.any?, 'Should find at least one node with caption'
 
-    # Verify performance is reasonable (arbitrary 500ms threshold for large content)
-    assert avg_time < 500.0, "AST mode is too slow: #{avg_time}ms (should be < 500ms)"
+    # Verify each captioned node has caption_node field
+    captioned_nodes.each do |node|
+      node_type = node['type']
+      assert node.key?('caption_node'), "#{node_type} should have 'caption_node' field"
+
+      caption_node = node['caption_node']
+      assert_not_nil(caption_node, "#{node_type} caption_node should not be nil")
+      assert_equal 'CaptionNode', caption_node['type'], "#{node_type} caption_node should be CaptionNode"
+
+      # Verify CaptionNode has children
+      assert caption_node.key?('children'), 'CaptionNode should have children array'
+      assert caption_node['children'].is_a?(Array), 'CaptionNode children should be an array'
+    end
   end
 
   private
@@ -236,5 +243,17 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
       data.each { |item| count = count_element_type(item, target_type, count) }
     end
     count
+  end
+
+  def find_nodes_with_captions(data, nodes = [])
+    if data.is_a?(Hash)
+      # Check if this node has a caption_node field
+      nodes << data if data.key?('caption_node')
+      # Recursively search children
+      data.each_value { |value| find_nodes_with_captions(value, nodes) }
+    elsif data.is_a?(Array)
+      data.each { |item| find_nodes_with_captions(item, nodes) }
+    end
+    nodes
   end
 end

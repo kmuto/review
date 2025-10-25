@@ -120,8 +120,7 @@ class TestFullASTMode < Test::Unit::TestCase
     heading = ast['children'].find { |node| node['type'] == 'HeadlineNode' }
     assert_not_nil(heading, 'Heading node should exist')
 
-    # Caption string and node data are both available
-    assert_equal 'Chapter Title', heading['caption']
+    # Caption node data is available
     assert_equal 'CaptionNode', heading['caption_node']['type'], 'Caption should be a CaptionNode'
     caption_markup_text = heading['caption_node']['children'].first
     assert_equal 'TextNode', caption_markup_text['type'], 'Caption should contain a TextNode'
@@ -148,7 +147,6 @@ class TestFullASTMode < Test::Unit::TestCase
     assert_equal 'note', note_block['minicolumn_type'], 'Note block should have correct minicolumn_type'
 
     # Check caption
-    assert_equal 'Note Caption', note_block['caption'], 'Note block should have caption text'
     caption_text = note_block['caption_node']['children'].first['content']
     assert_equal 'Note Caption', caption_text, 'Note block should have correct caption'
 

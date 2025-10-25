@@ -223,8 +223,7 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
 
     # Check that basic properties are included
     assert_equal 'test', hash[:id]
-    # Caption string and structure are serialized separately
-    assert_equal 'Test Caption', hash[:caption]
+    # Caption structure is serialized (no caption string)
     assert_instance_of(Hash, hash[:caption_node])
     assert_equal 'CaptionNode', hash[:caption_node][:type]
     assert_equal 1, hash[:caption_node][:children].size

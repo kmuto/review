@@ -61,7 +61,6 @@ module ReVIEW
 
       def serialize_properties(hash, options)
         hash[:id] = id if id && !id.empty?
-        hash[:caption] = caption if caption
         # For backward compatibility, provide structured caption node
         hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
         hash[:metric] = metric

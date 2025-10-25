@@ -49,7 +49,6 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       'location' => { 'filename' => 'test.re', 'lineno' => 42 },
       'type' => 'CaptionNode'
     }
-    assert_equal 'Introduction', parsed['caption']
     assert_equal expected_caption_node, parsed['caption_node']
   end
 
@@ -146,7 +145,6 @@ class TestASTJSONSerialization < Test::Unit::TestCase
         }
       ]
     }
-    assert_equal 'Example Code', parsed['caption']
     assert_equal expected_caption, parsed['caption_node']
     assert_equal 'ruby', parsed['lang']
     assert_equal lines_text, parsed['original_text']
@@ -198,7 +196,6 @@ class TestASTJSONSerialization < Test::Unit::TestCase
         }
       ]
     }
-    assert_equal 'Sample Data', parsed['caption']
     assert_equal expected_caption, parsed['caption_node']
     assert_equal 1, parsed['header_rows'].size  # Check we have 1 header row
     assert_equal 2, parsed['body_rows'].size    # Check we have 2 body rows
@@ -306,7 +303,6 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       'location' => { 'filename' => 'test.re', 'lineno' => 42 },
       'type' => 'CaptionNode'
     }
-    assert_equal 'Section Title', parsed['caption']
     assert_equal expected_caption, parsed['caption_node']
   end
 
@@ -330,7 +326,6 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       'children' => [{ 'content' => 'Section Title', 'type' => 'TextNode' }],
       'type' => 'CaptionNode'
     }
-    assert_equal 'Section Title', parsed['caption']
     assert_equal expected_caption, parsed['caption_node']
     assert_nil(parsed['location'])
   end
@@ -446,7 +441,6 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     headline_json = parsed['children'][0]
     assert_equal 'HeadlineNode', headline_json['type']
     assert_equal 1, headline_json['level']
-    assert_equal 'Introduction', headline_json['caption']
     assert_equal({ 'children' =>
   [{ 'content' => 'Introduction',
      'location' => { 'filename' => 'test.re', 'lineno' => 42 },
@@ -479,7 +473,6 @@ class TestASTJSONSerialization < Test::Unit::TestCase
         }
       ]
     }
-    assert_equal 'Code Example', code_json['caption']
     assert_equal expected_caption, code_json['caption_node']
     assert_equal 'ruby', code_json['lang']
     assert_equal 'puts "Hello, World!"', code_json['original_text']

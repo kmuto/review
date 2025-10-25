@@ -103,7 +103,6 @@ class TestASTBasic < Test::Unit::TestCase
     assert_equal 1, parsed['children'].size
     assert_equal 'HeadlineNode', parsed['children'][0]['type']
     assert_equal 1, parsed['children'][0]['level']
-    assert_equal 'Test', parsed['children'][0]['caption']
     assert_equal({ 'children' => [{ 'content' => 'Test', 'location' => nil, 'type' => 'TextNode' }], 'location' => nil, 'type' => 'CaptionNode' }, parsed['children'][0]['caption_node'])
   end
 end
