@@ -387,29 +387,6 @@ module ReVIEW
         end
       end
 
-      # Get current block context
-      # Returns the innermost context in nested block processing
-      #
-      # @return [BlockContext, nil] Current block context
-      def current_block_context
-        @block_context_stack.last
-      end
-
-      # Get current block start position
-      # Returns start position within block context, current position outside
-      #
-      # @return [Location] Location information
-      def current_block_location
-        current_block_context&.start_location || @current_location
-      end
-
-      # Determine if within block context
-      #
-      # @return [Boolean] true if within block context
-      def in_block_context?
-        !@block_context_stack.empty?
-      end
-
       # Temporarily override location information and execute block
       # Automatically restore original location information after block execution
       #

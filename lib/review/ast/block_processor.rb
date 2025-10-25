@@ -89,11 +89,6 @@ module ReVIEW
         def configuration_blocks
           @@configuration_blocks.dup
         end
-
-        # Clear all configuration blocks (for testing)
-        def clear_configuration
-          @@configuration_blocks.clear
-        end
       end
 
       def initialize(ast_compiler)
@@ -105,18 +100,6 @@ module ReVIEW
         # Apply configuration blocks
         apply_configuration
       end
-
-      private
-
-      # Apply all registered configuration blocks
-      def apply_configuration
-        config = Configuration.new(self)
-        self.class.class_variable_get(:@@configuration_blocks).each do |block|
-          block.call(config)
-        end
-      end
-
-      public
 
       # Register a new block command handler
       # @param command_name [Symbol] The block command name (e.g., :custom_block)
@@ -207,7 +190,13 @@ module ReVIEW
 
       private
 
-      # New methods supporting BlockData
+      # Apply all registered configuration blocks
+      def apply_configuration
+        config = Configuration.new(self)
+        self.class.configuration_blocks.each do |block|
+          block.call(config)
+        end
+      end
 
       # Use BlockContext for consistent location information in AST construction
       def build_code_block_ast(context)
