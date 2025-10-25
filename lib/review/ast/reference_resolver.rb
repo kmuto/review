@@ -157,6 +157,7 @@ module ReVIEW
 
       # Visit block node
       def visit_block(node)
+        visit_caption_if_present(node)
         visit_all(node.children)
       end
 

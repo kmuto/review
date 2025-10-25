@@ -102,6 +102,10 @@ module ReVIEW
 
       private
 
+      def visit_caption_children(node)
+        visit_all(node.caption_node.children) if node.caption_node
+      end
+
       # Set indexes on chapter using public API
       def set_indexes_on_chapter
         @chapter.ast_indexes = {
@@ -217,7 +221,7 @@ module ReVIEW
           item = ReVIEW::Book::Index::Item.new(item_id, @sec_counter.number_list, caption_text, caption_node: node.caption_node)
           @headline_index.add_item(item)
 
-          visit_all(node.caption_node.children) if node.caption_node
+          visit_caption_children(node)
         end
 
         visit_all(node.children)
@@ -235,7 +239,7 @@ module ReVIEW
         item = ReVIEW::Book::Index::Item.new(item_id, @column_index.size + 1, caption_text, caption_node: node.caption_node)
         @column_index.add_item(item)
 
-        visit_all(node.caption_node.children) if node.caption_node
+        visit_caption_children(node)
         visit_all(node.children)
       end
 
@@ -245,7 +249,7 @@ module ReVIEW
           item = ReVIEW::Book::Index::Item.new(node.id, @list_index.size + 1)
           @list_index.add_item(item)
 
-          visit_all(node.caption_node.children) if node.caption_node
+          visit_caption_children(node)
         end
 
         visit_all(node.children)
@@ -264,7 +268,7 @@ module ReVIEW
             @indepimage_index.add_item(image_item)
           end
 
-          visit_all(node.caption_node.children) if node.caption_node
+          visit_caption_children(node)
         end
 
         visit_all(node.children)
@@ -277,7 +281,7 @@ module ReVIEW
           item = ReVIEW::Book::Index::Item.new(node.id, @image_index.size + 1, caption_text, caption_node: node.caption_node)
           @image_index.add_item(item)
 
-          visit_all(node.caption_node.children) if node.caption_node
+          visit_caption_children(node)
         end
 
         visit_all(node.children)
@@ -285,7 +289,7 @@ module ReVIEW
 
       def visit_minicolumn(node)
         # Minicolumns are typically indexed by their type and content
-        visit_all(node.caption_node.children) if node.caption_node
+        visit_caption_children(node)
 
         visit_all(node.children)
       end
@@ -341,6 +345,7 @@ module ReVIEW
           end
         end
 
+        visit_caption_children(node)
         visit_all(node.children)
       end
 
