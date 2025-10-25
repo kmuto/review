@@ -33,7 +33,7 @@ module ReVIEW
       end
 
       def accept(visitor)
-        visitor.visit_table_row_node(self)
+        visitor.visit_table_row(self)
       end
 
       private

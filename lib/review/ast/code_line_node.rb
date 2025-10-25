@@ -25,7 +25,7 @@ module ReVIEW
       attr_reader :line_number, :original_text, :children
 
       def accept(visitor)
-        visitor.visit_code_line_node(self)
+        visitor.visit_code_line(self)
       end
 
       # Override to_h to include original_text
