@@ -83,9 +83,7 @@ module ReVIEW
         RendererConverterAdapter.new(
           book,
           img_math: @img_math,
-          img_graph: @img_graph,
-          config: @config,
-          logger: @logger
+          img_graph: @img_graph
         )
       end
 
@@ -101,12 +99,12 @@ module ReVIEW
     class RendererConverterAdapter
       attr_reader :compile_errors_list
 
-      def initialize(book, img_math:, img_graph:, config:, logger:)
+      def initialize(book, img_math:, img_graph:)
         @book = book
         @img_math = img_math
         @img_graph = img_graph
-        @config = config
-        @logger = logger
+        @config = book.config
+        @logger = ReVIEW.logger
         @compile_errors_list = []
       end
 
