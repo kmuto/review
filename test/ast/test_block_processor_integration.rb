@@ -3,7 +3,7 @@
 require_relative '../test_helper'
 require 'review/ast/compiler'
 require 'review/ast/block_processor'
-require 'review/ast/block_data'
+require 'review/ast/compiler/block_data'
 require 'review/book'
 require 'review/book/chapter'
 require 'stringio'

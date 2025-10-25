@@ -7,7 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/ast'
-require 'review/ast/block_data'
+require 'review/ast/compiler/block_data'
 require 'review/lineinput'
 require 'stringio'
 
