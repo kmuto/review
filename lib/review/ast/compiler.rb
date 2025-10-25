@@ -131,7 +131,7 @@ module ReVIEW
         OlnumProcessor.process(@ast_root)
 
         # Normalize list structures (process //beginchild and //endchild)
-        ListStructureNormalizer.process(@ast_root)
+        ListStructureNormalizer.process(@ast_root, compiler: self)
 
         # Assign item numbers to ordered list items
         ListItemNumberingProcessor.process(@ast_root)

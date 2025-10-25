@@ -39,8 +39,12 @@ module ReVIEW
     # Usage:
     #   ListStructureNormalizer.process(ast_root)
     class ListStructureNormalizer
-      def self.process(ast_root)
-        new.process(ast_root)
+      def self.process(ast_root, compiler:)
+        new(compiler: compiler).process(ast_root)
+      end
+
+      def initialize(compiler:)
+        @compiler = compiler
       end
 
       # Process the AST to normalize list structures
@@ -175,7 +179,9 @@ module ReVIEW
              merged.last.list_type == child.list_type
             # Merge the children from the second list into the first
             # Note: item_number will be assigned later by ListItemNumberingProcessor
-            merged.last.children.concat(child.children)
+            child.children.each do |item|
+              merged.last.add_child(item)
+            end
           else
             merged << child
           end
@@ -223,12 +229,8 @@ module ReVIEW
         return [] if text.nil? || text.empty?
 
         temp_node = ReVIEW::AST::ParagraphNode.new(location: nil)
-        inline_processor.parse_inline_elements(text, temp_node)
+        @compiler.inline_processor.parse_inline_elements(text, temp_node)
         temp_node.children
-      end
-
-      def inline_processor
-        @inline_processor ||= InlineProcessor.new(nil)
       end
     end
   end
