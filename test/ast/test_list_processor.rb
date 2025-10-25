@@ -292,11 +292,9 @@ class TestListProcessor < Test::Unit::TestCase
       "   * Item 2\n"
     )
 
-    # Should fallback to unordered list parsing
-    items = @processor.parse_list_items(input, :unknown)
-
-    assert_equal 2, items.size
-    assert_equal :ul, items[0].type
+    assert_raises(ReVIEW::CompileError) do
+      @processor.parse_list_items(input, :unknown)
+    end
   end
 
   # Test access to internal components
@@ -305,7 +303,7 @@ class TestListProcessor < Test::Unit::TestCase
   end
 
   def test_builder_access
-    assert_instance_of(ReVIEW::AST::ListProcessor::NestedListAssembler, @processor.builder)
+    assert_instance_of(ReVIEW::AST::ListProcessor::NestedListAssembler, @processor.nested_list_assembler)
   end
 
   # Test complex scenarios

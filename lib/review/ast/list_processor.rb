@@ -27,7 +27,7 @@ module ReVIEW
       def initialize(ast_compiler)
         @ast_compiler = ast_compiler
         @parser = ListParser.new(ast_compiler)
-        @builder = NestedListAssembler.new(ast_compiler, ast_compiler.inline_processor)
+        @nested_list_assembler = NestedListAssembler.new(ast_compiler, ast_compiler.inline_processor)
       end
 
       # Process unordered list from file input
@@ -36,8 +36,8 @@ module ReVIEW
         items = @parser.parse_unordered_list(f)
         return if items.empty?
 
-        list_node = @builder.build_unordered_list(items)
-        add_to_ast_and_render(list_node)
+        list_node = @nested_list_assembler.build_unordered_list(items)
+        add_to_ast(list_node)
       end
 
       # Process ordered list from file input
@@ -46,8 +46,8 @@ module ReVIEW
         items = @parser.parse_ordered_list(f)
         return if items.empty?
 
-        list_node = @builder.build_ordered_list(items)
-        add_to_ast_and_render(list_node)
+        list_node = @nested_list_assembler.build_ordered_list(items)
+        add_to_ast(list_node)
       end
 
       # Process definition list from file input
@@ -56,8 +56,8 @@ module ReVIEW
         items = @parser.parse_definition_list(f)
         return if items.empty?
 
-        list_node = @builder.build_definition_list(items)
-        add_to_ast_and_render(list_node)
+        list_node = @nested_list_assembler.build_definition_list(items)
+        add_to_ast(list_node)
       end
 
       # Process any list type (for generic handling)
@@ -81,7 +81,7 @@ module ReVIEW
       # @param list_type [Symbol] Type of list
       # @return [ListNode] Built list node
       def build_list_from_items(items, list_type)
-        @builder.build_nested_structure(items, list_type)
+        @nested_list_assembler.build_nested_structure(items, list_type)
       end
 
       # Parse list items without building AST (for testing)
@@ -96,8 +96,8 @@ module ReVIEW
           @parser.parse_ordered_list(f)
         when :dl
           @parser.parse_definition_list(f)
-        else # rubocop:disable Lint/DuplicateBranch
-          @parser.parse_unordered_list(f) # Fallback
+        else
+          raise CompileError, "Unknown list type: #{list_type}#{format_location_info}"
         end
       end
 
@@ -107,13 +107,13 @@ module ReVIEW
 
       # Get builder for testing or direct access
       # @return [NestedListAssembler] The list builder instance
-      attr_reader :builder
+      attr_reader :nested_list_assembler
 
       private
 
       # Add list node to AST
       # @param list_node [ListNode] List node to add
-      def add_to_ast_and_render(list_node)
+      def add_to_ast(list_node)
         @ast_compiler.add_child_to_current_node(list_node)
       end
 

@@ -50,7 +50,7 @@ class TestListProcessorError < Test::Unit::TestCase
     assert_match(/in unknown_list\.re/, error.message)
   end
 
-  def test_parse_list_items_with_unknown_type_falls_back
+  def test_parse_list_items_with_unknown_type
     content = "= Chapter\n\n * item1\n * item2"
 
     chapter = ReVIEW::Book::Chapter.new(
@@ -68,12 +68,8 @@ class TestListProcessorError < Test::Unit::TestCase
     list_content = " * item1\n * item2\n"
     line_input = ReVIEW::LineInput.new(StringIO.new(list_content))
 
-    # parse_list_items should still fall back to unordered list parsing
-    items = processor.parse_list_items(line_input, :custom_list)
-
-    # Should parse as unordered list
-    assert_equal 2, items.size
-    assert_equal 'item1', items[0].content.strip
-    assert_equal 'item2', items[1].content.strip
+    assert_raises(ReVIEW::CompileError) do
+      processor.parse_list_items(line_input, :custom_list)
+    end
   end
 end
