@@ -24,10 +24,6 @@ module ReVIEW
 
       attr_reader :line_number, :original_text, :children
 
-      def add_child(node)
-        @children << node
-      end
-
       def accept(visitor)
         visitor.visit_code_line_node(self)
       end

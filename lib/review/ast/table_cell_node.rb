@@ -26,10 +26,6 @@ module ReVIEW
         @cell_type = cell_type # :th or :td
       end
 
-      def add_child(node)
-        @children << node
-      end
-
       def accept(visitor)
         visitor.visit_table_cell(self)
       end

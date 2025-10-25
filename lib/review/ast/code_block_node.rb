@@ -22,10 +22,6 @@ module ReVIEW
 
       attr_reader :children
 
-      def add_child(node)
-        @children << node
-      end
-
       # Get caption text for legacy Builder compatibility
       def caption_markup_text
         return '' if caption.nil? && caption_node.nil?
