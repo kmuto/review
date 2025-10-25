@@ -23,9 +23,36 @@ module ReVIEW
     # - Handle nested inline elements
     # - Process specialized inline formats (ruby, href, kw, etc.)
     class InlineProcessor
+      # Default mapping of inline commands to handler methods
+      DEFAULT_INLINE_HANDLERS = {
+        embed: :create_inline_embed_ast_node,
+        ruby: :create_inline_ruby_ast_node,
+        href: :create_inline_href_ast_node,
+        kw: :create_inline_kw_ast_node,
+        img: :create_inline_ref_ast_node,
+        list: :create_inline_ref_ast_node,
+        table: :create_inline_ref_ast_node,
+        eq: :create_inline_ref_ast_node,
+        fn: :create_inline_ref_ast_node,
+        endnote: :create_inline_ref_ast_node,
+        column: :create_inline_ref_ast_node,
+        w: :create_inline_ref_ast_node,
+        wb: :create_inline_ref_ast_node,
+        hd: :create_inline_cross_ref_ast_node,
+        chap: :create_inline_cross_ref_ast_node,
+        chapref: :create_inline_cross_ref_ast_node,
+        sec: :create_inline_cross_ref_ast_node,
+        secref: :create_inline_cross_ref_ast_node,
+        labelref: :create_inline_cross_ref_ast_node,
+        ref: :create_inline_cross_ref_ast_node,
+        raw: :create_inline_raw_ast_node
+      }.freeze
+
       def initialize(ast_compiler)
         @ast_compiler = ast_compiler
         @tokenizer = InlineTokenizer.new
+        # Copy the static table to allow runtime modifications
+        @inline_handlers = DEFAULT_INLINE_HANDLERS.dup
       end
 
       # Parse inline elements and create AST nodes
@@ -51,53 +78,66 @@ module ReVIEW
         end
       end
 
+      # Register a new inline command handler
+      # @param command [Symbol] The inline command name (e.g., :custom)
+      # @param handler_method [Symbol] The method name to handle this command
+      # @example
+      #   processor.register_inline_handler(:custom, :create_inline_custom_ast_node)
+      def register_inline_handler(command, handler_method)
+        @inline_handlers[command.to_sym] = handler_method
+      end
+
+      # @return [Array<Symbol>] List of all registered inline commands
+      def registered_inline_commands
+        @inline_handlers.keys
+      end
+
       private
 
       # Create inline AST node from parsed token
       def create_inline_ast_node_from_token(token, parent_node)
-        command = token.command
+        command = token.command.to_sym
         content = token.content
 
-        # Special handling for certain inline types
-        case command
-        when 'embed'
-          create_inline_embed_ast_node(content, parent_node)
-        when 'ruby'
-          create_inline_ruby_ast_node(content, parent_node)
-        when 'href'
-          create_inline_href_ast_node(content, parent_node)
-        when 'kw'
-          create_inline_kw_ast_node(content, parent_node)
-        when 'img', 'list', 'table', 'eq', 'fn', 'endnote', 'column'
-          create_inline_ref_ast_node(command, content, parent_node)
-        when 'hd', 'chap', 'chapref', 'sec', 'secref', 'labelref', 'ref'
-          create_inline_cross_ref_ast_node(command, content, parent_node)
-        when 'w', 'wb' # rubocop:disable Lint/DuplicateBranch
-          create_inline_ref_ast_node(command, content, parent_node)
-        when 'raw'
-          create_inline_raw_ast_node(content, parent_node)
-        else
-          # Standard inline processing
-          inline_node = AST::InlineNode.new(
-            location: @ast_compiler.location,
-            inline_type: command,
-            args: [content]
-          )
+        # Look up handler method from dynamic registry
+        handler_method = @inline_handlers[command]
 
-          # Handle nested inline elements in the content
-          if content.include?('@<')
-            parse_inline_elements(content, inline_node)
+        if handler_method
+          # Call registered handler
+          # ref_ast_node and cross_ref_ast_node need command as first argument (ref_type)
+          # Others just need content and parent_node
+          if handler_method == :create_inline_ref_ast_node || handler_method == :create_inline_cross_ref_ast_node
+            send(handler_method, command, content, parent_node)
           else
-            # Simple text content
-            text_node = AST::TextNode.new(
-              location: @ast_compiler.location,
-              content: content
-            )
-            inline_node.add_child(text_node)
+            send(handler_method, content, parent_node)
           end
-
-          parent_node.add_child(inline_node)
+        else
+          # Default handler for unknown inline commands
+          create_standard_inline_node(command, content, parent_node)
         end
+      end
+
+      # Create standard inline node (default handler for unknown commands)
+      def create_standard_inline_node(command, content, parent_node)
+        inline_node = AST::InlineNode.new(
+          location: @ast_compiler.location,
+          inline_type: command.to_s,
+          args: [content]
+        )
+
+        # Handle nested inline elements in the content
+        if content.include?('@<')
+          parse_inline_elements(content, inline_node)
+        else
+          # Simple text content
+          text_node = AST::TextNode.new(
+            location: @ast_compiler.location,
+            content: content
+          )
+          inline_node.add_child(text_node)
+        end
+
+        parent_node.add_child(inline_node)
       end
 
       # Create inline embed AST node
@@ -223,48 +263,6 @@ module ReVIEW
         parent_node.add_child(inline_node)
       end
 
-      # Create inline hd AST node
-      def create_inline_hd_ast_node(arg, parent_node)
-        # Parse hd format: "chapter_id|heading" or just "heading"
-        if arg.include?('|')
-          parts = arg.split('|', 2)
-          args = [parts[0].strip, parts[1].strip]
-
-          inline_node = AST::InlineNode.new(
-            location: @ast_compiler.location,
-            inline_type: 'hd',
-            args: args
-          )
-
-          # Add text nodes for both parts
-          chapter_text = AST::TextNode.new(
-            location: @ast_compiler.location,
-            content: parts[0].strip
-          )
-          inline_node.add_child(chapter_text)
-
-          heading_text = AST::TextNode.new(
-            location: @ast_compiler.location,
-            content: parts[1].strip
-          )
-          inline_node.add_child(heading_text)
-        else
-          inline_node = AST::InlineNode.new(
-            location: @ast_compiler.location,
-            inline_type: 'hd',
-            args: [arg]
-          )
-
-          text_node = AST::TextNode.new(
-            location: @ast_compiler.location,
-            content: arg
-          )
-          inline_node.add_child(text_node)
-        end
-
-        parent_node.add_child(inline_node)
-      end
-
       # Create inline reference AST node (for img, list, table, eq, fn, endnote)
       def create_inline_ref_ast_node(ref_type, arg, parent_node)
         # Parse reference format: "ID" or "chapter_id|ID"
@@ -280,7 +278,7 @@ module ReVIEW
 
         inline_node = AST::InlineNode.new(
           location: @ast_compiler.location,
-          inline_type: ref_type,
+          inline_type: ref_type.to_s,
           args: args
         )
 
@@ -292,7 +290,7 @@ module ReVIEW
       # Create inline cross-reference AST node (for chap, chapref, sec, secref, labelref, ref)
       def create_inline_cross_ref_ast_node(ref_type, arg, parent_node)
         # Handle special case for hd which supports pipe-separated format
-        args, reference_node = if ref_type == 'hd' && arg.include?('|')
+        args, reference_node = if ref_type.to_sym == :hd && arg.include?('|')
                                  parts = arg.split('|', 2)
                                  context_id = parts[0].strip
                                  ref_id = parts[1].strip
@@ -304,7 +302,7 @@ module ReVIEW
 
         inline_node = AST::InlineNode.new(
           location: @ast_compiler.location,
-          inline_type: ref_type,
+          inline_type: ref_type.to_s,
           args: args
         )
 
