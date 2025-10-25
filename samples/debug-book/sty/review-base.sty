@@ -1,0 +1,444 @@
+\ProvidesClass{review-base}[2021/09/06]
+% jlreq用基本設定
+\def\recls@tmp{luatex}\ifx\recls@tmp\recls@driver
+  \hypersetup{
+    pdftitle={\review@booktitlename},
+    pdfauthor={\ifdefined\review@autnames\review@autnames\fi},
+    pdfcreator={Re:VIEW \review@reviewversion, with LaTeX}
+  }
+\else
+  \def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
+    \hypersetup{
+      pdftitle={\review@booktitlename},
+      pdfauthor={\ifdefined\review@autnames\review@autnames\fi},
+      pdfcreator={Re:VIEW \review@reviewversion, with LaTeX}
+    }
+  \else
+    \newcommand*\PDFDocumentInformation[1]{%
+      \AtBeginShipoutFirst{\special{pdf:docinfo <<#1>>}}}
+    \@onlypreamble\PDFDocumentInformation
+    \PDFDocumentInformation{
+      /Title    (\review@booktitlename)
+      \ifdefined\review@autnames /Author   (\review@autnames)\fi
+      % /Subject  ()
+      % /Keywords (,,)
+      /Creator  (Re:VIEW \review@reviewversion, with LaTeX)
+    }
+  \fi
+\fi
+
+\RequirePackage{pxrubrica}
+\@ifpackagelater{pxrubrica}{2017/04/20}{% true
+\rubysetup{J}}{% false
+\rubysetup{g}}
+
+\long\def\review@ifempty#1{\expandafter\ifx\expandafter\relax\detokenize{#1}\relax\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi}
+
+%% pass bbox setting to extractbb of graphicx
+\ifdefined\review@bbox
+  \def\Gin@pagebox{\review@bbox}
+\fi
+
+% コードリスト装飾のデフォルト
+\newenvironment{reviewemlist}{%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=black!10,colframe=black!10,boxrule=0mm,arc=0mm]\ifdefined\reviewlistxkanjiskip\setxkanjiskip{\reviewlistxkanjiskip}\fi\begin{alltt}}%
+ {\end{alltt}\end{tcolorbox}}
+
+\newenvironment{reviewlist}{%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=white,colframe=black,boxrule=0.15mm,arc=0mm]\ifdefined\reviewlistxkanjiskip\setxkanjiskip{\reviewlistxkanjiskip}\fi\begin{alltt}}%
+ {\end{alltt}\end{tcolorbox}}
+
+\newenvironment{reviewsource}{%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=white,colframe=black,boxrule=0.15mm,arc=0mm]\ifdefined\reviewlistxkanjiskip\setxkanjiskip{\reviewlistxkanjiskip}\fi\begin{alltt}}%
+ {\end{alltt}\end{tcolorbox}}
+
+\newenvironment{reviewcmd}{%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,colback=black!99,coltext=white,colframe=black!99,boxrule=0mm,arc=0mm]\ifdefined\reviewlistxkanjiskip\setxkanjiskip{\reviewlistxkanjiskip}\fi\begin{alltt}}%
+ {\end{alltt}\end{tcolorbox}}
+
+% 図
+\newenvironment{reviewimage}{%
+  \begin{figure}\begin{center}}{\end{center}\end{figure}}
+
+\newenvironment{reviewdummyimage}{%
+  \begin{figure}\begin{center}}{\end{center}\end{figure}}
+
+\newcommand{\reviewindepimagecaption[2]}{\@makecaption{}{#2}}
+
+\DeclareRobustCommand{\reviewincludegraphics}[2][]{%
+  \includegraphics[#1]{#2}}
+
+% 表
+\newenvironment{reviewtablesetup}{%
+}{}
+
+\newcommand{\reviewth}[1]{\cellcolor{black!70}\textcolor{white}{\bfseries #1}}
+\newcommand\reviewtablecaption[1]{\caption{#1}\vskip\abovecaptionskip}% アキをより広げる
+% \reviewtablecaption* を定義する(suffixパッケージ効果)
+%\WithSuffix\newcommand\reviewtablecaption*[1]{\@makecaption{}{#1}\vskip\abovecaptionskip}% アキをより広げる
+\newenvironment{reviewtable}[1]{%
+\begin{reviewtablesetup}\begin{tabular}{#1}}%
+{\end{tabular}\end{reviewtablesetup}}
+
+\newcommand\reviewimagecaption[1]{\caption{#1}}
+\newcommand*\reviewimgtablecaption[1]{\caption{#1}}
+
+% コラム
+\newenvironment{reviewcolumn}[1][COLUMN]{%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,boxrule=0.2mm,arc=2mm,colback=white,colframe=black!100!white,before upper={\parindent1\zw},title={\sffamily\bfseries #1}]\par}
+ {\end{tcolorbox}}
+
+\newcommand{\reviewbackslash}[0]{\textbackslash{}}
+
+% 古いjlreq.clsへの互換(当面のad-hoc対応)
+\ifdefined\jlreq@@makecaption@font@setting
+\else
+\let\jlreq@@makecaption@font@setting\jlreq@@makecaption@font
+\fi
+\ifdefined\jlreq@@makecaption@label@font@setting
+\else
+\let\jlreq@@makecaption@label@font@setting\jlreq@@makecaption@label@font
+\fi
+
+\renewcommand{\@makecaption}[2]{{% %本当はl,c,rを[]で指定したい
+  \reset@font\small
+  \vskip\abovecaptionskip
+  \jlreq@ifempty{#1}{%
+    \sbox\@tempboxa{{\jlreq@@makecaption@font@setting #2}}}{%
+    \sbox\@tempboxa{{\jlreq@@makecaption@label@font@setting #1}\review@intn@captionprefix{\jlreq@@makecaption@font@setting #2}}}
+  \ifdim \wd\@tempboxa >\hsize
+  \jlreq@ifempty{#1}{%
+    {\jlreq@@makecaption@font@setting #2}}{%
+    {\jlreq@@makecaption@label@font@setting #1}\review@intn@captionprefix{\jlreq@@makecaption@font@setting #2}}\relax\par
+  \else
+    \global\@minipagefalse
+    \hbox to\hsize{\box\@tempboxa\hfil}% キャプションLeft
+%    \hbox to\hsize{\hfil\box\@tempboxa\hfil}% キャプションCenter
+%    \hbox to\hsize{\hfil\box\@tempboxa}% キャプションRight
+  \fi
+  \vskip\belowcaptionskip}}
+
+\newcommand{\review@commoncaption}[2]{\@makecaption{#1}{#2}}
+\newcommand{\reviewlistcaption}[1]{\review@commoncaption{}{#1}}
+\newcommand{\reviewemlistcaption}[1]{\review@commoncaption{}{#1}}
+\newcommand{\reviewsourcecaption}[1]{\review@commoncaption{}{#1}}
+\newcommand{\reviewcmdcaption}[1]{\review@commoncaption{}{#1}}
+\newenvironment{reviewlistblock}{\list{}{\topsep.5\baselineskip \leftmargin\z@ \itemindent\z@}\item\needspace{4\Cvs}\relax}{\endlist}% 上下アキ0.5
+
+\newcommand{\reviewequationcaption}[1]{\review@commoncaption{}{#1}}
+\newenvironment{reviewequationblock}{\needspace{2\Cvs}}{}
+
+\newcommand{\reviewimageref}[2]{\review@intn@image #1}
+\newcommand{\reviewtableref}[2]{\review@intn@table #1}
+\newcommand{\reviewlistref}[1]{\review@intn@list #1}
+\newcommand{\reviewequationref}[1]{\review@intn@equation #1}
+\newcommand{\reviewbibref}[2]{\hyperref[#2]{#1}}
+\newcommand{\reviewcolumnref}[2]{#1}% XXX:ハイパーリンクにはreviewcolumn側の調整が必要
+\newcommand{\reviewchapref}[2]{\hyperref[#2]{#1}}
+\newcommand{\reviewsecref}[2]{\hyperref[#2]{#1}}
+
+\renewcommand{\contentsname}{\review@toctitle}
+
+\newenvironment{reviewpart}{%
+\setcounter{section}{0}%
+\renewcommand{\thesection}{\thepart.\@arabic\c@section}%
+}{}
+
+% 囲み記事
+\newenvironment{reviewnote}[1][]{%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@notehead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+ {\end{tcolorbox}}
+
+\newenvironment{reviewmemo}[1][]{%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@memohead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+ {\end{tcolorbox}}
+
+\newenvironment{reviewtip}[1][]{%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@tiphead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+ {\end{tcolorbox}}
+
+\newenvironment{reviewinfo}[1][]{%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@infohead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+ {\end{tcolorbox}}
+
+\newenvironment{reviewwarning}[1][]{%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@warninghead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+ {\end{tcolorbox}}
+
+\newenvironment{reviewimportant}[1][]{%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@importanthead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+ {\end{tcolorbox}}
+
+\newenvironment{reviewcaution}[1][]{%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@cautionhead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+ {\end{tcolorbox}}
+
+\newenvironment{reviewnotice}[1][]{%
+  \begin{tcolorbox}[skin=enhanced jigsaw,breakable,empty,coltitle=black,title={\sffamily\bfseries \review@intn@noticehead\hspace{0.75\zw}#1},borderline horizontal={0.5mm}{0pt}{black!50}, left=1mm, right=1mm, left skip=6mm]}
+ {\end{tcolorbox}}
+
+% 書体
+\DeclareRobustCommand{\reviewkw}[1]{\textbf{\textgt{#1}}}
+\DeclareRobustCommand{\reviewami}[1]{#1}% FIXME
+\DeclareRobustCommand{\reviewballoon}[1]{←{#1}}
+\DeclareRobustCommand{\reviewem}[1]{\textbf{#1}}
+\DeclareRobustCommand{\reviewstrong}[1]{\textbf{#1}}
+\DeclareRobustCommand{\reviewunderline}[1]{\underline{#1}}% ulemかjumolineで上書き。デフォルトはulemにしている
+\DeclareRobustCommand{\reviewit}[1]{\textit{#1}}
+\DeclareRobustCommand{\reviewbold}[1]{\textbf{#1}}
+\DeclareRobustCommand{\reviewtcy}[1]{\tatechuyoko{#1}}
+\DeclareRobustCommand{\reviewicon}[1]{\includegraphics[]{#1}}
+% アイコンの高さを文字の高さに合わせたいときには、以下をreview-custom.styに記述してください:
+% \DeclareRobustCommand{\reviewicon}[1]{\includegraphics[height=0.9\zw]{#1}}
+
+% allow break line in tt
+% contributed by @zr_tex8r
+\g@addto@macro\pdfstringdefPreHook{% for PDF bookmarks
+  \def\reviewami#1{#1}
+  \def\reviewbreakall#1{#1}
+  \def\reviewballoon#1{#1}
+  \def\reviewbou#1{#1}
+  \def\reviewkw#1{#1}
+  \def\reviewinsert#1{#1}
+  \def\reviewstrike#1{#1}
+  \def\reviewunderline#1{#1}
+  \def\reviewtt#1{#1}
+  \def\reviewcode#1{#1}
+  \def\reviewtti#1{#1}
+  \def\reviewttb#1{#1}
+  \let\reviewicon\@gobble
+}
+\newif\ifreview@ba@break
+\def\review@ba@end{\review@ba@end@}
+\DeclareRobustCommand{\reviewbreakall}[1]{%
+  \begingroup
+    \review@ba@breakfalse
+    \review@break@all@a#1\review@ba@end
+  \endgroup
+}
+\def\review@break@all@a{%
+  \futurelet\review@ba@tok\review@break@all@b
+}
+\def\review@break@all@b{%
+  \ifx\review@ba@tok\review@ba@end
+    \let\next\@gobble
+  \else\ifx\review@ba@tok\@sptoken
+    \let\next\review@break@all@c
+  \else\ifx\review@ba@tok~%
+    \let\next\review@break@all@d
+  \else\ifx\review@ba@tok\bgroup
+    \let\next\review@break@all@e
+  \else
+    \let\next\review@break@all@f
+  \fi\fi\fi\fi
+  \next
+}
+\expandafter\def\expandafter\review@break@all@c\space{%
+  \space
+  \review@ba@breakfalse
+  \review@break@all@a
+}
+\def\review@break@all@d#1{%
+  \review@break@all@f{\mbox{\space}}%
+}
+\def\review@break@all@e#1{%
+  \review@break@all@f{{#1}}%
+}
+\def\review@break@all@f#1{%
+  \ifreview@ba@break
+    \hskip0pt plus 0.02em\relax
+  \fi
+  #1%
+  \review@ba@breaktrue
+  \review@break@all@a
+}
+\DeclareRobustCommand{\reviewtt}[1]{{\frenchspacing\ttfamily\reviewbreakall{#1}}}
+\DeclareRobustCommand{\reviewcode}[1]{{\frenchspacing\ttfamily\reviewbreakall{#1}}}
+\DeclareRobustCommand{\reviewtti}[1]{{\frenchspacing\ttfamily\itshape\reviewbreakall{#1}}}
+\DeclareRobustCommand{\reviewttb}[1]{{\frenchspacing\ttfamily\bfseries\reviewbreakall{#1}}}
+
+\DeclareRobustCommand{\reviewbou}[1]{\kenten{#1}}
+
+\DeclareRobustCommand{\reviewinsert}[1]{\uuline{#1}}
+\DeclareRobustCommand{\reviewstrike}[1]{\sout{#1}}
+%%%% for jumoline.sty:
+%%\DeclareRobustCommand{\reviewstrike}[1]{\Middleline{#1}}
+
+\newcommand{\reviewtitlefont}[0]{\usefont{T1}{phv}{b}{n}\gtfamily}
+\newcommand{\reviewmainfont}[0]{}
+\newcommand{\reviewcolophon}[0]{\clearpage}
+\newcommand{\reviewappendix}[0]{\appendix}
+
+\newcommand{\reviewprepartname}{\review@prepartname}
+\newcommand{\reviewpostpartname}{\review@postpartname}
+\newcommand{\reviewprechaptername}{\review@prechaptername}
+\newcommand{\reviewpostchaptername}{\review@postchaptername}
+\newcommand{\reviewfigurename}{\review@figurename}
+\newcommand{\reviewtablename}{\review@tablename}
+\newcommand{\reviewappendixname}{\review@appendixname}
+
+\ifdefined\prepartname
+  \renewcommand{\prepartname}{\reviewprepartname}
+\fi
+\ifdefined\postpartname
+  \renewcommand{\postpartname}{\reviewpostpartname}
+\fi
+\ifdefined\prechaptername
+  \renewcommand{\prechaptername}{\reviewprechaptername}
+\fi
+\ifdefined\postchaptername
+  \renewcommand{\postchaptername}{\reviewpostchaptername}
+\fi
+\ifdefined\figurename
+  \renewcommand{\figurename}{\reviewfigurename}
+\fi
+\ifdefined\tablename
+  \renewcommand{\tablename}{\reviewtablename}
+\fi
+\ifdefined\appendixname
+  \renewcommand{\appendixname}{\reviewappendixname}
+\fi
+
+% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\def\maxwidth{%
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+
+% hooks
+\def\reviewbegindocumenthook{}
+
+\def\reviewenddocumenthook{}
+
+\def\reviewfrontmatterhook{%
+  \renewcommand{\chaptermark}[1]{{}}
+  \frontmatter
+}
+
+\def\reviewmainmatterhook{%
+  \renewcommand{\chaptermark}[1]{\markboth{\prechaptername\thechapter\postchaptername~##1}{}}
+  \mainmatter
+}
+
+\def\reviewappendixhook{%
+  \renewcommand{\chaptermark}[1]{\markboth{\appendixname\thechapter~##1}{}}
+  \reviewappendix
+}
+
+\def\reviewbackmatterhook{%
+  \backmatter
+}
+
+% cover
+\newcommand*\covermatter{%
+  \ifdefined\review@usecovernombre%
+    \pagenumbering{coverpagezero}
+    \setcounter{page}{0}% force to even page, to avoid empty page
+  \fi
+}
+
+\if@reclscover
+  \ifdefined\review@coverimage
+    \ifrecls@coverfitpage
+       \def\review@coverimageoption{width=\paperwidth,height=\paperheight}
+    \fi
+    \def\reviewcoverpagecont{%
+      \expandafter\includefullpagegraphics\expandafter[\review@coverimageoption]{\review@coverimage}
+      \cleardoublepage
+    }
+  \fi
+  \ifdefined\review@coverfile
+    \def\reviewcoverpagecont{\review@coverfile}
+  \fi
+\fi
+
+% titlepage
+\ifdefined\review@titlepage
+  \ifthenelse{\isundefined{\review@titlefile}}{%
+    \def\reviewtitlepagecont{%
+       \begin{titlepage}
+       \thispagestyle{empty}
+       \begin{center}%
+       \mbox{}%
+       \vskip5\zw
+       \reviewtitlefont%
+       {\Huge\review@booktitlename\par}%
+       \ifdefined\review@subtitlename
+         \vskip 1em%
+         {\Large\review@subtitlename\par}%
+       \fi
+       \vskip 15em%
+       {\huge
+       \lineskip .75em
+       \begin{tabular}[t]{p{\textwidth}}%
+       \centering\review@titlepageauthors
+       \end{tabular}\par}%
+       \vfill
+       {\large\review@date \review@intn@edition%
+         \hspace{2\zw}%
+         \review@intn@publishedby\par}%
+       \vskip4\zw\mbox{}
+       \end{center}%
+       \end{titlepage}\clearpage
+    }
+  }{%
+    \def\reviewtitlepagecont{\review@titlefile}
+  }
+\fi
+
+% toc
+\ifdefined\review@toc
+  \def\reviewtableofcontents{%
+\setcounter{tocdepth}{\review@tocdepth}
+\pagestyle{headings}
+\tableofcontents
+}
+\fi
+
+% index
+\ifdefined\review@makeindex
+  \RequirePackage{makeidx}
+  \makeindex
+\fi
+
+\ifdefined\review@makeindex
+  \def\reviewprintindex{%
+\printindex
+}
+\fi
+
+% colophon
+\ifdefined\review@colophon
+  \ifthenelse{\isundefined{\review@colophonfile}}{%
+    \def\reviewcolophonpagecont{%
+\reviewcolophon
+\thispagestyle{empty}
+\vspace*{\fill}
+{\noindent\reviewtitlefont\Large\review@booktitlename}\\
+\ifdefined\review@subtitlename
+{\noindent\reviewtitlefont\large\review@subtitlename} \\
+\fi
+\rule[8pt]{\textwidth}{1pt} \\
+{\noindent\review@pubhistories}
+
+\begin{tabularx}{\dimexpr\textwidth-0.5em}{lX}
+\review@colophonnames
+\end{tabularx}
+　\\
+\rule[0pt]{\textwidth}{1pt} \\
+\ifdefined\review@rights
+\review@rights
+\fi
+    }%
+  }{%
+    \def\reviewcolophonpagecont{\review@colophonfile}
+  }
+\fi
+
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}

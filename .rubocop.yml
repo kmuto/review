@@ -327,3 +327,4 @@ Gemspec/DevelopmentDependencies:
   EnforcedStyle: gemspec
   Exclude:
     - samples/syntax-book/Gemfile
+    - samples/debug-book/Gemfile
