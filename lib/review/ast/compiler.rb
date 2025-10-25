@@ -110,7 +110,7 @@ module ReVIEW
         )
         @current_ast_node = @ast_root
 
-        build_ast
+        build_ast_from_chapter
 
         # Resolve references after AST building but before post-processing
         # Skip if explicitly requested (e.g., during index building)
@@ -118,6 +118,18 @@ module ReVIEW
           resolve_references
         end
 
+        execute_post_processes
+
+        # Check for accumulated errors (similar to HTMLBuilder's Compiler)
+        if @compile_errors
+          raise CompileError, "#{chapter.basename} cannot be compiled."
+        end
+
+        # Return the compiled AST
+        @ast_root
+      end
+
+      def execute_post_processes
         # Post-process AST for tsize commands (must be before other processors)
         # Determine target format for tsize processing
         target_format = determine_target_format_for_tsize
@@ -135,17 +147,9 @@ module ReVIEW
 
         # Assign item numbers to ordered list items
         ListItemNumberingProcessor.process(@ast_root)
-
-        # Check for accumulated errors (similar to HTMLBuilder's Compiler)
-        if @compile_errors
-          raise CompileError, "#{chapter.basename} cannot be compiled."
-        end
-
-        # Return the compiled AST
-        @ast_root
       end
 
-      def build_ast
+      def build_ast_from_chapter
         f = LineInput.from_string(@chapter.content)
         @lineno = 0
 
