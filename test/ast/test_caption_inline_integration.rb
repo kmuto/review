@@ -33,7 +33,7 @@ class TestCaptionInlineIntegration < Test::Unit::TestCase
     caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
     caption_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Caption with '))
 
-    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b)
     inline_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'bold'))
     caption_node.add_child(inline_node)
 

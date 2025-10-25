@@ -402,33 +402,33 @@ module ReVIEW
         content = render_children(node)
 
         case type
-        when 'b', 'strong'
+        when :b, :strong
           "★#{content}☆"
-        when 'i', 'em'
+        when :i, :em
           "▲#{content}☆"
-        when 'code', 'tt'
+        when :code, :tt
           "△#{content}☆"
-        when 'sup'
+        when :sup
           "#{content}◆→DTP連絡:「#{content}」は上付き←◆"
-        when 'sub'
+        when :sub
           "#{content}◆→DTP連絡:「#{content}」は下付き←◆"
-        when 'br'
+        when :br
           "\n"
-        when 'href'
+        when :href
           render_href(node, content)
-        when 'url' # rubocop:disable Lint/DuplicateBranch
+        when :url # rubocop:disable Lint/DuplicateBranch
           "△#{content}☆"
-        when 'fn'
+        when :fn
           render_footnote_ref(node, content)
-        when 'ruby'
+        when :ruby
           render_ruby(node, content)
-        when 'comment'
+        when :comment
           render_comment(node, content)
-        when 'raw'
+        when :raw
           render_raw(node, content)
-        when 'labelref'
+        when :labelref
           render_labelref(node, content)
-        when 'pageref'
+        when :pageref
           render_pageref(node, content)
         else
           content

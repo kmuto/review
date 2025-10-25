@@ -40,7 +40,7 @@ class TestColumnSections < Test::Unit::TestCase
     column_node = find_node_by_type(ast_root, ReVIEW::AST::ColumnNode)
     assert_not_nil(column_node)
     assert_equal(2, column_node.level)
-    assert_equal('column', column_node.column_type)
+    assert_equal(:column, column_node.column_type)
 
     # Check caption
     assert_not_nil(column_node.caption)

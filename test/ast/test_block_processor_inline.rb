@@ -56,7 +56,7 @@ class TestBlockProcessorInline < Test::Unit::TestCase
     # Create a code line with inline processing
     line_node = ReVIEW::AST::CodeLineNode.new(location: @location)
     text_node1 = ReVIEW::AST::TextNode.new(location: @location, content: 'puts ')
-    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b)
     inline_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'hello'))
     line_node.add_child(text_node1)
     line_node.add_child(inline_node)
@@ -116,7 +116,7 @@ class TestBlockProcessorInline < Test::Unit::TestCase
     # Create CaptionNode with inline content
     caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
     text1 = ReVIEW::AST::TextNode.new(location: @location, content: 'Code with ')
-    inline = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    inline = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b)
     inline.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'bold'))
     text2 = ReVIEW::AST::TextNode.new(location: @location, content: ' text')
     caption_node.add_child(text1)
@@ -197,7 +197,7 @@ class TestBlockProcessorInline < Test::Unit::TestCase
     # Test CaptionNode creation with array of nodes
     caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
     text_node = ReVIEW::AST::TextNode.new(content: 'Text with ')
-    inline_node = ReVIEW::AST::InlineNode.new(inline_type: 'b')
+    inline_node = ReVIEW::AST::InlineNode.new(inline_type: :b)
     inline_node.add_child(ReVIEW::AST::TextNode.new(content: 'bold'))
     text_node2 = ReVIEW::AST::TextNode.new(content: ' content')
     caption_node.add_child(text_node)
@@ -238,10 +238,10 @@ class TestBlockProcessorInline < Test::Unit::TestCase
     # Create CaptionNode with inline content
     caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
     text1 = ReVIEW::AST::TextNode.new(location: @location, content: 'Caption with ')
-    bold = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    bold = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b)
     bold.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'bold'))
     text2 = ReVIEW::AST::TextNode.new(location: @location, content: ' and ')
-    italic = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'i')
+    italic = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :i)
     italic.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'italic'))
     caption_node.add_child(text1)
     caption_node.add_child(bold)
@@ -267,7 +267,7 @@ class TestBlockProcessorInline < Test::Unit::TestCase
   def create_test_paragraph
     # Create paragraph: puts @<b>{hello}
     text_node = ReVIEW::AST::TextNode.new(location: @location, content: 'hello')
-    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b)
     inline_node.add_child(text_node)
 
     paragraph = ReVIEW::AST::ParagraphNode.new(location: @location)

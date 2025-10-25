@@ -29,13 +29,13 @@ class TestASTInline < Test::Unit::TestCase
 
   def test_inline_node_creation
     node = ReVIEW::AST::InlineNode.new(
-      inline_type: 'b',
+      inline_type: :b,
       args: ['bold text']
     )
 
     hash = node.to_h
     assert_equal 'InlineNode', hash[:type]
-    assert_equal 'b', hash[:inline_type]
+    assert_equal :b, hash[:inline_type]
     assert_equal ['bold text'], hash[:args]
   end
 
@@ -59,9 +59,9 @@ class TestASTInline < Test::Unit::TestCase
     assert(inline_nodes.any?, 'Should have inline nodes')
 
     # Check inline node details
-    bold_node = inline_nodes.find { |n| n.inline_type == 'b' }
+    bold_node = inline_nodes.find { |n| n.inline_type == :b }
     assert_not_nil(bold_node, 'Should have bold inline node')
-    assert_equal 'b', bold_node.inline_type
+    assert_equal :b, bold_node.inline_type
   end
 
   def test_multiple_inline_elements
@@ -78,13 +78,13 @@ class TestASTInline < Test::Unit::TestCase
     inline_nodes = paragraph_node.children.select { |n| n.is_a?(ReVIEW::AST::InlineNode) }
     assert_equal 2, inline_nodes.size
 
-    bold_node = inline_nodes.find { |n| n.inline_type == 'b' }
-    italic_node = inline_nodes.find { |n| n.inline_type == 'i' }
+    bold_node = inline_nodes.find { |n| n.inline_type == :b }
+    italic_node = inline_nodes.find { |n| n.inline_type == :i }
 
     assert_not_nil(bold_node, 'Should have bold inline node')
     assert_not_nil(italic_node, 'Should have italic inline node')
-    assert_equal 'b', bold_node.inline_type
-    assert_equal 'i', italic_node.inline_type
+    assert_equal :b, bold_node.inline_type
+    assert_equal :i, italic_node.inline_type
   end
 
   def test_inline_output_compatibility
@@ -102,8 +102,8 @@ class TestASTInline < Test::Unit::TestCase
     inline_nodes = paragraph_node.children.select { |n| n.is_a?(ReVIEW::AST::InlineNode) }
     assert_equal(2, inline_nodes.size, 'Should have two inline elements')
 
-    bold_node = inline_nodes.find { |n| n.inline_type == 'b' }
-    code_node = inline_nodes.find { |n| n.inline_type == 'code' }
+    bold_node = inline_nodes.find { |n| n.inline_type == :b }
+    code_node = inline_nodes.find { |n| n.inline_type == :code }
 
     assert_not_nil(bold_node, 'Should have bold inline node')
     assert_not_nil(code_node, 'Should have code inline node')
@@ -133,13 +133,13 @@ class TestASTInline < Test::Unit::TestCase
 
     # First paragraph should have bold inline
     first_para = paragraph_nodes[0]
-    bold_node = first_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'b' }
+    bold_node = first_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :b }
     assert_not_nil(bold_node)
 
     # Second paragraph should have code and italic inlines
     second_para = paragraph_nodes[1]
-    code_node = second_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'code' }
-    italic_node = second_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'i' }
+    code_node = second_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :code }
+    italic_node = second_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :i }
     assert_not_nil(code_node)
     assert_not_nil(italic_node)
   end

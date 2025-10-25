@@ -52,8 +52,8 @@ class TestASTInlineStructure < Test::Unit::TestCase
 
     # Test simple inline elements
     simple_para = paragraph_nodes[0]
-    bold_node = find_inline_node(simple_para, 'b')
-    code_node = find_inline_node(simple_para, 'code')
+    bold_node = find_inline_node(simple_para, :b)
+    code_node = find_inline_node(simple_para, :code)
     assert_not_nil(bold_node)
     assert_not_nil(code_node)
     assert_equal(['bold'], bold_node.args)
@@ -61,32 +61,32 @@ class TestASTInlineStructure < Test::Unit::TestCase
 
     # Test ruby inline element
     ruby_para = paragraph_nodes[1]
-    ruby_node = find_inline_node(ruby_para, 'ruby')
+    ruby_node = find_inline_node(ruby_para, :ruby)
     assert_not_nil(ruby_node)
     assert_equal(['漢字', 'かんじ'], ruby_node.args)
 
     # Test href inline element
     href_para = paragraph_nodes[2]
-    href_node = find_inline_node(href_para, 'href')
+    href_node = find_inline_node(href_para, :href)
     assert_not_nil(href_node)
     assert_equal(['http://example.com', 'Link Text'], href_node.args)
 
     # Test kw inline element
     kw_para = paragraph_nodes[3]
-    kw_node = find_inline_node(kw_para, 'kw')
+    kw_node = find_inline_node(kw_para, :kw)
     assert_not_nil(kw_node)
     assert_equal(['Term', 'Description'], kw_node.args)
 
     # Test hd inline element
     hd_para = paragraph_nodes[4]
-    hd_node = find_inline_node(hd_para, 'hd')
+    hd_node = find_inline_node(hd_para, :hd)
     assert_not_nil(hd_node)
     assert_equal(['section'], hd_node.args)
 
     # Test cross-reference inline elements
     cross_para = paragraph_nodes[5]
-    chap_node = find_inline_node(cross_para, 'chap')
-    sec_node = find_inline_node(cross_para, 'sec')
+    chap_node = find_inline_node(cross_para, :chap)
+    sec_node = find_inline_node(cross_para, :sec)
     assert_not_nil(chap_node)
     assert_not_nil(sec_node)
     assert_equal(['intro'], chap_node.args)
@@ -94,8 +94,8 @@ class TestASTInlineStructure < Test::Unit::TestCase
 
     # Test word expansion inline elements
     word_para = paragraph_nodes[6]
-    w_node = find_inline_node(word_para, 'w')
-    wb_node = find_inline_node(word_para, 'wb')
+    w_node = find_inline_node(word_para, :w)
+    wb_node = find_inline_node(word_para, :wb)
     assert_not_nil(w_node)
     assert_not_nil(wb_node)
     assert_equal(['words'], w_node.args)
@@ -103,8 +103,8 @@ class TestASTInlineStructure < Test::Unit::TestCase
 
     # Test reference inline elements
     ref_para = paragraph_nodes[7]
-    img_node = find_inline_node(ref_para, 'img')
-    table_node = find_inline_node(ref_para, 'table')
+    img_node = find_inline_node(ref_para, :img)
+    table_node = find_inline_node(ref_para, :table)
     assert_not_nil(img_node)
     assert_not_nil(table_node)
     assert_equal(['figure1'], img_node.args)
@@ -133,31 +133,31 @@ class TestASTInlineStructure < Test::Unit::TestCase
 
     # Test hd with chapter|heading format
     hd_para = paragraph_nodes[0]
-    hd_node = find_inline_node(hd_para, 'hd')
+    hd_node = find_inline_node(hd_para, :hd)
     assert_not_nil(hd_node)
     assert_equal(['chapter1', 'Introduction'], hd_node.args)
 
     # Test img with chapter|id format
     img_para = paragraph_nodes[1]
-    img_node = find_inline_node(img_para, 'img')
+    img_node = find_inline_node(img_para, :img)
     assert_not_nil(img_node)
     assert_equal(['chap1', 'figure1'], img_node.args)
 
     # Test list with chapter|id format
     list_para = paragraph_nodes[2]
-    list_node = find_inline_node(list_para, 'list')
+    list_node = find_inline_node(list_para, :list)
     assert_not_nil(list_node)
     assert_equal(['chap2', 'sample1'], list_node.args)
 
     # Test eq with chapter|id format
     eq_para = paragraph_nodes[3]
-    eq_node = find_inline_node(eq_para, 'eq')
+    eq_node = find_inline_node(eq_para, :eq)
     assert_not_nil(eq_node)
     assert_equal(['chap3', 'formula1'], eq_node.args)
 
     # Test table with chapter|id format
     table_para = paragraph_nodes[4]
-    table_node = find_inline_node(table_para, 'table')
+    table_node = find_inline_node(table_para, :table)
     assert_not_nil(table_node)
     assert_equal(['chap4', 'data1'], table_node.args)
   end
@@ -176,8 +176,8 @@ class TestASTInlineStructure < Test::Unit::TestCase
 
     # Test newly added label reference commands
     label_para = paragraph_nodes[0]
-    labelref_node = find_inline_node(label_para, 'labelref')
-    ref_node = find_inline_node(label_para, 'ref')
+    labelref_node = find_inline_node(label_para, :labelref)
+    ref_node = find_inline_node(label_para, :ref)
     assert_not_nil(labelref_node)
     assert_not_nil(ref_node)
     assert_equal(['label1'], labelref_node.args)

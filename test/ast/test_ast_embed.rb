@@ -173,7 +173,7 @@ class TestASTEmbed < Test::Unit::TestCase
 
     # Check inline elements in first paragraph
     first_para = paragraph_nodes[0]
-    bold_node = first_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'b' }
+    bold_node = first_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :b }
     inline_embed_node = first_para.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) && n.embed_type == :inline }
 
     assert_not_nil(bold_node)

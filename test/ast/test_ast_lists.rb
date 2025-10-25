@@ -49,7 +49,7 @@ class TestASTLists < Test::Unit::TestCase
     second_item = list_node.children[1]
     assert_equal 1, second_item.level
     # Should have inline bold element
-    bold_node = second_item.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'b' }
+    bold_node = second_item.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :b }
     assert_not_nil(bold_node)
 
     # Check for nested list under second item
@@ -90,7 +90,7 @@ class TestASTLists < Test::Unit::TestCase
     third_item = list_node.children[2]
     assert_equal 3, third_item.number
     # Should have inline code element
-    code_node = third_item.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'code' }
+    code_node = third_item.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :code }
     assert_not_nil(code_node)
   end
 
@@ -164,7 +164,7 @@ class TestASTLists < Test::Unit::TestCase
 
     # Check inline elements in ul
     bold_item = ul_node.children.find do |item|
-      item.children.any? { |child| child.is_a?(ReVIEW::AST::InlineNode) && child.inline_type == 'b' }
+      item.children.any? { |child| child.is_a?(ReVIEW::AST::InlineNode) && child.inline_type == :b }
     end
     assert_not_nil(bold_item)
   end

@@ -42,7 +42,7 @@ class TestCaptionNode < Test::Unit::TestCase
     caption.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Caption with '))
 
     # Add inline: @<b>{bold text}
-    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b)
     inline_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'bold text'))
     caption.add_child(inline_node)
 
@@ -63,11 +63,11 @@ class TestCaptionNode < Test::Unit::TestCase
 
     # Create nested inline: @<i>{italic @<b>{bold}}
     bold_text = ReVIEW::AST::TextNode.new(location: @location, content: 'bold')
-    bold_inline = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    bold_inline = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b)
     bold_inline.add_child(bold_text)
 
     italic_text = ReVIEW::AST::TextNode.new(location: @location, content: 'italic ')
-    italic_inline = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'i')
+    italic_inline = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :i)
     italic_inline.add_child(italic_text)
     italic_inline.add_child(bold_inline)
     caption.add_child(italic_inline)
@@ -104,7 +104,7 @@ class TestCaptionNode < Test::Unit::TestCase
     caption = ReVIEW::AST::CaptionNode.new(location: @location)
     caption.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Caption with '))
 
-    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b)
     inline_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'bold'))
     caption.add_child(inline_node)
 

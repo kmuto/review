@@ -186,7 +186,7 @@ class TestNestedListAssembler < Test::Unit::TestCase
     item = list_node.children[0]
 
     # Find the inline bold element in term
-    bold_in_term = item.term_children.find { |c| c.is_a?(ReVIEW::AST::InlineNode) && c.inline_type == 'b' }
+    bold_in_term = item.term_children.find { |c| c.is_a?(ReVIEW::AST::InlineNode) && c.inline_type == :b }
     assert_equal 'bold', bold_in_term.children.first.content
 
     # Verify definition children has processed inline elements
@@ -196,7 +196,7 @@ class TestNestedListAssembler < Test::Unit::TestCase
     assert_instance_of(ReVIEW::AST::ParagraphNode, definition_para)
 
     # The paragraph should contain inline code element
-    code_in_def = definition_para.children.find { |c| c.is_a?(ReVIEW::AST::InlineNode) && c.inline_type == 'code' }
+    code_in_def = definition_para.children.find { |c| c.is_a?(ReVIEW::AST::InlineNode) && c.inline_type == :code }
     assert_equal 'some code', code_in_def.children.first.content
   end
 

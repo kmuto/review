@@ -87,7 +87,7 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
     assert_equal 'hello world', generator.generate(text_node)
 
     # Test inline node
-    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b', args: ['bold text'])
+    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b, args: ['bold text'])
     assert_equal '@<b>{bold text}', generator.generate(inline_node)
   end
 
@@ -132,7 +132,7 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
 
   def test_render_ast_node_as_plain_text_with_inline_node
     text_node = ReVIEW::AST::TextNode.new(location: @location, content: 'bold text')
-    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b)
     inline_node.add_child(text_node)
 
     result = render_ast_node_as_plain_text_helper(inline_node)
@@ -149,11 +149,11 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
   def test_render_ast_node_as_plain_text_with_complex_inline
     # Create: This is @<i>{italic @<b>{bold}} text
     bold_text = ReVIEW::AST::TextNode.new(location: @location, content: 'bold')
-    bold_inline = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    bold_inline = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b)
     bold_inline.add_child(bold_text)
 
     italic_text1 = ReVIEW::AST::TextNode.new(location: @location, content: 'italic ')
-    italic_inline = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'i')
+    italic_inline = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :i)
     italic_inline.add_child(italic_text1)
     italic_inline.add_child(bold_inline)
 
@@ -236,7 +236,7 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
   def create_test_paragraph
     # Create paragraph: puts @<b>{hello}
     text_node = ReVIEW::AST::TextNode.new(location: @location, content: 'hello')
-    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: 'b')
+    inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b)
     inline_node.add_child(text_node)
 
     paragraph = ReVIEW::AST::ParagraphNode.new(location: @location)

@@ -467,7 +467,7 @@ module ReVIEW
                                    label: context.arg(0),
                                    caption: caption_text(caption_data),
                                    caption_node: caption_node(caption_data),
-                                   column_type: 'column')
+                                   column_type: :column)
 
         # Process structured content
         context.process_structured_content_with_blocks(node)

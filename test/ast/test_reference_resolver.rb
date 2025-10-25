@@ -54,7 +54,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc.add_child(img_node)
 
     # Add inline reference to the image
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'img')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :img)
     ref_node = ReVIEW::AST::ReferenceNode.new('img01')
     inline.add_child(ref_node)
     doc.add_child(inline)
@@ -85,7 +85,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc.add_child(table_node)
 
     # Add inline reference to the table
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'table')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :table)
     ref_node = ReVIEW::AST::ReferenceNode.new('tbl01')
     inline.add_child(ref_node)
     doc.add_child(inline)
@@ -112,7 +112,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc.add_child(code_node)
 
     # Add inline reference to the list
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'list')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :list)
     ref_node = ReVIEW::AST::ReferenceNode.new('list01')
     inline.add_child(ref_node)
     doc.add_child(inline)
@@ -140,7 +140,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc.add_child(fn_node)
 
     # Add inline reference to the footnote
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'fn')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :fn)
     ref_node = ReVIEW::AST::ReferenceNode.new('fn01')
     inline.add_child(ref_node)
     doc.add_child(inline)
@@ -166,7 +166,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc.add_child(eq_node)
 
     # Add inline reference to the equation
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'eq')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :eq)
     ref_node = ReVIEW::AST::ReferenceNode.new('eq01')
     inline.add_child(ref_node)
     doc.add_child(inline)
@@ -193,7 +193,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     }
 
     doc = ReVIEW::AST::DocumentNode.new
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'w')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :w)
     ref_node = ReVIEW::AST::ReferenceNode.new('rails')
 
     doc.add_child(inline)
@@ -214,7 +214,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
   def test_resolve_nonexistent_reference
     doc = ReVIEW::AST::DocumentNode.new
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'img')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :img)
     ref_node = ReVIEW::AST::ReferenceNode.new('nonexistent')
 
     doc.add_child(inline)
@@ -234,7 +234,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc.add_child(img_node)
 
     # Add labelref reference that should find the image
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'labelref')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :labelref)
     ref_node = ReVIEW::AST::ReferenceNode.new('img01')
     inline.add_child(ref_node)
     doc.add_child(inline)
@@ -260,7 +260,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc.add_child(table_node)
 
     # Add ref reference that should find the table
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'ref')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :ref)
     ref_node = ReVIEW::AST::ReferenceNode.new('tbl01')
     inline.add_child(ref_node)
     doc.add_child(inline)
@@ -292,17 +292,17 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc.add_child(code_node)
 
     # Add multiple references
-    inline1 = ReVIEW::AST::InlineNode.new(inline_type: 'img')
+    inline1 = ReVIEW::AST::InlineNode.new(inline_type: :img)
     ref1 = ReVIEW::AST::ReferenceNode.new('img01')
     inline1.add_child(ref1)
     doc.add_child(inline1)
 
-    inline2 = ReVIEW::AST::InlineNode.new(inline_type: 'table')
+    inline2 = ReVIEW::AST::InlineNode.new(inline_type: :table)
     ref2 = ReVIEW::AST::ReferenceNode.new('tbl01')
     inline2.add_child(ref2)
     doc.add_child(inline2)
 
-    inline3 = ReVIEW::AST::InlineNode.new(inline_type: 'list')
+    inline3 = ReVIEW::AST::InlineNode.new(inline_type: :list)
     ref3 = ReVIEW::AST::ReferenceNode.new('list01')
     inline3.add_child(ref3)
     doc.add_child(inline3)
@@ -326,7 +326,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc.add_child(en_node)
 
     # Add inline reference to the endnote
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'endnote')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :endnote)
     ref_node = ReVIEW::AST::ReferenceNode.new('en01')
     inline.add_child(ref_node)
     doc.add_child(inline)
@@ -351,7 +351,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc.add_child(col_node)
 
     # Add inline reference to the column
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'column')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :column)
     ref_node = ReVIEW::AST::ReferenceNode.new('col01')
     inline.add_child(ref_node)
     doc.add_child(inline)
@@ -376,7 +376,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc.add_child(headline)
 
     # Add inline reference to the headline
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'hd')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :hd)
     ref_node = ReVIEW::AST::ReferenceNode.new('sec01')
     inline.add_child(ref_node)
     doc.add_child(inline)
@@ -401,7 +401,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc.add_child(headline)
 
     # Add inline reference using sec (alias for hd)
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'sec')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :sec)
     ref_node = ReVIEW::AST::ReferenceNode.new('sec01')
     inline.add_child(ref_node)
     doc.add_child(inline)
@@ -427,7 +427,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add inline reference to the chapter
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'chap')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :chap)
     ref_node = ReVIEW::AST::ReferenceNode.new('chap01')
     inline.add_child(ref_node)
     doc.add_child(inline)
@@ -471,7 +471,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add cross-chapter reference (chap02|img01)
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'img')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :img)
     ref_node = ReVIEW::AST::ReferenceNode.new('img01', 'chap02')
     inline.add_child(ref_node)
     doc.add_child(inline)
@@ -499,7 +499,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     # Add paragraph containing inline reference
     para = ReVIEW::AST::ParagraphNode.new
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'img')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :img)
     ref_node = ReVIEW::AST::ReferenceNode.new('img01')
     inline.add_child(ref_node)
     para.add_child(inline)
@@ -524,8 +524,8 @@ class ReferenceResolverTest < Test::Unit::TestCase
     para = ReVIEW::AST::ParagraphNode.new
 
     # Bold inline containing image reference
-    bold = ReVIEW::AST::InlineNode.new(inline_type: 'b')
-    img_inline = ReVIEW::AST::InlineNode.new(inline_type: 'img')
+    bold = ReVIEW::AST::InlineNode.new(inline_type: :b)
+    img_inline = ReVIEW::AST::InlineNode.new(inline_type: :img)
     ref_node = ReVIEW::AST::ReferenceNode.new('img01')
     img_inline.add_child(ref_node)
     bold.add_child(img_inline)
@@ -551,7 +551,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     # Add table with caption containing footnote reference
     caption = ReVIEW::AST::CaptionNode.new
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'fn')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :fn)
     ref_node = ReVIEW::AST::ReferenceNode.new('fn01')
     inline.add_child(ref_node)
     caption.add_child(inline)
@@ -580,14 +580,14 @@ class ReferenceResolverTest < Test::Unit::TestCase
     # Add single paragraph with multiple references
     para = ReVIEW::AST::ParagraphNode.new
 
-    inline1 = ReVIEW::AST::InlineNode.new(inline_type: 'img')
+    inline1 = ReVIEW::AST::InlineNode.new(inline_type: :img)
     ref1 = ReVIEW::AST::ReferenceNode.new('img01')
     inline1.add_child(ref1)
     para.add_child(inline1)
 
     para.add_child(ReVIEW::AST::TextNode.new(content: ' and '))
 
-    inline2 = ReVIEW::AST::InlineNode.new(inline_type: 'img')
+    inline2 = ReVIEW::AST::InlineNode.new(inline_type: :img)
     ref2 = ReVIEW::AST::ReferenceNode.new('img02')
     inline2.add_child(ref2)
     para.add_child(inline2)
@@ -610,7 +610,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     }
 
     doc = ReVIEW::AST::DocumentNode.new
-    inline = ReVIEW::AST::InlineNode.new(inline_type: 'wb')
+    inline = ReVIEW::AST::InlineNode.new(inline_type: :wb)
     ref_node = ReVIEW::AST::ReferenceNode.new('api')
 
     doc.add_child(inline)
@@ -636,13 +636,13 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc.add_child(img_node)
 
     # Add valid reference
-    inline1 = ReVIEW::AST::InlineNode.new(inline_type: 'img')
+    inline1 = ReVIEW::AST::InlineNode.new(inline_type: :img)
     ref1 = ReVIEW::AST::ReferenceNode.new('img01')
     inline1.add_child(ref1)
     doc.add_child(inline1)
 
     # Add invalid reference
-    inline2 = ReVIEW::AST::InlineNode.new(inline_type: 'img')
+    inline2 = ReVIEW::AST::InlineNode.new(inline_type: :img)
     ref2 = ReVIEW::AST::ReferenceNode.new('nonexistent')
     inline2.add_child(ref2)
     doc.add_child(inline2)

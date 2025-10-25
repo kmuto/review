@@ -161,9 +161,9 @@ class TestASTComplexIntegration < Test::Unit::TestCase
 
     # Verify cross-references are preserved in AST
     inline_nodes = collect_inline_nodes(ast_root)
-    list_refs = inline_nodes.select { |node| node.inline_type == 'list' }
-    table_refs = inline_nodes.select { |node| node.inline_type == 'table' }
-    footnote_refs = inline_nodes.select { |node| node.inline_type == 'fn' }
+    list_refs = inline_nodes.select { |node| node.inline_type == :list }
+    table_refs = inline_nodes.select { |node| node.inline_type == :table }
+    footnote_refs = inline_nodes.select { |node| node.inline_type == :fn }
 
     assert(list_refs.size >= 1, 'Should have list references')
     assert(table_refs.size >= 1, 'Should have table references')

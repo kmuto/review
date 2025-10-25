@@ -48,7 +48,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
 
     para.add_child(ReVIEW::AST::TextNode.new(content: 'This is '))
 
-    bold = ReVIEW::AST::InlineNode.new(inline_type: 'b')
+    bold = ReVIEW::AST::InlineNode.new(inline_type: :b)
     bold.add_child(ReVIEW::AST::TextNode.new(content: 'bold'))
     para.add_child(bold)
 
@@ -239,7 +239,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
     # Paragraph with inline
     para = ReVIEW::AST::ParagraphNode.new
     para.add_child(ReVIEW::AST::TextNode.new(content: 'This is '))
-    code_inline = ReVIEW::AST::InlineNode.new(inline_type: 'code')
+    code_inline = ReVIEW::AST::InlineNode.new(inline_type: :code)
     code_inline.add_child(ReVIEW::AST::TextNode.new(content: 'inline code'))
     para.add_child(code_inline)
     para.add_child(ReVIEW::AST::TextNode.new(content: '.'))
@@ -278,7 +278,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
     para = ReVIEW::AST::ParagraphNode.new
 
     # href with URL
-    href = ReVIEW::AST::InlineNode.new(inline_type: 'href', args: ['https://example.com'])
+    href = ReVIEW::AST::InlineNode.new(inline_type: :href, args: ['https://example.com'])
     para.add_child(href)
 
     doc.add_child(para)

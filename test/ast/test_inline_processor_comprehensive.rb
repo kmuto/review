@@ -60,7 +60,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
     # Second: inline element
     assert_instance_of(ReVIEW::AST::InlineNode, parent.children[1])
-    assert_equal 'b', parent.children[1].inline_type
+    assert_equal :b, parent.children[1].inline_type
     assert_equal ['bold'], parent.children[1].args
 
     # Third: text after
@@ -79,9 +79,9 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     # Expected behavior: should parse all three consecutive inline elements
     assert_equal 5, parent.children.size
     assert_equal 'Start ', parent.children[0].content
-    assert_equal 'b', parent.children[1].inline_type
-    assert_equal 'i', parent.children[2].inline_type
-    assert_equal 'code', parent.children[3].inline_type
+    assert_equal :b, parent.children[1].inline_type
+    assert_equal :i, parent.children[2].inline_type
+    assert_equal :code, parent.children[3].inline_type
     assert_equal ' end', parent.children[4].content
   end
 
@@ -97,10 +97,10 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
     # Bold inline with nested content
     bold_node = parent.children[1]
-    assert_equal 'b', bold_node.inline_type
+    assert_equal :b, bold_node.inline_type
     assert_equal 2, bold_node.children.size
     assert_equal 'bold with ', bold_node.children[0].content
-    assert_equal 'i', bold_node.children[1].inline_type
+    assert_equal :i, bold_node.children[1].inline_type
     assert_equal 'nested italic', bold_node.children[1].children[0].content
 
     assert_equal ' more', parent.children[2].content
@@ -115,7 +115,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
     assert_equal 3, parent.children.size
     ruby_node = parent.children[1]
-    assert_equal 'ruby', ruby_node.inline_type
+    assert_equal :ruby, ruby_node.inline_type
     assert_equal ['漢字', 'かんじ'], ruby_node.args
     assert_equal 2, ruby_node.children.size
     assert_equal '漢字', ruby_node.children[0].content
@@ -131,7 +131,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
     assert_equal 3, parent.children.size
     href_node = parent.children[1]
-    assert_equal 'href', href_node.inline_type
+    assert_equal :href, href_node.inline_type
     assert_equal ['https://example.com', 'Example Site'], href_node.args
     assert_equal 1, href_node.children.size
     assert_equal 'Example Site', href_node.children[0].content
@@ -146,7 +146,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
     assert_equal 3, parent.children.size
     href_node = parent.children[1]
-    assert_equal 'href', href_node.inline_type
+    assert_equal :href, href_node.inline_type
     assert_equal ['https://example.com'], href_node.args
     assert_equal 1, href_node.children.size
     assert_equal 'https://example.com', href_node.children[0].content
@@ -161,7 +161,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
     assert_equal 3, parent.children.size
     kw_node = parent.children[1]
-    assert_equal 'kw', kw_node.inline_type
+    assert_equal :kw, kw_node.inline_type
     assert_equal ['API', 'Application Programming Interface'], kw_node.args
     assert_equal 2, kw_node.children.size
     assert_equal 'API', kw_node.children[0].content
@@ -177,7 +177,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
     assert_equal 3, parent.children.size
     hd_node = parent.children[1]
-    assert_equal 'hd', hd_node.inline_type
+    assert_equal :hd, hd_node.inline_type
     assert_equal ['chapter1', 'Introduction'], hd_node.args
     assert_equal 1, hd_node.children.size
 
@@ -198,19 +198,19 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     assert_equal 'See ', parent.children[0].content
 
     img_node = parent.children[1]
-    assert_equal 'img', img_node.inline_type
+    assert_equal :img, img_node.inline_type
     assert_equal ['figure1'], img_node.args
 
     assert_equal ' and ', parent.children[2].content
 
     list_node = parent.children[3]
-    assert_equal 'list', list_node.inline_type
+    assert_equal :list, list_node.inline_type
     assert_equal ['code1'], list_node.args
 
     assert_equal ' and ', parent.children[4].content
 
     table_node = parent.children[5]
-    assert_equal 'table', table_node.inline_type
+    assert_equal :table, table_node.inline_type
     assert_equal ['data1'], table_node.args
   end
 
@@ -225,13 +225,13 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     assert_equal 'See ', parent.children[0].content
 
     chap_node = parent.children[1]
-    assert_equal 'chap', chap_node.inline_type
+    assert_equal :chap, chap_node.inline_type
     assert_equal ['intro'], chap_node.args
 
     assert_equal ' and ', parent.children[2].content
 
     sec_node = parent.children[3]
-    assert_equal 'sec', sec_node.inline_type
+    assert_equal :sec, sec_node.inline_type
     assert_equal ['overview'], sec_node.args
 
     assert_equal ' for details', parent.children[4].content
@@ -250,13 +250,13 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     assert_equal 'Code: ', parent.children[0].content
 
     code_node = parent.children[1]
-    assert_equal 'code', code_node.inline_type
+    assert_equal :code, code_node.inline_type
     assert_equal ['puts "hello"'], code_node.args
 
     assert_equal ' and math: ', parent.children[2].content
 
     math_node = parent.children[3]
-    assert_equal 'm', math_node.inline_type
+    assert_equal :m, math_node.inline_type
     assert_equal ['x^2 + y^2'], math_node.args
     assert_equal '.', parent.children[4].content
   end
@@ -272,7 +272,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     assert_equal 'Code ', parent.children[0].content
 
     code_node = parent.children[1]
-    assert_equal 'code', code_node.inline_type
+    assert_equal :code, code_node.inline_type
     assert_equal ['func\\{param\\}'], code_node.args
     assert_equal 1, code_node.children.size
     assert_equal 'func\\{param\\}', code_node.children[0].content
@@ -292,12 +292,12 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     assert_equal 'Start ', parent.children[0].content
 
     bold_node = parent.children[1]
-    assert_equal 'b', bold_node.inline_type
+    assert_equal :b, bold_node.inline_type
     assert_equal 4, bold_node.children.size
     assert_equal 'bold ', bold_node.children[0].content
-    assert_equal 'code', bold_node.children[1].inline_type
+    assert_equal :code, bold_node.children[1].inline_type
     assert_equal ' and ', bold_node.children[2].content
-    assert_equal 'i', bold_node.children[3].inline_type
+    assert_equal :i, bold_node.children[3].inline_type
 
     assert_equal ' end', parent.children[2].content
   end
@@ -346,7 +346,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     assert_equal 'Math ', parent.children[0].content
 
     math_node = parent.children[1]
-    assert_equal 'm', math_node.inline_type
+    assert_equal :m, math_node.inline_type
     assert_equal ['∑_{i=1}^n x_i'], math_node.args
 
     assert_equal ' formula', parent.children[2].content
@@ -374,13 +374,13 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     assert_equal '日本語 ', parent.children[0].content
 
     ruby1 = parent.children[1]
-    assert_equal 'ruby', ruby1.inline_type
+    assert_equal :ruby, ruby1.inline_type
     assert_equal ['漢字', 'かんじ'], ruby1.args
 
     assert_equal ' and ', parent.children[2].content
 
     ruby2 = parent.children[3]
-    assert_equal 'ruby', ruby2.inline_type
+    assert_equal :ruby, ruby2.inline_type
     assert_equal ['平仮名', 'ひらがな'], ruby2.args
 
     assert_equal ' text', parent.children[4].content
@@ -397,7 +397,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     assert_equal 'Empty ', parent.children[0].content
 
     bold_node = parent.children[1]
-    assert_equal 'b', bold_node.inline_type
+    assert_equal :b, bold_node.inline_type
     assert_equal [''], bold_node.args
 
     assert_equal ' content', parent.children[2].content

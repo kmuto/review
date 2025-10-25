@@ -235,7 +235,7 @@ module ReVIEW
             label: label,
             caption: caption_text,
             caption_node: caption_node,
-            column_type: 'column',
+            column_type: :column,
             inline_processor: inline_processor
           )
           current_node.add_child(node)

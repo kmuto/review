@@ -222,7 +222,7 @@ class TestLatexRenderer < Test::Unit::TestCase
   end
 
   def test_visit_inline_bold
-    inline = AST::InlineNode.new(inline_type: 'b')
+    inline = AST::InlineNode.new(inline_type: :b)
     inline.add_child(AST::TextNode.new(content: 'bold text'))
 
     result = @renderer.visit(inline)
@@ -230,7 +230,7 @@ class TestLatexRenderer < Test::Unit::TestCase
   end
 
   def test_visit_inline_italic
-    inline = AST::InlineNode.new(inline_type: 'i')
+    inline = AST::InlineNode.new(inline_type: :i)
     inline.add_child(AST::TextNode.new(content: 'italic text'))
 
     result = @renderer.visit(inline)
@@ -238,7 +238,7 @@ class TestLatexRenderer < Test::Unit::TestCase
   end
 
   def test_visit_inline_code
-    inline = AST::InlineNode.new(inline_type: 'tt')
+    inline = AST::InlineNode.new(inline_type: :tt)
     inline.add_child(AST::TextNode.new(content: 'code text'))
 
     result = @renderer.visit(inline)
@@ -246,7 +246,7 @@ class TestLatexRenderer < Test::Unit::TestCase
   end
 
   def test_visit_inline_footnote
-    inline = AST::InlineNode.new(inline_type: 'fn', args: ['footnote1'])
+    inline = AST::InlineNode.new(inline_type: :fn, args: ['footnote1'])
 
     result = @renderer.visit(inline)
     assert_equal '\\footnote{footnote1}', result
@@ -397,21 +397,21 @@ class TestLatexRenderer < Test::Unit::TestCase
   end
 
   def test_render_inline_element_href_with_args
-    inline = AST::InlineNode.new(inline_type: 'href', args: ['http://example.com', 'Example'])
+    inline = AST::InlineNode.new(inline_type: :href, args: ['http://example.com', 'Example'])
 
     result = @renderer.visit(inline)
     assert_equal '\\href{http://example.com}{Example}', result
   end
 
   def test_render_inline_element_href_internal_reference_with_label
-    inline = AST::InlineNode.new(inline_type: 'href', args: ['#anchor', 'Jump to anchor'])
+    inline = AST::InlineNode.new(inline_type: :href, args: ['#anchor', 'Jump to anchor'])
 
     result = @renderer.visit(inline)
     assert_equal '\\hyperref[anchor]{Jump to anchor}', result
   end
 
   def test_render_inline_element_href_internal_reference_without_label
-    inline = AST::InlineNode.new(inline_type: 'href', args: ['#anchor'])
+    inline = AST::InlineNode.new(inline_type: :href, args: ['#anchor'])
     inline.add_child(AST::TextNode.new(content: '#anchor'))
 
     result = @renderer.visit(inline)
@@ -654,7 +654,7 @@ class TestLatexRenderer < Test::Unit::TestCase
   def test_render_inline_column
     # Test that inline element rendering works with basic elements
     # Create a simple inline node
-    inline_node = AST::InlineNode.new(inline_type: 'b')
+    inline_node = AST::InlineNode.new(inline_type: :b)
     inline_node.add_child(AST::TextNode.new(content: 'bold text'))
 
     # Test that inline element processing works by visiting an inline node
@@ -674,7 +674,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(content: caption))
 
-    column = AST::ColumnNode.new(level: 3, caption: caption, caption_node: caption_node, column_type: 'column')
+    column = AST::ColumnNode.new(level: 3, caption: caption, caption_node: caption_node, column_type: :column)
     paragraph = AST::ParagraphNode.new
     paragraph.add_child(AST::TextNode.new(content: 'Column content here.'))
     column.add_child(paragraph)
@@ -695,7 +695,7 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   def test_visit_column_no_caption
     # Test column without caption
-    column = AST::ColumnNode.new(level: 3, column_type: 'column')
+    column = AST::ColumnNode.new(level: 3, column_type: :column)
     paragraph = AST::ParagraphNode.new
     paragraph.add_child(AST::TextNode.new(content: 'No caption column.'))
     column.add_child(paragraph)
@@ -720,7 +720,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(content: caption))
 
-    column = AST::ColumnNode.new(level: 3, caption: caption, caption_node: caption_node, column_type: 'column')
+    column = AST::ColumnNode.new(level: 3, caption: caption, caption_node: caption_node, column_type: :column)
     paragraph = AST::ParagraphNode.new
     paragraph.add_child(AST::TextNode.new(content: 'This should not get TOC entry.'))
     column.add_child(paragraph)
@@ -1264,7 +1264,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     bibpaper_index.add_item(item)
     @book.bibpaper_index = bibpaper_index
 
-    inline = AST::InlineNode.new(inline_type: 'bib', args: ['lins'])
+    inline = AST::InlineNode.new(inline_type: :bib, args: ['lins'])
     result = @renderer.visit(inline)
     assert_equal '\\reviewbibref{[1]}{bib:lins}', result
   end
@@ -1278,11 +1278,11 @@ class TestLatexRenderer < Test::Unit::TestCase
     bibpaper_index.add_item(item2)
     @book.bibpaper_index = bibpaper_index
 
-    inline1 = AST::InlineNode.new(inline_type: 'bib', args: ['lins'])
+    inline1 = AST::InlineNode.new(inline_type: :bib, args: ['lins'])
     result1 = @renderer.visit(inline1)
     assert_equal '\\reviewbibref{[1]}{bib:lins}', result1
 
-    inline2 = AST::InlineNode.new(inline_type: 'bib', args: ['knuth'])
+    inline2 = AST::InlineNode.new(inline_type: :bib, args: ['knuth'])
     result2 = @renderer.visit(inline2)
     assert_equal '\\reviewbibref{[2]}{bib:knuth}', result2
   end
@@ -1294,7 +1294,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     bibpaper_index.add_item(item)
     @book.bibpaper_index = bibpaper_index
 
-    inline = AST::InlineNode.new(inline_type: 'bibref', args: ['lins'])
+    inline = AST::InlineNode.new(inline_type: :bibref, args: ['lins'])
     result = @renderer.visit(inline)
     assert_equal '\\reviewbibref{[1]}{bib:lins}', result
   end
@@ -1303,7 +1303,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     # Test @<bib> when there's no bibpaper_index (should fallback to \cite)
     @book.bibpaper_index = nil
 
-    inline = AST::InlineNode.new(inline_type: 'bib', args: ['lins'])
+    inline = AST::InlineNode.new(inline_type: :bib, args: ['lins'])
     result = @renderer.visit(inline)
     assert_equal '\\cite{lins}', result
   end
@@ -1315,7 +1315,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     bibpaper_index.add_item(item)
     @book.bibpaper_index = bibpaper_index
 
-    inline = AST::InlineNode.new(inline_type: 'bib', args: ['lins'])
+    inline = AST::InlineNode.new(inline_type: :bib, args: ['lins'])
     result = @renderer.visit(inline)
     # Should fallback to \cite when not found
     assert_equal '\\cite{lins}', result
@@ -1323,7 +1323,7 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   def test_inline_idx_simple
     # Test @<idx>{term} - simple index entry
-    inline = AST::InlineNode.new(inline_type: 'idx', args: ['keyword'])
+    inline = AST::InlineNode.new(inline_type: :idx, args: ['keyword'])
     inline.add_child(AST::TextNode.new(content: 'keyword'))
     result = @renderer.visit(inline)
     assert_equal 'keyword\\index{keyword}', result
@@ -1331,7 +1331,7 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   def test_inline_idx_hierarchical
     # Test @<idx>{親項目<<>>子項目} - hierarchical index entry
-    inline = AST::InlineNode.new(inline_type: 'idx', args: ['親項目<<>>子項目'])
+    inline = AST::InlineNode.new(inline_type: :idx, args: ['親項目<<>>子項目'])
     inline.add_child(AST::TextNode.new(content: '子項目'))
     result = @renderer.visit(inline)
     # Should process hierarchical index: split by <<>>, escape, and join with !
@@ -1341,7 +1341,7 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   def test_inline_idx_ascii
     # Test @<idx>{term} with ASCII characters
-    inline = AST::InlineNode.new(inline_type: 'idx', args: ['Ruby'])
+    inline = AST::InlineNode.new(inline_type: :idx, args: ['Ruby'])
     inline.add_child(AST::TextNode.new(content: 'Ruby'))
     result = @renderer.visit(inline)
     assert_equal 'Ruby\\index{Ruby}', result
@@ -1349,14 +1349,14 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   def test_inline_hidx_simple
     # Test @<hidx>{term} - hidden index entry
-    inline = AST::InlineNode.new(inline_type: 'hidx', args: ['keyword'])
+    inline = AST::InlineNode.new(inline_type: :hidx, args: ['keyword'])
     result = @renderer.visit(inline)
     assert_equal '\\index{keyword}', result
   end
 
   def test_inline_hidx_hierarchical
     # Test @<hidx>{索引<<>>idx} - hierarchical hidden index entry
-    inline = AST::InlineNode.new(inline_type: 'hidx', args: ['索引<<>>idx'])
+    inline = AST::InlineNode.new(inline_type: :hidx, args: ['索引<<>>idx'])
     result = @renderer.visit(inline)
     # Should process hierarchical index: split by <<>>, escape, and join with !
     # Japanese text should get yomi conversion, ASCII should not
@@ -1365,7 +1365,7 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   def test_inline_idx_with_special_chars
     # Test @<idx> with special characters that need escaping
-    inline = AST::InlineNode.new(inline_type: 'idx', args: ['term@example'])
+    inline = AST::InlineNode.new(inline_type: :idx, args: ['term@example'])
     inline.add_child(AST::TextNode.new(content: 'term@example'))
     result = @renderer.visit(inline)
     # @ should be escaped as "@ by escape_index
@@ -1382,7 +1382,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     column_item = ReVIEW::Book::Index::Item.new('column1', 1, 'Test Column', caption_node: caption_node)
     @chapter.column_index.add_item(column_item)
 
-    inline = AST::InlineNode.new(inline_type: 'column', args: ['column1'])
+    inline = AST::InlineNode.new(inline_type: :column, args: ['column1'])
     result = @renderer.visit(inline)
 
     # Should generate \reviewcolumnref with column text and label
@@ -1409,7 +1409,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     ch03.column_index.add_item(column_item)
 
     # Create inline node with args as 2-element array (as AST parser does)
-    inline = AST::InlineNode.new(inline_type: 'column', args: ['ch03', 'column2'])
+    inline = AST::InlineNode.new(inline_type: :column, args: ['ch03', 'column2'])
     result = @renderer.visit(inline)
 
     # Should generate \reviewcolumnref with column text and label from ch03
@@ -1422,7 +1422,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     # Test @<column>{ch99|column1} - reference to non-existent chapter
     # Should raise NotImplementedError
 
-    inline = AST::InlineNode.new(inline_type: 'column', args: ['ch99', 'column1'])
+    inline = AST::InlineNode.new(inline_type: :column, args: ['ch99', 'column1'])
 
     assert_raise(NotImplementedError) do
       @renderer.visit(inline)

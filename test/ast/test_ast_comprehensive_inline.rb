@@ -59,8 +59,8 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
 
     # Test b and i inline elements
     first_para = paragraph_nodes[0]
-    b_node = first_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'b' }
-    i_node = first_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'i' }
+    b_node = first_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :b }
+    i_node = first_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :i }
     assert_not_nil(b_node)
     assert_equal ['bold'], b_node.args
     assert_not_nil(i_node)
@@ -68,8 +68,8 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
 
     # Test code and tt inline elements
     second_para = paragraph_nodes[1]
-    code_node = second_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'code' }
-    tt_node = second_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'tt' }
+    code_node = second_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :code }
+    tt_node = second_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :tt }
     assert_not_nil(code_node)
     assert_not_nil(tt_node)
     assert_equal ['code'], code_node.args
@@ -77,8 +77,8 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
 
     # Test ruby and kw inline elements
     third_para = paragraph_nodes[2]
-    ruby_node = third_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'ruby' }
-    kw_node = third_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'kw' }
+    ruby_node = third_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :ruby }
+    kw_node = third_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :kw }
     assert_not_nil(ruby_node)
     assert_not_nil(kw_node)
     assert_equal ['漢字', 'かんじ'], ruby_node.args
@@ -86,7 +86,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
 
     # Test href inline element
     fourth_para = paragraph_nodes[3]
-    href_node = fourth_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'href' }
+    href_node = fourth_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :href }
     assert_not_nil(href_node)
     assert_equal ['http://example.com', 'example'], href_node.args
   end
@@ -145,7 +145,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
       end
     end
 
-    expected_types = %w[b i code tt ruby href kw]
+    expected_types = %i[b i code tt ruby href kw]
     expected_types.each do |type|
       assert(all_inline_types.include?(type), "Should have inline type: #{type}")
     end
@@ -261,7 +261,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
 
     # Check inline elements in middle paragraph
     middle_para = paragraph_nodes.find do |para|
-      para.children.any? { |child| child.is_a?(ReVIEW::AST::InlineNode) && child.inline_type == 'b' }
+      para.children.any? { |child| child.is_a?(ReVIEW::AST::InlineNode) && child.inline_type == :b }
     end
     assert_not_nil(middle_para, 'Should have paragraph with bold inline element')
   end
@@ -309,7 +309,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
 
     # Check that middle paragraph has inline elements
     middle_para = paragraph_nodes.find do |para|
-      para.children.any? { |child| child.is_a?(ReVIEW::AST::InlineNode) && child.inline_type == 'b' }
+      para.children.any? { |child| child.is_a?(ReVIEW::AST::InlineNode) && child.inline_type == :b }
     end
     assert_not_nil(middle_para, 'Should have paragraph with bold inline element')
 
@@ -365,7 +365,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
       end
     end
 
-    expected_types = %w[b i code ruby href kw w wb]
+    expected_types = %i[b i code ruby href kw w wb]
     expected_types.each do |type|
       assert(inline_types.include?(type), "Should have inline type: #{type}")
     end

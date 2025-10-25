@@ -65,7 +65,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     # Add inline node
     inline = AST::InlineNode.new(
       location: @location,
-      inline_type: 'b',
+      inline_type: :b,
       args: ['bold']
     )
 
@@ -395,7 +395,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
 
     inline = AST::InlineNode.new(
       location: @location,
-      inline_type: 'code',
+      inline_type: :code,
       args: ['inline code']
     )
 

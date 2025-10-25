@@ -163,7 +163,7 @@ class TestInlineBraceEscape < Test::Unit::TestCase
     # Find the inline element in the paragraph
     inline_element = nil
     paragraph.children.each do |child|
-      if child.class.name.include?('Inline') && child.inline_type == 'b'
+      if child.class.name.include?('Inline') && child.inline_type == :b
         inline_element = child
         break
       end
@@ -197,7 +197,7 @@ class TestInlineBraceEscape < Test::Unit::TestCase
     # Find the inline element in the paragraph
     inline_element = nil
     paragraph.children.each do |child|
-      if child.class.name.include?('Inline') && child.inline_type == 'code'
+      if child.class.name.include?('Inline') && child.inline_type == :code
         inline_element = child
         break
       end

@@ -64,7 +64,7 @@ class TestCaptionParser < Test::Unit::TestCase
       # Mock implementation: create a simple structure
       caption_node.add_child(ReVIEW::AST::TextNode.new(content: 'Caption with '))
 
-      inline_node = ReVIEW::AST::InlineNode.new(inline_type: 'b')
+      inline_node = ReVIEW::AST::InlineNode.new(inline_type: :b)
       inline_node.add_child(ReVIEW::AST::TextNode.new(content: 'bold'))
       caption_node.add_child(inline_node)
     end

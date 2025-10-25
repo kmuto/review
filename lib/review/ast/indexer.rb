@@ -356,7 +356,7 @@ module ReVIEW
 
       def visit_inline(node)
         case node.inline_type
-        when 'fn'
+        when :fn
           if node.args.first
             footnote_id = node.args.first
             check_id(footnote_id)
@@ -365,7 +365,7 @@ module ReVIEW
             # Add reference entry (content will be filled when FootnoteNode is processed)
             @footnote_index.add_or_update(footnote_id)
           end
-        when 'endnote'
+        when :endnote
           if node.args.first
             endnote_id = node.args.first
             check_id(endnote_id)
@@ -374,7 +374,7 @@ module ReVIEW
             # Add reference entry (content will be filled when FootnoteNode is processed)
             @endnote_index.add_or_update(endnote_id)
           end
-        when 'bib'
+        when :bib
           if node.args.first
             bib_id = node.args.first
             check_id(bib_id)
@@ -384,15 +384,15 @@ module ReVIEW
               @bibpaper_index.add_item(item)
             end
           end
-        when 'eq'
+        when :eq
           if node.args.first
             eq_id = node.args.first
             check_id(eq_id)
           end
-        when 'img'
+        when :img
           # Image references are handled when the actual image blocks are processed
           # No special processing needed for inline image references
-        when 'icon'
+        when :icon
           if node.args.first
             icon_id = node.args.first
             check_id(icon_id)
@@ -402,7 +402,7 @@ module ReVIEW
               @icon_index.add_item(item)
             end
           end
-        when 'list', 'table'
+        when :list, :table
           # These are references, already processed in their respective nodes
         end
 

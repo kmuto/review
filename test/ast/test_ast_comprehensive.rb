@@ -186,32 +186,32 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     # Find ruby inline
     ruby_para = paragraph_nodes[0]
-    ruby_node = ruby_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'ruby' }
+    ruby_node = ruby_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :ruby }
     assert_not_nil(ruby_node)
     assert_equal ['漢字', 'かんじ'], ruby_node.args
 
     # Find href inline
     href_para = paragraph_nodes[1]
-    href_node = href_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'href' }
+    href_node = href_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :href }
     assert_not_nil(href_node)
     assert_equal ['https://example.com', 'Example Site'], href_node.args
 
     # Find kw inline
     kw_para = paragraph_nodes[2]
-    kw_node = kw_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'kw' }
+    kw_node = kw_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :kw }
     assert_not_nil(kw_node)
     assert_equal ['HTTP', 'HyperText Transfer Protocol'], kw_node.args
 
     # Find standard inline elements
     simple_para = paragraph_nodes[3]
-    bold_node = simple_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'b' }
-    code_node = simple_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'code' }
+    bold_node = simple_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :b }
+    code_node = simple_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :code }
     assert_not_nil(bold_node)
     assert_not_nil(code_node)
 
     # Find uchar inline
     uchar_para = paragraph_nodes[4]
-    uchar_node = uchar_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == 'uchar' }
+    uchar_node = uchar_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :uchar }
     assert_not_nil(uchar_node)
     assert_equal ['2603'], uchar_node.args
   end

@@ -121,7 +121,7 @@ module ReVIEW
       def create_standard_inline_node(command, content, parent_node)
         inline_node = AST::InlineNode.new(
           location: @ast_compiler.location,
-          inline_type: command.to_s,
+          inline_type: command,
           args: [content]
         )
 
@@ -163,7 +163,7 @@ module ReVIEW
 
           inline_node = AST::InlineNode.new(
             location: @ast_compiler.location,
-            inline_type: 'ruby',
+            inline_type: :ruby,
             args: args
           )
 
@@ -182,7 +182,7 @@ module ReVIEW
         else
           inline_node = AST::InlineNode.new(
             location: @ast_compiler.location,
-            inline_type: 'ruby',
+            inline_type: :ruby,
             args: [arg]
           )
 
@@ -208,7 +208,7 @@ module ReVIEW
 
         inline_node = AST::InlineNode.new(
           location: @ast_compiler.location,
-          inline_type: 'href',
+          inline_type: :href,
           args: args
         )
 
@@ -230,7 +230,7 @@ module ReVIEW
 
           inline_node = AST::InlineNode.new(
             location: @ast_compiler.location,
-            inline_type: 'kw',
+            inline_type: :kw,
             args: args
           )
 
@@ -249,7 +249,7 @@ module ReVIEW
         else
           inline_node = AST::InlineNode.new(
             location: @ast_compiler.location,
-            inline_type: 'kw',
+            inline_type: :kw,
             args: [arg]
           )
 
@@ -278,7 +278,7 @@ module ReVIEW
 
         inline_node = AST::InlineNode.new(
           location: @ast_compiler.location,
-          inline_type: ref_type.to_s,
+          inline_type: ref_type,
           args: args
         )
 
@@ -302,7 +302,7 @@ module ReVIEW
 
         inline_node = AST::InlineNode.new(
           location: @ast_compiler.location,
-          inline_type: ref_type.to_s,
+          inline_type: ref_type,
           args: args
         )
 

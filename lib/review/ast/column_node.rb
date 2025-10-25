@@ -9,7 +9,7 @@ module ReVIEW
       attr_accessor :caption_node
       attr_reader :level, :label, :caption, :column_type
 
-      def initialize(location: nil, level: nil, label: nil, caption: nil, caption_node: nil, column_type: 'column', **kwargs)
+      def initialize(location: nil, level: nil, label: nil, caption: nil, caption_node: nil, column_type: :column, **kwargs)
         super(location: location, **kwargs)
         @level = level
         @label = label
