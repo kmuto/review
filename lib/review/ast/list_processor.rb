@@ -7,14 +7,14 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/ast/list_parser'
-require 'review/ast/nested_list_builder'
+require 'review/ast/nested_list_assembler'
 
 module ReVIEW
   module AST
     # ListProcessor - Main coordinator for list processing
     #
     # This class orchestrates the full list processing pipeline by coordinating
-    # between ListParser (for parsing) and NestedListBuilder (for AST construction).
+    # between ListParser (for parsing) and NestedListAssembler (for AST construction).
     # It provides clean, testable methods that replace the monolithic list processing
     # methods in ASTCompiler.
     #
@@ -27,7 +27,7 @@ module ReVIEW
       def initialize(ast_compiler)
         @ast_compiler = ast_compiler
         @parser = ListParser.new(ast_compiler)
-        @builder = NestedListBuilder.new(ast_compiler, ast_compiler.inline_processor)
+        @builder = NestedListAssembler.new(ast_compiler, ast_compiler.inline_processor)
       end
 
       # Process unordered list from file input
@@ -106,7 +106,7 @@ module ReVIEW
       attr_reader :parser
 
       # Get builder for testing or direct access
-      # @return [NestedListBuilder] The list builder instance
+      # @return [NestedListAssembler] The list builder instance
       attr_reader :builder
 
       private

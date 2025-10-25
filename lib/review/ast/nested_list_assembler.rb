@@ -13,7 +13,7 @@ require 'review/ast/paragraph_node'
 
 module ReVIEW
   module AST
-    # NestedListBuilder - Build nested list AST structures
+    # NestedListAssembler - Build nested list AST structures
     #
     # This class constructs properly nested AST node structures from
     # parsed list item data. It handles the complex logic of building
@@ -25,7 +25,7 @@ module ReVIEW
     # - Manage nesting levels and parent-child relationships
     # - Create proper AST hierarchy for complex nested lists
     #
-    class NestedListBuilder
+    class NestedListAssembler
       def initialize(location_provider, inline_processor)
         @location_provider = location_provider
         @inline_processor = inline_processor
