@@ -59,12 +59,14 @@ module ReVIEW
         chapter = create_temporary_chapter(book, source)
       end
 
-      # Parse to AST
-      # Create AST compiler using auto-detection for file format
+      # Generate AST indexes for all chapters in the book to support cross-chapter references
+      if chapter.book
+        ReVIEW::AST::BookIndexer.build(chapter.book)
+      end
+
       ast_compiler = ReVIEW::AST::Compiler.for_chapter(chapter)
       ast = ast_compiler.compile_to_ast(chapter)
 
-      # Render with HtmlRenderer
       renderer = Renderer::HtmlRenderer.new(chapter)
 
       # Use render_body to get body content only (without template)
@@ -81,13 +83,12 @@ module ReVIEW
       # Ensure book_dir is absolute
       book_dir = File.expand_path(book_dir)
 
-      # Load book configuration
-      book = load_book(book_dir)
-
-      # Find chapter by name (with or without .re extension)
+      # Normalize chapter_name (remove .re extension)
       chapter_name = chapter_name.sub(/\.re$/, '')
-      chapter = book.chapters.find { |ch| ch.name == chapter_name }
 
+      # Load book once and find chapter
+      book = load_book(book_dir)
+      chapter = book.chapters.find { |ch| ch.name == chapter_name }
       raise "Chapter '#{chapter_name}' not found in book at #{book_dir}" unless chapter
 
       # Convert with both builder and renderer

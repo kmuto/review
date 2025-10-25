@@ -6,10 +6,12 @@ module ReVIEW
   module AST
     class DocumentNode < Node
       attr_reader :chapter
+      attr_accessor :indexes_generated
 
       def initialize(location: nil, chapter: nil, **kwargs)
         super(location: location, **kwargs)
         @chapter = chapter
+        @indexes_generated = false
       end
 
       private

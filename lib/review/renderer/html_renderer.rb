@@ -2048,6 +2048,12 @@ module ReVIEW
       def generate_ast_indexes(ast_node)
         return if @ast_indexes_generated
 
+        # Check if indexes are already generated on the AST node
+        if ast_node.is_a?(ReVIEW::AST::DocumentNode) && ast_node.indexes_generated
+          @ast_indexes_generated = true
+          return
+        end
+
         if @chapter
           # Use AST::Indexer to generate indexes directly from AST
           @ast_indexer = ReVIEW::AST::Indexer.new(@chapter)
