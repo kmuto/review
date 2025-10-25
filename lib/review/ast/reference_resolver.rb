@@ -20,10 +20,31 @@ module ReVIEW
     # Traverses ReferenceNodes contained in AST and resolves them to
     # appropriate reference content using index information.
     class ReferenceResolver < Visitor
+      # Default mapping of reference types to resolver methods
+      DEFAULT_RESOLVER_METHODS = {
+        img: :resolve_image_ref,
+        table: :resolve_table_ref,
+        list: :resolve_list_ref,
+        eq: :resolve_equation_ref,
+        fn: :resolve_footnote_ref,
+        endnote: :resolve_endnote_ref,
+        column: :resolve_column_ref,
+        chap: :resolve_chapter_ref,
+        chapref: :resolve_chapter_ref_with_title,
+        hd: :resolve_headline_ref,
+        sec: :resolve_section_ref,
+        secref: :resolve_section_ref,
+        labelref: :resolve_label_ref,
+        ref: :resolve_label_ref,
+        w: :resolve_word_ref,
+        wb: :resolve_word_ref
+      }.freeze
+
       def initialize(chapter)
         super()
         @chapter = chapter
         @book = chapter.book
+        @resolver_methods = DEFAULT_RESOLVER_METHODS.dup
       end
 
       def resolve_references(ast)
@@ -38,6 +59,20 @@ module ReVIEW
         visit(ast)
 
         { resolved: @resolve_count, failed: @error_count }
+      end
+
+      # Register a new reference type resolver
+      # @param ref_type [Symbol] The reference type (e.g., :custom)
+      # @param resolver_method [Symbol] The method name to handle this reference type
+      # @example
+      #   resolver.register_resolver_method(:custom, :resolve_custom_ref)
+      def register_resolver_method(ref_type, resolver_method)
+        @resolver_methods[ref_type.to_sym] = resolver_method
+      end
+
+      # @return [Array<Symbol>] List of all registered reference types
+      def registered_reference_types
+        @resolver_methods.keys
       end
 
       private
@@ -55,6 +90,8 @@ module ReVIEW
       end
 
       # Resolve ReferenceNode (ref_type taken from parent InlineNode)
+      # @param node [ReferenceNode] The reference node to resolve
+      # @param ref_type [Symbol] The reference type (e.g., :img, :table, :list)
       def resolve_node(node, ref_type)
         # Build full reference ID from context_id and ref_id if context_id exists
         full_ref_id = if node.context_id
@@ -63,25 +100,11 @@ module ReVIEW
                         node.ref_id
                       end
 
-        resolved_data = case ref_type
-                        when 'img' then resolve_image_ref(full_ref_id)
-                        when 'table' then resolve_table_ref(full_ref_id)
-                        when 'list' then resolve_list_ref(full_ref_id)
-                        when 'eq' then resolve_equation_ref(full_ref_id)
-                        when 'fn' then resolve_footnote_ref(full_ref_id)
-                        when 'endnote' then resolve_endnote_ref(full_ref_id)
-                        when 'column' then resolve_column_ref(full_ref_id)
-                        when 'chap' then resolve_chapter_ref(full_ref_id)
-                        when 'chapref' then resolve_chapter_ref_with_title(full_ref_id)
-                        when 'hd' then resolve_headline_ref(full_ref_id)
-                        when 'sec', 'secref' then resolve_section_ref(full_ref_id)
-                        when 'labelref', 'ref' then resolve_label_ref(full_ref_id)
-                        when 'w', 'wb' then resolve_word_ref(full_ref_id)
-                        else
-                          raise CompileError, "Unknown reference type: #{ref_type}"
-                        end
+        method_name = @resolver_methods[ref_type]
+        raise CompileError, "Unknown reference type: #{ref_type}" unless method_name
 
-        # Create resolved node and replace in parent
+        resolved_data = send(method_name, full_ref_id)
+
         resolved_node = node.with_resolved_data(resolved_data)
         node.parent&.replace_child(node, resolved_node)
 
@@ -207,7 +230,7 @@ module ReVIEW
 
         ref_type = parent_inline.inline_type
 
-        if resolve_node(node, ref_type)
+        if resolve_node(node, ref_type.to_sym)
           @resolve_count += 1
         else
           @error_count += 1
