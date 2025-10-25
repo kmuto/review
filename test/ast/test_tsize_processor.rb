@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
-require 'review/ast/tsize_processor'
+require 'review/ast/compiler/tsize_processor'
 require 'review/ast/block_node'
 require 'review/ast/table_node'
 require 'review/ast/table_row_node'
@@ -29,7 +29,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(table)
 
     # Process with TsizeProcessor
-    ReVIEW::AST::TsizeProcessor.process(root, target_format: 'latex')
+    ReVIEW::AST::Compiler::TsizeProcessor.process(root, target_format: 'latex')
 
     # Verify tsize block was removed
     assert_equal 1, root.children.length
@@ -60,7 +60,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(table)
 
     # Process with latex target
-    ReVIEW::AST::TsizeProcessor.process(root, target_format: 'latex')
+    ReVIEW::AST::Compiler::TsizeProcessor.process(root, target_format: 'latex')
 
     # Verify table has col_spec set
     assert_equal '|p{10mm}|p{20mm}|p{30mm}|', table.col_spec
@@ -86,7 +86,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(table)
 
     # Process with latex target
-    ReVIEW::AST::TsizeProcessor.process(root, target_format: 'latex')
+    ReVIEW::AST::Compiler::TsizeProcessor.process(root, target_format: 'latex')
 
     # Verify table uses default col_spec
     assert_nil(table.col_spec)
@@ -113,7 +113,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(table)
 
     # Process
-    ReVIEW::AST::TsizeProcessor.process(root, target_format: 'latex')
+    ReVIEW::AST::Compiler::TsizeProcessor.process(root, target_format: 'latex')
 
     # Verify
     assert_equal '|l|c|r|', table.col_spec
@@ -153,7 +153,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(table2)
 
     # Process
-    ReVIEW::AST::TsizeProcessor.process(root, target_format: 'latex')
+    ReVIEW::AST::Compiler::TsizeProcessor.process(root, target_format: 'latex')
 
     # Verify both tsize blocks are removed
     assert_equal 2, root.children.length

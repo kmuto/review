@@ -4,7 +4,7 @@ require_relative '../test_helper'
 require 'stringio'
 require 'ostruct'
 require 'review/ast/compiler'
-require 'review/ast/list_structure_normalizer'
+require 'review/ast/compiler/list_structure_normalizer'
 require 'review/book'
 require 'review/configure'
 

@@ -2,7 +2,7 @@
 
 require_relative '../test_helper'
 require 'review/ast/compiler'
-require 'review/ast/olnum_processor'
+require 'review/ast/compiler/olnum_processor'
 require 'review/book'
 require 'review/book/chapter'
 

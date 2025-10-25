@@ -18,12 +18,12 @@ require 'review/snapshot_location'
 require 'review/ast/list_processor'
 require 'review/ast/footnote_node'
 require 'review/ast/reference_resolver'
-require 'review/ast/tsize_processor'
-require 'review/ast/firstlinenum_processor'
-require 'review/ast/noindent_processor'
-require 'review/ast/olnum_processor'
-require 'review/ast/list_structure_normalizer'
-require 'review/ast/list_item_numbering_processor'
+require 'review/ast/compiler/tsize_processor'
+require 'review/ast/compiler/firstlinenum_processor'
+require 'review/ast/compiler/noindent_processor'
+require 'review/ast/compiler/olnum_processor'
+require 'review/ast/compiler/list_structure_normalizer'
+require 'review/ast/compiler/list_item_numbering_processor'
 
 module ReVIEW
   module AST

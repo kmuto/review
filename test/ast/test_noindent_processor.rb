@@ -2,7 +2,7 @@
 
 require_relative '../test_helper'
 require 'review/ast/compiler'
-require 'review/ast/noindent_processor'
+require 'review/ast/compiler/noindent_processor'
 require 'review/book'
 require 'review/book/chapter'
 
