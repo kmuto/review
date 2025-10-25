@@ -904,7 +904,6 @@ module ReVIEW
           node.lines.join("\n") + "\n"
         elsif node.arg
           # Don't add trailing newline for arg-based embed
-          # The compile_block test helper will strip whitespace anyway
           node.arg.to_s
         else
           ''
