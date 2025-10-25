@@ -516,13 +516,14 @@ module ReVIEW
         @body = render_body(ast_root)
 
         # Set up template variables like HTMLBuilder
-        @title = strip_html(compile_inline(@chapter&.title || ''))
+        # Chapter title is already plain text (markup removed), just escape it
+        @title = escape_content(@chapter&.title || '')
         @language = config['language'] || 'ja'
         @stylesheets = config['stylesheet'] || []
         @next = @chapter&.next_chapter
         @prev = @chapter&.prev_chapter
-        @next_title = @next ? compile_inline(@next.title) : ''
-        @prev_title = @prev ? compile_inline(@prev.title) : ''
+        @next_title = @next ? escape_content(@next.title) : ''
+        @prev_title = @prev ? escape_content(@prev.title) : ''
 
         # Handle MathJax configuration like HTMLBuilder
         if config['math_format'] == 'mathjax'
@@ -756,7 +757,8 @@ module ReVIEW
           chapter = find_chapter_by_id(id)
           raise ReVIEW::KeyError unless chapter
 
-          title = compile_inline(chapter.title)
+          # Chapter title is already plain text (markup removed), just escape it
+          title = escape_content(chapter.title)
           if config['chapterlink']
             %Q(<a href="./#{id}#{extname}">#{title}</a>)
           else
@@ -1080,13 +1082,15 @@ module ReVIEW
           return '' unless chapter
 
           n = chapter.headline_index.number(headline_id)
-          caption = chapter.headline(headline_id).caption
+          headline_item = chapter.headline(headline_id)
 
-          # Use compile_inline to process the caption, not escape_content
+          # Use caption_node to render caption with inline markup
+          caption_html = render_children(headline_item.caption_node)
+
           str = if n.present? && chapter.number && over_secnolevel?(n, chapter)
-                  I18n.t('hd_quote', [n, compile_inline(caption)])
+                  I18n.t('hd_quote', [n, caption_html])
                 else
-                  I18n.t('hd_quote_without_number', compile_inline(caption))
+                  I18n.t('hd_quote_without_number', caption_html)
                 end
 
           if config['chapterlink']
@@ -1202,14 +1206,6 @@ module ReVIEW
       def over_secnolevel?(n, _chapter = @chapter)
         secnolevel = config['secnolevel'] || 0
         secnolevel >= n.to_s.split('.').size
-      end
-
-      def compile_inline(str)
-        # Simple inline compilation - just return the string for now
-        # In the future, this could process inline Re:VIEW markup
-        return '' if str.nil? || str.empty?
-
-        str.to_s
       end
 
       private
@@ -1725,7 +1721,9 @@ module ReVIEW
           if config['epubmaker'] && config['epubmaker']['back_footnote']
             back = %Q(<a href="#endnoteb-#{normalize_id(en.id)}">#{I18n.t('html_footnote_backmark')}</a>)
           end
-          result += %Q(<div class="endnote" id="endnote-#{normalize_id(en.id)}"><p class="endnote">#{back}#{I18n.t('html_endnote_textmark', @chapter.endnote(en.id).number)}#{compile_inline(@chapter.endnote(en.id).content)}</p></div>\n)
+          # Render endnote content from footnote_node
+          endnote_content = render_children(en.footnote_node)
+          result += %Q(<div class="endnote" id="endnote-#{normalize_id(en.id)}"><p class="endnote">#{back}#{I18n.t('html_endnote_textmark', @chapter.endnote(en.id).number)}#{endnote_content}</p></div>\n)
         end
 
         # End endnotes block
@@ -1769,11 +1767,10 @@ module ReVIEW
           end
         end
 
-        # Add caption (inline elements need to be processed with compile_inline)
+        # Add caption as plain text (BlockNode doesn't have caption_node)
         # HTMLBuilder uses puts " #{compile_inline(caption)}", so space before caption and newline after
         if caption_text && !caption_text.empty?
-          caption_content = compile_inline(caption_text)
-          result += caption_content + "\n"
+          result += escape_content(caption_text) + "\n"
         end
 
         # Add content wrapped in <p> if present (like split_paragraph does)
@@ -2080,11 +2077,6 @@ module ReVIEW
 
       def caption_plain_text(caption_node)
         caption_node&.to_text.to_s
-      end
-
-      # Helper methods for template variables
-      def strip_html(content)
-        content.to_s.gsub(/<[^>]*>/, '')
       end
 
       # Process raw embed content (//raw and @<raw>)
