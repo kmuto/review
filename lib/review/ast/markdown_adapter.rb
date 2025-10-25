@@ -295,9 +295,15 @@ module ReVIEW
 
       # Process table cell node
       def process_table_cell(cm_node)
+        cell_type = if @current_node.is_a?(TableRowNode) && @current_node.row_type == :header
+                      :th
+                    else
+                      :td
+                    end
+
         cell_node = TableCellNode.new(
           location: current_location(cm_node),
-          cell_type: :td # Default to data cell, headers will be handled by row type
+          cell_type: cell_type
         )
 
         # Process cell content
