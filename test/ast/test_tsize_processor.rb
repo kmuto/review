@@ -7,8 +7,18 @@ require 'review/ast/table_node'
 require 'review/ast/table_row_node'
 require 'review/ast/table_cell_node'
 require 'review/ast/document_node'
+require 'review/book'
+require 'review/book/chapter'
 
 class TestTsizeProcessor < Test::Unit::TestCase
+  def setup
+    @book = ReVIEW::Book::Base.new
+    @config = ReVIEW::Configure.values
+    @config['builder'] = 'latex'
+    @book.config = @config
+    @chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+  end
+
   def test_process_tsize_for_latex
     # Create AST with tsize and table
     root = ReVIEW::AST::DocumentNode.new(location: nil)
@@ -29,7 +39,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(table)
 
     # Process with TsizeProcessor
-    ReVIEW::AST::Compiler::TsizeProcessor.process(root, target_format: 'latex')
+    ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter)
 
     # Verify tsize block was removed
     assert_equal 1, root.children.length
@@ -60,7 +70,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(table)
 
     # Process with latex target
-    ReVIEW::AST::Compiler::TsizeProcessor.process(root, target_format: 'latex')
+    ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter)
 
     # Verify table has col_spec set
     assert_equal '|p{10mm}|p{20mm}|p{30mm}|', table.col_spec
@@ -86,7 +96,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(table)
 
     # Process with latex target
-    ReVIEW::AST::Compiler::TsizeProcessor.process(root, target_format: 'latex')
+    ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter)
 
     # Verify table uses default col_spec
     assert_nil(table.col_spec)
@@ -113,7 +123,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(table)
 
     # Process
-    ReVIEW::AST::Compiler::TsizeProcessor.process(root, target_format: 'latex')
+    ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter)
 
     # Verify
     assert_equal '|l|c|r|', table.col_spec
@@ -153,7 +163,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(table2)
 
     # Process
-    ReVIEW::AST::Compiler::TsizeProcessor.process(root, target_format: 'latex')
+    ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter)
 
     # Verify both tsize blocks are removed
     assert_equal 2, root.children.length

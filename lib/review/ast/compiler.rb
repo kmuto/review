@@ -131,9 +131,7 @@ module ReVIEW
 
       def execute_post_processes
         # Post-process AST for tsize commands (must be before other processors)
-        # Determine target format for tsize processing
-        target_format = determine_target_format_for_tsize
-        TsizeProcessor.process(@ast_root, target_format: target_format)
+        TsizeProcessor.process(@ast_root, chapter: @chapter)
 
         # Post-process AST for firstlinenum commands
         FirstLineNumProcessor.process(@ast_root)
@@ -651,23 +649,6 @@ module ReVIEW
         else
           debug("Reference resolution: #{result[:resolved]} references resolved successfully")
         end
-      end
-
-      # Determine target format for tsize processing
-      # This helps TsizeProcessor decide which tsize commands to apply
-      # based on |builder| target specification
-      def determine_target_format_for_tsize
-        # Try to infer from book config
-        return nil unless @chapter.book&.config
-
-        # Check if builder is specified in config
-        builder = @chapter.book.config['builder']
-        return builder if builder
-
-        # If builder is not explicitly set, return nil
-        # This causes TsizeProcessor to apply all tsize commands (no filtering)
-        # which maintains backward compatibility
-        nil
       end
     end
   end

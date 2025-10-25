@@ -20,14 +20,14 @@ module ReVIEW
       # removed from the AST.
       #
       # Usage:
-      #   TsizeProcessor.process(ast_root, target_format: 'latex')
+      #   TsizeProcessor.process(ast_root, chapter: chapter)
       class TsizeProcessor
-        def self.process(ast_root, target_format: nil)
-          new(target_format: target_format).process(ast_root)
+        def self.process(ast_root, chapter: nil)
+          new(chapter: chapter).process(ast_root)
         end
 
-        def initialize(target_format: nil)
-          @target_format = target_format # nil means apply to all formats
+        def initialize(chapter: nil)
+          @target_format = determine_target_format(chapter)
         end
 
         # Process the AST to handle tsize commands
@@ -36,6 +36,22 @@ module ReVIEW
         end
 
         private
+
+        # Determine target format for tsize processing from chapter's book config
+        # @param chapter [Chapter, nil] chapter object
+        # @return [String, nil] builder name or nil
+        def determine_target_format(chapter)
+          return nil unless chapter&.book&.config
+
+          # Check if builder is specified in config
+          builder = chapter.book.config['builder']
+          return builder if builder
+
+          # If builder is not explicitly set, return nil
+          # This causes TsizeProcessor to apply all tsize commands (no filtering)
+          # which maintains backward compatibility
+          nil
+        end
 
         def process_node(node)
           indices_to_remove = []
