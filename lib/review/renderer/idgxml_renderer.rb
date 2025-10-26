@@ -63,9 +63,6 @@ module ReVIEW
         @subsubsubsection = 0
         @sec_counter = SecCounter.new(5, @chapter) if @chapter
 
-        # Initialize column counter
-        @column = 0
-
         # Initialize table state
         @tablewidth = nil
         @table_id = nil
@@ -452,9 +449,8 @@ module ReVIEW
         # Determine column type (empty string for regular column)
         type = ''
 
-        # Generate column output
-        @column += 1
-        id_attr = %Q(id="column-#{@column}")
+        # Generate column output using auto_id from Compiler
+        id_attr = %Q(id="#{node.auto_id}")
 
         result = []
         result << "<#{type}column #{id_attr}>"

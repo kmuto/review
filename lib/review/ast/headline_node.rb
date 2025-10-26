@@ -6,16 +6,17 @@ require 'review/ast/caption_node'
 module ReVIEW
   module AST
     class HeadlineNode < Node
-      attr_accessor :caption_node
+      attr_accessor :caption_node, :auto_id
       attr_reader :level, :label, :caption, :tag
 
-      def initialize(location: nil, level: nil, label: nil, caption: nil, caption_node: nil, tag: nil, **kwargs)
+      def initialize(location: nil, level: nil, label: nil, caption: nil, caption_node: nil, tag: nil, auto_id: nil, **kwargs)
         super(location: location, **kwargs)
         @level = level
         @label = label
         @caption_node = caption_node
         @caption = caption
         @tag = tag
+        @auto_id = auto_id
       end
 
       # Get caption text for legacy Builder compatibility
@@ -44,13 +45,15 @@ module ReVIEW
       end
 
       def to_h
-        super.merge(
+        result = super.merge(
           level: level,
           label: label,
           caption: caption,
           caption_node: caption_node&.to_h,
           tag: tag
         )
+        result[:auto_id] = auto_id if auto_id
+        result
       end
 
       private
@@ -60,6 +63,7 @@ module ReVIEW
         hash[:label] = label
         hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
         hash[:tag] = tag if tag
+        hash[:auto_id] = auto_id if auto_id
         hash
       end
     end

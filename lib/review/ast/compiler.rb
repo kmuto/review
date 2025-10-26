@@ -24,6 +24,7 @@ require 'review/ast/compiler/noindent_processor'
 require 'review/ast/compiler/olnum_processor'
 require 'review/ast/compiler/list_structure_normalizer'
 require 'review/ast/compiler/list_item_numbering_processor'
+require 'review/ast/compiler/auto_id_processor'
 
 module ReVIEW
   module AST
@@ -145,6 +146,9 @@ module ReVIEW
 
         # Assign item numbers to ordered list items
         ListItemNumberingProcessor.process(@ast_root)
+
+        # Generate auto_id for HeadlineNode (nonum/notoc/nodisp) and ColumnNode
+        AutoIdProcessor.process(@ast_root, chapter: @chapter)
       end
 
       def build_ast_from_chapter

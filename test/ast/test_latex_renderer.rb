@@ -674,7 +674,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(content: caption))
 
-    column = AST::ColumnNode.new(level: 3, caption: caption, caption_node: caption_node, column_type: :column)
+    column = AST::ColumnNode.new(level: 3, caption: caption, caption_node: caption_node, column_type: :column, auto_id: 'column-1', column_number: 1)
     paragraph = AST::ParagraphNode.new
     paragraph.add_child(AST::TextNode.new(content: 'Column content here.'))
     column.add_child(paragraph)
@@ -695,7 +695,7 @@ class TestLatexRenderer < Test::Unit::TestCase
 
   def test_visit_column_no_caption
     # Test column without caption
-    column = AST::ColumnNode.new(level: 3, column_type: :column)
+    column = AST::ColumnNode.new(level: 3, column_type: :column, auto_id: 'column-1', column_number: 1)
     paragraph = AST::ParagraphNode.new
     paragraph.add_child(AST::TextNode.new(content: 'No caption column.'))
     column.add_child(paragraph)
@@ -720,7 +720,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(content: caption))
 
-    column = AST::ColumnNode.new(level: 3, caption: caption, caption_node: caption_node, column_type: :column)
+    column = AST::ColumnNode.new(level: 3, caption: caption, caption_node: caption_node, column_type: :column, auto_id: 'column-1', column_number: 1)
     paragraph = AST::ParagraphNode.new
     paragraph.add_child(AST::TextNode.new(content: 'This should not get TOC entry.'))
     column.add_child(paragraph)

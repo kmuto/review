@@ -596,7 +596,12 @@ module ReVIEW
 
       # Helper methods
       def render_caption_inline(caption_node)
-        caption_node ? render_children(caption_node) : ''
+        return '' unless caption_node
+
+        content = render_children(caption_node)
+        # Join lines like visit_paragraph does
+        lines = content.split("\n")
+        lines.join
       end
 
       def headline_prefix(level)

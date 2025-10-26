@@ -51,9 +51,6 @@ module ReVIEW
         # Initialize Part environment tracking for reviewpart wrapper
         @part_env_opened = false
 
-        # Initialize column counter for tracking column numbers
-        @column_counter = 0
-
         # Initialize index database and MeCab for Japanese text indexing
         initialize_index_support
       end
@@ -831,10 +828,7 @@ module ReVIEW
       def visit_column(node)
         caption = render_children(node.caption_node) if node.caption_node
 
-        # Increment column counter for this chapter
-        @column_counter += 1
-
-        # Generate column label for hypertarget
+        # Generate column label for hypertarget (using auto_id from Compiler)
         column_label = generate_column_label(node, caption)
         hypertarget = "\\hypertarget{#{column_label}}{}"
 
@@ -2643,10 +2637,9 @@ module ReVIEW
       end
 
       # Generate column label for hypertarget (matches LATEXBuilder behavior)
-      def generate_column_label(_node, _caption)
-        # Use the column counter to track column numbers in order of appearance
-        # This ensures that all columns (with or without IDs) get unique sequential numbers
-        num = @column_counter
+      def generate_column_label(node, _caption)
+        # Use column_number directly instead of parsing auto_id
+        num = node.column_number || 'unknown'
 
         "column:#{@chapter&.id || 'unknown'}:#{num}"
       end
