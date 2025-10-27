@@ -217,19 +217,6 @@ class TestNestedListAssembler < Test::Unit::TestCase
     assert_operator(item.children.size, :>=, 2)
   end
 
-  # Test generic list building
-  def test_build_generic_list
-    items = [
-      create_list_item_data(:custom, 1, 'Custom item 1'),
-      create_list_item_data(:custom, 1, 'Custom item 2')
-    ]
-
-    list_node = @builder.build_generic_list(items, :custom)
-
-    assert_equal :custom, list_node.list_type
-    assert_equal 2, list_node.children.size
-  end
-
   # Test continuation lines handling
   def test_build_with_continuation_lines
     items = [

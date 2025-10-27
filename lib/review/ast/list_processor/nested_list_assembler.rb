@@ -47,7 +47,7 @@ module ReVIEW
           when :dl
             build_definition_list(items)
           else
-            build_generic_list(items, list_type)
+            raise ReVIEW::CompileError, "Unknown list type: #{list_type}"
           end
         end
 
@@ -93,25 +93,6 @@ module ReVIEW
               add_definition_content(item_node, definition_line)
             end
 
-            root_list.add_child(item_node)
-          end
-
-          root_list
-        end
-
-        # Build generic list for unknown types
-        # @param items [Array<ListParser::ListItemData>] Parsed list items
-        # @param list_type [Symbol] List type
-        # @return [ReVIEW::AST::ListNode] Root list node
-        def build_generic_list(items, list_type)
-          root_list = create_list_node(list_type)
-
-          items.each do |item_data|
-            item_node = create_list_item_node(item_data)
-            add_content_to_item(item_node, item_data.content)
-            item_data.continuation_lines.each do |line|
-              add_content_to_item(item_node, line)
-            end
             root_list.add_child(item_node)
           end
 
