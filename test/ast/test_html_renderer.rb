@@ -15,11 +15,9 @@ class TestHtmlRenderer < Test::Unit::TestCase
     @config['language'] = 'ja'
     @book = ReVIEW::Book::Base.new(config: @config)
 
-    # Initialize I18n for proper list numbering
     ReVIEW::I18n.setup('ja')
 
     @compiler = ReVIEW::AST::Compiler.new
-    # NOTE: renderer will be created with chapter in each test
   end
 
   def test_headline_rendering

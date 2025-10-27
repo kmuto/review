@@ -17,20 +17,13 @@ class TestNestedListAssembler < Test::Unit::TestCase
     config = ReVIEW::Configure.values
     config['secnolevel'] = 2
     config['language'] = 'ja'
-    book = ReVIEW::Book::Base.new
-    book.config = config
+    book = ReVIEW::Book::Base.new(config: config)
     ReVIEW::I18n.setup(config['language'])
 
-    # Create real compiler
     compiler = ReVIEW::AST::Compiler.new
-
-    # Use real inline processor from compiler
     inline_processor = compiler.inline_processor
 
-    # Create location provider that provides consistent locations
-    location_provider = compiler
-
-    @builder = ReVIEW::AST::ListProcessor::NestedListAssembler.new(location_provider, inline_processor)
+    @assembler = ReVIEW::AST::ListProcessor::NestedListAssembler.new(compiler, inline_processor)
   end
 
   def create_list_item_data(type, level, content, continuation_lines = [], metadata = {})
@@ -43,17 +36,15 @@ class TestNestedListAssembler < Test::Unit::TestCase
     )
   end
 
-  # Test empty list building
   def test_build_empty_lists
     %i[ul ol dl].each do |list_type|
-      list_node = @builder.build_nested_structure([], list_type)
+      list_node = @assembler.build_nested_structure([], list_type)
       assert_instance_of(ReVIEW::AST::ListNode, list_node)
       assert_equal list_type, list_node.list_type
       assert_equal [], list_node.children
     end
   end
 
-  # Test unordered list building
   def test_build_simple_unordered_list
     items = [
       create_list_item_data(:ul, 1, 'First item'),
@@ -61,7 +52,7 @@ class TestNestedListAssembler < Test::Unit::TestCase
       create_list_item_data(:ul, 1, 'Third item')
     ]
 
-    list_node = @builder.build_unordered_list(items)
+    list_node = @assembler.build_unordered_list(items)
 
     assert_instance_of(ReVIEW::AST::ListNode, list_node)
     assert_equal :ul, list_node.list_type
@@ -81,7 +72,7 @@ class TestNestedListAssembler < Test::Unit::TestCase
       create_list_item_data(:ul, 1, 'Back to first')
     ]
 
-    list_node = @builder.build_unordered_list(items)
+    list_node = @assembler.build_unordered_list(items)
 
     assert_equal :ul, list_node.list_type
     assert_equal 2, list_node.children.size # Two top-level items
@@ -105,14 +96,13 @@ class TestNestedListAssembler < Test::Unit::TestCase
     assert_equal 3, third_item.level
   end
 
-  # Test ordered list building
   def test_build_simple_ordered_list
     items = [
       create_list_item_data(:ol, 1, 'First', [], { number: 1, number_string: '1' }),
       create_list_item_data(:ol, 1, 'Second', [], { number: 2, number_string: '2' })
     ]
 
-    list_node = @builder.build_ordered_list(items)
+    list_node = @assembler.build_ordered_list(items)
 
     assert_equal :ol, list_node.list_type
     assert_equal 2, list_node.children.size
@@ -131,7 +121,7 @@ class TestNestedListAssembler < Test::Unit::TestCase
       create_list_item_data(:ol, 1, 'Second', [], { number: 2, number_string: '2' })
     ]
 
-    list_node = @builder.build_ordered_list(items)
+    list_node = @assembler.build_ordered_list(items)
 
     assert_equal 2, list_node.children.size # Two top-level items
 
@@ -148,14 +138,13 @@ class TestNestedListAssembler < Test::Unit::TestCase
     assert_equal 'Nested', nested_text.content
   end
 
-  # Test definition list building
   def test_build_definition_list
     items = [
       create_list_item_data(:dl, 1, 'Term 1', ['Definition 1']),
       create_list_item_data(:dl, 1, 'Term 2', ['Definition 2'])
     ]
 
-    list_node = @builder.build_definition_list(items)
+    list_node = @assembler.build_definition_list(items)
 
     assert_equal :dl, list_node.list_type
     assert_equal 2, list_node.children.size
@@ -181,7 +170,7 @@ class TestNestedListAssembler < Test::Unit::TestCase
       create_list_item_data(:dl, 1, 'Term with @<b>{bold}', ['Definition with @<code>{some code}'])
     ]
 
-    list_node = @builder.build_definition_list(items)
+    list_node = @assembler.build_definition_list(items)
 
     item = list_node.children[0]
 
@@ -208,7 +197,7 @@ class TestNestedListAssembler < Test::Unit::TestCase
                             ])
     ]
 
-    list_node = @builder.build_definition_list(items)
+    list_node = @assembler.build_definition_list(items)
 
     assert_equal 1, list_node.children.size
     item = list_node.children[0]
@@ -217,7 +206,6 @@ class TestNestedListAssembler < Test::Unit::TestCase
     assert_operator(item.children.size, :>=, 2)
   end
 
-  # Test continuation lines handling
   def test_build_with_continuation_lines
     items = [
       create_list_item_data(:ul, 1, 'Main content', [
@@ -226,7 +214,7 @@ class TestNestedListAssembler < Test::Unit::TestCase
                             ])
     ]
 
-    list_node = @builder.build_unordered_list(items)
+    list_node = @assembler.build_unordered_list(items)
 
     item = list_node.children[0]
     # Should have multiple children for main content + continuation lines
@@ -243,7 +231,7 @@ class TestNestedListAssembler < Test::Unit::TestCase
 
     # Should log error but continue processing (HTMLBuilder behavior)
     # Level 3 will be adjusted to level 1
-    list_node = @builder.build_unordered_list(items)
+    list_node = @assembler.build_unordered_list(items)
 
     # Should successfully create list with adjusted levels
     assert_instance_of(ReVIEW::AST::ListNode, list_node)
@@ -262,7 +250,7 @@ class TestNestedListAssembler < Test::Unit::TestCase
       create_list_item_data(:ul, 2, 'Level 2c')
     ]
 
-    list_node = @builder.build_unordered_list(items)
+    list_node = @assembler.build_unordered_list(items)
 
     # Should create proper nested structure
     assert_equal :ul, list_node.list_type
@@ -293,7 +281,7 @@ class TestNestedListAssembler < Test::Unit::TestCase
       create_list_item_data(:ul, 1, 'Back to Level 1')
     ]
 
-    list_node = @builder.build_unordered_list(items)
+    list_node = @assembler.build_unordered_list(items)
 
     assert_equal :ul, list_node.list_type
     assert_equal 2, list_node.children.size # Two top-level items
@@ -324,7 +312,7 @@ class TestNestedListAssembler < Test::Unit::TestCase
 
     # Should log error but continue processing (HTMLBuilder behavior)
     # Level 3 will be adjusted to level 2 (previous_level + 1)
-    list_node = @builder.build_unordered_list(items)
+    list_node = @assembler.build_unordered_list(items)
 
     # Should successfully create list with adjusted levels
     assert_instance_of(ReVIEW::AST::ListNode, list_node)

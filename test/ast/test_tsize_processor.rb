@@ -19,10 +19,8 @@ class TestTsizeProcessor < Test::Unit::TestCase
   end
 
   def test_process_tsize_for_latex
-    # Create AST with tsize and table
     root = ReVIEW::AST::DocumentNode.new(location: nil)
 
-    # Create tsize block
     tsize_block = ReVIEW::AST::BlockNode.new(
       location: nil,
       block_type: :tsize,
@@ -37,7 +35,6 @@ class TestTsizeProcessor < Test::Unit::TestCase
     table.add_body_row(row)
     root.add_child(table)
 
-    # Process with TsizeProcessor
     ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter)
 
     # Verify tsize block was removed
@@ -50,10 +47,8 @@ class TestTsizeProcessor < Test::Unit::TestCase
   end
 
   def test_process_tsize_with_target_specification
-    # Create AST with targeted tsize
     root = ReVIEW::AST::DocumentNode.new(location: nil)
 
-    # Create tsize block with latex target
     tsize_block = ReVIEW::AST::BlockNode.new(
       location: nil,
       block_type: :tsize,
@@ -61,7 +56,6 @@ class TestTsizeProcessor < Test::Unit::TestCase
     )
     root.add_child(tsize_block)
 
-    # Create table
     table = ReVIEW::AST::TableNode.new(location: nil, id: 'test')
     row = ReVIEW::AST::TableRowNode.new(location: nil)
     3.times { row.add_child(ReVIEW::AST::TableCellNode.new(location: nil)) }
@@ -76,7 +70,6 @@ class TestTsizeProcessor < Test::Unit::TestCase
   end
 
   def test_process_tsize_ignores_non_matching_target
-    # Create AST with tsize for different target
     root = ReVIEW::AST::DocumentNode.new(location: nil)
 
     # Create tsize block with html target only
@@ -87,7 +80,6 @@ class TestTsizeProcessor < Test::Unit::TestCase
     )
     root.add_child(tsize_block)
 
-    # Create table
     table = ReVIEW::AST::TableNode.new(location: nil, id: 'test')
     row = ReVIEW::AST::TableRowNode.new(location: nil)
     3.times { row.add_child(ReVIEW::AST::TableCellNode.new(location: nil)) }
@@ -103,7 +95,6 @@ class TestTsizeProcessor < Test::Unit::TestCase
   end
 
   def test_process_complex_tsize_format
-    # Create AST with complex tsize format
     root = ReVIEW::AST::DocumentNode.new(location: nil)
 
     # Create tsize block with complex format
@@ -114,23 +105,19 @@ class TestTsizeProcessor < Test::Unit::TestCase
     )
     root.add_child(tsize_block)
 
-    # Create table
     table = ReVIEW::AST::TableNode.new(location: nil, id: 'test')
     row = ReVIEW::AST::TableRowNode.new(location: nil)
     3.times { row.add_child(ReVIEW::AST::TableCellNode.new(location: nil)) }
     table.add_body_row(row)
     root.add_child(table)
 
-    # Process
     ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter)
 
-    # Verify
     assert_equal '|l|c|r|', table.col_spec
     assert_equal ['l', 'c', 'r'], table.cellwidth
   end
 
   def test_process_multiple_tsize_commands
-    # Create AST with multiple tsize/table pairs
     root = ReVIEW::AST::DocumentNode.new(location: nil)
 
     # First tsize and table
@@ -161,7 +148,6 @@ class TestTsizeProcessor < Test::Unit::TestCase
     table2.add_body_row(row2)
     root.add_child(table2)
 
-    # Process
     ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter)
 
     # Verify both tsize blocks are removed

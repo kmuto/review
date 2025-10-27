@@ -18,8 +18,6 @@ class TestListProcessor < Test::Unit::TestCase
       @added_nodes << node
     end
 
-    # NOTE: render_with_ast_renderer removed with hybrid mode elimination
-
     def inline_processor
       @inline_processor ||= MockInlineProcessor.new
     end

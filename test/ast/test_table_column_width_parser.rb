@@ -3,7 +3,6 @@
 require_relative '../test_helper'
 require 'review/ast/table_column_width_parser'
 
-# Test TableColumnWidthParser
 class TestTableColumnWidthParser < Test::Unit::TestCase
   def test_default_spec
     parser = ReVIEW::AST::TableColumnWidthParser.new(nil, 3)

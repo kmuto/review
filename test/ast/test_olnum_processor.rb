@@ -56,7 +56,6 @@ class TestOlnumProcessor < Test::Unit::TestCase
 
     @chapter.content = source
 
-    # Build AST
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
@@ -88,7 +87,6 @@ class TestOlnumProcessor < Test::Unit::TestCase
 
     @chapter.content = source
 
-    # Build AST
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
@@ -124,10 +122,8 @@ class TestOlnumProcessor < Test::Unit::TestCase
       result << node
     end
 
-    if node.children
-      node.children.each do |child|
-        result.concat(find_block_nodes(child, block_type))
-      end
+    node.children.each do |child|
+      result.concat(find_block_nodes(child, block_type))
     end
 
     result

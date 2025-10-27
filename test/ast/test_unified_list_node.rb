@@ -12,7 +12,6 @@ class TestUnifiedListNode < Test::Unit::TestCase
   end
 
   def test_list_node_initialization
-    # Test basic initialization
     node = ReVIEW::AST::ListNode.new(location: @location, list_type: :ul)
     assert_equal :ul, node.list_type
     assert_nil(node.start_number)
@@ -22,7 +21,6 @@ class TestUnifiedListNode < Test::Unit::TestCase
   end
 
   def test_ordered_list_with_start_number
-    # Test ordered list with start number
     node = ReVIEW::AST::ListNode.new(
       location: @location,
       list_type: :ol,
@@ -36,7 +34,6 @@ class TestUnifiedListNode < Test::Unit::TestCase
   end
 
   def test_definition_list
-    # Test definition list
     node = ReVIEW::AST::ListNode.new(location: @location, list_type: :dl)
     assert_equal :dl, node.list_type
     assert_nil(node.start_number)
@@ -46,7 +43,6 @@ class TestUnifiedListNode < Test::Unit::TestCase
   end
 
   def test_convenience_methods
-    # Test all convenience methods
     ul = ReVIEW::AST::ListNode.new(location: @location, list_type: :ul)
     ol = ReVIEW::AST::ListNode.new(location: @location, list_type: :ol)
     dl = ReVIEW::AST::ListNode.new(location: @location, list_type: :dl)
@@ -96,7 +92,6 @@ class TestUnifiedListNode < Test::Unit::TestCase
   end
 
   def test_serialization_properties
-    # Test serialize_properties method
     node = ReVIEW::AST::ListNode.new(
       location: @location,
       list_type: :ol,
@@ -112,7 +107,6 @@ class TestUnifiedListNode < Test::Unit::TestCase
   end
 
   def test_serialization_properties_default_start_number
-    # Test serialize_properties with default start_number (should not be serialized)
     node = ReVIEW::AST::ListNode.new(
       location: @location,
       list_type: :ol,
@@ -140,17 +134,5 @@ class TestUnifiedListNode < Test::Unit::TestCase
     assert_kind_of(ReVIEW::AST::ListItemNode, list_node.children.first)
     text_child = list_node.children.first.children.find { |c| c.is_a?(ReVIEW::AST::TextNode) }
     assert_equal 'Test item', text_child.content
-  end
-
-  def test_backwards_compatibility_type_checking
-    # Test that both old and new type checking methods work
-    node = ReVIEW::AST::ListNode.new(location: @location, list_type: :ul)
-
-    # New way (recommended)
-    assert node.is_a?(ReVIEW::AST::ListNode)
-    assert node.ul?
-
-    # Type + attribute check
-    assert node.is_a?(ReVIEW::AST::ListNode) && node.ul?
   end
 end

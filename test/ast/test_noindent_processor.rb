@@ -33,11 +33,9 @@ class TestNoindentProcessor < Test::Unit::TestCase
 
     @chapter.content = source
 
-    # Build AST
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
-    # Find the paragraph nodes
     paragraphs = find_paragraph_nodes(ast_root)
 
     # First paragraph should have noindent attribute
@@ -61,11 +59,9 @@ class TestNoindentProcessor < Test::Unit::TestCase
 
     @chapter.content = source
 
-    # Build AST
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
-    # Find the quote block
     quote_blocks = find_block_nodes(ast_root, 'quote')
     paragraphs = find_paragraph_nodes(ast_root)
 
@@ -95,11 +91,9 @@ class TestNoindentProcessor < Test::Unit::TestCase
 
     @chapter.content = source
 
-    # Build AST
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
-    # Find the paragraph nodes
     paragraphs = find_paragraph_nodes(ast_root)
 
     # First two paragraphs should have noindent attribute
@@ -120,7 +114,6 @@ class TestNoindentProcessor < Test::Unit::TestCase
 
     @chapter.content = source
 
-    # Build AST
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(@chapter)
 
