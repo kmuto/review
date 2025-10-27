@@ -19,6 +19,8 @@ require 'review/loggable'
 require 'review/ast/indexer'
 require 'review/ast/compiler'
 require 'review/template'
+require 'review/img_math'
+require 'digest'
 
 module ReVIEW
   module Renderer
@@ -45,6 +47,9 @@ module ReVIEW
         # Initialize template variables like HTMLBuilder
         @javascripts = []
         @body_ext = ''
+
+        # Initialize ImgMath for equation image generation (like Builder)
+        @img_math = @book ? ReVIEW::ImgMath.new(@book.config) : nil
 
         # Initialize RenderingContext for cleaner state management
         @rendering_context = RenderingContext.new(:document)
@@ -437,14 +442,38 @@ module ReVIEW
                     # Use $$ for display mode like HTMLBuilder
                     "$$#{content.gsub('<', '\lt{}').gsub('>', '\gt{}').gsub('&', '&amp;')}$$\n"
                   when 'mathml'
-                    # TODO: MathML support would require math_ml gem
-                    # For now, fallback to plain text
-                    %Q(<pre>#{escape(content)}\n</pre>\n)
-                  when 'imgmath' # rubocop:disable Lint/DuplicateBranch
-                    # TODO: Image-based math would require imgmath support
-                    # For now, fallback to plain text
-                    %Q(<pre>#{escape(content)}\n</pre>\n)
-                  else # rubocop:disable Lint/DuplicateBranch
+                    # MathML support using math_ml gem like HTMLBuilder
+                    begin
+                      require 'math_ml'
+                      require 'math_ml/symbol/character_reference'
+                    rescue LoadError
+                      app_error 'not found math_ml'
+                      return result + %Q(<pre>#{escape(content)}\n</pre>\n) + "</div>\n"
+                    end
+                    parser = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
+                    # Add newline to content like HTMLBuilder does
+                    # parser.parse returns MathML::Math object, need to convert to string
+                    parser.parse(content + "\n", true).to_s
+                  when 'imgmath'
+                    # Image-based math using ImgMath like HTMLBuilder
+                    unless @img_math
+                      app_error 'ImgMath not initialized'
+                      return result + %Q(<pre>#{escape(content)}\n</pre>\n) + "</div>\n"
+                    end
+
+                    fontsize = config['imgmath_options']['fontsize'].to_f
+                    lineheight = config['imgmath_options']['lineheight'].to_f
+                    math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{content}\n\\end{equation*}\n"
+                    key = Digest::SHA256.hexdigest(math_str)
+
+                    if config.check_version('2', exception: false)
+                      img_path = @img_math.make_math_image(math_str, key)
+                      %Q(<img src="#{img_path}" />\n)
+                    else
+                      img_path = @img_math.defer_math_image(math_str, key)
+                      %Q(<img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(content)}" />\n)
+                    end
+                  else
                     # Fallback: render as preformatted text
                     %Q(<pre>#{escape(content)}\n</pre>\n)
                   end
@@ -853,9 +882,43 @@ module ReVIEW
         end
       end
 
-      def render_inline_m(_type, content, _node)
+      def render_inline_m(_type, content, node)
+        # Get raw string from node args (content is already escaped)
+        str = node.args.first || content
+
         # Use 'equation' class like HTMLBuilder
-        %Q(<span class="equation">#{content}</span>)
+        case config['math_format']
+        when 'mathml'
+          begin
+            require 'math_ml'
+            require 'math_ml/symbol/character_reference'
+          rescue LoadError
+            app_error 'not found math_ml'
+            return %Q(<span class="equation">#{escape(str)}</span>)
+          end
+          parser = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
+          # parser.parse returns MathML::Math object, need to convert to string
+          %Q(<span class="equation">#{parser.parse(str, nil)}</span>)
+        when 'mathjax'
+          %Q(<span class="equation">\\( #{str.gsub('<', '\lt{}').gsub('>', '\gt{}').gsub('&', '&amp;')} \\)</span>)
+        when 'imgmath'
+          unless @img_math
+            app_error 'ImgMath not initialized'
+            return %Q(<span class="equation">#{escape(str)}</span>)
+          end
+
+          math_str = '$' + str + '$'
+          key = Digest::SHA256.hexdigest(str)
+          if config.check_version('2', exception: false)
+            img_path = @img_math.make_math_image(math_str, key)
+            %Q(<span class="equation"><img src="#{img_path}" /></span>)
+          else
+            img_path = @img_math.defer_math_image(math_str, key)
+            %Q(<span class="equation"><img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(str)}" /></span>)
+          end
+        else
+          %Q(<span class="equation">#{escape(str)}</span>)
+        end
       end
 
       def render_inline_idx(_type, content, node)
