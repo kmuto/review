@@ -1,43 +1,30 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
+require 'review/ast/compiler'
 require 'review/ast/list_processor'
+require 'review/book'
+require 'review/book/chapter'
+require 'review/configure'
 require 'review/lineinput'
 require 'stringio'
 
 class TestListProcessor < Test::Unit::TestCase
-  class MockASTCompiler
-    attr_reader :added_nodes
-
-    def initialize
-      @added_nodes = []
-      @current_location = nil
-    end
-
-    def add_child_to_current_node(node)
-      @added_nodes << node
-    end
-
-    def inline_processor
-      @inline_processor ||= MockInlineProcessor.new
-    end
-
-    def location
-      @current_location
-    end
-  end
-
-  class MockInlineProcessor
-    def parse_inline_elements(content, parent_node)
-      # Simple mock: just add content as text node
-      text_node = ReVIEW::AST::TextNode.new(content: content)
-      parent_node.add_child(text_node)
-    end
-  end
-
   def setup
-    @mock_compiler = MockASTCompiler.new
-    @processor = ReVIEW::AST::ListProcessor.new(@mock_compiler)
+    # Create minimal chapter for compiler initialization
+    config = ReVIEW::Configure.values
+    book = ReVIEW::Book::Base.new(config: config)
+    chapter = ReVIEW::Book::Chapter.new(book, 1, 'test', 'test.re', StringIO.new(''))
+
+    # Initialize compiler with chapter to set up ast_root and current_ast_node
+    @compiler = ReVIEW::AST::Compiler.new
+    @compiler.compile_to_ast(chapter)
+
+    @processor = ReVIEW::AST::ListProcessor.new(@compiler)
+  end
+
+  def added_nodes
+    @compiler.ast_root.children
   end
 
   def create_line_input(content)
@@ -54,13 +41,11 @@ class TestListProcessor < Test::Unit::TestCase
 
     @processor.process_unordered_list(input)
 
-    assert_equal 1, @mock_compiler.added_nodes.size
-    list_node = @mock_compiler.added_nodes[0]
+    assert_equal 1, added_nodes.size
+    list_node = added_nodes[0]
     assert_instance_of(ReVIEW::AST::ListNode, list_node)
     assert_equal :ul, list_node.list_type
     assert_equal 3, list_node.children.size
-
-    # NOTE: render call testing removed with hybrid mode elimination
   end
 
   def test_process_unordered_list_nested
@@ -72,7 +57,7 @@ class TestListProcessor < Test::Unit::TestCase
 
     @processor.process_unordered_list(input)
 
-    list_node = @mock_compiler.added_nodes[0]
+    list_node = added_nodes[0]
     assert_equal 2, list_node.children.size # Two top-level items
 
     # Check nested structure
@@ -87,7 +72,7 @@ class TestListProcessor < Test::Unit::TestCase
 
     @processor.process_unordered_list(input)
 
-    assert_equal 0, @mock_compiler.added_nodes.size
+    assert_equal 0, added_nodes.size
   end
 
   # Test ordered list processing
@@ -100,8 +85,8 @@ class TestListProcessor < Test::Unit::TestCase
 
     @processor.process_ordered_list(input)
 
-    assert_equal 1, @mock_compiler.added_nodes.size
-    list_node = @mock_compiler.added_nodes[0]
+    assert_equal 1, added_nodes.size
+    list_node = added_nodes[0]
     assert_equal :ol, list_node.list_type
     assert_equal 3, list_node.children.size
 
@@ -125,7 +110,7 @@ class TestListProcessor < Test::Unit::TestCase
 
     @processor.process_ordered_list(input)
 
-    list_node = @mock_compiler.added_nodes[0]
+    list_node = added_nodes[0]
     # Re:VIEW ordered lists don't support nesting - all items are at level 1
     assert_equal 3, list_node.children.size # Three items at the same level
 
@@ -149,7 +134,7 @@ class TestListProcessor < Test::Unit::TestCase
 
     @processor.process_definition_list(input)
 
-    list_node = @mock_compiler.added_nodes[0]
+    list_node = added_nodes[0]
     assert_equal :dl, list_node.list_type
     assert_equal 2, list_node.children.size
 
@@ -168,7 +153,7 @@ class TestListProcessor < Test::Unit::TestCase
 
     @processor.process_definition_list(input)
 
-    list_node = @mock_compiler.added_nodes[0]
+    list_node = added_nodes[0]
     item = list_node.children[0]
     term_text = item.term_children.find { |c| c.is_a?(ReVIEW::AST::TextNode) }
     assert_equal 'Complex Term', term_text.content
@@ -185,7 +170,7 @@ class TestListProcessor < Test::Unit::TestCase
 
     @processor.process_list(input, :ul)
 
-    list_node = @mock_compiler.added_nodes[0]
+    list_node = added_nodes[0]
     assert_equal :ul, list_node.list_type
   end
 
@@ -197,7 +182,7 @@ class TestListProcessor < Test::Unit::TestCase
 
     @processor.process_list(input, :ol)
 
-    list_node = @mock_compiler.added_nodes[0]
+    list_node = added_nodes[0]
     assert_equal :ol, list_node.list_type
   end
 
@@ -209,7 +194,7 @@ class TestListProcessor < Test::Unit::TestCase
 
     @processor.process_list(input, :dl)
 
-    list_node = @mock_compiler.added_nodes[0]
+    list_node = added_nodes[0]
     assert_equal :dl, list_node.list_type
   end
 
@@ -317,7 +302,7 @@ class TestListProcessor < Test::Unit::TestCase
 
     @processor.process_unordered_list(input)
 
-    list_node = @mock_compiler.added_nodes[0]
+    list_node = added_nodes[0]
     assert_equal 2, list_node.children.size # Two top-level items
 
     # Verify complex nesting structure was created
@@ -343,7 +328,7 @@ class TestListProcessor < Test::Unit::TestCase
 
     @processor.process_unordered_list(input)
 
-    list_node = @mock_compiler.added_nodes[0]
+    list_node = added_nodes[0]
     first_item = list_node.children[0]
 
     # Should have processed continuation lines as additional content
@@ -367,7 +352,7 @@ class TestListProcessor < Test::Unit::TestCase
 
     @processor.process_unordered_list(input)
 
-    list_node = @mock_compiler.added_nodes[0]
+    list_node = added_nodes[0]
     assert_equal 3, list_node.children.size # Three main branches
 
     # Verify Branch A has deep nesting (5 levels)
@@ -410,11 +395,10 @@ class TestListProcessor < Test::Unit::TestCase
 
     @processor.process_unordered_list(input)
 
-    list_node = @mock_compiler.added_nodes[0]
+    list_node = added_nodes[0]
     assert_equal 2, list_node.children.size
 
     # Verify that inline processing was called
-    # (MockInlineProcessor adds TextNode children)
     first_item = list_node.children[0]
     assert_operator(first_item.children.size, :>=, 1, 'First item should have content children')
 
