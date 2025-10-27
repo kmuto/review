@@ -8,51 +8,32 @@ require 'review/compiler'
 require 'review/htmlbuilder'
 require 'review/book'
 require 'review/book/chapter'
+require 'review/configure'
 require 'json'
 require 'stringio'
 require 'fileutils'
-
-# Mock chapter for testing
-class MockChapter
-  attr_accessor :content, :id, :number, :path, :book
-  attr_accessor :headline_index, :list_index, :table_index, :image_index,
-                :footnote_index, :equation_index, :column_index
-
-  def initialize(id = 'test', number = 1)
-    @id = id
-    @number = number
-    @path = "#{id}.re"
-    @book = nil
-  end
-
-  def name
-    @id
-  end
-
-  def title
-    'Test Chapter'
-  end
-
-  def basename
-    File.basename(@path, '.*')
-  end
-
-  def filename
-    @path
-  end
-end
+require 'tmpdir'
 
 class ASTJSONVerificationTest < Test::Unit::TestCase
   def setup
     @fixtures_dir = File.join(__dir__, '..', '..', 'samples', 'debug-book')
     @test_files = Dir.glob(File.join(@fixtures_dir, '*.re')).sort
-    @output_dir = File.join(__dir__, '..', '..', 'tmp', 'verification')
-    FileUtils.mkdir_p(@output_dir)
 
-    # Initialize I18n
+    @tmpdir = Dir.mktmpdir('ast_json_verification')
+    @output_dir = @tmpdir
+
     ReVIEW::I18n.setup('ja')
 
+    # Initialize Book and Config for real Chapter usage
+    @config = ReVIEW::Configure.values
+    @config['language'] = 'ja'
+    @book = ReVIEW::Book::Base.new(config: @config)
+
     @test_results = {}
+  end
+
+  def teardown
+    FileUtils.rm_rf(@tmpdir) if @tmpdir && File.exist?(@tmpdir)
   end
 
   def test_all_verification_files
@@ -70,22 +51,14 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
       content = File.read(file_path)
 
       ast_json = compile_to_json(content, 'ast')
-
-      # Parse JSON structure
       ast_data = JSON.parse(ast_json)
 
-      # Verify basic structure
       assert_equal 'DocumentNode', ast_data['type'], "AST mode should create DocumentNode for #{basename}"
-
-      # Verify children array exists
       assert ast_data.key?('children'), "AST mode should have children array for #{basename}"
 
-      # Verify non-empty content has children
       next unless content.strip.length > 50 # Arbitrary threshold for non-trivial content
 
       assert ast_data['children'].any?, "AST mode should have children for non-trivial content in #{basename}"
-
-      # Verify no error field is present (indicates successful compilation)
       assert_nil(ast_data['error'], "AST compilation should not have errors for #{basename}: #{ast_data['error']}")
     end
   end
@@ -100,7 +73,6 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
 
     element_types = extract_all_element_types(ast_data)
 
-    # Verify presence of key element types (updated for new concrete node types)
     expected_types = %w[DocumentNode HeadlineNode ParagraphNode CodeBlockNode InlineNode TextNode]
     # Optional types that may appear depending on content: TableNode ImageNode MinicolumnNode BlockNode
 
@@ -117,13 +89,8 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
     ast_json = compile_to_json(content, 'ast')
     ast_data = JSON.parse(ast_json)
 
-    # Count inline nodes
     ast_inline_count = count_element_type(ast_data, 'InlineNode')
-
-    # AST mode should preserve inline structure
     assert ast_inline_count > 0, "AST mode should preserve inline structure. Found: #{ast_inline_count} inline nodes"
-
-    # Verify no compilation errors
     assert_nil(ast_data['error'], "AST compilation should not have errors: #{ast_data['error']}")
   end
 
@@ -136,13 +103,9 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
     ast_json = compile_to_json(content, 'ast')
     ast_data = JSON.parse(ast_json)
 
-    # Find all block elements with captions (CodeBlockNode, TableNode, ImageNode, etc.)
     captioned_nodes = find_nodes_with_captions(ast_data)
-
-    # Verify we found some captioned nodes
     assert captioned_nodes.any?, 'Should find at least one node with caption'
 
-    # Verify each captioned node has caption_node field
     captioned_nodes.each do |node|
       node_type = node['type']
       assert node.key?('caption_node'), "#{node_type} should have 'caption_node' field"
@@ -151,7 +114,6 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
       assert_not_nil(caption_node, "#{node_type} caption_node should not be nil")
       assert_equal 'CaptionNode', caption_node['type'], "#{node_type} caption_node should be CaptionNode"
 
-      # Verify CaptionNode has children
       assert caption_node.key?('children'), 'CaptionNode should have children array'
       assert caption_node['children'].is_a?(Array), 'CaptionNode children should be an array'
     end
@@ -184,31 +146,26 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
 
     @test_results[basename] = { 'ast' => result }
 
-    # Verify AST mode produced valid JSON
     assert result[:success], "AST mode failed to produce valid JSON for #{basename}: #{result[:error]}"
 
-    # Verify structure consistency
     if result[:success]
-      # Non-empty files should have some content
       if content.strip.length > 10
         assert result[:children_count] > 0, "AST mode produced empty content for #{basename}"
       end
 
-      # Should not have compilation errors
       assert !result[:has_error], "AST compilation had errors for #{basename}: #{result[:json_data]['error']}"
     end
   end
 
   def compile_to_json(content, mode, _config = nil)
-    # Create a mock chapter for AST compilation
-    chapter = MockChapter.new('test', 1)
-    chapter.content = content
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
-    # Use direct AST compilation
+    chapter.generate_indexes
+    @book.generate_indexes
+
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_result = ast_compiler.compile_to_ast(chapter)
 
-    # Convert AST to JSON
     if ast_result
       options = ReVIEW::AST::JSONSerializer::Options.new(pretty: true)
       ReVIEW::AST::JSONSerializer.serialize(ast_result, options)
@@ -247,9 +204,7 @@ class ASTJSONVerificationTest < Test::Unit::TestCase
 
   def find_nodes_with_captions(data, nodes = [])
     if data.is_a?(Hash)
-      # Check if this node has a caption_node field
       nodes << data if data.key?('caption_node')
-      # Recursively search children
       data.each_value { |value| find_nodes_with_captions(value, nodes) }
     elsif data.is_a?(Array)
       data.each { |item| find_nodes_with_captions(item, nodes) }
