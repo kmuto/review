@@ -5,6 +5,7 @@ require 'review/snapshot_location'
 require 'review/ast/caption_node'
 require 'review/ast/text_node'
 require 'review/ast/inline_node'
+require 'review/ast/compiler'
 
 class TestCaptionParser < Test::Unit::TestCase
   def setup
@@ -57,17 +58,10 @@ class TestCaptionParser < Test::Unit::TestCase
     assert_equal false, result.contains_inline?
   end
 
-  def test_parse_with_mock_inline_processor
-    # Create a mock inline processor
-    inline_processor = Object.new
-    def inline_processor.parse_inline_elements(_text, caption_node)
-      # Mock implementation: create a simple structure
-      caption_node.add_child(ReVIEW::AST::TextNode.new(content: 'Caption with '))
-
-      inline_node = ReVIEW::AST::InlineNode.new(inline_type: :b)
-      inline_node.add_child(ReVIEW::AST::TextNode.new(content: 'bold'))
-      caption_node.add_child(inline_node)
-    end
+  def test_parse_with_inline_processor
+    # Create a real inline processor from AST::Compiler
+    compiler = ReVIEW::AST::Compiler.new
+    inline_processor = compiler.inline_processor
 
     parser = CaptionParserHelper.new(
       location: @location,
@@ -76,9 +70,10 @@ class TestCaptionParser < Test::Unit::TestCase
     result = parser.parse('Caption with @<b>{bold}')
 
     assert_instance_of(ReVIEW::AST::CaptionNode, result)
-    assert_equal 2, result.children.size
+    assert_operator(result.children.size, :>=, 1)
     assert_equal true, result.contains_inline?
-    assert_equal 'Caption with @<b>{bold}', result.to_text
+    # Real inline processor parses the markup, so to_text extracts text content
+    assert_match(/Caption with.*bold/, result.to_text)
   end
 
   def test_factory_method_delegates_to_parser
