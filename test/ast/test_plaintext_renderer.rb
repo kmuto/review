@@ -14,8 +14,7 @@ class TestPlaintextRenderer < Test::Unit::TestCase
     @config = ReVIEW::Configure.values
     @config['language'] = 'ja'
     @config['secnolevel'] = 2
-    @book = ReVIEW::Book::Base.new('.')
-    @book.config = @config
+    @book = ReVIEW::Book::Base.new(config: @config)
 
     # Initialize I18n for proper list numbering
     ReVIEW::I18n.setup('ja')

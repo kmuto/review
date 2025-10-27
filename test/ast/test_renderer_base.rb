@@ -16,9 +16,8 @@ class TestRendererBase < Test::Unit::TestCase
   include ReVIEW
 
   def setup
-    @book = ReVIEW::Book::Base.new
     @config = ReVIEW::Configure.values
-    @book.config = @config
+    @book = ReVIEW::Book::Base.new(config: @config)
     @chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     @chapter.generate_indexes
     @book.generate_indexes

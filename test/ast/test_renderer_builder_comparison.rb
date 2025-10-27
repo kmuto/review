@@ -19,8 +19,7 @@ class TestRendererBuilderComparison < Test::Unit::TestCase
     @config['secnolevel'] = 2
     @config['language'] = 'ja'
     @config['disable_reference_resolution'] = true
-    @book = ReVIEW::Book::Base.new
-    @book.config = @config
+    @book = ReVIEW::Book::Base.new(config: @config)
     @log_io = StringIO.new
     ReVIEW.logger = ReVIEW::Logger.new(@log_io)
     ReVIEW::I18n.setup(@config['language'])

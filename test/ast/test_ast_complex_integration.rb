@@ -17,8 +17,7 @@ class TestASTComplexIntegration < Test::Unit::TestCase
     @config['secnolevel'] = 3
     @config['language'] = 'ja'
     @config['disable_reference_resolution'] = true
-    @book = ReVIEW::Book::Base.new
-    @book.config = @config
+    @book = ReVIEW::Book::Base.new(config: @config)
     @log_io = StringIO.new
     ReVIEW.logger = ReVIEW::Logger.new(@log_io)
     ReVIEW::I18n.setup(@config['language'])
@@ -108,9 +107,7 @@ class TestASTComplexIntegration < Test::Unit::TestCase
     EOB
 
     # Test AST compilation
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'complex', 'complex.re', StringIO.new)
-    chapter.content = content
-
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'complex', 'complex.re', StringIO.new(content))
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(chapter)
 

@@ -13,8 +13,7 @@ class TestHtmlRenderer < Test::Unit::TestCase
   def setup
     @config = ReVIEW::Configure.values
     @config['language'] = 'ja'
-    @book = ReVIEW::Book::Base.new('.')
-    @book.config = @config
+    @book = ReVIEW::Book::Base.new(config: @config)
 
     # Initialize I18n for proper list numbering
     ReVIEW::I18n.setup('ja')

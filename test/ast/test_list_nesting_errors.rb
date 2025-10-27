@@ -14,8 +14,7 @@ class TestListNestingErrors < Test::Unit::TestCase
     @config = ReVIEW::Configure.values
     @config['secnolevel'] = 2
     @config['language'] = 'ja'
-    @book = ReVIEW::Book::Base.new
-    @book.config = @config
+    @book = ReVIEW::Book::Base.new(config: @config)
     @log_io = StringIO.new
     ReVIEW.logger = ReVIEW::Logger.new(@log_io)
     @compiler = ReVIEW::AST::Compiler.new

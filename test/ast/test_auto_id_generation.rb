@@ -9,8 +9,7 @@ require 'stringio'
 # Test auto_id generation behavior for HeadlineNode and ColumnNode.
 class TestAutoIdGeneration < Test::Unit::TestCase
   def setup
-    @book = ReVIEW::Book::Base.new
-    @book.config = ReVIEW::Configure.values
+    @book = ReVIEW::Book::Base.new(config: ReVIEW::Configure.values)
     @config = @book.config
     @compiler = ReVIEW::AST::Compiler.new
 

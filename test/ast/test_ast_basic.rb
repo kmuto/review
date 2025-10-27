@@ -11,8 +11,7 @@ class TestASTBasic < Test::Unit::TestCase
   def setup
     @config = ReVIEW::Configure.values
     @config['language'] = 'ja'
-    @book = ReVIEW::Book::Base.new
-    @book.config = @config
+    @book = ReVIEW::Book::Base.new(config: @config)
     @log_io = StringIO.new
     ReVIEW.logger = ReVIEW::Logger.new(@log_io)
     ReVIEW::I18n.setup(@config['language'])

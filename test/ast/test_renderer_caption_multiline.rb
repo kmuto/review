@@ -16,8 +16,7 @@ class TestRendererCaptionMultiline < Test::Unit::TestCase
   def setup
     @config = ReVIEW::Configure.values
     @config['language'] = 'ja'
-    @book = ReVIEW::Book::Base.new('.')
-    @book.config = @config
+    @book = ReVIEW::Book::Base.new(config: @config)
 
     ReVIEW::I18n.setup('ja')
 

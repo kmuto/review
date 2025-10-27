@@ -17,8 +17,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
       'glossary' => 'glossary',
       'abbreviations' => 'abbreviations'
     }
-    @book = ReVIEW::Book::Base.new
-    @book.config = @config
+    @book = ReVIEW::Book::Base.new(config: @config)
     @log_io = StringIO.new
     ReVIEW.logger = ReVIEW::Logger.new(@log_io)
     ReVIEW::I18n.setup(@config['language'])
@@ -40,8 +39,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     EOB
 
     # Use AST::Compiler to generate AST, then render with HtmlRenderer
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(chapter)

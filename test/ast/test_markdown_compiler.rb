@@ -11,8 +11,7 @@ require 'stringio'
 class TestMarkdownCompiler < Test::Unit::TestCase
   def setup
     @config = ReVIEW::Configure.values
-    @book = ReVIEW::Book::Base.new('.')
-    @book.config = @config
+    @book = ReVIEW::Book::Base.new(config: @config)
     @compiler = ReVIEW::AST::MarkdownCompiler.new
   end
 

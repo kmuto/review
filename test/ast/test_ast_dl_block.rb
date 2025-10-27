@@ -14,17 +14,14 @@ class TestASTDlBlock < Test::Unit::TestCase
     @config = ReVIEW::Configure.values
     @config['secnolevel'] = 2
     @config['language'] = 'ja'
-    @book = ReVIEW::Book::Base.new
-    @book.config = @config
+    @book = ReVIEW::Book::Base.new(config: @config)
     @log_io = StringIO.new
     ReVIEW.logger = ReVIEW::Logger.new(@log_io)
     @compiler = ReVIEW::AST::Compiler.new
   end
 
   def create_chapter(content)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-    chapter
+    ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
   end
 
   def test_dl_with_dt_dd_blocks

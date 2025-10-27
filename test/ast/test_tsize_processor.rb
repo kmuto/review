@@ -12,10 +12,9 @@ require 'review/book/chapter'
 
 class TestTsizeProcessor < Test::Unit::TestCase
   def setup
-    @book = ReVIEW::Book::Base.new
     @config = ReVIEW::Configure.values
     @config['builder'] = 'latex'
-    @book.config = @config
+    @book = ReVIEW::Book::Base.new(config: @config)
     @chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
   end
 
