@@ -21,9 +21,7 @@ class TestListNestingErrors < Test::Unit::TestCase
   end
 
   def create_chapter(content)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-    chapter
+    ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
   end
 
   # Test //li outside of list blocks

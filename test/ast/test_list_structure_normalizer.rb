@@ -13,8 +13,7 @@ class ListStructureNormalizerTest < Test::Unit::TestCase
 
   def setup
     @config = ReVIEW::Configure.values
-    @book = Book::Base.new
-    @book.config = @config
+    @book = Book::Base.new(config: @config)
     @chapter = Book::Chapter.new(@book, 1, '-', nil, StringIO.new)
     @compiler = ReVIEW::AST::Compiler.for_chapter(@chapter)
   end

@@ -49,14 +49,11 @@ class TestMarkdownRenderer < Test::Unit::TestCase
       //}
     EOB
 
-    # Test AST compilation and rendering
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(chapter)
 
-    # Test MarkdownRenderer
     markdown_renderer = ReVIEW::Renderer::MarkdownRenderer.new(chapter)
     markdown_result = markdown_renderer.render(ast_root)
 
@@ -86,8 +83,7 @@ class TestMarkdownRenderer < Test::Unit::TestCase
       //footnote[note1][This is a footnote]
     EOB
 
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(chapter)
@@ -140,8 +136,7 @@ class TestMarkdownRenderer < Test::Unit::TestCase
       //}
     EOB
 
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(chapter)

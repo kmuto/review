@@ -17,7 +17,7 @@ class TestNestedListAssembler < Test::Unit::TestCase
     config = ReVIEW::Configure.values
     config['secnolevel'] = 2
     config['language'] = 'ja'
-    book = ReVIEW::Book::Base.new(config: config)
+    ReVIEW::Book::Base.new(config: config)
     ReVIEW::I18n.setup(config['language'])
 
     compiler = ReVIEW::AST::Compiler.new

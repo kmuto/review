@@ -20,33 +20,35 @@ class ReferenceResolverTest < Test::Unit::TestCase
     image_index = ReVIEW::Book::Index.new
     image_index.add_item(ReVIEW::Book::Index::Item.new('img01', 1))
     image_index.add_item(ReVIEW::Book::Index::Item.new('img02', 2))
-    @chapter.instance_variable_set(:@image_index, image_index)
 
     # Setup table index
     table_index = ReVIEW::Book::Index.new
     table_index.add_item(ReVIEW::Book::Index::Item.new('tbl01', 1))
-    @chapter.instance_variable_set(:@table_index, table_index)
 
     # Setup list index
     list_index = ReVIEW::Book::Index.new
     list_index.add_item(ReVIEW::Book::Index::Item.new('list01', 1))
-    @chapter.instance_variable_set(:@list_index, list_index)
 
     # Setup footnote index
     footnote_index = ReVIEW::Book::Index.new
     footnote_index.add_item(ReVIEW::Book::Index::Item.new('fn01', 1))
-    @chapter.instance_variable_set(:@footnote_index, footnote_index)
 
     # Setup equation index
     equation_index = ReVIEW::Book::Index.new
     equation_index.add_item(ReVIEW::Book::Index::Item.new('eq01', 1))
-    @chapter.instance_variable_set(:@equation_index, equation_index)
+
+    @chapter.ast_indexes = {
+      image_index: image_index,
+      table_index: table_index,
+      list_index: list_index,
+      footnote_index: footnote_index,
+      equation_index: equation_index
+    }
 
     @resolver = ReVIEW::AST::ReferenceResolver.new(@chapter)
   end
 
   def test_resolve_image_reference
-    # Create AST with actual image node and reference
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add actual ImageNode to generate index

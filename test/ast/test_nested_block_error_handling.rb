@@ -12,17 +12,14 @@ class TestNestedBlockErrorHandling < Test::Unit::TestCase
   def setup
     @config = Configure.values
     @config['language'] = 'ja'
-    @book = Book::Base.new
-    @book.config = @config
+    @book = Book::Base.new(config: @config)
     @log_io = StringIO.new
     ReVIEW.logger = ReVIEW::Logger.new(@log_io)
     I18n.setup(@config['language'])
   end
 
   def create_chapter(content)
-    chapter = Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
-    chapter
+    Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
   end
 
   def test_unclosed_parent_block

@@ -16,9 +16,7 @@ class TestMarkdownCompiler < Test::Unit::TestCase
   end
 
   def create_chapter(content)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.md', StringIO.new(content))
-    chapter.content = content
-    chapter
+    ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.md', StringIO.new(content))
   end
 
   def test_heading_conversion

@@ -503,12 +503,11 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
   end
 
   # Complex inline combinations
-  # Note: Nested inline elements are not supported in Re:VIEW syntax
-  # def test_inline_nested_formatting
-  #   content = "= Chapter\n\n@<b>{bold @<i>{and italic}}\n"
-  #   output = render_inline(content)
-  #   assert_match(/<b>bold <i>and italic<\/i><\/b>/, output)
-  # end
+  def test_inline_nested_formatting
+    content = "= Chapter\n\n@<b>{bold @<i>{and italic\\}}\n"
+    output = render_inline(content)
+    assert_match(%r{<b>bold <i>and italic</i></b>}, output)
+  end
 
   def test_inline_code_with_special_chars
     content = "= Chapter\n\n@<code>{<tag> & \"value\"}\n"
@@ -532,21 +531,20 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
   end
 
   # Equation reference
-  # Note: texequation block is not yet implemented in AST renderer
-  # def test_inline_eq_basic
-  #   content = <<~REVIEW
-  #     = Chapter
-  #
-  #     //texequation[eq1]{
-  #     E = mc^2
-  #     //}
-  #
-  #     See @<eq>{eq1}.
-  #   REVIEW
-  #   output = render_inline(content)
-  #   # Should contain equation reference
-  #   assert_match(/式1\.1/, output)
-  # end
+  def test_inline_eq_basic
+    content = <<~REVIEW
+       = Chapter
+  
+       //texequation[eq1]{
+       E = mc^2
+       //}
+  
+       See @<eq>{eq1}.
+     REVIEW
+    output = render_inline(content)
+    # Should contain equation reference
+    assert_match(/式1\.1/, output)
+  end
 
   # Endnote reference
   def test_inline_endnote_basic

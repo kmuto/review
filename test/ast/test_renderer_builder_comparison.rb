@@ -27,10 +27,7 @@ class TestRendererBuilderComparison < Test::Unit::TestCase
 
   def compile_with_builder(content, builder_class)
     builder = builder_class.new
-
-    # Create dummy chapter
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
     begin
       # Use traditional compiler (this will call builder.bind internally)
@@ -46,8 +43,7 @@ class TestRendererBuilderComparison < Test::Unit::TestCase
   end
 
   def compile_with_renderer(content, renderer_class)
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
-    chapter.content = content
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(chapter)
