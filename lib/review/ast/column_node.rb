@@ -9,7 +9,7 @@ module ReVIEW
       attr_accessor :caption_node, :auto_id, :column_number
       attr_reader :level, :label, :caption, :column_type
 
-      def initialize(location: nil, level: nil, label: nil, caption: nil, caption_node: nil, column_type: :column, auto_id: nil, column_number: nil, **kwargs)
+      def initialize(location: nil, level: nil, label: nil, caption: nil, caption_node: nil, column_type: :column, auto_id: nil, column_number: nil, **kwargs) # rubocop:disable Metrics/ParameterLists
         super(location: location, **kwargs)
         @level = level
         @label = label
