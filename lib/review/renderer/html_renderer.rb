@@ -437,48 +437,63 @@ module ReVIEW
       def render_texequation_body(content, math_format)
         result = %Q(<div class="equation">\n)
 
-        result += case math_format
-                  when 'mathjax'
-                    # Use $$ for display mode like HTMLBuilder
-                    "$$#{content.gsub('<', '\lt{}').gsub('>', '\gt{}').gsub('&', '&amp;')}$$\n"
-                  when 'mathml'
-                    # MathML support using math_ml gem like HTMLBuilder
-                    begin
-                      require 'math_ml'
-                      require 'math_ml/symbol/character_reference'
-                    rescue LoadError
-                      app_error 'not found math_ml'
-                      return result + %Q(<pre>#{escape(content)}\n</pre>\n) + "</div>\n"
-                    end
-                    parser = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
-                    # Add newline to content like HTMLBuilder does
-                    # parser.parse returns MathML::Math object, need to convert to string
-                    parser.parse(content + "\n", true).to_s
-                  when 'imgmath'
-                    # Image-based math using ImgMath like HTMLBuilder
-                    unless @img_math
-                      app_error 'ImgMath not initialized'
-                      return result + %Q(<pre>#{escape(content)}\n</pre>\n) + "</div>\n"
-                    end
+        math_content = render_math_format(content, math_format)
+        # Check if error case returned complete div (early return from helper)
+        return math_content if math_content.include?('</div>')
 
-                    fontsize = config['imgmath_options']['fontsize'].to_f
-                    lineheight = config['imgmath_options']['lineheight'].to_f
-                    math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{content}\n\\end{equation*}\n"
-                    key = Digest::SHA256.hexdigest(math_str)
+        result + math_content + "</div>\n"
+      end
 
-                    if config.check_version('2', exception: false)
-                      img_path = @img_math.make_math_image(math_str, key)
-                      %Q(<img src="#{img_path}" />\n)
-                    else
-                      img_path = @img_math.defer_math_image(math_str, key)
-                      %Q(<img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(content)}" />\n)
-                    end
-                  else
-                    # Fallback: render as preformatted text
-                    %Q(<pre>#{escape(content)}\n</pre>\n)
-                  end
+      # Render math content based on format
+      def render_math_format(content, math_format)
+        case math_format
+        when 'mathjax'
+          # Use $$ for display mode like HTMLBuilder
+          "$$#{content.gsub('<', '\lt{}').gsub('>', '\gt{}').gsub('&', '&amp;')}$$\n"
+        when 'mathml'
+          render_mathml_format(content)
+        when 'imgmath'
+          render_imgmath_format(content)
+        else
+          # Fallback: render as preformatted text
+          %Q(<pre>#{escape(content)}\n</pre>\n)
+        end
+      end
 
-        result + "</div>\n"
+      # Render MathML format
+      def render_mathml_format(content)
+        begin
+          require 'math_ml'
+          require 'math_ml/symbol/character_reference'
+        rescue LoadError
+          app_error 'not found math_ml'
+          return %Q(<div class="equation">\n<pre>#{escape(content)}\n</pre>\n</div>\n)
+        end
+        parser = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
+        # Add newline to content like HTMLBuilder does
+        # parser.parse returns MathML::Math object, need to convert to string
+        parser.parse(content + "\n", true).to_s
+      end
+
+      # Render imgmath format
+      def render_imgmath_format(content)
+        unless @img_math
+          app_error 'ImgMath not initialized'
+          return %Q(<div class="equation">\n<pre>#{escape(content)}\n</pre>\n</div>\n)
+        end
+
+        fontsize = config['imgmath_options']['fontsize'].to_f
+        lineheight = config['imgmath_options']['lineheight'].to_f
+        math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{content}\n\\end{equation*}\n"
+        key = Digest::SHA256.hexdigest(math_str)
+
+        if config.check_version('2', exception: false)
+          img_path = @img_math.make_math_image(math_str, key)
+          %Q(<img src="#{img_path}" />\n)
+        else
+          img_path = @img_math.defer_math_image(math_str, key)
+          %Q(<img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(content)}" />\n)
+        end
       end
 
       # Get equation number for texequation blocks
