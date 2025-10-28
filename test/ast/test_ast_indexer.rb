@@ -55,20 +55,16 @@ class TestASTIndexer < Test::Unit::TestCase
       //}
     EOS
 
-    # Build AST using AST::Compiler directly
     ast_root = compile_to_ast(source)
 
-    # Build indexes using AST::Indexer (without builder rendering to avoid missing methods)
     indexer = ReVIEW::AST::Indexer.new(@chapter)
     indexer.build_indexes(ast_root)
 
-    # Verify list index
     list_item = indexer.list_index['sample-code']
     assert_not_nil(list_item)
     assert_equal 1, list_item.number
     assert_equal 'sample-code', list_item.id
 
-    # Verify table index
     assert_equal 1, indexer.table_index.size
     table_item = indexer.table_index['sample-table']
     assert_not_nil(table_item)
@@ -76,7 +72,6 @@ class TestASTIndexer < Test::Unit::TestCase
     assert_equal 'sample-table', table_item.id
     assert_equal 'Sample Table Caption', table_item.caption
 
-    # Verify image index
     assert_equal 1, indexer.image_index.size
     image_item = indexer.image_index['sample-image']
     assert_not_nil(image_item)
@@ -84,14 +79,12 @@ class TestASTIndexer < Test::Unit::TestCase
     assert_equal 'sample-image', image_item.id
     assert_equal 'Sample Image Caption', image_item.caption
 
-    # Verify footnote index
     assert_equal 1, indexer.footnote_index.size
     footnote_item = indexer.footnote_index['footnote1']
     assert_not_nil(footnote_item)
     assert_equal 1, footnote_item.number
     assert_equal 'footnote1', footnote_item.id
 
-    # Verify equation index
     equation_item = indexer.equation_index['equation1']
     assert_not_nil(equation_item)
     assert_equal 'equation1', equation_item.id
@@ -114,18 +107,14 @@ class TestASTIndexer < Test::Unit::TestCase
       Subsection content.
     EOS
 
-    # Build AST using AST::Compiler directly
     ast_root = compile_to_ast(source)
 
-    # Build indexes using AST::Indexer (without builder rendering to avoid missing methods)
     indexer = ReVIEW::AST::Indexer.new(@chapter)
     indexer.build_indexes(ast_root)
 
-    # Verify headline index structure
     assert_not_nil(indexer.headline_index)
     assert indexer.headline_index.size >= 2
 
-    # Check level 2 headings (using IndexBuilder-style item_id)
     sec1_item = indexer.headline_index['sec1']
     assert_not_nil(sec1_item)
     assert_equal 'sec1', sec1_item.id
@@ -136,7 +125,6 @@ class TestASTIndexer < Test::Unit::TestCase
     assert_equal 'sec2', sec2_item.id
     assert_equal [2], sec2_item.number
 
-    # Check level 3 headings
     subsec_item = indexer.headline_index['sec2|subsec21']
     assert_not_nil(subsec_item)
     assert_equal 'sec2|subsec21', subsec_item.id
@@ -160,14 +148,11 @@ class TestASTIndexer < Test::Unit::TestCase
       //bibpaper[bibitem1][Bib item content]
     EOS
 
-    # Build AST using AST::Compiler directly
     ast_root = compile_to_ast(source)
 
-    # Build indexes using AST::Indexer (without builder rendering to avoid missing methods)
     indexer = ReVIEW::AST::Indexer.new(@chapter)
     indexer.build_indexes(ast_root)
 
-    # Verify inline elements within minicolumns are indexed
     assert_equal 1, indexer.footnote_index.size
     footnote_item = indexer.footnote_index['note-footnote']
     assert_not_nil(footnote_item)
@@ -196,19 +181,15 @@ class TestASTIndexer < Test::Unit::TestCase
       //}
     EOS
 
-    # Build AST using AST::Compiler directly
     ast_root = compile_to_ast(source)
 
-    # Build indexes using AST::Indexer (without builder rendering to avoid missing methods)
     indexer = ReVIEW::AST::Indexer.new(@chapter)
     indexer.build_indexes(ast_root)
 
-    # Verify table index
     assert_equal 1, indexer.table_index.size
     table_item = indexer.table_index['inline-table']
     assert_not_nil(table_item)
 
-    # Verify inline elements in table content are indexed
     assert_equal 1, indexer.footnote_index.size
     footnote_item = indexer.footnote_index['table-fn']
     assert_not_nil(footnote_item)
@@ -232,19 +213,15 @@ class TestASTIndexer < Test::Unit::TestCase
       //footnote[code-fn][Footnote from code block]
     EOS
 
-    # Build AST using AST::Compiler directly
     ast_root = compile_to_ast(source)
 
-    # Build indexes using AST::Indexer (without builder rendering to avoid missing methods)
     indexer = ReVIEW::AST::Indexer.new(@chapter)
     indexer.build_indexes(ast_root)
 
-    # Verify code block index
     assert_equal 1, indexer.list_index.size
     list_item = indexer.list_index['code-with-inline']
     assert_not_nil(list_item)
 
-    # Verify inline elements in code block are indexed
     assert_equal 1, indexer.footnote_index.size
     footnote_item = indexer.footnote_index['code-fn']
     assert_not_nil(footnote_item)
@@ -252,8 +229,6 @@ class TestASTIndexer < Test::Unit::TestCase
   end
 
   def test_empty_ast
-    # Test with empty AST
-    # For test purposes, create a minimal chapter
     test_chapter = ReVIEW::Book::Chapter.new(@book, 1, 'empty_test', 'empty_test.re', StringIO.new)
     indexer = ReVIEW::AST::Indexer.new(test_chapter)
     result = indexer.build_indexes(nil)
@@ -275,14 +250,11 @@ class TestASTIndexer < Test::Unit::TestCase
       //}
     EOS
 
-    # Build AST using AST::Compiler directly
     ast_root = compile_to_ast(source)
 
-    # Build indexes using AST::Indexer (without builder rendering to avoid missing methods)
     indexer = ReVIEW::AST::Indexer.new(@chapter)
     indexer.build_indexes(ast_root)
 
-    # Test indexes method returns hash with all index types
     indexes = indexer.indexes
     assert_kind_of(Hash, indexes)
 
@@ -296,7 +268,6 @@ class TestASTIndexer < Test::Unit::TestCase
       assert indexes.key?(key), "Should contain #{key} index"
     end
 
-    # Verify the list index is accessible via the hash
     assert_equal 1, indexes[:list].size
     assert_not_nil(indexes[:list]['sample'])
   end
@@ -322,20 +293,16 @@ class TestASTIndexer < Test::Unit::TestCase
       //}
     EOS
 
-    # Capture stderr to check warnings
     original_stderr = $stderr
     captured_stderr = StringIO.new
     $stderr = captured_stderr
 
     begin
-      # Build AST using AST::Compiler directly
       ast_root = compile_to_ast(source)
 
-      # Build indexes using AST::Indexer
       indexer = ReVIEW::AST::Indexer.new(@chapter)
       indexer.build_indexes(ast_root)
 
-      # Check that warnings were output
       warnings = captured_stderr.string
       assert_include(warnings, 'deprecated ID: `#` in `invalid#id`')
       assert_include(warnings, 'deprecated ID: `.starts_with_dot` begins from `.`')
@@ -363,21 +330,17 @@ class TestASTIndexer < Test::Unit::TestCase
       //footnote[col-footnote][Column footnote content]
     EOS
 
-    # Build AST using AST::Compiler directly
     ast_root = compile_to_ast(source)
 
-    # Build indexes using AST::Indexer
     indexer = ReVIEW::AST::Indexer.new(@chapter)
     indexer.build_indexes(ast_root)
 
-    # Verify column index
     assert_equal 1, indexer.column_index.size
     column_item = indexer.column_index['col1']
     assert_not_nil(column_item)
     assert_equal 'col1', column_item.id
     assert_equal 'Column Title', column_item.caption
 
-    # Verify inline elements within column are indexed
     assert_equal 1, indexer.footnote_index.size
     footnote_item = indexer.footnote_index['col-footnote']
     assert_not_nil(footnote_item)
@@ -393,14 +356,11 @@ class TestASTIndexer < Test::Unit::TestCase
       //endnote[endnote1][Endnote content here]
     EOS
 
-    # Build AST using AST::Compiler directly
     ast_root = compile_to_ast(source)
 
-    # Build indexes using AST::Indexer
     indexer = ReVIEW::AST::Indexer.new(@chapter)
     indexer.build_indexes(ast_root)
 
-    # Verify endnote index
     assert_equal 1, indexer.endnote_index.size
     endnote_item = indexer.endnote_index['endnote1']
     assert_not_nil(endnote_item)
@@ -415,14 +375,11 @@ class TestASTIndexer < Test::Unit::TestCase
       Text with @<icon>{user-icon} and @<icon>{settings-icon}.
     EOS
 
-    # Build AST using AST::Compiler directly
     ast_root = compile_to_ast(source)
 
-    # Build indexes using AST::Indexer
     indexer = ReVIEW::AST::Indexer.new(@chapter)
     indexer.build_indexes(ast_root)
 
-    # Verify icon index
     assert_equal 2, indexer.icon_index.size
 
     icon1 = indexer.icon_index['user-icon']
@@ -445,20 +402,16 @@ class TestASTIndexer < Test::Unit::TestCase
       //}
     EOS
 
-    # Build AST using AST::Compiler directly
     ast_root = compile_to_ast(source)
 
-    # Build indexes using AST::Indexer
     indexer = ReVIEW::AST::Indexer.new(@chapter)
     indexer.build_indexes(ast_root)
 
-    # Verify table index
     assert_equal 1, indexer.table_index.size
     table_item = indexer.table_index['table-image']
     assert_not_nil(table_item)
     assert_equal 'table-image', table_item.id
 
-    # Verify imgtable also adds to indepimage_index
     assert_equal 1, indexer.indepimage_index.size
     indep_item = indexer.indepimage_index['table-image']
     assert_not_nil(indep_item)
@@ -474,14 +427,11 @@ class TestASTIndexer < Test::Unit::TestCase
       //bibpaper[ref1][Author Name, "Book Title", Publisher, 2024]
     EOS
 
-    # Build AST using AST::Compiler directly
     ast_root = compile_to_ast(source)
 
-    # Build indexes using AST::Indexer
     indexer = ReVIEW::AST::Indexer.new(@chapter)
     indexer.build_indexes(ast_root)
 
-    # Verify bibpaper index
     assert_equal 1, indexer.bibpaper_index.size
     bib_item = indexer.bibpaper_index['ref1']
     assert_not_nil(bib_item)
@@ -501,17 +451,13 @@ class TestASTIndexer < Test::Unit::TestCase
       //bibpaper[cap-bib][Bibliography in caption]
     EOS
 
-    # Build AST using AST::Compiler directly
     ast_root = compile_to_ast(source)
 
-    # Build indexes using AST::Indexer
     indexer = ReVIEW::AST::Indexer.new(@chapter)
     indexer.build_indexes(ast_root)
 
-    # Verify list index
     assert_equal 1, indexer.list_index.size
 
-    # Verify inline elements in caption are indexed
     assert_equal 1, indexer.footnote_index.size
     footnote_item = indexer.footnote_index['cap-fn']
     assert_not_nil(footnote_item)
@@ -534,17 +480,13 @@ class TestASTIndexer < Test::Unit::TestCase
       //footnote[head-fn][Headline footnote]
     EOS
 
-    # Build AST using AST::Compiler directly
     ast_root = compile_to_ast(source)
 
-    # Build indexes using AST::Indexer
     indexer = ReVIEW::AST::Indexer.new(@chapter)
     indexer.build_indexes(ast_root)
 
-    # Verify headline index
     assert_not_nil(indexer.headline_index['sec1'])
 
-    # Verify inline elements in headline caption are indexed
     assert_equal 1, indexer.footnote_index.size
     footnote_item = indexer.footnote_index['head-fn']
     assert_not_nil(footnote_item)
@@ -564,14 +506,11 @@ class TestASTIndexer < Test::Unit::TestCase
       //}
     EOS
 
-    # Build AST using AST::Compiler directly
     ast_root = compile_to_ast(source)
 
-    # Build indexes using AST::Indexer
     indexer = ReVIEW::AST::Indexer.new(@chapter)
     indexer.build_indexes(ast_root)
 
-    # Test index_for method
     assert_equal indexer.list_index, indexer.index_for(:list)
     assert_equal indexer.table_index, indexer.index_for(:table)
     assert_equal indexer.image_index, indexer.index_for(:image)
@@ -585,7 +524,6 @@ class TestASTIndexer < Test::Unit::TestCase
     assert_equal indexer.indepimage_index, indexer.index_for(:indepimage)
     assert_equal indexer.numberless_image_index, indexer.index_for(:numberless_image)
 
-    # Test unknown type raises error
     assert_raise(ArgumentError) do
       indexer.index_for(:unknown_type)
     end
@@ -593,15 +531,12 @@ class TestASTIndexer < Test::Unit::TestCase
 
   private
 
-  # Helper method to compile content to AST using AST::Compiler
   def compile_to_ast(content)
     @chapter.content = content
 
-    # Generate indexes for the chapter
     @book.generate_indexes
     @chapter.generate_indexes
 
-    # Use AST::Compiler directly
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_compiler.compile_to_ast(@chapter)
   end

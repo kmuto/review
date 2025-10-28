@@ -43,7 +43,6 @@ class TestASTLineBreakHandling < Test::Unit::TestCase
   end
 
   def test_single_paragraph_with_line_break
-    # This is the main test case - single paragraph should remain single paragraph
     content = "この文章は改行が含まれています。\nしかし同じ段落のはずです。"
     compiler = ReVIEW::AST::Compiler.new
     ast_root = compiler.compile_to_ast(create_chapter(content))
@@ -64,7 +63,6 @@ class TestASTLineBreakHandling < Test::Unit::TestCase
   end
 
   def test_two_paragraphs_with_empty_line
-    # This should correctly create two separate paragraphs
     content = "最初の段落です。\n\n次の段落です。"
     compiler = ReVIEW::AST::Compiler.new
     ast_root = compiler.compile_to_ast(create_chapter(content))
@@ -90,7 +88,6 @@ class TestASTLineBreakHandling < Test::Unit::TestCase
   end
 
   def test_multiple_single_line_breaks
-    # Multiple single line breaks should be preserved as single line breaks
     content = "行1\n行2\n行3"
     compiler = ReVIEW::AST::Compiler.new
     ast_root = compiler.compile_to_ast(create_chapter(content))
@@ -111,7 +108,6 @@ class TestASTLineBreakHandling < Test::Unit::TestCase
   end
 
   def test_mixed_single_and_double_line_breaks
-    # Test complex case with both single and double line breaks
     content = "段落1の行1\n段落1の行2\n\n段落2の行1\n段落2の行2"
     compiler = ReVIEW::AST::Compiler.new
     ast_root = compiler.compile_to_ast(create_chapter(content))

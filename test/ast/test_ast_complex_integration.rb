@@ -106,19 +106,15 @@ class TestASTComplexIntegration < Test::Unit::TestCase
       //footnote[data-note][Data note]
     EOB
 
-    # Test AST compilation
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'complex', 'complex.re', StringIO.new(content))
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(chapter)
 
-    # Verify AST structure
     assert_not_nil(ast_root, 'AST root should be created')
     assert_equal('DocumentNode', ast_root.class.name.split('::').last)
 
-    # Count different node types
     node_counts = count_node_types(ast_root)
 
-    # Verify we have the expected node types
     assert(node_counts['HeadlineNode'] >= 4, "Should have multiple headlines, got #{node_counts['HeadlineNode']}")
     assert(node_counts['ParagraphNode'] >= 4, "Should have multiple paragraphs, got #{node_counts['ParagraphNode']}")
     assert(node_counts['CodeBlockNode'] >= 2, "Should have multiple code blocks, got #{node_counts['CodeBlockNode']}")
@@ -126,11 +122,9 @@ class TestASTComplexIntegration < Test::Unit::TestCase
     assert(node_counts['InlineNode'] >= 10, "Should have many inline elements, got #{node_counts['InlineNode']}")
     assert(node_counts['ListNode'] >= 1, "Should have lists, got #{node_counts['ListNode']}")
 
-    # Test HTML rendering
     html_renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
     html_result = html_renderer.render(ast_root)
 
-    # Verify HTML output contains expected elements
     assert(html_result.include?('<h1>'), 'Should have h1 tags')
     assert(html_result.include?('<h2>'), 'Should have h2 tags')
     assert(html_result.include?('<h3>'), 'Should have h3 tags')
@@ -142,11 +136,9 @@ class TestASTComplexIntegration < Test::Unit::TestCase
     assert(html_result.include?('<table>'), 'Should have tables')
     assert(html_result.include?('<ruby>'), 'Should have ruby tags')
 
-    # Test LaTeX rendering
     latex_renderer = ReVIEW::Renderer::LatexRenderer.new(chapter)
     latex_result = latex_renderer.render(ast_root)
 
-    # Verify LaTeX output contains expected commands
     assert(latex_result.include?('\\chapter'), 'Should have chapter commands')
     assert(latex_result.include?('\\section'), 'Should have section commands')
     assert(latex_result.include?('\\subsection'), 'Should have subsection commands')
@@ -156,7 +148,6 @@ class TestASTComplexIntegration < Test::Unit::TestCase
     assert(latex_result.include?('\\begin{enumerate}'), 'Should have enumerate environments')
     assert(latex_result.include?('\\begin{table}'), 'Should have table environments')
 
-    # Verify cross-references are preserved in AST
     inline_nodes = collect_inline_nodes(ast_root)
     list_refs = inline_nodes.select { |node| node.inline_type == :list }
     table_refs = inline_nodes.select { |node| node.inline_type == :table }
@@ -168,25 +159,21 @@ class TestASTComplexIntegration < Test::Unit::TestCase
   end
 
   def test_performance_with_large_complex_document
-    # Generate a larger document for performance testing
-    content = generate_large_complex_document(50) # 50 sections
+    content = generate_large_complex_document(50)
 
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'large', 'large.re', StringIO.new)
     chapter.content = content
 
-    # Measure AST compilation time
     start_time = Time.now
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(chapter)
     ast_time = Time.now - start_time
 
-    # Measure HTML rendering time
     start_time = Time.now
     html_renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
     html_result = html_renderer.render(ast_root)
     html_time = Time.now - start_time
 
-    # Measure LaTeX rendering time
     start_time = Time.now
     latex_renderer = ReVIEW::Renderer::LatexRenderer.new(chapter)
     latex_result = latex_renderer.render(ast_root)
@@ -197,7 +184,6 @@ class TestASTComplexIntegration < Test::Unit::TestCase
     assert(html_time < 3.0, "HTML rendering should be under 3 seconds, took #{html_time}")
     assert(latex_time < 3.0, "LaTeX rendering should be under 3 seconds, took #{latex_time}")
 
-    # Verify output quality is maintained
     assert(html_result.length > 10000, 'HTML output should be substantial')
     assert(latex_result.length > 10000, 'LaTeX output should be substantial')
     assert(html_result.include?('<h2>'), 'HTML should contain section headers')
@@ -229,7 +215,6 @@ class TestASTComplexIntegration < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'malformed', 'malformed.re', StringIO.new)
     chapter.content = malformed_content
 
-    # AST compilation should handle errors gracefully
     ast_compiler = ReVIEW::AST::Compiler.new
 
     assert_raises(ReVIEW::AST::InlineTokenizeError) do
@@ -238,8 +223,7 @@ class TestASTComplexIntegration < Test::Unit::TestCase
   end
 
   def test_memory_usage_with_deep_nesting
-    # Test deeply nested structures to verify memory handling
-    content = generate_deeply_nested_document(10) # 10 levels deep
+    content = generate_deeply_nested_document(10)
 
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'nested', 'nested.re', StringIO.new)
     chapter.content = content
@@ -247,15 +231,12 @@ class TestASTComplexIntegration < Test::Unit::TestCase
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(chapter)
 
-    # Verify deep structure is handled correctly
     max_depth = calculate_max_depth(ast_root)
     assert(max_depth >= 5, "Should handle deep nesting, max depth: #{max_depth}")
 
-    # Verify rendering works with deep nesting
     html_renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
     html_result = html_renderer.render(ast_root)
 
-    # Count nested list levels in HTML
     nested_ul_count = html_result.scan(/<ul[^>]*>/).length
     assert(nested_ul_count >= 1, "Should have nested lists, found #{nested_ul_count}")
   end
@@ -320,7 +301,6 @@ class TestASTComplexIntegration < Test::Unit::TestCase
   def generate_deeply_nested_document(max_depth)
     content = "= Deeply Nested Document\n\n"
 
-    # Generate truly nested list structure
     content += " * Level 1 item with @<b>{bold 1} text\n"
     (2..max_depth).each do |level|
       indent = ' ' * level
@@ -329,7 +309,6 @@ class TestASTComplexIntegration < Test::Unit::TestCase
 
     content += "\n== Section with Complex Nesting\n\n"
 
-    # Generate nested definition lists
     (1..5).each do |level|
       indent = ' ' * level
       content += "#{indent}: Term #{level} with @<i>{italic #{level}}\n"

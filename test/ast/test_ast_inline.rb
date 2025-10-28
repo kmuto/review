@@ -43,7 +43,6 @@ class TestASTInline < Test::Unit::TestCase
       This is @<b>{bold text} in a paragraph.
     EOB
 
-    # Use AST::Compiler directly
     ast_root = compile_to_ast(content)
     # Check that paragraph node exists and has children
     paragraph_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
@@ -68,7 +67,6 @@ class TestASTInline < Test::Unit::TestCase
       Text with @<b>{bold} and @<i>{italic} elements.
     EOB
 
-    # Use AST::Compiler directly
     ast_root = compile_to_ast(content)
     paragraph_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
     assert_not_nil(paragraph_node)
@@ -91,7 +89,6 @@ class TestASTInline < Test::Unit::TestCase
       This is @<b>{bold} and @<code>{inline code} text.
     EOB
 
-    # Test AST structure with inline elements
     ast_root = compile_to_ast(content)
 
     paragraph_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
@@ -119,7 +116,6 @@ class TestASTInline < Test::Unit::TestCase
       Another paragraph with @<code>{code} and @<i>{italic}.
     EOB
 
-    # Use AST::Compiler directly
     ast_root = compile_to_ast(content)
     # Check headline
     headline_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::HeadlineNode) }
@@ -145,12 +141,10 @@ class TestASTInline < Test::Unit::TestCase
 
   private
 
-  # Helper method to compile content to AST using AST::Compiler
   def compile_to_ast(content)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
-    # Use AST::Compiler directly
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_compiler.compile_to_ast(chapter)
   end

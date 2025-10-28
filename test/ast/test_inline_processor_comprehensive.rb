@@ -18,9 +18,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     ReVIEW.logger = ReVIEW::Logger.new(@log_io)
     ReVIEW::I18n.setup(@config['language'])
 
-    # Create mock AST compiler for InlineProcessor
     @ast_compiler = ReVIEW::AST::Compiler.new
-    # Create a default location with proper file object
     file_mock = StringIO.new('test content')
     file_mock.lineno = 1
     default_location = ReVIEW::Location.new('test.re', file_mock)
@@ -67,7 +65,6 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     assert_equal ' text', parent.children[2].content
   end
 
-  # Complex test cases (10) - Some may fail with current implementation but represent expected behavior
   def test_multiple_consecutive_inlines
     parent = ReVIEW::AST::ParagraphNode.new(
       location: ReVIEW::Location.new('test.re', 1)

@@ -17,7 +17,6 @@ class TestBlockProcessorInline < Test::Unit::TestCase
   end
 
   def test_code_block_node_original_text_attribute
-    # Test that CodeBlockNode has original_text attribute
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       original_text: 'test content'
@@ -28,7 +27,6 @@ class TestBlockProcessorInline < Test::Unit::TestCase
   end
 
   def test_code_block_node_original_text_method
-    # Test original_text and original_lines behavior
     code_block1 = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       original_text: 'original content'
@@ -72,7 +70,6 @@ class TestBlockProcessorInline < Test::Unit::TestCase
   end
 
   def test_processed_lines_method
-    # Test processed_lines method with actual AST structure
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       original_text: 'puts hello'
@@ -137,7 +134,6 @@ class TestBlockProcessorInline < Test::Unit::TestCase
   end
 
   def test_table_node_with_caption
-    # Test TableNode with caption
     caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
     caption_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Table Caption'))
 
@@ -154,7 +150,6 @@ class TestBlockProcessorInline < Test::Unit::TestCase
   end
 
   def test_image_node_with_caption
-    # Test ImageNode with caption
     caption = 'Figure @<i>{1}: Sample'
     image = ReVIEW::AST::ImageNode.new(
       location: @location,
@@ -170,7 +165,6 @@ class TestBlockProcessorInline < Test::Unit::TestCase
   end
 
   def test_caption_node_creation_directly
-    # Test CaptionNode creation with various inputs
     # Simple string
     caption_node1 = CaptionParserHelper.parse('Simple text', location: @location)
     assert_instance_of(ReVIEW::AST::CaptionNode, caption_node1)
@@ -194,7 +188,6 @@ class TestBlockProcessorInline < Test::Unit::TestCase
   end
 
   def test_caption_with_multiple_nodes
-    # Test CaptionNode creation with array of nodes
     caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
     text_node = ReVIEW::AST::TextNode.new(content: 'Text with ')
     inline_node = ReVIEW::AST::InlineNode.new(inline_type: :b)
@@ -212,7 +205,6 @@ class TestBlockProcessorInline < Test::Unit::TestCase
   end
 
   def test_empty_caption_handling
-    # Test nodes with empty/nil captions
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       caption: nil,
@@ -232,7 +224,6 @@ class TestBlockProcessorInline < Test::Unit::TestCase
   end
 
   def test_caption_markup_text_compatibility
-    # Test caption_markup_text method returns plain text
     caption_with_markup = 'Caption with @<b>{bold} and @<i>{italic}'
 
     # Create CaptionNode with inline content

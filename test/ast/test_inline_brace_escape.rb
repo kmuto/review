@@ -32,7 +32,6 @@ class TestInlineBraceEscape < Test::Unit::TestCase
   end
 
   def test_multiple_brace_escapes
-    # Test multiple escaped braces
     tokens = @tokenizer.tokenize('@<code>{if (x \\} y) \\{ print "hello \\}" \\}}')
 
     assert_equal 1, tokens.size

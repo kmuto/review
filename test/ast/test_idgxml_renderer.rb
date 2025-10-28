@@ -624,7 +624,6 @@ EOS
     assert_equal '<term><p>test1 test1.5</p><p>test<i>2</i></p></term>', actual
   end
 
-  # Additional tests - now implemented
   def test_emlist_listinfo
     @config['listinfo'] = true
     actual = compile_block("//emlist[this is @<b>{test}<&>_]{\ntest1\ntest1.5\n\ntest@<i>{2}\n//}\n")

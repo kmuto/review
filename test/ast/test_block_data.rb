@@ -41,11 +41,9 @@ class TestBlockData < Test::Unit::TestCase
   end
 
   def test_nested_blocks
-    # ネストブロックなし
     block_data = Compiler::BlockData.new(name: :list)
     assert_false(block_data.nested_blocks?)
 
-    # ネストブロックあり
     nested_block = Compiler::BlockData.new(name: :note)
     block_data_with_nested = Compiler::BlockData.new(
       name: :minicolumn,
@@ -55,11 +53,9 @@ class TestBlockData < Test::Unit::TestCase
   end
 
   def test_line_count
-    # 行なし
     block_data = Compiler::BlockData.new(name: :list)
     assert_equal 0, block_data.line_count
 
-    # 行あり
     block_data_with_lines = Compiler::BlockData.new(
       name: :list,
       lines: ['line1', 'line2', 'line3']
@@ -68,11 +64,9 @@ class TestBlockData < Test::Unit::TestCase
   end
 
   def test_content
-    # コンテンツなし
     block_data = Compiler::BlockData.new(name: :list)
     assert_false(block_data.content?)
 
-    # コンテンツあり
     block_data_with_content = Compiler::BlockData.new(
       name: :list,
       lines: ['content']
@@ -86,12 +80,10 @@ class TestBlockData < Test::Unit::TestCase
       args: ['id', 'caption', 'lang']
     )
 
-    # 有効なインデックス
     assert_equal 'id', block_data.arg(0)
     assert_equal 'caption', block_data.arg(1)
     assert_equal 'lang', block_data.arg(2)
 
-    # 無効なインデックス
     assert_nil(block_data.arg(3))
     assert_nil(block_data.arg(-1))
     assert_nil(block_data.arg(nil))
@@ -128,7 +120,6 @@ class TestBlockData < Test::Unit::TestCase
     assert_equal true, hash[:has_nested_blocks]
     assert_equal 2, hash[:line_count]
 
-    # ネストブロックのハッシュ化もテスト
     nested_hash = hash[:nested_blocks].first
     assert_equal :note, nested_hash[:name]
     assert_equal ['warning'], nested_hash[:args]

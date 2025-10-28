@@ -55,32 +55,26 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
-    # Use AST::Compiler directly
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(chapter)
 
-    # Check code block nodes
     code_blocks = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::CodeBlockNode) }
     assert_equal 4, code_blocks.size
 
-    # Check list block
     list_block = code_blocks.find { |n| n.id == 'sample' }
     assert_not_nil(list_block)
     assert_equal 'Sample Code', list_block.caption_markup_text
     assert_equal 'ruby', list_block.lang
     assert_equal false, list_block.line_numbers
 
-    # Check emlist block
     emlist_block = code_blocks.find { |n| n.caption_markup_text == 'Ruby Example' && n.id.nil? }
     assert_not_nil(emlist_block)
     assert_equal 'ruby', emlist_block.lang
 
-    # Check listnum block
     listnum_block = code_blocks.find { |n| n.id == 'numbered' }
     assert_not_nil(listnum_block)
     assert_equal true, listnum_block.line_numbers
 
-    # Check cmd block
     cmd_block = code_blocks.find { |n| n.lang == 'shell' }
     assert_not_nil(cmd_block)
     assert_equal 'Terminal Commands', cmd_block.caption_markup_text
@@ -107,23 +101,17 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
-    # Use AST::Compiler directly
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(chapter)
 
-    # Check table nodes
     table_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::TableNode) }
-    assert_equal 2, table_nodes.size # Both table and emtable are processed via AST
+    assert_equal 2, table_nodes.size
 
-    # Check first table with headers
     main_table = table_nodes.find { |n| n.id == 'envvars' }
     assert_not_nil(main_table)
     assert_equal 'Environment Variables', main_table.caption_markup_text
     assert_equal 1, main_table.header_rows.size
     assert_equal 3, main_table.body_rows.size
-
-    # Check emtable (no headers) - currently processes as traditional
-    # since emtable not in AST elements list for this test
   end
 
   def test_image_ast_processing
@@ -140,21 +128,17 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
-    # Use AST::Compiler directly
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(chapter)
 
-    # Check image nodes
     image_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ImageNode) }
     assert_equal 2, image_nodes.size
 
-    # Check main image
     main_image = image_nodes.find { |n| n.id == 'diagram' }
     assert_not_nil(main_image)
     assert_equal 'System Diagram', main_image.caption_markup_text
     assert_equal 'scale=0.5', main_image.metric
 
-    # Check indepimage
     indep_image = image_nodes.find { |n| n.id == 'logo' }
     assert_not_nil(indep_image)
     assert_equal 'Company Logo', indep_image.caption_markup_text
@@ -177,38 +161,32 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
-    # Use AST::Compiler directly
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(chapter)
 
     paragraph_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
 
-    # Find ruby inline
     ruby_para = paragraph_nodes[0]
     ruby_node = ruby_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :ruby }
     assert_not_nil(ruby_node)
     assert_equal ['漢字', 'かんじ'], ruby_node.args
 
-    # Find href inline
     href_para = paragraph_nodes[1]
     href_node = href_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :href }
     assert_not_nil(href_node)
     assert_equal ['https://example.com', 'Example Site'], href_node.args
 
-    # Find kw inline
     kw_para = paragraph_nodes[2]
     kw_node = kw_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :kw }
     assert_not_nil(kw_node)
     assert_equal ['HTTP', 'HyperText Transfer Protocol'], kw_node.args
 
-    # Find standard inline elements
     simple_para = paragraph_nodes[3]
     bold_node = simple_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :b }
     code_node = simple_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :code }
     assert_not_nil(bold_node)
     assert_not_nil(code_node)
 
-    # Find uchar inline
     uchar_para = paragraph_nodes[4]
     uchar_node = uchar_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :uchar }
     assert_not_nil(uchar_node)
@@ -247,32 +225,26 @@ class TestASTComprehensive < Test::Unit::TestCase
       Final paragraph.
     EOB
 
-    # Test with AST/Renderer system
     chapter_ast = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter_ast.content = content
 
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_root = ast_compiler.compile_to_ast(chapter_ast)
 
-    # Render to HTML using HtmlRenderer
     renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter_ast)
     result_ast = renderer.render(ast_root)
 
-    # Verify AST/Renderer system produces comprehensive HTML
     ['<h1>', '<ul>', '<ol>', '<table>', '<blockquote>'].each do |tag|
       assert(result_ast.include?(tag), "AST/Renderer system should produce #{tag}")
     end
 
-    # Check inline elements
     ['<b>', '<code', '<i>'].each do |tag|
       assert(result_ast.include?(tag), "AST/Renderer system should produce #{tag}")
     end
 
-    # Verify AST structure is correct
     assert_not_nil(ast_root, 'Should have AST root')
     assert_equal(ReVIEW::AST::DocumentNode, ast_root.class)
 
-    # Check that we have various node types
     headline_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::HeadlineNode) }
     assert_equal(1, headline_nodes.size, 'Should have one headline')
 

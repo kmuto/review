@@ -6,7 +6,6 @@ require 'review/renderer/html_renderer'
 require 'review/book'
 require 'stringio'
 
-# Test auto_id generation behavior for HeadlineNode and ColumnNode.
 class TestAutoIdGeneration < Test::Unit::TestCase
   def setup
     @book = ReVIEW::Book::Base.new(config: ReVIEW::Configure.values)

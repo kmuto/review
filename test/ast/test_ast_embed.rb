@@ -47,10 +47,8 @@ class TestASTEmbed < Test::Unit::TestCase
       Paragraph after embed.
     EOB
 
-    # Use AST::Compiler directly
     ast_root = compile_to_ast(content)
 
-    # Check that embed node exists
     embed_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) }
     assert_not_nil(embed_node, 'Should have embed node')
     assert_equal :block, embed_node.embed_type
@@ -66,7 +64,6 @@ class TestASTEmbed < Test::Unit::TestCase
       //}
     EOB
 
-    # Use AST::Compiler directly
     ast_root = compile_to_ast(content)
 
     embed_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) }
@@ -81,13 +78,11 @@ class TestASTEmbed < Test::Unit::TestCase
       This paragraph has @<embed>{inline content} in it.
     EOB
 
-    # Use AST::Compiler directly
     ast_root = compile_to_ast(content)
 
     paragraph_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
     assert_not_nil(paragraph_node)
 
-    # Find embed node within paragraph
     embed_node = paragraph_node.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) }
     assert_not_nil(embed_node, 'Should have inline embed node')
     assert_equal :inline, embed_node.embed_type
@@ -102,7 +97,6 @@ class TestASTEmbed < Test::Unit::TestCase
       Text with @<embed>{|html|<strong>HTML only</strong>} content.
     EOB
 
-    # Use AST::Compiler directly
     ast_root = compile_to_ast(content)
 
     paragraph_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
@@ -122,22 +116,18 @@ class TestASTEmbed < Test::Unit::TestCase
       //}
     EOB
 
-    # Test with AST/Renderer system
     ast_root = compile_to_ast(content)
 
-    # Check that AST contains embed nodes
     paragraph_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
     block_embed_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) && n.embed_type == :block }
 
     assert_not_nil(paragraph_node, 'Should have paragraph with inline embed')
     assert_not_nil(block_embed_node, 'Should have block embed node')
 
-    # Check inline embed in paragraph
     inline_embed = paragraph_node.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) && n.embed_type == :inline }
     assert_not_nil(inline_embed, 'Should have inline embed in paragraph')
     assert_equal 'inline embed', inline_embed.arg
 
-    # Check block embed
     assert_equal 'html', block_embed_node.arg
     assert_equal ['<div>Block embed content</div>'], block_embed_node.lines
   end
@@ -157,10 +147,8 @@ class TestASTEmbed < Test::Unit::TestCase
       Another paragraph after the embed block.
     EOB
 
-    # Use AST::Compiler directly
     ast_root = compile_to_ast(content)
 
-    # Check all components exist
     headline_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::HeadlineNode) }
     paragraph_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
     embed_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) }
@@ -170,7 +158,6 @@ class TestASTEmbed < Test::Unit::TestCase
     assert_not_nil(embed_node)
     assert_equal :block, embed_node.embed_type
 
-    # Check inline elements in first paragraph
     first_para = paragraph_nodes[0]
     bold_node = first_para.children.find { |n| n.is_a?(ReVIEW::AST::InlineNode) && n.inline_type == :b }
     inline_embed_node = first_para.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) && n.embed_type == :inline }
@@ -181,12 +168,10 @@ class TestASTEmbed < Test::Unit::TestCase
 
   private
 
-  # Helper method to compile content to AST using AST::Compiler
   def compile_to_ast(content)
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = content
 
-    # Use AST::Compiler directly
     ast_compiler = ReVIEW::AST::Compiler.new
     ast_compiler.compile_to_ast(chapter)
   end

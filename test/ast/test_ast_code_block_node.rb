@@ -43,18 +43,15 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
   end
 
   def test_code_block_node_processed_lines
-    # Create a code block with proper AST structure
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       id: 'sample',
       original_text: 'puts @<b>{hello}'
     )
 
-    # Test processed_lines method (returns empty if no children AST structure)
     processed = code_block.processed_lines
     assert_equal 0, processed.size
 
-    # Test original_lines method (should return original text split by lines)
     original = code_block.original_lines
     assert_equal 1, original.size
     assert_equal 'puts @<b>{hello}', original[0]
@@ -68,30 +65,23 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
       original_text: original_text
     )
 
-    # Test original_lines (preserves original Re:VIEW syntax)
     assert_equal ['puts @<b>{hello}'], code_block.original_lines
 
-    # Test processed_lines (reconstructs from AST structure)
-    # Without children AST structure, processed_lines returns empty array
     processed = code_block.processed_lines
     assert_equal 0, processed.size
   end
 
   def test_ast_node_to_review_syntax
-    # Test that AST nodes can be converted back to Re:VIEW syntax
     generator = ReVIEW::AST::ReVIEWGenerator.new
 
-    # Test text node
     text_node = ReVIEW::AST::TextNode.new(location: @location, content: 'hello world')
     assert_equal 'hello world', generator.generate(text_node)
 
-    # Test inline node
     inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b, args: ['bold text'])
     assert_equal '@<b>{bold text}', generator.generate(inline_node)
   end
 
   def test_code_block_with_ast_compiler_integration
-    # Test integration with AST::Compiler
     source = <<~EOS
       //list[sample][Sample Code]{
       puts @<b>{hello}
@@ -99,23 +89,18 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
       //}
     EOS
 
-    # Create temporary chapter
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(source))
 
-    # Compile to AST
     compiler = ReVIEW::AST::Compiler.new
     ast_root = compiler.compile_to_ast(chapter)
 
-    # Find code block node
     code_block = find_code_block_in_ast(ast_root)
     assert_not_nil(code_block)
     assert_instance_of(ReVIEW::AST::CodeBlockNode, code_block)
 
-    # Test that original text is preserved
     assert_include(code_block.original_text, 'puts @<b>{hello}')
     assert_include(code_block.original_text, 'puts "world"')
 
-    # Test that original_lines work correctly
     original_lines = code_block.original_lines
     assert_equal 2, original_lines.size
     assert_equal 'puts @<b>{hello}', original_lines[0]
@@ -146,7 +131,6 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
   end
 
   def test_render_ast_node_as_plain_text_with_complex_inline
-    # Create: This is @<i>{italic @<b>{bold}} text
     bold_text = ReVIEW::AST::TextNode.new(location: @location, content: 'bold')
     bold_inline = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b)
     bold_inline.add_child(bold_text)
@@ -171,18 +155,15 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
       original_text: 'test content'
     )
 
-    # Test that original_text is properly inherited from base Node class
     assert_respond_to(code_block, :original_text)
     assert_equal 'test content', code_block.original_text
 
-    # Test other inherited attributes
     assert_respond_to(code_block, :location)
     assert_respond_to(code_block, :children)
     assert_equal @location, code_block.location
   end
 
   def test_original_text_preservation
-    # Test when original_text is set
     code_block1 = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       original_text: 'original content'
@@ -190,7 +171,6 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
     assert_equal 'original content', code_block1.original_text
     assert_equal ['original content'], code_block1.original_lines
 
-    # Test when original_text is nil
     code_block2 = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       original_text: nil
@@ -200,7 +180,6 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
   end
 
   def test_serialize_properties_includes_original_text
-    # Create caption as proper CaptionNode
     caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
     caption_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Test Caption'))
 
@@ -212,7 +191,6 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
       original_text: 'puts hello'
     )
 
-    # Test that serialization works without errors
     hash = {}
     options = ReVIEW::AST::JSONSerializer::Options.new
 
@@ -220,9 +198,7 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
       code_block.send(:serialize_properties, hash, options)
     end
 
-    # Check that basic properties are included
     assert_equal 'test', hash[:id]
-    # Caption structure is serialized (no caption string)
     assert_instance_of(Hash, hash[:caption_node])
     assert_equal 'CaptionNode', hash[:caption_node][:type]
     assert_equal 1, hash[:caption_node][:children].size
@@ -233,7 +209,6 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
   private
 
   def create_test_paragraph
-    # Create paragraph: puts @<b>{hello}
     text_node = ReVIEW::AST::TextNode.new(location: @location, content: 'hello')
     inline_node = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b)
     inline_node.add_child(text_node)
@@ -245,7 +220,6 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
     paragraph
   end
 
-  # Helper method to find code block in AST
   def find_code_block_in_ast(node)
     return node if node.is_a?(ReVIEW::AST::CodeBlockNode)
 

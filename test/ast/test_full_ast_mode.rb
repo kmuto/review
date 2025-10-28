@@ -1,16 +1,11 @@
 # frozen_string_literal: true
 
-# Test for Full AST Mode - comprehensive AST processing with Pure AST Mode
-# This demonstrates production-level AST generation and processing capabilities.
-
 require 'json'
 require_relative '../test_helper'
 require 'review'
 require 'review/htmlbuilder'
 require 'review/book'
 require 'review/book/chapter'
-
-# Use real Chapter class for proper testing
 
 class TestFullASTMode < Test::Unit::TestCase
   def setup

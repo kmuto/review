@@ -310,7 +310,6 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
   private
 
   def compile_to_ast(content)
-    # Use AST::Compiler directly, no builder needed for bidirectional conversion tests
     compiler = ReVIEW::AST::Compiler.new
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 

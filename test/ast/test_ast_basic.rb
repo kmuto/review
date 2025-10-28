@@ -66,16 +66,13 @@ class TestASTBasic < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
     chapter.content = chapter_content
 
-    # Test direct AST compilation using AST classes
     compiler = ReVIEW::AST::Compiler.new
     ast_result = compiler.compile_to_ast(chapter)
 
-    # Verify that AST result is obtained
     assert_not_nil(ast_result)
     assert_equal ReVIEW::AST::DocumentNode, ast_result.class
     assert ast_result.children.any?
 
-    # Convert AST to JSON for verification
     options = ReVIEW::AST::JSONSerializer::Options.new(pretty: true)
     json_result = ReVIEW::AST::JSONSerializer.serialize(ast_result, options)
 

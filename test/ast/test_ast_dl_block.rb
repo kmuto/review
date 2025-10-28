@@ -86,63 +86,49 @@ class TestASTDlBlock < Test::Unit::TestCase
 
     ast = @compiler.compile_to_ast(create_chapter(input.strip))
 
-    # Check that we have a document node
     assert_equal ReVIEW::AST::DocumentNode, ast.class
 
-    # Should contain a definition list node
     list_node = ast.children.first
     assert_equal ReVIEW::AST::ListNode, list_node.class
     assert_equal :dl, list_node.list_type
 
-    # Find dt and dd items
     dt_items = list_node.children.select(&:definition_term?)
     dd_items = list_node.children.select(&:definition_desc?)
 
-    # Should have 3 dt items (API, REST, JSON)
     assert_equal 3, dt_items.size
-    # Should have 3 dd items (one for each term)
     assert_equal 3, dd_items.size
 
-    # First dt (API)
     api_dt = dt_items[0]
     assert_equal ReVIEW::AST::ListItemNode, api_dt.class
     assert api_dt.definition_term?
 
-    # First dd (API description)
     api_dd = dd_items[0]
     assert_equal ReVIEW::AST::ListItemNode, api_dd.class
     assert api_dd.definition_desc?
 
-    # Check that API dd has paragraphs and a code block
     assert api_dd.children.size > 1
 
-    # Look for the code block in the API dd
     api_code_block = api_dd.children.find { |child| child.is_a?(ReVIEW::AST::CodeBlockNode) }
     assert_not_nil(api_code_block)
     assert_equal 'api-example', api_code_block.id
     assert_equal 'API呼び出し例', api_code_block.caption
 
-    # Second dd (REST description)
     rest_dd = dd_items[1]
     assert_equal ReVIEW::AST::ListItemNode, rest_dd.class
     assert rest_dd.definition_desc?
 
-    # Look for the table in the REST dd
     rest_table = rest_dd.children.find { |child| child.is_a?(ReVIEW::AST::TableNode) }
     assert_not_nil(rest_table)
     assert_equal 'rest-methods', rest_table.id
     assert_equal 'RESTメソッド一覧', rest_table.caption
 
-    # Check table has header and body rows
     assert_equal 1, rest_table.header_rows.size
     assert_equal 4, rest_table.body_rows.size
 
-    # Third dd (JSON description)
     json_dd = dd_items[2]
     assert_equal ReVIEW::AST::ListItemNode, json_dd.class
     assert json_dd.definition_desc?
 
-    # Look for the JSON code block
     json_code_block = json_dd.children.find { |child| child.is_a?(ReVIEW::AST::CodeBlockNode) }
     assert_not_nil(json_code_block)
     assert_equal 'json-sample', json_code_block.id
@@ -180,16 +166,12 @@ class TestASTDlBlock < Test::Unit::TestCase
     list_node = ast.children.first
     assert_equal :dl, list_node.list_type
 
-    # Find dt and dd items
     dt_items = list_node.children.select(&:definition_term?)
     dd_items = list_node.children.select(&:definition_desc?)
 
-    # Should have 2 dt items (HTTP, HTTPS)
     assert_equal 2, dt_items.size
-    # Should have 4 dd items (3 for HTTP, 1 for HTTPS)
     assert_equal 4, dd_items.size
 
-    # Check the first dt (HTTP)
     http_dt = dt_items[0]
     assert http_dt.definition_term?
 
@@ -198,11 +180,9 @@ class TestASTDlBlock < Test::Unit::TestCase
     assert dd_items[1].definition_desc?
     assert dd_items[2].definition_desc?
 
-    # Check the second dt (HTTPS)
     https_dt = dt_items[1]
     assert https_dt.definition_term?
 
-    # Check that we have 1 dd item for HTTPS
     assert dd_items[3].definition_desc?
   end
 
@@ -283,21 +263,17 @@ class TestASTDlBlock < Test::Unit::TestCase
     list_node = ast.children.first
     assert_equal :dl, list_node.list_type
 
-    # Find dt and dd items
     dt_items = list_node.children.select(&:definition_term?)
     dd_items = list_node.children.select(&:definition_desc?)
 
-    # Should have 1 dt and 1 dd
     assert_equal 1, dt_items.size
     assert_equal 1, dd_items.size
 
     dd_item = dd_items[0]
 
-    # Look for nested list
     ul_node = dd_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) && child.list_type == :ul }
     assert_not_nil(ul_node)
 
-    # Look for minicolumn
     note_node = dd_item.children.find { |child| child.is_a?(ReVIEW::AST::MinicolumnNode) }
     assert_not_nil(note_node)
     assert_equal :note, note_node.minicolumn_type
