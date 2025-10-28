@@ -37,7 +37,7 @@ module ReVIEW
         # @param list_type [Symbol] List type (:ul, :ol, :dl)
         # @return [ListNode] Root list node with nested structure
         def build_nested_structure(items, list_type)
-          return create_empty_list(list_type) if items.empty?
+          return create_list_node(list_type) if items.empty?
 
           case list_type
           when :ul
@@ -105,8 +105,8 @@ module ReVIEW
         def build_proper_nested_structure(items, root_list, list_type)
           return if items.empty?
 
-          current_lists = { 1 => root_list } # Track list at each level
-          previous_level = 0 # Track previous level for validation
+          current_lists = { 1 => root_list }
+          previous_level = 0
 
           items.each do |item_data|
             level = item_data.level || 1
@@ -176,71 +176,6 @@ module ReVIEW
               end
             end
           end
-        end
-
-        # Build nested items using stack-based approach for proper nesting
-        # @param items [Array<ListParser::ListItemData>] Parsed list items
-        # @param root_list [ReVIEW::AST::ListNode] Root list node
-        # @param list_type [Symbol] List type for nested sublists
-        def build_nested_items_with_stack(items, root_list, list_type)
-          return if items.empty?
-
-          # Initialize stack with root list at level 0
-          stack = [{ list: root_list, level: 0 }]
-
-          items.each do |item_data|
-            current_level = item_data.level || 1
-
-            # Pop from stack until we find the appropriate parent level
-            while stack.size > 1 && stack.last[:level] >= current_level
-              stack.pop
-            end
-
-            current_context = stack.last
-            target_list = current_context[:list]
-
-            # Create the list item node
-            item_node = create_list_item_node(item_data)
-            add_all_content_to_item(item_node, item_data)
-
-            if current_context[:level] < current_level
-              # Need to create a deeper nested structure
-              nested_list = find_or_create_nested_list(target_list, list_type)
-              if nested_list
-                # Add item to nested list and update stack
-                nested_list.add_child(item_node)
-                stack.push({ list: nested_list, level: current_level })
-              else
-                # No previous item to nest under, add to current level
-                target_list.add_child(item_node)
-              end
-            else
-              # Same level or going back up, add to current list
-              target_list.add_child(item_node)
-            end
-          end
-        end
-
-        # Find existing or create new nested list
-        # @param target_list [ReVIEW::AST::ListNode] Parent list
-        # @param list_type [Symbol] Type of nested list to create
-        # @return [ReVIEW::AST::ListNode, nil] Nested list or nil if no nesting possible
-        def find_or_create_nested_list(target_list, list_type)
-          # The nested list should be a child of the last item in the current list
-          return nil unless target_list.children.any? && target_list.children.last.is_a?(ReVIEW::AST::ListItemNode)
-
-          last_item = target_list.children.last
-
-          # Check if the last item already has a nested list of the same type
-          nested_list = last_item.children.find { |child| child.is_a?(ReVIEW::AST::ListNode) && child.list_type == list_type }
-
-          unless nested_list
-            # Create new nested list
-            nested_list = create_list_node(list_type)
-            last_item.add_child(nested_list)
-          end
-
-          nested_list
         end
 
         # Add all content from item data to list item node
@@ -319,13 +254,6 @@ module ReVIEW
           end
 
           ReVIEW::AST::ListItemNode.new(**node_attributes)
-        end
-
-        # Create empty list node
-        # @param list_type [Symbol] Type of list
-        # @return [ReVIEW::AST::ListNode] Empty list node
-        def create_empty_list(list_type)
-          ReVIEW::AST::ListNode.new(location: current_location, list_type: list_type)
         end
 
         # Get current location for node creation

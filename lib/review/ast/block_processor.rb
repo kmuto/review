@@ -732,44 +732,6 @@ module ReVIEW
         create_node(AST::TextNode, content: content)
       end
 
-      # Unified factory method for creating code block nodes
-      def create_code_block_node(command_type, args, lines)
-        config = @dynamic_code_block_configs[command_type]
-        unless config
-          raise ArgumentError, "Unknown code block type: #{command_type}#{format_location_info}"
-        end
-
-        # Preserve original text for builders that don't need inline processing
-        original_text = lines ? lines.join("\n") : ''
-
-        caption_data = process_caption(args, config[:caption_index])
-
-        node = create_and_add_node(AST::CodeBlockNode,
-                                   id: safe_arg(args, config[:id_index]),
-                                   caption: caption_text(caption_data),
-                                   caption_node: caption_node(caption_data),
-                                   lang: safe_arg(args, config[:lang_index]) || config[:default_lang],
-                                   line_numbers: config[:line_numbers] || false,
-                                   code_type: command_type,
-                                   original_text: original_text)
-
-        # Process each line and create CodeLineNode
-        if lines
-          lines.each_with_index do |line, index|
-            line_node = create_node(AST::CodeLineNode,
-                                    line_number: config[:line_numbers] ? index + 1 : nil,
-                                    original_text: line)
-
-            # Parse inline elements in code line
-            @ast_compiler.inline_processor.parse_inline_elements(line, line_node)
-
-            node.add_child(line_node)
-          end
-        end
-
-        node
-      end
-
       def process_caption(args, caption_index, location = nil)
         return nil if caption_index.nil?
 
