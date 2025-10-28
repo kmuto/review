@@ -24,8 +24,24 @@ module ReVIEW
       ListItemData = Struct.new(:type, :level, :content, :continuation_lines, :metadata, keyword_init: true) do
         def initialize(**args)
           super
+          self.level ||= 1
           self.continuation_lines ||= []
           self.metadata ||= {}
+        end
+
+        # Create a new ListItemData with adjusted level
+        # @param new_level [Integer] New level value
+        # @return [ListItemData] New instance with adjusted level, or self if no change needed
+        def with_adjusted_level(new_level)
+          return self if new_level == level
+
+          ListItemData.new(
+            type: type,
+            level: new_level,
+            content: content,
+            continuation_lines: continuation_lines,
+            metadata: metadata
+          )
         end
       end
 

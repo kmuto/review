@@ -109,73 +109,52 @@ module ReVIEW
           previous_level = 0
 
           items.each do |item_data|
-            level = item_data.level || 1
-
-            # Validate nesting level transition
-            if level > previous_level
-              level_diff = level - previous_level
-              if level_diff > 1
-                # Nesting level jumped too much (e.g., ** before * or *** after *)
-                # Log error (same as Builder) and continue processing
-                if @location_provider.respond_to?(:error)
-                  @location_provider.error('too many *.')
-                elsif @location_provider.respond_to?(:logger)
-                  @location_provider.logger.error('too many *.')
-                end
-                # Adjust level to prevent invalid jump (same as Builder)
-                level = previous_level + 1
-              end
+            # 1. Validate and adjust level
+            level = item_data.level
+            if level > previous_level && (level - previous_level) > 1
+              @location_provider.error('too many *.')
+              level = previous_level + 1
             end
             previous_level = level
 
-            # Create the list item with adjusted level if needed
-            adjusted_item_data = if level == item_data.level
-                                   item_data
-                                 else
-                                   # Create new item data with adjusted level
-                                   ReVIEW::AST::ListParser::ListItemData.new(
-                                     type: item_data.type,
-                                     level: level,
-                                     content: item_data.content,
-                                     continuation_lines: item_data.continuation_lines,
-                                     metadata: item_data.metadata
-                                   )
-                                 end
+            # 2. Build item node
+            item_data = item_data.with_adjusted_level(level)
+            item_node = create_list_item_node(item_data)
+            add_all_content_to_item(item_node, item_data)
 
-            item_node = create_list_item_node(adjusted_item_data)
-            add_all_content_to_item(item_node, adjusted_item_data)
-
-            # Ensure we have a list at the appropriate level
+            # 3. Add to structure
             if level == 1
-              # Level 1 items go directly to root
               root_list.add_child(item_node)
               current_lists[1] = root_list
             else
-              # For level > 1, ensure parent structure exists
-              parent_level = level - 1
-              parent_list = current_lists[parent_level]
-
-              if parent_list&.children&.any?
-                # Get the last item at parent level to attach nested list to
-                last_parent_item = parent_list.children.last
-
-                # Check if this item already has a nested list
-                nested_list = last_parent_item.children.find do |child|
-                  child.is_a?(ReVIEW::AST::ListNode) && child.list_type == list_type
-                end
-
-                unless nested_list
-                  # Create new nested list
-                  nested_list = create_list_node(list_type)
-                  last_parent_item.add_child(nested_list)
-                end
-
-                # Add item to nested list
-                nested_list.add_child(item_node)
-                current_lists[level] = nested_list
-              end
+              add_to_parent_list(item_node, level, list_type, current_lists)
             end
           end
+        end
+
+        # Add item to parent list at nested level
+        # @param item_node [ReVIEW::AST::ListItemNode] Item to add
+        # @param level [Integer] Nesting level
+        # @param list_type [Symbol] Type of list
+        # @param current_lists [Hash] Map of level to list node
+        def add_to_parent_list(item_node, level, list_type, current_lists)
+          parent_list = current_lists[level - 1]
+          return unless parent_list&.children&.any?
+
+          last_parent_item = parent_list.children.last
+
+          # Find or create nested list
+          nested_list = last_parent_item.children.find do |child|
+            child.is_a?(ReVIEW::AST::ListNode) && child.list_type == list_type
+          end
+
+          unless nested_list
+            nested_list = create_list_node(list_type)
+            last_parent_item.add_child(nested_list)
+          end
+
+          nested_list.add_child(item_node)
+          current_lists[level] = nested_list
         end
 
         # Add all content from item data to list item node
