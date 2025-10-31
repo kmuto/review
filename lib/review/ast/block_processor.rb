@@ -55,8 +55,7 @@ module ReVIEW
         end
       end
 
-      # Class-level storage for configuration blocks
-      @@configuration_blocks = [] # rubocop:disable Style/ClassVars
+      @configuration_blocks = []
 
       class << self
         # Configure BlockProcessor with custom blocks and code blocks
@@ -83,13 +82,19 @@ module ReVIEW
         #     config.register_block_handler(:custom_box, :build_custom_box_ast)
         #   end
         def configure(&block)
-          @@configuration_blocks << block if block
+          @configuration_blocks << block if block
         end
 
         # Get all registered configuration blocks (for testing)
         # @return [Array<Proc>] Array of configuration blocks
         def configuration_blocks
-          @@configuration_blocks.dup
+          @configuration_blocks.dup
+        end
+
+        # Clear all registered configuration blocks (for testing)
+        # @return [void]
+        def clear_configuration!
+          @configuration_blocks = []
         end
       end
 
