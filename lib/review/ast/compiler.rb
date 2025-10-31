@@ -61,10 +61,10 @@ module ReVIEW
         @ast_root = nil
         @current_ast_node = nil
 
-        # Processors for specialized AST handling - lazy initialization
-        @inline_processor = nil
-        @block_processor = nil
-        @list_processor = nil
+        # Processors for specialized AST handling
+        @inline_processor = InlineProcessor.new(self)
+        @block_processor = BlockProcessor.new(self)
+        @list_processor = ListProcessor.new(self)
 
         # Block-scoped compilation support
         @block_context_stack = []
@@ -84,20 +84,7 @@ module ReVIEW
         @non_parsed_commands = %i[embed texequation graph]
       end
 
-      attr_reader :ast_root, :current_ast_node, :chapter
-
-      # Lazy-loaded processors
-      def inline_processor
-        @inline_processor ||= InlineProcessor.new(self)
-      end
-
-      def block_processor
-        @block_processor ||= BlockProcessor.new(self)
-      end
-
-      def list_processor
-        @list_processor ||= ListProcessor.new(self)
-      end
+      attr_reader :ast_root, :current_ast_node, :chapter, :inline_processor, :block_processor, :list_processor
 
       def compile_to_ast(chapter, reference_resolution: true)
         @chapter = chapter
@@ -602,18 +589,6 @@ module ReVIEW
         end
 
         words
-      end
-
-      # Process inline elements within table cell content
-      def process_table_line_inline_elements(line)
-        return line unless line.include?('@<')
-
-        # Create a temporary paragraph node to process inline elements
-        temp_paragraph = AST::ParagraphNode.new(location: location)
-        inline_processor.parse_inline_elements(line, temp_paragraph)
-
-        # Convert back to text with processed inline elements
-        render_children_to_text(temp_paragraph)
       end
 
       # Resolve references in the AST

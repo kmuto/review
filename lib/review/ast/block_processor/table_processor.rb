@@ -164,8 +164,8 @@ module ReVIEW
 
           rows.each do |row|
             cells_needed = max_cols - row.children.size
+            cell_type = row.children.first&.cell_type || :td
             cells_needed.times do
-              cell_type = row.children.first&.cell_type == :th ? :th : :td
               empty_cell = create_node(AST::TableCellNode, cell_type: cell_type)
               row.add_child(empty_cell)
             end

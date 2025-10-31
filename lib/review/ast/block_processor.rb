@@ -593,30 +593,6 @@ module ReVIEW
         info
       end
 
-      # Common AST node creation helpers
-
-      # Create any AST node with location automatically set
-      def create_node(node_class, **attributes)
-        node_class.new(location: @ast_compiler.location, **attributes)
-      end
-
-      # Create AST node and add to current node in one step
-      def create_and_add_node(node_class, **attributes)
-        node = create_node(node_class, **attributes)
-        add_node_to_ast(node)
-        node
-      end
-
-      # Add node to current AST node
-      def add_node_to_ast(node)
-        @ast_compiler.add_child_to_current_node(node)
-      end
-
-      # Create text node with content
-      def create_text_node(content)
-        create_node(AST::TextNode, content: content)
-      end
-
       def process_caption(args, caption_index, location = nil)
         return nil if caption_index.nil?
 
