@@ -14,7 +14,7 @@ module ReVIEW
       # into a structured format. It serves as an intermediate layer between
       # block command context and AST nodes.
       class CodeBlockStructure
-        attr_reader :id, :caption_data, :lang, :line_numbers, :code_type, :lines, :original_text
+        attr_reader :id, :caption_node, :lang, :line_numbers, :code_type, :lines, :original_text
 
         # Factory method to create CodeBlockStructure from context and config
         # @param context [BlockContext] Block context
@@ -23,7 +23,7 @@ module ReVIEW
         # @raise [CompileError] If configuration is invalid
         def self.from_context(context, config)
           id = context.arg(config[:id_index])
-          caption_data = context.process_caption(context.args, config[:caption_index])
+          caption_node = context.process_caption(context.args, config[:caption_index])
           lang = context.arg(config[:lang_index]) || config[:default_lang]
           line_numbers = config[:line_numbers] || false
           lines = context.lines || []
@@ -31,7 +31,7 @@ module ReVIEW
 
           new(
             id: id,
-            caption_data: caption_data,
+            caption_node: caption_node,
             lang: lang,
             line_numbers: line_numbers,
             code_type: context.name,
@@ -40,9 +40,9 @@ module ReVIEW
           )
         end
 
-        def initialize(id:, caption_data:, lang:, line_numbers:, code_type:, lines:, original_text:)
+        def initialize(id:, caption_node:, lang:, line_numbers:, code_type:, lines:, original_text:)
           @id = id
-          @caption_data = caption_data
+          @caption_node = caption_node
           @lang = lang
           @line_numbers = line_numbers
           @code_type = code_type

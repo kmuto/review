@@ -35,29 +35,29 @@ module ReVIEW
         def build_table_node(context)
           node = case context.name
                  when :table
-                   caption_data = context.process_caption(context.args, 1)
+                   caption_node = context.process_caption(context.args, 1)
                    context.create_node(AST::TableNode,
                                        id: context.arg(0),
-                                       caption_node: caption_node(caption_data),
+                                       caption_node: caption_node,
                                        table_type: :table)
                  when :emtable
-                   caption_data = context.process_caption(context.args, 0)
+                   caption_node = context.process_caption(context.args, 0)
                    context.create_node(AST::TableNode,
                                        id: nil,
-                                       caption_node: caption_node(caption_data),
+                                       caption_node: caption_node,
                                        table_type: :emtable)
                  when :imgtable
-                   caption_data = context.process_caption(context.args, 1)
+                   caption_node = context.process_caption(context.args, 1)
                    context.create_node(AST::TableNode,
                                        id: context.arg(0),
-                                       caption_node: caption_node(caption_data),
+                                       caption_node: caption_node,
                                        table_type: :imgtable,
                                        metric: context.arg(2))
                  else
-                   caption_data = context.process_caption(context.args, 1)
+                   caption_node = context.process_caption(context.args, 1)
                    context.create_node(AST::TableNode,
                                        id: context.arg(0),
-                                       caption_node: caption_node(caption_data),
+                                       caption_node: caption_node,
                                        table_type: context.name)
                  end
 
@@ -202,13 +202,6 @@ module ReVIEW
         # @return [Node] Created node
         def create_node(node_class, **attributes)
           node_class.new(location: @ast_compiler.location, **attributes)
-        end
-
-        # Extract caption node from caption data hash
-        # @param caption_data [Hash, nil] Caption data hash
-        # @return [CaptionNode, nil] Caption node
-        def caption_node(caption_data)
-          caption_data && caption_data[:node]
         end
 
         # Format location information for error messages

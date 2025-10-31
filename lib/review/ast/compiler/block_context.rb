@@ -57,7 +57,7 @@ module ReVIEW
         #
         # @param args [Array<String>] Arguments array
         # @param caption_index [Integer] Caption index
-        # @return [Hash, nil] Processed caption data with :text and :node keys
+        # @return [CaptionNode, nil] Processed caption node or nil
         def process_caption(args, caption_index)
           return nil unless args && caption_index && caption_index >= 0 && args.size > caption_index
 
@@ -74,7 +74,7 @@ module ReVIEW
             raise CompileError, "Error processing caption '#{caption_text}': #{e.message}#{format_location_info(@start_location)}"
           end
 
-          { text: caption_text, node: caption_node }
+          caption_node
         end
 
         # Process nested blocks

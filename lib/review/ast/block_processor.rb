@@ -210,8 +210,8 @@ module ReVIEW
       def build_code_block_node_from_structure(context, structure)
         node = context.create_node(AST::CodeBlockNode,
                                    id: structure.id,
-                                   caption: caption_text(structure.caption_data),
-                                   caption_node: caption_node(structure.caption_data),
+                                   caption: structure.caption_node&.to_text,
+                                   caption_node: structure.caption_node,
                                    lang: structure.lang,
                                    line_numbers: structure.line_numbers,
                                    code_type: structure.code_type,
@@ -246,12 +246,12 @@ module ReVIEW
       end
 
       def build_image_ast(context)
-        caption_data = context.process_caption(context.args, 1)
+        caption_node = context.process_caption(context.args, 1)
 
         node = context.create_node(AST::ImageNode,
                                    id: context.arg(0),
-                                   caption: caption_text(caption_data),
-                                   caption_node: caption_node(caption_data),
+                                   caption: caption_node&.to_text,
+                                   caption_node: caption_node,
                                    metric: context.arg(2),
                                    image_type: context.name)
         @ast_compiler.add_child_to_current_node(node)
@@ -383,13 +383,13 @@ module ReVIEW
           caption_index = 0
         end
 
-        caption_data = context.process_caption(context.args, caption_index)
+        caption_node = context.process_caption(context.args, caption_index)
 
         node = context.create_node(AST::MinicolumnNode,
                                    minicolumn_type: context.name,
                                    id: id,
-                                   caption: caption_text(caption_data),
-                                   caption_node: caption_node(caption_data))
+                                   caption: caption_node&.to_text,
+                                   caption_node: caption_node)
 
         # Process structured content
         context.process_structured_content_with_blocks(node)
@@ -399,13 +399,13 @@ module ReVIEW
       end
 
       def build_column_ast(context)
-        caption_data = context.process_caption(context.args, 1)
+        caption_node = context.process_caption(context.args, 1)
 
         node = context.create_node(AST::ColumnNode,
                                    level: 2, # Default level for block columns
                                    label: context.arg(0),
-                                   caption: caption_text(caption_data),
-                                   caption_node: caption_node(caption_data),
+                                   caption: caption_node&.to_text,
+                                   caption_node: caption_node,
                                    column_type: :column)
 
         # Process structured content
@@ -450,13 +450,13 @@ module ReVIEW
                         end
 
         # Process caption if applicable
-        caption_data = caption_index ? context.process_caption(context.args, caption_index) : nil
+        caption_node = caption_index ? context.process_caption(context.args, caption_index) : nil
 
         node = context.create_node(AST::BlockNode,
                                    block_type: context.name,
                                    args: context.args,
-                                   caption: caption_text(caption_data),
-                                   caption_node: caption_node(caption_data),
+                                   caption: caption_node&.to_text,
+                                   caption_node: caption_node,
                                    lines: preserve_lines ? context.lines.dup : nil)
 
         # Process content and nested blocks
@@ -503,12 +503,12 @@ module ReVIEW
                           ''
                         end
 
-        caption_data = context.process_caption(context.args, 1)
+        caption_node = context.process_caption(context.args, 1)
 
         node = context.create_node(AST::TexEquationNode,
                                    id: context.arg(0),
-                                   caption: caption_text(caption_data),
-                                   caption_node: caption_node(caption_data),
+                                   caption: caption_node&.to_text,
+                                   caption_node: caption_node,
                                    latex_content: latex_content)
 
         @ast_compiler.add_child_to_current_node(node)
@@ -591,43 +591,6 @@ module ReVIEW
         info = " at line #{location.lineno}"
         info += " in #{location.filename}" if location.filename
         info
-      end
-
-      def process_caption(args, caption_index, location = nil)
-        return nil if caption_index.nil?
-
-        caption_text = safe_arg(args, caption_index)
-        return nil if caption_text.nil?
-
-        # Location information priority: argument > @ast_compiler.location
-        caption_location = location || @ast_compiler.location
-
-        caption_node = AST::CaptionNode.new(location: caption_location)
-
-        begin
-          @ast_compiler.with_temporary_location!(caption_location) do
-            @ast_compiler.inline_processor.parse_inline_elements(caption_text, caption_node)
-          end
-        rescue StandardError => e
-          raise CompileError, "Error processing caption '#{caption_text}': #{e.message}#{format_location_info(caption_location)}"
-        end
-
-        { text: caption_text, node: caption_node }
-      end
-
-      def caption_text(caption_data)
-        caption_data && caption_data[:text]
-      end
-
-      def caption_node(caption_data)
-        caption_data && caption_data[:node]
-      end
-
-      # Extract argument safely
-      def safe_arg(args, index)
-        return nil unless args && index && index.is_a?(Integer) && index >= 0 && args.size > index
-
-        args[index]
       end
 
       # Create a table row node from a line containing tab-separated cells
