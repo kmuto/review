@@ -14,6 +14,7 @@ require 'review/ast/inline_processor'
 require 'review/ast/block_processor'
 require 'review/ast/compiler/block_data'
 require 'review/ast/compiler/block_context'
+require 'review/ast/compiler/block_reader'
 require 'review/snapshot_location'
 require 'review/ast/list_processor'
 require 'review/ast/footnote_node'
@@ -298,6 +299,12 @@ module ReVIEW
         @current_location = location
       end
 
+      # Update current location based on file input position
+      # @param file_input [LineInput] The file input object
+      def update_current_location(file_input)
+        @current_location = SnapshotLocation.new(@chapter.basename, file_input.lineno)
+      end
+
       # Format location information for error messages
       def format_location_info(loc = nil)
         loc ||= @current_location
@@ -487,72 +494,25 @@ module ReVIEW
 
       # Reading with nested block support - enhanced error handling
       def read_block_with_nesting(f, parent_command, block_start_location)
-        lines = []
-        nested_blocks = []
-        block_depth = 1 # Starting block count
-        start_location = block_start_location
-
-        while f.next?
-          line = f.gets
-          unless line
-            raise CompileError, "Unexpected end of file in block //#{parent_command} started#{format_location_info(start_location)}"
-          end
-
-          # Update location information
-          @current_location = SnapshotLocation.new(@chapter.basename, f.lineno)
-
-          # Detect termination tag
-          if line.start_with?('//}')
-            block_depth -= 1
-            if block_depth == 0
-              break # Reached corresponding termination tag
-            else
-              # Nested termination tag - treat as content
-              # Match ReVIEW::Compiler behavior
-              lines << if @non_parsed_commands.include?(parent_command)
-                         line.chomp
-                       else
-                         line.rstrip
-                       end
-            end
-          # Detect nested block commands
-          elsif line.match?(%r{\A//[a-z]+})
-            # Recursively read nested blocks
-            begin
-              nested_block_data = read_block_command(f, line)
-              nested_blocks << nested_block_data
-            rescue CompileError => e
-              # Add parent context information to nested block errors
-              raise CompileError, "#{e.message} (in nested block within //#{parent_command})"
-            end
-          # Skip preprocessor directives
-          elsif /\A\#@/.match?(line)
-            next
-          else
-            # Regular content line
-            # Match ReVIEW::Compiler behavior: rstrip for most commands,
-            # but preserve whitespace for non-parsed commands (embed, texequation, graph)
-            lines << if @non_parsed_commands.include?(parent_command)
-                       line.chomp
-                     else
-                       line.rstrip
-                     end
-          end
-        end
-
-        # Check if block is properly closed
-        if block_depth > 0
-          raise CompileError, "Unclosed block //#{parent_command} started#{format_location_info(start_location)}"
-        end
-
-        [lines, nested_blocks]
+        reader = BlockReader.new(
+          compiler: self,
+          file_input: f,
+          parent_command: parent_command,
+          start_location: block_start_location,
+          preserve_whitespace: preserve_whitespace?(parent_command)
+        )
+        reader.read
       end
+
+      private
 
       def block_open?(line)
         line.rstrip.end_with?('{')
       end
 
-      private
+      def preserve_whitespace?(command)
+        @non_parsed_commands.include?(command)
+      end
 
       def parse_args(str, _name = nil)
         return [] if str.empty?
