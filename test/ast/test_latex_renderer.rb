@@ -276,7 +276,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(content: 'Test Table'))
 
-    table = AST::TableNode.new(id: 'table1', caption: 'Test Table', caption_node: caption_node)
+    table = AST::TableNode.new(id: 'table1', caption_node: caption_node)
 
     # Header row
     header_row = AST::TableRowNode.new(location: nil)
@@ -1214,7 +1214,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     empty_caption_node = AST::CaptionNode.new
     # Empty caption node with no children
 
-    table = AST::TableNode.new(id: 'table1', caption: '', caption_node: empty_caption_node)
+    table = AST::TableNode.new(id: 'table1', caption_node: empty_caption_node)
 
     # Header row
     header_row = AST::TableRowNode.new(location: nil)

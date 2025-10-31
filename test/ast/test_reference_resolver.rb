@@ -83,7 +83,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add actual TableNode to generate index
-    table_node = ReVIEW::AST::TableNode.new(id: 'tbl01', caption: nil)
+    table_node = ReVIEW::AST::TableNode.new(id: 'tbl01')
     doc.add_child(table_node)
 
     # Add inline reference to the table
@@ -258,7 +258,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add actual TableNode to generate index
-    table_node = ReVIEW::AST::TableNode.new(id: 'tbl01', caption: nil)
+    table_node = ReVIEW::AST::TableNode.new(id: 'tbl01')
     doc.add_child(table_node)
 
     # Add ref reference that should find the table
@@ -287,7 +287,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     img_node = ReVIEW::AST::ImageNode.new(id: 'img01', caption: nil)
     doc.add_child(img_node)
 
-    table_node = ReVIEW::AST::TableNode.new(id: 'tbl01', caption: nil)
+    table_node = ReVIEW::AST::TableNode.new(id: 'tbl01')
     doc.add_child(table_node)
 
     code_node = ReVIEW::AST::CodeBlockNode.new(id: 'list01', code_type: :list, caption: nil)
@@ -559,7 +559,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     caption.add_child(inline)
 
     # Create table and set caption_node
-    table_node = ReVIEW::AST::TableNode.new(id: 'tbl01', caption: 'Table caption', caption_node: caption)
+    table_node = ReVIEW::AST::TableNode.new(id: 'tbl01', caption_node: caption)
     doc.add_child(table_node)
 
     result = @resolver.resolve_references(doc)

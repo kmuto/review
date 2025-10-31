@@ -8,18 +8,22 @@ module ReVIEW
   module AST
     class TableNode < Node
       attr_accessor :caption_node, :col_spec, :cellwidth
-      attr_reader :caption, :table_type, :metric
+      attr_reader :table_type, :metric
 
-      def initialize(location: nil, id: nil, caption: nil, caption_node: nil, table_type: :table, metric: nil, col_spec: nil, cellwidth: nil, **kwargs) # rubocop:disable Metrics/ParameterLists
+      def initialize(location: nil, id: nil, caption_node: nil, table_type: :table, metric: nil, col_spec: nil, cellwidth: nil, **kwargs) # rubocop:disable Metrics/ParameterLists
         super(location: location, id: id, **kwargs)
         @caption_node = caption_node
-        @caption = caption
         @table_type = table_type # :table, :emtable, :imgtable
         @metric = metric
         @col_spec = col_spec # Column specification string (e.g., "|l|c|r|")
         @cellwidth = cellwidth # Array of column width specifications
         @header_rows = []
         @body_rows = []
+      end
+
+      # Get caption text from caption_node
+      def caption
+        @caption_node&.to_text
       end
 
       def header_rows
@@ -84,7 +88,6 @@ module ReVIEW
 
       def to_h
         result = super.merge(
-          caption: caption,
           caption_node: caption_node&.to_h,
           table_type: table_type,
           header_rows: header_rows.map(&:to_h),
