@@ -44,7 +44,8 @@ module ReVIEW
         def read_line
           line = @f.gets
           unless line
-            raise CompileError, "Unexpected end of file in block //#{@parent_command} started#{format_location_info}"
+            location_info = @start_location ? @start_location.format_for_error : ''
+            raise CompileError, "Unexpected end of file in block //#{@parent_command} started#{location_info}"
           end
 
           update_location
@@ -109,16 +110,8 @@ module ReVIEW
         def validate_block_closed!
           return if @block_depth == 0
 
-          raise CompileError, "Unclosed block //#{@parent_command} started#{format_location_info}"
-        end
-
-        def format_location_info
-          return '' unless @start_location
-
-          loc_parts = []
-          loc_parts << " at line #{@start_location.lineno}" if @start_location.lineno
-          loc_parts << " in #{@start_location.filename}" if @start_location.filename
-          loc_parts.join
+          location_info = @start_location ? @start_location.format_for_error : ''
+          raise CompileError, "Unclosed block //#{@parent_command} started#{location_info}"
         end
       end
     end

@@ -97,19 +97,6 @@ module ReVIEW
           process_nested_blocks(parent_node)
         end
 
-        # Format location information for error messages
-        #
-        # @param location [Location, nil] Location to format
-        # @return [String] Formatted location information string
-        def format_location_info(location = nil)
-          loc = location || @start_location
-          return '' unless loc
-
-          info = " at line #{loc.lineno}"
-          info += " in #{loc.filename}" if loc.filename
-          info
-        end
-
         # Safely get block data arguments
         #
         # @param index [Integer] Argument index

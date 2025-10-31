@@ -235,7 +235,7 @@ module ReVIEW
       def build_code_block_ast(context)
         config = @dynamic_code_block_configs[context.name]
         unless config
-          raise CompileError, "Unknown code block type: #{context.name}#{context.format_location_info}"
+          raise CompileError, "Unknown code block type: #{context.name}#{context.start_location.format_for_error}"
         end
 
         structure = CodeBlockStructure.from_context(context, config)
@@ -288,7 +288,7 @@ module ReVIEW
         # Validate that //li is inside a list block
         parent_node = @ast_compiler.current_ast_node
         unless parent_node.is_a?(AST::ListNode)
-          raise CompileError, "//li must be inside //ul, //ol, or //dl block#{context.format_location_info}"
+          raise CompileError, "//li must be inside //ul, //ol, or //dl block#{context.start_location.format_for_error}"
         end
 
         # Create list item node - simple, no complex title handling
@@ -313,7 +313,7 @@ module ReVIEW
         # Validate that //dt is inside a //dl block
         parent_node = @ast_compiler.current_ast_node
         unless parent_node.is_a?(AST::ListNode) && parent_node.list_type == :dl
-          raise CompileError, "//dt must be inside //dl block#{context.format_location_info}"
+          raise CompileError, "//dt must be inside //dl block#{context.start_location.format_for_error}"
         end
 
         # Create list item node with dt type
@@ -337,7 +337,7 @@ module ReVIEW
         # Validate that //dd is inside a //dl block
         parent_node = @ast_compiler.current_ast_node
         unless parent_node.is_a?(AST::ListNode) && parent_node.list_type == :dl
-          raise CompileError, "//dd must be inside //dl block#{context.format_location_info}"
+          raise CompileError, "//dd must be inside //dl block#{context.start_location.format_for_error}"
         end
 
         # Create list item node with dd type

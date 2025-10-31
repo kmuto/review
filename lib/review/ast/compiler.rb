@@ -310,9 +310,7 @@ module ReVIEW
         loc ||= @current_location
         return '' unless loc
 
-        info = " at line #{loc.lineno}"
-        info += " in #{loc.filename}" if loc.filename
-        info
+        loc.format_for_error
       end
 
       # Override error method to accumulate errors (similar to HTMLBuilder's Compiler)
