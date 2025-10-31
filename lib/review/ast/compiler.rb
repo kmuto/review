@@ -71,9 +71,6 @@ module ReVIEW
         # Block-scoped compilation support
         @block_context_stack = []
 
-        # Tagged section tracking (for column tags etc.)
-        @tagged_section = []
-
         @logger = ReVIEW.logger
 
         # Get config for debug output
@@ -220,14 +217,18 @@ module ReVIEW
         )
         current_node.add_child(node)
         @current_ast_node = node
-        @tagged_section.push(['column', parsed.level])
       end
 
       def handle_closing_tag(parsed)
         open_tag = parsed.closing_tag_name
-        prev_tag_info = @tagged_section.pop
-        if prev_tag_info.nil? || prev_tag_info.first != open_tag
-          raise ReVIEW::ApplicationError, "#{open_tag} is not opened#{format_location_info}"
+
+        # Validate that we're closing the correct tag by checking current AST node
+        if open_tag == 'column'
+          unless @current_ast_node.is_a?(AST::ColumnNode)
+            raise ReVIEW::ApplicationError, "column is not opened#{format_location_info}"
+          end
+        else
+          raise ReVIEW::ApplicationError, "Unknown closing tag: /#{open_tag}#{format_location_info}"
         end
 
         @current_ast_node = @current_ast_node.parent || @ast_root
