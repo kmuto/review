@@ -23,6 +23,83 @@ module ReVIEW
       # - Handle inline elements within table cells
       #
       class TableProcessor
+        # Data structure representing table structure (intermediate representation)
+        # This class represents the result of parsing table text lines into a structured format.
+        # It serves as an intermediate layer between raw text and AST nodes.
+        class TableStructure
+          attr_reader :header_lines, :body_lines, :first_cell_header
+
+          # Factory method to create TableStructure from raw text lines
+          # @param lines [Array<String>] Raw table content lines
+          # @return [TableStructure] Parsed table structure
+          # @raise [ReVIEW::CompileError] If table is empty or invalid
+          def self.from_lines(lines)
+            validate_lines(lines)
+            separator_index = find_separator_index(lines)
+
+            if separator_index
+              # Table has explicit header section separated by line
+              new(
+                header_lines: lines[0...separator_index],
+                body_lines: lines[(separator_index + 1)..-1] || [],
+                first_cell_header: false
+              )
+            else
+              # No separator - all body rows with first cell as header
+              new(
+                header_lines: [],
+                body_lines: lines,
+                first_cell_header: true
+              )
+            end
+          end
+
+          def initialize(header_lines:, body_lines:, first_cell_header:)
+            @header_lines = header_lines
+            @body_lines = body_lines
+            @first_cell_header = first_cell_header
+          end
+
+          # Check if table has explicit header section (separated by line)
+          # @return [Boolean] True if has separator and header section
+          def has_header_section?
+            !header_lines.empty?
+          end
+
+          # Get total number of rows (header + body)
+          # @return [Integer] Total row count
+          def total_row_count
+            header_lines.size + body_lines.size
+          end
+
+          class << self
+            private
+
+            # Validate table lines for emptiness and structure
+            # @param lines [Array<String>] Content lines
+            # @raise [ReVIEW::CompileError] If table is empty or only contains separator
+            def validate_lines(lines)
+              if lines.nil? || lines.empty?
+                raise ReVIEW::CompileError, 'no rows in the table'
+              end
+
+              separator_index = find_separator_index(lines)
+
+              # Check if table only contains separator (no actual data rows)
+              if separator_index && separator_index == 0 && lines.length == 1
+                raise ReVIEW::CompileError, 'no rows in the table'
+              end
+            end
+
+            # Find separator line index in table lines
+            # @param lines [Array<String>] Content lines
+            # @return [Integer, nil] Separator index or nil if not found
+            def find_separator_index(lines)
+              lines.find_index { |line| line.match?(/\A[=-]{12}/) || line.match?(/\A[={}-]{12}/) }
+            end
+          end
+        end
+
         def initialize(ast_compiler)
           @ast_compiler = ast_compiler
         end
@@ -83,50 +160,13 @@ module ReVIEW
         # @param lines [Array<String>] Content lines
         # @param block_location [Location] Block start location
         def process_content(table_node, lines, block_location = nil)
-          # Check for empty table
-          if lines.nil? || lines.empty?
-            raise ReVIEW::CompileError, 'no rows in the table'
-          end
+          structure = TableStructure.from_lines(lines)
 
-          separator_index = lines.find_index { |line| line.match?(/\A[=-]{12}/) || line.match?(/\A[={}-]{12}/) }
+          header_rows, body_rows = build_rows_from_structure(structure, block_location)
 
-          # Check if table only contains separator (no actual data rows)
-          if separator_index && separator_index == 0 && lines.length == 1
-            raise ReVIEW::CompileError, 'no rows in the table'
-          end
-
-          # Create row nodes first, then adjust columns
-          header_rows = []
-          body_rows = []
-
-          if separator_index
-            # Process header rows
-            header_lines = lines[0...separator_index]
-            header_lines.each do |line|
-              row_node = create_row(line, is_header: true, block_location: block_location)
-              header_rows << row_node
-            end
-
-            # Process body rows
-            body_lines = lines[(separator_index + 1)..-1] || []
-            body_lines.each do |line|
-              row_node = create_row(line, first_cell_header: false, block_location: block_location)
-              body_rows << row_node
-            end
-          else
-            # No separator - all body rows (first cell as header)
-            lines.each do |line|
-              row_node = create_row(line, first_cell_header: true, block_location: block_location)
-              body_rows << row_node
-            end
-          end
-
-          # Adjust column count to match Builder behavior
           adjust_columns(header_rows + body_rows)
 
-          # Add rows to table node
-          header_rows.each { |row| table_node.add_header_row(row) }
-          body_rows.each { |row| table_node.add_body_row(row) }
+          process_and_add_rows(table_node, header_rows, body_rows)
         end
 
         # Create table row node from a line containing tab-separated cells
@@ -136,14 +176,14 @@ module ReVIEW
         # @param block_location [Location] Block start location
         # @return [TableRowNode] Created row node
         def create_row(line, is_header: false, first_cell_header: false, block_location: nil)
-          row_node = create_node(AST::TableRowNode, row_type: is_header ? :header : :body)
-
           # Split by configured separator to get cells
           cells = line.strip.split(row_separator_regexp).map { |s| s.sub(/\A\./, '') }
           if cells.empty?
             error_location = block_location || @ast_compiler.location
             raise CompileError, "Invalid table row: empty line or no tab-separated cells#{format_location_info(error_location)}"
           end
+
+          row_node = create_node(AST::TableRowNode, row_type: is_header ? :header : :body)
 
           cells.each_with_index do |cell_content, index|
             # Determine cell type based on row context and position
@@ -168,6 +208,31 @@ module ReVIEW
         end
 
         private
+
+        # Build row nodes from table structure
+        # @param structure [TableStructure] Table structure data
+        # @param block_location [Location] Block start location
+        # @return [Array<Array<TableRowNode>, Array<TableRowNode>>] Header rows and body rows
+        def build_rows_from_structure(structure, block_location)
+          header_rows = structure.header_lines.map do |line|
+            create_row(line, is_header: true, block_location: block_location)
+          end
+
+          body_rows = structure.body_lines.map do |line|
+            create_row(line, first_cell_header: structure.first_cell_header, block_location: block_location)
+          end
+
+          [header_rows, body_rows]
+        end
+
+        # Process and add rows to table node
+        # @param table_node [TableNode] Table node to populate
+        # @param header_rows [Array<TableRowNode>] Header rows
+        # @param body_rows [Array<TableRowNode>] Body rows
+        def process_and_add_rows(table_node, header_rows, body_rows)
+          header_rows.each { |row| table_node.add_header_row(row) }
+          body_rows.each { |row| table_node.add_body_row(row) }
+        end
 
         # Adjust table row columns to ensure all rows have the same number of columns
         # Matches the behavior of Builder#adjust_n_cols
