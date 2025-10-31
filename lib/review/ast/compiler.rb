@@ -25,6 +25,7 @@ require 'review/ast/compiler/olnum_processor'
 require 'review/ast/compiler/list_structure_normalizer'
 require 'review/ast/compiler/list_item_numbering_processor'
 require 'review/ast/compiler/auto_id_processor'
+require 'review/ast/headline_parser'
 
 module ReVIEW
   module AST
@@ -170,95 +171,78 @@ module ReVIEW
       end
 
       def compile_headline_to_ast(line)
-        # Parse headline more carefully to handle inline markup in captions
-        # First, extract level and optional tag
-        level_match = /\A(=+)(?:\[(.+?)\])?/.match(line)
-        return nil unless level_match
+        parsed = HeadlineParser.parse(line, location: location)
+        return nil unless parsed
 
-        level = level_match[1].size
-        if level > MAX_HEADLINE_LEVEL
-          raise CompileError, "Invalid header: max headline level is 6#{format_location_info}"
-        end
+        caption_node = build_caption_node(parsed.caption)
+        current_node = find_appropriate_parent_for_level(parsed.level)
 
-        tag = level_match[2]
-        remaining = line[level_match.end(0)..-1].strip
+        create_headline_node(parsed, caption_node, current_node)
+      end
 
-        # Now handle label and caption extraction
-        label = nil
-        caption = nil
+      def build_caption_node(caption_text, caption_location: nil)
+        return nil if caption_text.nil? || caption_text.empty?
 
-        # Check for old syntax: {label} Caption
-        if remaining =~ /\A\{([^}]+)\}\s*(.+)/
-          label = $1
-          caption = $2.strip
-        # Check for new syntax: Caption{label} - but only if the last {...} is not part of inline markup
-        elsif remaining.match(/\A(.+?)\{([^}]+)\}\s*\z/) && !$1.match?(/@<[^>]+>\s*\z/)
-          caption = $1.strip
-          label = $2
-        else
-          # No label, or label is part of inline markup - treat everything as caption
-          caption = remaining
-        end
+        loc = caption_location || location
+        caption_node = AST::CaptionNode.new(location: loc)
 
-        caption_text = caption
-        caption_node = nil
-
-        if caption_text && !caption_text.empty?
-          caption_node = AST::CaptionNode.new(location: location)
-
-          begin
-            with_temporary_location!(location) do
-              inline_processor.parse_inline_elements(caption_text, caption_node)
-            end
-          rescue StandardError => e
-            raise CompileError, "Error processing caption '#{caption_text}': #{e.message}#{format_location_info(location)}"
+        begin
+          with_temporary_location!(loc) do
+            inline_processor.parse_inline_elements(caption_text, caption_node)
           end
+        rescue StandardError => e
+          raise CompileError, "Error processing caption '#{caption_text}': #{e.message}#{format_location_info(loc)}"
         end
 
-        # Before creating new section, handle section nesting
-        # Find appropriate parent level for this headline/section
-        current_node = find_appropriate_parent_for_level(level)
-        # Handle tagged sections
-        if tag == 'column'
-          node = AST::ColumnNode.new(
-            location: location,
-            level: level,
-            label: label,
-            caption: caption_text,
-            caption_node: caption_node,
-            column_type: :column,
-            inline_processor: inline_processor
-          )
-          current_node.add_child(node)
-          # Set column as current node so subsequent content becomes its children
-          @current_ast_node = node
-          # Track column opening for error checking
-          @tagged_section.push(['column', level])
-        elsif tag&.start_with?('/')
-          # Closing tag (e.g., /column, /column_dummy)
-          open_tag = tag[1..-1] # Remove leading '/'
-          prev_tag_info = @tagged_section.pop
-          if prev_tag_info.nil? || prev_tag_info.first != open_tag
-            raise ReVIEW::ApplicationError, "#{open_tag} is not opened#{format_location_info}"
-          end
+        caption_node
+      end
 
-          # Column end tag - reset current node to parent (exiting column context)
-          @current_ast_node = @current_ast_node.parent || @ast_root
-          # Don't create any node for column end tag
+      def create_headline_node(parsed, caption_node, current_node)
+        if parsed.column?
+          create_column_node(parsed, caption_node, current_node)
+        elsif parsed.closing_tag?
+          handle_closing_tag(parsed)
         else
-          # Regular headline or headline with options (nonum, notoc, nodisp)
-          node = AST::HeadlineNode.new(
-            location: location,
-            level: level,
-            label: label,
-            caption: caption_text,
-            caption_node: caption_node,
-            tag: tag
-          )
-          current_node.add_child(node)
-          # For regular headlines, reset current node to document level
-          @current_ast_node = @ast_root
+          create_regular_headline(parsed, caption_node, current_node)
         end
+      end
+
+      def create_column_node(parsed, caption_node, current_node)
+        node = AST::ColumnNode.new(
+          location: location,
+          level: parsed.level,
+          label: parsed.label,
+          caption: parsed.caption,
+          caption_node: caption_node,
+          column_type: :column,
+          inline_processor: inline_processor
+        )
+        current_node.add_child(node)
+        @current_ast_node = node
+        @tagged_section.push(['column', parsed.level])
+      end
+
+      def handle_closing_tag(parsed)
+        open_tag = parsed.closing_tag_name
+        prev_tag_info = @tagged_section.pop
+        if prev_tag_info.nil? || prev_tag_info.first != open_tag
+          raise ReVIEW::ApplicationError, "#{open_tag} is not opened#{format_location_info}"
+        end
+
+        @current_ast_node = @current_ast_node.parent || @ast_root
+      end
+
+      def create_regular_headline(parsed, caption_node, current_node)
+        node = AST::HeadlineNode.new(
+          location: location,
+          level: parsed.level,
+          label: parsed.label,
+          caption: parsed.caption,
+          caption_node: caption_node,
+          tag: parsed.tag
+        )
+        current_node.add_child(node)
+        @current_ast_node = @ast_root
       end
 
       def compile_paragraph_to_ast(f)

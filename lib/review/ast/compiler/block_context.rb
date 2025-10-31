@@ -64,17 +64,7 @@ module ReVIEW
           caption_text = args[caption_index]
           return nil if caption_text.nil?
 
-          caption_node = AST::CaptionNode.new(location: @start_location)
-
-          begin
-            @compiler.with_temporary_location!(@start_location) do
-              @compiler.inline_processor.parse_inline_elements(caption_text, caption_node)
-            end
-          rescue StandardError => e
-            raise CompileError, "Error processing caption '#{caption_text}': #{e.message}#{format_location_info(@start_location)}"
-          end
-
-          caption_node
+          @compiler.build_caption_node(caption_text, caption_location: @start_location)
         end
 
         # Process nested blocks
