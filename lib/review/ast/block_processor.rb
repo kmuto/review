@@ -8,6 +8,7 @@
 
 require 'review/ast'
 require 'review/ast/compiler/block_data'
+require 'review/ast/block_processor/code_block_structure'
 require 'review/ast/block_processor/table_processor'
 require 'review/lineinput'
 require 'stringio'
@@ -200,33 +201,26 @@ module ReVIEW
         end
       end
 
-      # Use BlockContext for consistent location information in AST construction
-      def build_code_block_ast(context)
-        config = @dynamic_code_block_configs[context.name]
-        unless config
-          raise CompileError, "Unknown code block type: #{context.name}#{context.format_location_info}"
-        end
-
-        # Preserve original text
-        original_text = context.lines ? context.lines.join("\n") : ''
-
-        caption_data = context.process_caption(context.args, config[:caption_index])
-
+      # Build CodeBlockNode from CodeBlockStructure
+      # @param context [BlockContext] Block context
+      # @param structure [CodeBlockStructure] Code block structure
+      # @return [CodeBlockNode] Created code block node
+      def build_code_block_node_from_structure(context, structure)
         # Create node using BlockContext (location automatically set to block start position)
         node = context.create_node(AST::CodeBlockNode,
-                                   id: context.arg(config[:id_index]),
-                                   caption: caption_text(caption_data),
-                                   caption_node: caption_node(caption_data),
-                                   lang: context.arg(config[:lang_index]) || config[:default_lang],
-                                   line_numbers: config[:line_numbers] || false,
-                                   code_type: context.name,
-                                   original_text: original_text)
+                                   id: structure.id,
+                                   caption: caption_text(structure.caption_data),
+                                   caption_node: caption_node(structure.caption_data),
+                                   lang: structure.lang,
+                                   line_numbers: structure.line_numbers,
+                                   code_type: structure.code_type,
+                                   original_text: structure.original_text)
 
-        # Process main content
-        if context.content?
-          context.lines.each_with_index do |line, index|
+        # Process main content lines
+        if structure.content?
+          structure.lines.each_with_index do |line, index|
             line_node = context.create_node(AST::CodeLineNode,
-                                            line_number: config[:line_numbers] ? index + 1 : nil,
+                                            line_number: structure.numbered? ? index + 1 : nil,
                                             original_text: line)
 
             context.process_inline_elements(line, line_node)
@@ -234,6 +228,22 @@ module ReVIEW
             node.add_child(line_node)
           end
         end
+
+        node
+      end
+
+      # Use BlockContext for consistent location information in AST construction
+      def build_code_block_ast(context)
+        config = @dynamic_code_block_configs[context.name]
+        unless config
+          raise CompileError, "Unknown code block type: #{context.name}#{context.format_location_info}"
+        end
+
+        # Parse code block structure (intermediate representation)
+        structure = CodeBlockStructure.from_context(context, config)
+
+        # Build AST node from structure
+        node = build_code_block_node_from_structure(context, structure)
 
         # Process nested blocks
         context.process_nested_blocks(node)
