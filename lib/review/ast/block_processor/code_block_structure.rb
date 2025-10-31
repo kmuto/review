@@ -22,7 +22,6 @@ module ReVIEW
         # @return [CodeBlockStructure] Parsed code block structure
         # @raise [CompileError] If configuration is invalid
         def self.from_context(context, config)
-          # Extract arguments based on config
           id = context.arg(config[:id_index])
           caption_data = context.process_caption(context.args, config[:caption_index])
           lang = context.arg(config[:lang_index]) || config[:default_lang]

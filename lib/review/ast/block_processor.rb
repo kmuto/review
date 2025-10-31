@@ -101,11 +101,9 @@ module ReVIEW
       def initialize(ast_compiler)
         @ast_compiler = ast_compiler
         @table_processor = TableProcessor.new(ast_compiler)
-        # Copy the static tables to allow runtime modifications
         @dynamic_command_table = BLOCK_COMMAND_TABLE.dup
         @dynamic_code_block_configs = CODE_BLOCK_CONFIGS.dup
 
-        # Apply configuration blocks
         apply_configuration
       end
 
@@ -198,7 +196,6 @@ module ReVIEW
 
       private
 
-      # Apply all registered configuration blocks
       def apply_configuration
         config = Configuration.new(self)
         self.class.configuration_blocks.each do |block|
@@ -211,7 +208,6 @@ module ReVIEW
       # @param structure [CodeBlockStructure] Code block structure
       # @return [CodeBlockNode] Created code block node
       def build_code_block_node_from_structure(context, structure)
-        # Create node using BlockContext (location automatically set to block start position)
         node = context.create_node(AST::CodeBlockNode,
                                    id: structure.id,
                                    caption: caption_text(structure.caption_data),
@@ -221,7 +217,6 @@ module ReVIEW
                                    code_type: structure.code_type,
                                    original_text: structure.original_text)
 
-        # Process main content lines
         if structure.content?
           structure.lines.each_with_index do |line, index|
             line_node = context.create_node(AST::CodeLineNode,
@@ -237,23 +232,15 @@ module ReVIEW
         node
       end
 
-      # Use BlockContext for consistent location information in AST construction
       def build_code_block_ast(context)
         config = @dynamic_code_block_configs[context.name]
         unless config
           raise CompileError, "Unknown code block type: #{context.name}#{context.format_location_info}"
         end
 
-        # Parse code block structure (intermediate representation)
         structure = CodeBlockStructure.from_context(context, config)
-
-        # Build AST node from structure
         node = build_code_block_node_from_structure(context, structure)
-
-        # Process nested blocks
         context.process_nested_blocks(node)
-
-        # Add node to current AST
         @ast_compiler.add_child_to_current_node(node)
         node
       end

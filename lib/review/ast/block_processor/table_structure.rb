@@ -25,14 +25,12 @@ module ReVIEW
             separator_index = find_separator_index(lines)
 
             if separator_index
-              # Table has explicit header section separated by line
               new(
                 header_lines: lines[0...separator_index],
                 body_lines: lines[(separator_index + 1)..-1] || [],
                 first_cell_header: false
               )
             else
-              # No separator - all body rows with first cell as header
               new(
                 header_lines: [],
                 body_lines: lines,
@@ -72,7 +70,6 @@ module ReVIEW
 
               separator_index = find_separator_index(lines)
 
-              # Check if table only contains separator (no actual data rows)
               if separator_index && separator_index == 0 && lines.length == 1
                 raise ReVIEW::CompileError, 'no rows in the table'
               end

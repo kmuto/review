@@ -61,19 +61,14 @@ module ReVIEW
                                        table_type: context.name)
                  end
 
-          # Validate and process table rows
-          # Check for empty table first (before context.content? check)
-          # Note: imgtable can be empty as it embeds an image file, not table data
           if !context.content? || context.lines.nil? || context.lines.empty?
             unless context.name == :imgtable
               raise ReVIEW::CompileError, 'no rows in the table'
             end
           else
-            # Process table content only if not empty
             process_content(node, context.lines, context.start_location)
           end
 
-          # Process nested blocks
           context.process_nested_blocks(node)
 
           @ast_compiler.add_child_to_current_node(node)
@@ -101,7 +96,6 @@ module ReVIEW
         # @param block_location [Location] Block start location
         # @return [TableRowNode] Created row node
         def create_row(line, is_header: false, first_cell_header: false, block_location: nil)
-          # Split by configured separator to get cells
           cells = line.strip.split(row_separator_regexp).map { |s| s.sub(/\A\./, '') }
           if cells.empty?
             error_location = block_location || @ast_compiler.location
@@ -111,21 +105,16 @@ module ReVIEW
           row_node = create_node(AST::TableRowNode, row_type: is_header ? :header : :body)
 
           cells.each_with_index do |cell_content, index|
-            # Determine cell type based on row context and position
             cell_type = if is_header
-                          :th # All cells in header rows are <th>
+                          :th
                         elsif first_cell_header && index == 0 # rubocop:disable Lint/DuplicateBranch
-                          :th  # First cell in non-header rows is <th> (row header)
+                          :th
                         else
-                          :td  # Regular data cells
+                          :td
                         end
 
             cell_node = create_node(AST::TableCellNode, cell_type: cell_type)
-
-            # Parse inline elements in cell content
-            # Note: prefix "." has already been removed during split
             @ast_compiler.inline_processor.parse_inline_elements(cell_content, cell_node)
-
             row_node.add_child(cell_node)
           end
 
@@ -165,22 +154,17 @@ module ReVIEW
         def adjust_columns(rows)
           return if rows.empty?
 
-          # Remove trailing empty cells from each row
           rows.each do |row|
             while row.children.last && row.children.last.children.empty?
               row.children.pop
             end
           end
 
-          # Find maximum column count
           max_cols = rows.map { |row| row.children.size }.max
 
-          # Add empty cells to rows that need them
           rows.each do |row|
             cells_needed = max_cols - row.children.size
             cells_needed.times do
-              # Determine cell type based on whether this is a header row
-              # Check if first cell is :th to determine if this is a header row
               cell_type = row.children.first&.cell_type == :th ? :th : :td
               empty_cell = create_node(AST::TableCellNode, cell_type: cell_type)
               row.add_child(empty_cell)
@@ -192,8 +176,6 @@ module ReVIEW
         # Matches the logic in Builder#table_row_separator_regexp
         # @return [Regexp] Separator pattern
         def row_separator_regexp
-          # Get config from chapter's book (same as Builder pattern)
-          # Handle cases where chapter or book may not exist (e.g., in tests)
           chapter = @ast_compiler.chapter
           config = if chapter && chapter.respond_to?(:book) && chapter.book
                      chapter.book.config || {}
