@@ -251,7 +251,7 @@ module ReVIEW
               item_number: index_item_number(item),
               chapter_id: chapter_id,
               item_id: item_id,
-              caption: extract_caption(item)
+              caption_node: item.caption_node
             )
           else
             raise CompileError, "Image reference not found: #{id}"
@@ -262,7 +262,7 @@ module ReVIEW
             chapter_number: @chapter.number,
             item_number: index_item_number(item),
             item_id: id,
-            caption: extract_caption(item)
+            caption_node: item.caption_node
           )
         else
           raise CompileError, "Image reference not found: #{id}"
@@ -285,7 +285,7 @@ module ReVIEW
               item_number: index_item_number(item),
               chapter_id: chapter_id,
               item_id: item_id,
-              caption: extract_caption(item)
+              caption_node: item.caption_node
             )
           else
             raise CompileError, "Table reference not found: #{id}"
@@ -296,7 +296,7 @@ module ReVIEW
             chapter_number: @chapter.number,
             item_number: index_item_number(item),
             item_id: id,
-            caption: extract_caption(item)
+            caption_node: item.caption_node
           )
         else
           raise CompileError, "Table reference not found: #{id}"
@@ -317,7 +317,7 @@ module ReVIEW
               item_number: index_item_number(item),
               chapter_id: chapter_id,
               item_id: item_id,
-              caption: extract_caption(item)
+              caption_node: item.caption_node
             )
           else
             raise CompileError, "List reference not found: #{id}"
@@ -328,7 +328,7 @@ module ReVIEW
             chapter_number: @chapter.number,
             item_number: index_item_number(item),
             item_id: id,
-            caption: extract_caption(item)
+            caption_node: item.caption_node
           )
         else
           raise CompileError, "List reference not found: #{id}"
@@ -342,7 +342,7 @@ module ReVIEW
             chapter_number: @chapter.number,
             item_number: index_item_number(item),
             item_id: id,
-            caption: extract_caption(item)
+            caption_node: item.caption_node
           )
         else
           raise CompileError, "Equation reference not found: #{id}"
@@ -362,7 +362,7 @@ module ReVIEW
           ResolvedData.footnote(
             item_number: number,
             item_id: id,
-            caption: extract_caption(item)
+            caption_node: nil # Footnotes don't use caption_node
           )
         else
           raise CompileError, "Footnote reference not found: #{id}"
@@ -380,7 +380,7 @@ module ReVIEW
           ResolvedData.endnote(
             item_number: number,
             item_id: id,
-            caption: extract_caption(item)
+            caption_node: nil # Endnotes don't use caption_node
           )
         else
           raise CompileError, "Endnote reference not found: #{id}"
@@ -399,7 +399,7 @@ module ReVIEW
             item_number: index_item_number(item),
             chapter_id: chapter_id,
             item_id: item_id,
-            caption: extract_caption(item)
+            caption_node: item.caption_node
           )
         else
           item = safe_column_fetch(@chapter, id)
@@ -407,7 +407,7 @@ module ReVIEW
             chapter_number: @chapter.number,
             item_number: index_item_number(item),
             item_id: id,
-            caption: extract_caption(item)
+            caption_node: item.caption_node
           )
         end
       end
@@ -468,7 +468,6 @@ module ReVIEW
 
           ResolvedData.headline(
             headline_number: headline.number,
-            headline_caption: headline.caption || '',
             chapter_id: chapter_id,
             item_id: headline_id,
             caption_node: headline.caption_node
@@ -487,7 +486,6 @@ module ReVIEW
 
           ResolvedData.headline(
             headline_number: headline.number,
-            headline_caption: headline.caption || '',
             item_id: id,
             caption_node: headline.caption_node
           )
@@ -516,7 +514,7 @@ module ReVIEW
               chapter_number: @chapter.number,
               item_number: index_item_number(item),
               item_id: id,
-              caption: extract_caption(item)
+              caption_node: item.caption_node
             )
           end
         end
@@ -529,7 +527,7 @@ module ReVIEW
               chapter_number: @chapter.number,
               item_number: index_item_number(item),
               item_id: id,
-              caption: extract_caption(item)
+              caption_node: item.caption_node
             )
           end
         end
@@ -542,7 +540,7 @@ module ReVIEW
               chapter_number: @chapter.number,
               item_number: index_item_number(item),
               item_id: id,
-              caption: extract_caption(item)
+              caption_node: item.caption_node
             )
           end
         end
@@ -555,7 +553,7 @@ module ReVIEW
               chapter_number: @chapter.number,
               item_number: index_item_number(item),
               item_id: id,
-              caption: extract_caption(item)
+              caption_node: item.caption_node
             )
           end
         end
@@ -566,9 +564,7 @@ module ReVIEW
           if item
             return ResolvedData.headline(
               headline_number: item.number,
-              headline_caption: item.caption || '',
               item_id: id,
-              caption: extract_caption(item),
               caption_node: item.caption_node
             )
           end
@@ -582,7 +578,7 @@ module ReVIEW
               chapter_number: @chapter.number,
               item_number: index_item_number(item),
               item_id: id,
-              caption: extract_caption(item)
+              caption_node: item.caption_node
             )
           end
         end
@@ -599,16 +595,6 @@ module ReVIEW
 
         number = item.respond_to?(:number) ? item.number : nil
         number.nil? ? nil : number.to_s
-      end
-
-      def extract_caption(item)
-        return unless item
-
-        if item.respond_to?(:caption)
-          item.caption
-        elsif item.respond_to?(:content)
-          item.content
-        end
       end
 
       # Safely search for items from index

@@ -2439,7 +2439,7 @@ module ReVIEW
 
       def format_headline_reference(data)
         number_str = data.headline_number.join('.')
-        caption = data.headline_caption
+        caption = data.caption_text
 
         if number_str.empty?
           "「#{escape(caption)}」"

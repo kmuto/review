@@ -132,8 +132,6 @@ module ReVIEW
           )
           process_inline_content(cm_node, caption_node)
 
-          caption_text = caption_node.to_text
-
           # Create headline node
           headline = HeadlineNode.new(
             location: current_location(cm_node),

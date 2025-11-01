@@ -74,11 +74,11 @@ module ReVIEW
         label = safe_i18n(label_key)
         number_text = format_reference_number(data)
         base = "#{label}#{number_text}"
-        caption = data.caption
-        if caption && !caption.to_s.empty?
-          "#{base}#{caption_separator}#{caption}"
-        else
+        caption_text = data.caption_text
+        if caption_text.empty?
           base
+        else
+          "#{base}#{caption_separator}#{caption_text}"
         end
       end
 
@@ -109,11 +109,11 @@ module ReVIEW
 
       def format_headline_reference(data)
         headline_number = data.headline_number
-        caption = data.headline_caption || data.caption
+        caption = data.caption_text
         if headline_number && !headline_number.empty?
           number_text = headline_number.join('.')
           safe_i18n('hd_quote', [number_text, caption])
-        elsif caption
+        elsif !caption.empty?
           safe_i18n('hd_quote_without_number', caption)
         else
           data.item_id || @ref_id
@@ -121,11 +121,11 @@ module ReVIEW
       end
 
       def format_column_reference(data)
-        caption = data.caption
-        if caption && !caption.to_s.empty?
-          safe_i18n('column', caption)
-        else
+        caption_text = data.caption_text
+        if caption_text.empty?
           data.item_id || @ref_id
+        else
+          safe_i18n('column', caption_text)
         end
       end
 

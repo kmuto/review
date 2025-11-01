@@ -2,6 +2,8 @@
 
 require_relative '../test_helper'
 require 'review/ast/resolved_data'
+require 'review/ast/caption_node'
+require 'review/ast/text_node'
 
 class ResolvedDataTest < Test::Unit::TestCase
   def test_cross_chapter?
@@ -54,6 +56,30 @@ class ResolvedDataTest < Test::Unit::TestCase
 
     assert_equal data1, data2
     assert_not_equal(data1, data3)
+  end
+
+  def test_caption_text
+    # With caption_node
+    caption_node = ReVIEW::AST::CaptionNode.new(location: nil)
+    caption_node.add_child(ReVIEW::AST::TextNode.new(location: nil, content: 'Test Caption'))
+
+    data = ReVIEW::AST::ResolvedData.image(
+      chapter_number: '1',
+      item_number: 1,
+      item_id: 'img01',
+      caption_node: caption_node
+    )
+
+    assert_equal 'Test Caption', data.caption_text
+
+    # Without caption_node
+    data2 = ReVIEW::AST::ResolvedData.image(
+      chapter_number: '1',
+      item_number: 2,
+      item_id: 'img02'
+    )
+
+    assert_equal '', data2.caption_text
   end
 
   def test_factory_method_image
@@ -141,15 +167,18 @@ class ResolvedDataTest < Test::Unit::TestCase
   end
 
   def test_factory_method_headline
+    caption_node = ReVIEW::AST::CaptionNode.new(location: nil)
+    caption_node.add_child(ReVIEW::AST::TextNode.new(location: nil, content: 'Installation Guide'))
+
     data = ReVIEW::AST::ResolvedData.headline(
       headline_number: [1, 2, 3],
-      headline_caption: 'Installation Guide',
       chapter_id: 'chap01',
-      item_id: 'hd123'
+      item_id: 'hd123',
+      caption_node: caption_node
     )
 
     assert_equal [1, 2, 3], data.headline_number
-    assert_equal 'Installation Guide', data.headline_caption
+    assert_equal 'Installation Guide', data.caption_text
     assert_equal 'chap01', data.chapter_id
     assert_equal 'hd123', data.item_id
   end

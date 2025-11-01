@@ -624,7 +624,7 @@ module ReVIEW
       end
 
       def format_headline_reference(data)
-        caption = data.headline_caption || ''
+        caption = data.caption_text
         headline_numbers = Array(data.headline_number).compact
 
         if !headline_numbers.empty?

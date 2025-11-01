@@ -15,8 +15,14 @@ module ReVIEW
     # from the presentation (how it should be displayed).
     class ResolvedData
       attr_reader :chapter_number, :item_number, :chapter_id, :item_id
-      attr_reader :chapter_title, :headline_number, :headline_caption, :word_content
-      attr_reader :caption, :caption_node
+      attr_reader :chapter_title, :headline_number, :word_content
+      attr_reader :caption_node
+
+      # Get caption text from caption_node
+      # @return [String] Caption text, empty string if no caption_node
+      def caption_text
+        caption_node&.to_text || ''
+      end
 
       # Check if this is a cross-chapter reference
       # @return [Boolean] true if referencing an item in another chapter
@@ -41,10 +47,9 @@ module ReVIEW
           @item_number == other.item_number &&
           @chapter_id == other.chapter_id &&
           @item_id == other.item_id &&
-          @caption == other.caption &&
+          @caption_node == other.caption_node &&
           @chapter_title == other.chapter_title &&
           @headline_number == other.headline_number &&
-          @headline_caption == other.headline_caption &&
           @word_content == other.word_content
       end
 
@@ -64,106 +69,104 @@ module ReVIEW
       # Factory methods for common reference types
 
       # Create ResolvedData for an image reference
-      def self.image(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
+      def self.image(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
         Image.new(
           chapter_number: chapter_number,
           item_number: item_number,
           chapter_id: chapter_id,
           item_id: item_id,
-          caption: caption
+          caption_node: caption_node
         )
       end
 
       # Create ResolvedData for a table reference
-      def self.table(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
+      def self.table(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
         Table.new(
           chapter_number: chapter_number,
           item_number: item_number,
           chapter_id: chapter_id,
           item_id: item_id,
-          caption: caption
+          caption_node: caption_node
         )
       end
 
       # Create ResolvedData for a list reference
-      def self.list(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
+      def self.list(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
         List.new(
           chapter_number: chapter_number,
           item_number: item_number,
           chapter_id: chapter_id,
           item_id: item_id,
-          caption: caption
+          caption_node: caption_node
         )
       end
 
       # Create ResolvedData for an equation reference
-      def self.equation(chapter_number:, item_number:, item_id:, caption: nil)
+      def self.equation(chapter_number:, item_number:, item_id:, caption_node: nil)
         Equation.new(
           chapter_number: chapter_number,
           item_number: item_number,
           item_id: item_id,
-          caption: caption
+          caption_node: caption_node
         )
       end
 
       # Create ResolvedData for a footnote reference
-      def self.footnote(item_number:, item_id:, caption: nil)
+      def self.footnote(item_number:, item_id:, caption_node: nil)
         Footnote.new(
           item_number: item_number,
           item_id: item_id,
-          caption: caption
+          caption_node: caption_node
         )
       end
 
       # Create ResolvedData for an endnote reference
-      def self.endnote(item_number:, item_id:, caption: nil)
+      def self.endnote(item_number:, item_id:, caption_node: nil)
         Endnote.new(
           item_number: item_number,
           item_id: item_id,
-          caption: caption
+          caption_node: caption_node
         )
       end
 
       # Create ResolvedData for a chapter reference
-      def self.chapter(chapter_number:, chapter_id:, chapter_title: nil, caption: nil)
+      def self.chapter(chapter_number:, chapter_id:, chapter_title: nil, caption_node: nil)
         Chapter.new(
           chapter_number: chapter_number,
           chapter_id: chapter_id,
           item_id: chapter_id, # For chapter refs, item_id is same as chapter_id
           chapter_title: chapter_title,
-          caption: caption
+          caption_node: caption_node
         )
       end
 
       # Create ResolvedData for a headline/section reference
-      def self.headline(headline_number:, headline_caption:, item_id:, chapter_id: nil, caption: nil, caption_node: nil)
+      def self.headline(headline_number:, item_id:, chapter_id: nil, caption_node: nil)
         Headline.new(
           item_id: item_id,
           chapter_id: chapter_id,
           headline_number: headline_number, # Array format [1, 2, 3]
-          headline_caption: headline_caption,
-          caption: caption || headline_caption,
           caption_node: caption_node
         )
       end
 
       # Create ResolvedData for a word reference
-      def self.word(word_content:, item_id:, caption: nil)
+      def self.word(word_content:, item_id:, caption_node: nil)
         Word.new(
           item_id: item_id,
           word_content: word_content,
-          caption: caption
+          caption_node: caption_node
         )
       end
 
       # Create ResolvedData for a column reference
-      def self.column(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
+      def self.column(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
         Column.new(
           chapter_number: chapter_number,
           item_number: item_number,
           chapter_id: chapter_id,
           item_id: item_id,
-          caption: caption
+          caption_node: caption_node
         )
       end
     end
@@ -171,99 +174,97 @@ module ReVIEW
     # Concrete subclasses representing each reference type
     class ResolvedData
       class Image < ResolvedData
-        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
+        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
           super()
           @chapter_number = chapter_number
           @item_number = item_number
           @chapter_id = chapter_id
           @item_id = item_id
-          @caption = caption
+          @caption_node = caption_node
         end
       end
     end
 
     class ResolvedData
       class Table < ResolvedData
-        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
+        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
           super()
           @chapter_number = chapter_number
           @item_number = item_number
           @chapter_id = chapter_id
           @item_id = item_id
-          @caption = caption
+          @caption_node = caption_node
         end
       end
     end
 
     class ResolvedData
       class List < ResolvedData
-        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
+        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
           super()
           @chapter_number = chapter_number
           @item_number = item_number
           @chapter_id = chapter_id
           @item_id = item_id
-          @caption = caption
+          @caption_node = caption_node
         end
       end
     end
 
     class ResolvedData
       class Equation < ResolvedData
-        def initialize(chapter_number:, item_number:, item_id:, caption: nil)
+        def initialize(chapter_number:, item_number:, item_id:, caption_node: nil)
           super()
           @chapter_number = chapter_number
           @item_number = item_number
           @item_id = item_id
-          @caption = caption
+          @caption_node = caption_node
         end
       end
     end
 
     class ResolvedData
       class Footnote < ResolvedData
-        def initialize(item_number:, item_id:, caption: nil)
+        def initialize(item_number:, item_id:, caption_node: nil)
           super()
           @item_number = item_number
           @item_id = item_id
-          @caption = caption
+          @caption_node = caption_node
         end
       end
     end
 
     class ResolvedData
       class Endnote < ResolvedData
-        def initialize(item_number:, item_id:, caption: nil)
+        def initialize(item_number:, item_id:, caption_node: nil)
           super()
           @item_number = item_number
           @item_id = item_id
-          @caption = caption
+          @caption_node = caption_node
         end
       end
     end
 
     class ResolvedData
       class Chapter < ResolvedData
-        def initialize(chapter_number:, chapter_id:, item_id:, chapter_title: nil, caption: nil)
+        def initialize(chapter_number:, chapter_id:, item_id:, chapter_title: nil, caption_node: nil)
           super()
           @chapter_number = chapter_number
           @chapter_id = chapter_id
           @item_id = item_id
           @chapter_title = chapter_title
-          @caption = caption
+          @caption_node = caption_node
         end
       end
     end
 
     class ResolvedData
       class Headline < ResolvedData
-        def initialize(item_id:, headline_number:, headline_caption:, chapter_id: nil, caption: nil, caption_node: nil)
+        def initialize(item_id:, headline_number:, chapter_id: nil, caption_node: nil)
           super()
           @item_id = item_id
           @chapter_id = chapter_id
           @headline_number = headline_number
-          @headline_caption = headline_caption
-          @caption = caption
           @caption_node = caption_node
         end
       end
@@ -271,24 +272,24 @@ module ReVIEW
 
     class ResolvedData
       class Word < ResolvedData
-        def initialize(item_id:, word_content:, caption: nil)
+        def initialize(item_id:, word_content:, caption_node: nil)
           super()
           @item_id = item_id
           @word_content = word_content
-          @caption = caption
+          @caption_node = caption_node
         end
       end
     end
 
     class ResolvedData
       class Column < ResolvedData
-        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption: nil)
+        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
           super()
           @chapter_number = chapter_number
           @item_number = item_number
           @chapter_id = chapter_id
           @item_id = item_id
-          @caption = caption
+          @caption_node = caption_node
         end
       end
     end

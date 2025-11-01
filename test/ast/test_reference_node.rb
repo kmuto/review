@@ -34,13 +34,16 @@ class TestReferenceNode < Test::Unit::TestCase
     assert_equal 'figure1', node.content
 
     # Resolve (creates new instance)
+    caption_node = ReVIEW::AST::CaptionNode.new(location: nil)
+    caption_node.add_child(ReVIEW::AST::TextNode.new(location: nil, content: 'サンプル図'))
+
     resolved_node = node.with_resolved_data(
       ReVIEW::AST::ResolvedData.image(
         chapter_number: '1',
         item_number: '1',
         chapter_id: 'chap01',
         item_id: 'figure1',
-        caption: 'サンプル図'
+        caption_node: caption_node
       )
     )
 
