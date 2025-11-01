@@ -1,11 +1,5 @@
 # frozen_string_literal: true
 
-# Copyright (c) 2024 Minero Aoki, Kenshi Muto
-#
-# This program is free software.
-# You can distribute or modify this program under the terms of
-# the GNU LGPL, Lesser General Public License version 2.1.
-
 require_relative '../test_helper'
 require 'review/renderer/latex_renderer'
 require 'review/ast'
