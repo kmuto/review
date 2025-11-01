@@ -78,7 +78,7 @@ module ReVIEW
         # Process table content lines into row nodes
         # @param table_node [TableNode] Table node to populate
         # @param lines [Array<String>] Content lines
-        # @param block_location [Location] Block start location
+        # @param block_location [SnapshotLocation] Block start location
         def process_content(table_node, lines, block_location)
           structure = TableStructure.from_lines(lines)
 
@@ -93,7 +93,7 @@ module ReVIEW
         # @param line [String] Line content
         # @param is_header [Boolean] Whether all cells should be header cells
         # @param first_cell_header [Boolean] Whether only first cell should be header
-        # @param block_location [Location] Block start location
+        # @param block_location [SnapshotLocation] Block start location
         # @return [TableRowNode] Created row node
         def create_row(line, block_location:, is_header: false, first_cell_header: false)
           cells = line.strip.split(row_separator_regexp).map { |s| s.sub(/\A\./, '') }
@@ -125,7 +125,7 @@ module ReVIEW
 
         # Build row nodes from table structure
         # @param structure [TableStructure] Table structure data
-        # @param block_location [Location] Block start location
+        # @param block_location [SnapshotLocation] Block start location
         # @return [Array<Array<TableRowNode>, Array<TableRowNode>>] Header rows and body rows
         def build_rows_from_structure(structure, block_location)
           header_rows = structure.header_lines.map do |line|

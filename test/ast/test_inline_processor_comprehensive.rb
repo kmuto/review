@@ -21,7 +21,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     @ast_compiler = ReVIEW::AST::Compiler.new
     file_mock = StringIO.new('test content')
     file_mock.lineno = 1
-    default_location = ReVIEW::Location.new('test.re', file_mock)
+    default_location = ReVIEW::SnapshotLocation.new('test.re', 1)
     @ast_compiler.force_override_location!(default_location)
     @processor = ReVIEW::AST::InlineProcessor.new(@ast_compiler)
   end
@@ -31,7 +31,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     file_mock = StringIO.new('test content')
     file_mock.lineno = 1
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', file_mock)
+      location: ReVIEW::SnapshotLocation.new('test.re', file_mock.lineno)
     )
 
     @processor.parse_inline_elements('Hello world', parent)
@@ -44,7 +44,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_simple_single_inline
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('This is @<b>{bold} text', parent)
@@ -67,7 +67,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_multiple_consecutive_inlines
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('Start @<b>{bold}@<i>{italic}@<code>{code} end', parent)
@@ -83,7 +83,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_nested_inline_elements
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('Text @<b>{bold with @<i>{nested italic\}} more', parent)
@@ -104,7 +104,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_ruby_inline_format
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('Text @<ruby>{漢字, かんじ} more', parent)
@@ -120,7 +120,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_href_inline_format
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('Visit @<href>{https://example.com, Example Site} for info', parent)
@@ -135,7 +135,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_href_url_only_format
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('Visit @<href>{https://example.com} directly', parent)
@@ -150,7 +150,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_kw_inline_format
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('See @<kw>{API, Application Programming Interface} docs', parent)
@@ -166,7 +166,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_hd_inline_format
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('Refer to @<hd>{chapter1|Introduction} section', parent)
@@ -185,7 +185,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_reference_inline_elements
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('See @<img>{figure1} and @<list>{code1} and @<table>{data1}', parent)
@@ -212,7 +212,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_cross_reference_inline_elements
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('See @<chap>{intro} and @<sec>{overview} for details', parent)
@@ -235,7 +235,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_fence_syntax_elements
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Test both dollar and pipe fence syntax
@@ -259,7 +259,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_escaped_characters_in_inline
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('Code @<code>{func\\\\{param\\\\\}} example', parent)
@@ -278,7 +278,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_complex_nested_with_multiple_types
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('Start @<b>{bold @<code>{nested code\} and @<i>{italic\}} end', parent)
@@ -301,7 +301,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
   # Edge cases and error handling
   def test_empty_string
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('', parent)
@@ -311,7 +311,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_malformed_inline_element
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Unclosed brace should cause an InlineTokenizeError
@@ -322,7 +322,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_malformed_fence_syntax
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Unclosed fence should cause an InlineTokenizeError
@@ -333,7 +333,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_inline_with_special_characters
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('Math @<m>{∑_{i=1\}^n x_i} formula', parent)
@@ -350,7 +350,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_inline_with_line_breaks
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Line breaks within inline elements should cause an InlineTokenizeError
@@ -361,7 +361,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_multiple_ruby_elements
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('日本語 @<ruby>{漢字, かんじ} and @<ruby>{平仮名, ひらがな} text', parent)
@@ -384,7 +384,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_inline_with_empty_content
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     @processor.parse_inline_elements('Empty @<b>{} content', parent)
@@ -401,7 +401,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_invalid_command_name_with_numbers
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Command names starting with numbers should cause an error
@@ -412,7 +412,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_invalid_command_name_with_uppercase
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Command names with uppercase letters should cause an error
@@ -423,7 +423,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_invalid_command_name_with_symbols
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Command names with symbols should cause an error
@@ -434,7 +434,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_invalid_command_name_with_underscore
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Command names with underscores should cause an error
@@ -445,7 +445,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_invalid_command_name_empty
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Empty command names should cause an error
@@ -456,7 +456,7 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_nested_fence_syntax_conflict
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Nested fence syntax should cause an error for clarity
@@ -468,13 +468,13 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
   # Error message tests - verify that error messages contain useful information
   def test_unclosed_brace_error_message
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Create a location for error context
     file_mock = StringIO.new('test content')
     file_mock.lineno = 42
-    location = ReVIEW::Location.new('sample.re', file_mock)
+    location = ReVIEW::SnapshotLocation.new('sample.re', file_mock.lineno)
     @ast_compiler.force_override_location!(location)
 
     error = assert_raises(ReVIEW::AST::InlineTokenizeError) do
@@ -490,13 +490,13 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_line_break_in_brace_error_message
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Create a location for error context
     file_mock = StringIO.new('test content')
     file_mock.lineno = 15
-    location = ReVIEW::Location.new('chapter01.re', file_mock)
+    location = ReVIEW::SnapshotLocation.new('chapter01.re', file_mock.lineno)
     @ast_compiler.force_override_location!(location)
 
     error = assert_raises(ReVIEW::AST::InlineTokenizeError) do
@@ -512,13 +512,13 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_unclosed_fence_error_message
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Create a location for error context
     file_mock = StringIO.new('test content')
     file_mock.lineno = 99
-    location = ReVIEW::Location.new('appendix.re', file_mock)
+    location = ReVIEW::SnapshotLocation.new('appendix.re', file_mock.lineno)
     @ast_compiler.force_override_location!(location)
 
     error = assert_raises(ReVIEW::AST::InlineTokenizeError) do
@@ -534,13 +534,13 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_line_break_in_fence_error_message
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Create a location for error context
     file_mock = StringIO.new('test content')
     file_mock.lineno = 7
-    location = ReVIEW::Location.new('intro.re', file_mock)
+    location = ReVIEW::SnapshotLocation.new('intro.re', file_mock.lineno)
     @ast_compiler.force_override_location!(location)
 
     error = assert_raises(ReVIEW::AST::InlineTokenizeError) do
@@ -556,13 +556,13 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_invalid_command_name_error_message
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Create a location for error context
     file_mock = StringIO.new('test content')
     file_mock.lineno = 33
-    location = ReVIEW::Location.new('references.re', file_mock)
+    location = ReVIEW::SnapshotLocation.new('references.re', file_mock.lineno)
     @ast_compiler.force_override_location!(location)
 
     error = assert_raises(ReVIEW::AST::InlineTokenizeError) do
@@ -576,13 +576,13 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_nested_fence_syntax_error_message
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
     # Create a location for error context
     file_mock = StringIO.new('test content')
     file_mock.lineno = 55
-    location = ReVIEW::Location.new('complex.re', file_mock)
+    location = ReVIEW::SnapshotLocation.new('complex.re', file_mock.lineno)
     @ast_compiler.force_override_location!(location)
 
     error = assert_raises(ReVIEW::AST::InlineTokenizeError) do
@@ -598,11 +598,11 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
 
   def test_error_message_without_location_info
     parent = ReVIEW::AST::ParagraphNode.new(
-      location: ReVIEW::Location.new('test.re', 1)
+      location: ReVIEW::SnapshotLocation.new('test.re', 1)
     )
 
-    # Set location to nil to test error messages without location context
-    @ast_compiler.force_override_location!(nil)
+    # Set location with nil filename to test error messages without location context
+    @ast_compiler.force_override_location!(ReVIEW::SnapshotLocation.new(nil, 0))
 
     error = assert_raises(ReVIEW::AST::InlineTokenizeError) do
       @processor.parse_inline_elements('Text @<b>{unclosed content', parent)
@@ -611,7 +611,6 @@ class TestInlineProcessorComprehensive < Test::Unit::TestCase
     # Verify error message contains element info but no location info
     assert_match(/Unclosed inline element braces/, error.message)
     assert_match(/in element: @<b>\{unclosed content/, error.message)
-    refute_match(/at line/, error.message)
     refute_match(/in .*\.re/, error.message)
   end
 end

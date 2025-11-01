@@ -20,7 +20,7 @@ module ReVIEW
 
       # Initialize MarkdownHtmlNode
       #
-      # @param location [Location] Source location
+      # @param location [SnapshotLocation] Source location
       # @param html_content [String] Raw HTML content
       # @param html_type [Symbol] Type of HTML content (:comment, :tag, :block)
       def initialize(location:, html_content:, html_type: :block)

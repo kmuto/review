@@ -236,9 +236,9 @@ module ReVIEW
         end
 
         # Get current location for node creation
-        # @return [Location, nil] Current location
+        # @return [SnapshotLocation] Current location
         def current_location
-          @location_provider&.location
+          @location_provider.location
         end
       end
     end

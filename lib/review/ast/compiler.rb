@@ -292,7 +292,7 @@ module ReVIEW
 
       # Force override current location - FOR TESTING ONLY
       # This method bypasses normal location tracking and should only be used in tests
-      # @param location [Location] The location to force set
+      # @param location [SnapshotLocation] The location to force set
       def force_override_location!(location)
         @current_location = location
       end
@@ -355,7 +355,7 @@ module ReVIEW
       # Temporarily override location information and execute block
       # Automatically restore original location information after block execution
       #
-      # @param new_location [Location] Location information to set temporarily
+      # @param new_location [SnapshotLocation] Location information to set temporarily
       # @yield New location information is effective during block execution
       # @return [Object] Block execution result
       def with_temporary_location!(new_location)

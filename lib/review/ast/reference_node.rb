@@ -24,7 +24,7 @@ module ReVIEW
       # @param resolved [Boolean] 参照が解決済みかどうか
       # @param resolved_content [String, nil] 解決された内容（後方互換性のため）
       # @param resolved_data [ResolvedData, nil] 構造化された解決済みデータ
-      # @param location [Location, nil] ソースコード内の位置情報
+      # @param location [SnapshotLocation, nil] ソースコード内の位置情報
       def initialize(ref_id, context_id = nil, resolved_data: nil, location: nil)
         # 解決済みの場合はresolved_dataを、未解決の場合は元の参照IDを表示
         content = if resolved_data

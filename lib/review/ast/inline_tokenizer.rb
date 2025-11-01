@@ -103,7 +103,7 @@ module ReVIEW
     class InlineTokenizer
       # Tokenize string into inline elements and text parts
       # @param str [String] The input string to tokenize
-      # @param location [Location] Current file location for error reporting
+      # @param location [SnapshotLocation] Current file location for error reporting
       # @return [Array<Token>] Array of Token objects (TextToken or InlineToken)
       def tokenize(str, location: nil)
         @location = location

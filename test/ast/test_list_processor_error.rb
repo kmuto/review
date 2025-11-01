@@ -37,7 +37,7 @@ class TestListProcessorError < Test::Unit::TestCase
     # Set location manually for testing
     mock_file = StringIO.new(content)
     mock_file.define_singleton_method(:lineno) { 3 }
-    location = ReVIEW::Location.new('unknown_list.re', mock_file)
+    location = ReVIEW::SnapshotLocation.new('unknown_list.re', 3)
     compiler.force_override_location!(location)
 
     error = assert_raises(ReVIEW::CompileError) do
