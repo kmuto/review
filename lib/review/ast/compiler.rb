@@ -68,9 +68,6 @@ module ReVIEW
         @block_processor = BlockProcessor.new(self)
         @list_processor = ListProcessor.new(self)
 
-        # Block-scoped compilation support
-        @block_context_stack = []
-
         @logger = ReVIEW.logger
 
         # Get config for debug output
@@ -139,11 +136,9 @@ module ReVIEW
 
       def build_ast_from_chapter
         f = LineInput.from_string(@chapter.content)
-        @lineno = 0
 
         # Build the complete AST structure
         while f.next?
-          @lineno = f.lineno
           # Create a snapshot location that captures the current line number
           @current_location = SnapshotLocation.new(@chapter.basename, f.lineno + 1)
           line_content = f.peek
@@ -359,13 +354,8 @@ module ReVIEW
       # @return [Object] Processing result within block
       def with_block_context(block_data)
         context = BlockContext.new(block_data: block_data, compiler: self)
-        @block_context_stack.push(context)
 
-        begin
-          yield(context)
-        ensure
-          @block_context_stack.pop
-        end
+        yield(context)
       end
 
       # Temporarily override location information and execute block
