@@ -7,7 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/ast'
-require 'review/ast/compiler/block_data'
+require 'review/ast/block_data'
 require 'review/ast/block_processor/code_block_structure'
 require 'review/ast/block_processor/table_processor'
 require 'review/lineinput'
