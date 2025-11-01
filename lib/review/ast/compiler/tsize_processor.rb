@@ -9,6 +9,7 @@
 require 'review/ast/node'
 require 'review/ast/block_node'
 require 'review/ast/table_node'
+require_relative 'base_processor'
 
 module ReVIEW
   module AST
@@ -21,18 +22,10 @@ module ReVIEW
       #
       # Usage:
       #   TsizeProcessor.process(ast_root, chapter: chapter)
-      class TsizeProcessor
-        def self.process(ast_root, chapter: nil)
-          new(chapter: chapter).process(ast_root)
-        end
-
-        def initialize(chapter: nil)
+      class TsizeProcessor < BaseProcessor
+        def initialize(chapter:, compiler:)
+          super
           @target_format = determine_target_format(chapter)
-        end
-
-        # Process the AST to handle tsize commands
-        def process(ast_root)
-          process_node(ast_root)
         end
 
         private

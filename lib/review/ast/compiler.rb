@@ -118,23 +118,23 @@ module ReVIEW
 
       def execute_post_processes
         # Post-process AST for tsize commands (must be before other processors)
-        TsizeProcessor.process(@ast_root, chapter: @chapter)
+        TsizeProcessor.process(@ast_root, chapter: @chapter, compiler: self)
 
         # Post-process AST for firstlinenum commands
-        FirstLineNumProcessor.process(@ast_root)
+        FirstLineNumProcessor.process(@ast_root, chapter: @chapter, compiler: self)
 
         # Post-process AST for noindent and olnum commands
-        NoindentProcessor.process(@ast_root)
-        OlnumProcessor.process(@ast_root)
+        NoindentProcessor.process(@ast_root, chapter: @chapter, compiler: self)
+        OlnumProcessor.process(@ast_root, chapter: @chapter, compiler: self)
 
         # Normalize list structures (process //beginchild and //endchild)
-        ListStructureNormalizer.process(@ast_root, compiler: self)
+        ListStructureNormalizer.process(@ast_root, chapter: @chapter, compiler: self)
 
         # Assign item numbers to ordered list items
-        ListItemNumberingProcessor.process(@ast_root)
+        ListItemNumberingProcessor.process(@ast_root, chapter: @chapter, compiler: self)
 
         # Generate auto_id for HeadlineNode (nonum/notoc/nodisp) and ColumnNode
-        AutoIdProcessor.process(@ast_root, chapter: @chapter)
+        AutoIdProcessor.process(@ast_root, chapter: @chapter, compiler: self)
       end
 
       def build_ast_from_chapter

@@ -9,6 +9,7 @@
 require 'review/ast/node'
 require 'review/ast/block_node'
 require 'review/ast/paragraph_node'
+require_relative 'base_processor'
 
 module ReVIEW
   module AST
@@ -21,16 +22,7 @@ module ReVIEW
       #
       # Usage:
       #   NoindentProcessor.process(ast_root)
-      class NoindentProcessor
-        def self.process(ast_root)
-          new.process(ast_root)
-        end
-
-        # Process the AST to handle noindent commands
-        def process(ast_root)
-          process_node(ast_root)
-        end
-
+      class NoindentProcessor < BaseProcessor
         private
 
         def process_node(node)

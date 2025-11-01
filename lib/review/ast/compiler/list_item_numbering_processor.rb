@@ -8,6 +8,7 @@
 
 require 'review/ast/node'
 require 'review/ast/list_node'
+require_relative 'base_processor'
 
 module ReVIEW
   module AST
@@ -20,20 +21,16 @@ module ReVIEW
       #
       # Usage:
       #   ListItemNumberingProcessor.process(ast_root)
-      class ListItemNumberingProcessor
-        def self.process(ast_root)
-          new.process(ast_root)
-        end
+      class ListItemNumberingProcessor < BaseProcessor
+        private
 
-        def process(node)
+        def process_node(node)
           if ordered_list_node?(node)
             assign_item_numbers(node)
           end
 
           node.children.each { |child| process(child) }
         end
-
-        private
 
         def ordered_list_node?(node)
           node.is_a?(ListNode) && node.ol?

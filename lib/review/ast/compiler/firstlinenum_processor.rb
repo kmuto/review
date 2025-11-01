@@ -9,6 +9,7 @@
 require 'review/ast/node'
 require 'review/ast/block_node'
 require 'review/ast/code_block_node'
+require_relative 'base_processor'
 
 module ReVIEW
   module AST
@@ -21,19 +22,7 @@ module ReVIEW
       #
       # Usage:
       #   FirstLineNumProcessor.process(ast_root)
-      class FirstLineNumProcessor
-        def self.process(ast_root)
-          new.process(ast_root)
-        end
-
-        def initialize
-        end
-
-        # Process the AST to handle firstlinenum commands
-        def process(ast_root)
-          process_node(ast_root)
-        end
-
+      class FirstLineNumProcessor < BaseProcessor
         private
 
         def process_node(node)

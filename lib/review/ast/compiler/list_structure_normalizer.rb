@@ -12,6 +12,7 @@ require 'review/ast/list_node'
 require 'review/ast/paragraph_node'
 require 'review/ast/text_node'
 require 'review/ast/inline_processor'
+require_relative 'base_processor'
 
 module ReVIEW
   module AST
@@ -39,22 +40,12 @@ module ReVIEW
       #
       # Usage:
       #   ListStructureNormalizer.process(ast_root)
-      class ListStructureNormalizer
-        def self.process(ast_root, compiler:)
-          new(compiler: compiler).process(ast_root)
-        end
-
-        def initialize(compiler:)
-          @compiler = compiler
-        end
-
-        # Process the AST to normalize list structures
-        def process(ast_root)
-          normalize_node(ast_root)
-          ast_root
-        end
-
+      class ListStructureNormalizer < BaseProcessor
         private
+
+        def process_node(node)
+          normalize_node(node)
+        end
 
         def normalize_node(node)
           return if node.children.empty?

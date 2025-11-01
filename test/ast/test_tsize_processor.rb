@@ -16,6 +16,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     @config['builder'] = 'latex'
     @book = ReVIEW::Book::Base.new(config: @config)
     @chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new)
+    @compiler = ReVIEW::AST::Compiler.new
   end
 
   def test_process_tsize_for_latex
@@ -35,7 +36,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     table.add_body_row(row)
     root.add_child(table)
 
-    ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter)
+    ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter, compiler: @compiler)
 
     # Verify tsize block was removed
     assert_equal 1, root.children.length
@@ -63,7 +64,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(table)
 
     # Process with latex target
-    ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter)
+    ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter, compiler: @compiler)
 
     # Verify table has col_spec set
     assert_equal '|p{10mm}|p{20mm}|p{30mm}|', table.col_spec
@@ -87,7 +88,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(table)
 
     # Process with latex target
-    ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter)
+    ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter, compiler: @compiler)
 
     # Verify table uses default col_spec
     assert_nil(table.col_spec)
@@ -111,7 +112,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     table.add_body_row(row)
     root.add_child(table)
 
-    ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter)
+    ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter, compiler: @compiler)
 
     assert_equal '|l|c|r|', table.col_spec
     assert_equal ['l', 'c', 'r'], table.cellwidth
@@ -148,7 +149,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     table2.add_body_row(row2)
     root.add_child(table2)
 
-    ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter)
+    ReVIEW::AST::Compiler::TsizeProcessor.process(root, chapter: @chapter, compiler: @compiler)
 
     # Verify both tsize blocks are removed
     assert_equal 2, root.children.length
