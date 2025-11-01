@@ -139,7 +139,6 @@ module ReVIEW
             location: current_location(cm_node),
             level: level,
             label: nil, # Markdown doesn't have explicit labels
-            caption: caption_text,
             caption_node: caption_node
           )
 
@@ -515,7 +514,6 @@ module ReVIEW
         # Create column node
         column_node = ColumnNode.new(
           location: html_node.location,
-          caption: caption_node&.to_text,
           caption_node: caption_node
         )
 
@@ -544,7 +542,6 @@ module ReVIEW
         # Create column node
         column_node = ColumnNode.new(
           location: current_location(cm_node),
-          caption: caption_node&.to_text,
           caption_node: caption_node
         )
 
@@ -633,7 +630,6 @@ module ReVIEW
         image_block = ImageNode.new(
           location: current_location(image_node),
           id: image_id,
-          caption: caption_node&.to_text,
           caption_node: caption_node,
           image_type: :image
         )
