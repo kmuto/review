@@ -81,6 +81,27 @@ module ReVIEW
 
         # Commands that preserve content as-is (matching ReVIEW::Compiler behavior)
         @non_parsed_commands = %i[embed texequation graph]
+
+        @post_processors = [
+          # Post-process AST for tsize commands (must be before other processors)
+          'ReVIEW::AST::Compiler::TsizeProcessor',
+
+          # Post-process AST for firstlinenum commands
+          'ReVIEW::AST::Compiler::FirstLineNumProcessor',
+
+          # Post-process AST for noindent and olnum commands
+          'ReVIEW::AST::Compiler::NoindentProcessor',
+          'ReVIEW::AST::Compiler::OlnumProcessor',
+
+          # Normalize list structures (process //beginchild and //endchild)
+          'ReVIEW::AST::Compiler::ListStructureNormalizer',
+
+          # Assign item numbers to ordered list items
+          'ReVIEW::AST::Compiler::ListItemNumberingProcessor',
+
+          # Generate auto_id for HeadlineNode (nonum/notoc/nodisp) and ColumnNode
+          'ReVIEW::AST::Compiler::AutoIdProcessor'
+        ]
       end
 
       attr_reader :ast_root, :current_ast_node, :chapter, :inline_processor, :block_processor, :list_processor
@@ -117,24 +138,10 @@ module ReVIEW
       end
 
       def execute_post_processes
-        # Post-process AST for tsize commands (must be before other processors)
-        TsizeProcessor.process(@ast_root, chapter: @chapter, compiler: self)
-
-        # Post-process AST for firstlinenum commands
-        FirstLineNumProcessor.process(@ast_root, chapter: @chapter, compiler: self)
-
-        # Post-process AST for noindent and olnum commands
-        NoindentProcessor.process(@ast_root, chapter: @chapter, compiler: self)
-        OlnumProcessor.process(@ast_root, chapter: @chapter, compiler: self)
-
-        # Normalize list structures (process //beginchild and //endchild)
-        ListStructureNormalizer.process(@ast_root, chapter: @chapter, compiler: self)
-
-        # Assign item numbers to ordered list items
-        ListItemNumberingProcessor.process(@ast_root, chapter: @chapter, compiler: self)
-
-        # Generate auto_id for HeadlineNode (nonum/notoc/nodisp) and ColumnNode
-        AutoIdProcessor.process(@ast_root, chapter: @chapter, compiler: self)
+        @post_processors.each do |processor_name|
+          processor_klass = Object.const_get(processor_name)
+          processor_klass.process(@ast_root, chapter: @chapter, compiler: self)
+        end
       end
 
       def build_ast_from_chapter
