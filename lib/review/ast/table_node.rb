@@ -10,7 +10,7 @@ module ReVIEW
       attr_accessor :caption_node, :col_spec, :cellwidth
       attr_reader :table_type, :metric
 
-      def initialize(location: nil, id: nil, caption_node: nil, table_type: :table, metric: nil, col_spec: nil, cellwidth: nil, **kwargs)
+      def initialize(location:, id: nil, caption_node: nil, table_type: :table, metric: nil, col_spec: nil, cellwidth: nil, **kwargs)
         super(location: location, id: id, **kwargs)
         @caption_node = caption_node
         @table_type = table_type # :table, :emtable, :imgtable

@@ -10,7 +10,7 @@ module ReVIEW
       attr_accessor :caption_node
       attr_reader :minicolumn_type
 
-      def initialize(location: nil, minicolumn_type: nil, caption_node: nil, **kwargs)
+      def initialize(location:, minicolumn_type: nil, caption_node: nil, **kwargs)
         super(location: location, **kwargs)
         @minicolumn_type = minicolumn_type # :note, :memo, :tip, :info, :warning, :important, :caution, :notice
         @caption_node = caption_node

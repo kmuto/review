@@ -58,11 +58,11 @@ module ReVIEW
       # @param line [String] headline line (e.g., "== [nonum]{label}Caption")
       # @param location [SnapshotLocation] location information for error messages
       # @return [ParseResult, nil] parsed result or nil if not a headline
-      def self.parse(line, location: nil)
+      def self.parse(line, location:)
         new(line, location: location).parse
       end
 
-      def initialize(line, location: nil)
+      def initialize(line, location:)
         @line = line
         @location = location
       end

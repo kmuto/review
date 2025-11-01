@@ -8,7 +8,7 @@ module ReVIEW
       attr_reader :list_type
       attr_accessor :start_number, :olnum_start
 
-      def initialize(location: nil, list_type: nil, start_number: nil, olnum_start: nil, **kwargs)
+      def initialize(location:, list_type: nil, start_number: nil, olnum_start: nil, **kwargs)
         super(location: location, **kwargs)
         @list_type = list_type # :ul, :ol, :dl
         @start_number = start_number
@@ -52,7 +52,7 @@ module ReVIEW
       attr_reader :level, :number, :item_type, :term_children
       attr_accessor :item_number
 
-      def initialize(location: nil, level: 1, number: nil, item_type: nil, term_children: [], **kwargs)
+      def initialize(location:, level: 1, number: nil, item_type: nil, term_children: [], **kwargs)
         super(location: location, **kwargs)
         @level = level
         @number = number

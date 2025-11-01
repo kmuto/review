@@ -25,7 +25,7 @@ module ReVIEW
       # @param resolved_content [String, nil] 解決された内容（後方互換性のため）
       # @param resolved_data [ResolvedData, nil] 構造化された解決済みデータ
       # @param location [SnapshotLocation, nil] ソースコード内の位置情報
-      def initialize(ref_id, context_id = nil, resolved_data: nil, location: nil)
+      def initialize(ref_id, context_id = nil, location:, resolved_data: nil)
         # 解決済みの場合はresolved_dataを、未解決の場合は元の参照IDを表示
         content = if resolved_data
                     # resolved_dataから適切なコンテンツを生成（デフォルト表現）

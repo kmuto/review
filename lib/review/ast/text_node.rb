@@ -5,7 +5,7 @@ require 'review/ast/leaf_node'
 module ReVIEW
   module AST
     class TextNode < LeafNode
-      def initialize(location: nil, content: '', **kwargs)
+      def initialize(location:, content: '', **kwargs)
         super
       end
 

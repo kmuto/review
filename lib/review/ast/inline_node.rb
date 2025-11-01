@@ -7,7 +7,7 @@ module ReVIEW
     class InlineNode < Node
       attr_reader :inline_type, :args
 
-      def initialize(location: nil, inline_type: nil, args: nil, **kwargs)
+      def initialize(location:, inline_type: nil, args: nil, **kwargs)
         super(location: location, **kwargs)
         @inline_type = inline_type
         @args = args || []

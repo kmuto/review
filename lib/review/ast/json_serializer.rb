@@ -229,7 +229,7 @@ module ReVIEW
 
           case node_type
           when 'DocumentNode'
-            node = ReVIEW::AST::DocumentNode.new
+            node = ReVIEW::AST::DocumentNode.new(location: restore_location(hash))
             if hash['content'] || hash['children']
               children = (hash['content'] || hash['children'] || []).map { |child| deserialize_from_hash(child) }
               children.each { |child| node.add_child(child) if child.is_a?(ReVIEW::AST::Node) }

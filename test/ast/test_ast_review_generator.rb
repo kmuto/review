@@ -14,13 +14,13 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   end
 
   def test_empty_document
-    doc = ReVIEW::AST::DocumentNode.new
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
     result = @generator.generate(doc)
     assert_equal '', result
   end
 
   def test_headline
-    doc = ReVIEW::AST::DocumentNode.new
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
 
     # Create caption node
     caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
@@ -39,9 +39,9 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   end
 
   def test_paragraph_with_text
-    doc = ReVIEW::AST::DocumentNode.new
-    para = ReVIEW::AST::ParagraphNode.new
-    para.add_child(ReVIEW::AST::TextNode.new(content: 'Hello, world!'))
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    para = ReVIEW::AST::ParagraphNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    para.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Hello, world!'))
     doc.add_child(para)
 
     result = @generator.generate(doc)
@@ -49,16 +49,16 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   end
 
   def test_inline_elements
-    doc = ReVIEW::AST::DocumentNode.new
-    para = ReVIEW::AST::ParagraphNode.new
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    para = ReVIEW::AST::ParagraphNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
 
-    para.add_child(ReVIEW::AST::TextNode.new(content: 'This is '))
+    para.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'This is '))
 
-    bold = ReVIEW::AST::InlineNode.new(inline_type: :b)
-    bold.add_child(ReVIEW::AST::TextNode.new(content: 'bold'))
+    bold = ReVIEW::AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :b)
+    bold.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'bold'))
     para.add_child(bold)
 
-    para.add_child(ReVIEW::AST::TextNode.new(content: ' text.'))
+    para.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: ' text.'))
     doc.add_child(para)
 
     result = @generator.generate(doc)
@@ -66,7 +66,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   end
 
   def test_code_block_with_id
-    doc = ReVIEW::AST::DocumentNode.new
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
 
     # Create caption node
     caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
@@ -102,7 +102,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   end
 
   def test_code_block_without_id
-    doc = ReVIEW::AST::DocumentNode.new
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
     code = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       original_text: 'echo "Hello"',
@@ -127,15 +127,15 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   end
 
   def test_unordered_list
-    doc = ReVIEW::AST::DocumentNode.new
-    list = ReVIEW::AST::ListNode.new(list_type: :ul)
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    list = ReVIEW::AST::ListNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), list_type: :ul)
 
-    item1 = ReVIEW::AST::ListItemNode.new(level: 1)
-    item1.add_child(ReVIEW::AST::TextNode.new(content: 'First item'))
+    item1 = ReVIEW::AST::ListItemNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1)
+    item1.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'First item'))
     list.add_child(item1)
 
-    item2 = ReVIEW::AST::ListItemNode.new(level: 1)
-    item2.add_child(ReVIEW::AST::TextNode.new(content: 'Second item'))
+    item2 = ReVIEW::AST::ListItemNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1)
+    item2.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Second item'))
     list.add_child(item2)
 
     doc.add_child(list)
@@ -150,7 +150,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   end
 
   def test_table
-    doc = ReVIEW::AST::DocumentNode.new
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
 
     # Create caption node
     caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
@@ -200,7 +200,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   end
 
   def test_image
-    doc = ReVIEW::AST::DocumentNode.new
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
 
     # Create caption node
     caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
@@ -218,7 +218,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   end
 
   def test_minicolumn
-    doc = ReVIEW::AST::DocumentNode.new
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
 
     # Create caption node
     caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
@@ -229,8 +229,8 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
       minicolumn_type: :note,
       caption_node: caption_node
     )
-    para = ReVIEW::AST::ParagraphNode.new
-    para.add_child(ReVIEW::AST::TextNode.new(content: 'This is a note.'))
+    para = ReVIEW::AST::ParagraphNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    para.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'This is a note.'))
     minicolumn.add_child(para)
     doc.add_child(minicolumn)
 
@@ -246,7 +246,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   end
 
   def test_complex_document
-    doc = ReVIEW::AST::DocumentNode.new
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
 
     # Headline with caption
     h1_caption = ReVIEW::AST::CaptionNode.new(location: @location)
@@ -256,12 +256,12 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
     doc.add_child(h1)
 
     # Paragraph with inline
-    para = ReVIEW::AST::ParagraphNode.new
-    para.add_child(ReVIEW::AST::TextNode.new(content: 'This is '))
-    code_inline = ReVIEW::AST::InlineNode.new(inline_type: :code)
-    code_inline.add_child(ReVIEW::AST::TextNode.new(content: 'inline code'))
+    para = ReVIEW::AST::ParagraphNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    para.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'This is '))
+    code_inline = ReVIEW::AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :code)
+    code_inline.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'inline code'))
     para.add_child(code_inline)
-    para.add_child(ReVIEW::AST::TextNode.new(content: '.'))
+    para.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: '.'))
     h1.add_child(para)
 
     # Code block
@@ -293,11 +293,11 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   end
 
   def test_inline_with_args
-    doc = ReVIEW::AST::DocumentNode.new
-    para = ReVIEW::AST::ParagraphNode.new
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    para = ReVIEW::AST::ParagraphNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
 
     # href with URL
-    href = ReVIEW::AST::InlineNode.new(inline_type: :href, args: ['https://example.com'])
+    href = ReVIEW::AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :href, args: ['https://example.com'])
     para.add_child(href)
 
     doc.add_child(para)
@@ -307,15 +307,15 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   end
 
   def test_ordered_list
-    doc = ReVIEW::AST::DocumentNode.new
-    list = ReVIEW::AST::ListNode.new(list_type: :ol)
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    list = ReVIEW::AST::ListNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), list_type: :ol)
 
-    item1 = ReVIEW::AST::ListItemNode.new(level: 1, number: 1)
-    item1.add_child(ReVIEW::AST::TextNode.new(content: 'First'))
+    item1 = ReVIEW::AST::ListItemNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, number: 1)
+    item1.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'First'))
     list.add_child(item1)
 
-    item2 = ReVIEW::AST::ListItemNode.new(level: 1, number: 2)
-    item2.add_child(ReVIEW::AST::TextNode.new(content: 'Second'))
+    item2 = ReVIEW::AST::ListItemNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, number: 2)
+    item2.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Second'))
     list.add_child(item2)
 
     doc.add_child(list)
@@ -330,14 +330,15 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   end
 
   def test_definition_list
-    doc = ReVIEW::AST::DocumentNode.new
-    list = ReVIEW::AST::ListNode.new(list_type: :dl)
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    list = ReVIEW::AST::ListNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), list_type: :dl)
 
     item = ReVIEW::AST::ListItemNode.new(
+      location: ReVIEW::SnapshotLocation.new(nil, 0),
       level: 1,
-      term_children: [ReVIEW::AST::TextNode.new(content: 'Term')]
+      term_children: [ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Term')]
     )
-    item.add_child(ReVIEW::AST::TextNode.new(content: 'Definition of the term'))
+    item.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Definition of the term'))
     list.add_child(item)
 
     doc.add_child(list)
@@ -352,20 +353,20 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   end
 
   def test_empty_paragraph_skipped
-    doc = ReVIEW::AST::DocumentNode.new
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
 
     # Non-empty paragraph
-    para1 = ReVIEW::AST::ParagraphNode.new
-    para1.add_child(ReVIEW::AST::TextNode.new(content: 'Content'))
+    para1 = ReVIEW::AST::ParagraphNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    para1.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Content'))
     doc.add_child(para1)
 
     # Empty paragraph (should be skipped)
-    para2 = ReVIEW::AST::ParagraphNode.new
+    para2 = ReVIEW::AST::ParagraphNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
     doc.add_child(para2)
 
     # Another non-empty paragraph
-    para3 = ReVIEW::AST::ParagraphNode.new
-    para3.add_child(ReVIEW::AST::TextNode.new(content: 'More content'))
+    para3 = ReVIEW::AST::ParagraphNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    para3.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'More content'))
     doc.add_child(para3)
 
     result = @generator.generate(doc)

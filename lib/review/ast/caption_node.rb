@@ -6,10 +6,6 @@ module ReVIEW
   module AST
     # Represents a caption that can contain both text and inline elements
     class CaptionNode < Node
-      def initialize(location: nil, **kwargs)
-        super
-      end
-
       # Convert caption to plain text format for legacy Builder compatibility
       def to_text
         return '' if children.empty?

@@ -178,17 +178,17 @@ class TestBlockProcessorInline < Test::Unit::TestCase
 
     # Already a CaptionNode
     existing_caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
-    existing_caption_node.add_child(ReVIEW::AST::TextNode.new(content: 'Existing'))
+    existing_caption_node.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Existing'))
     caption_node4 = CaptionParserHelper.parse(existing_caption_node, location: @location)
     assert_equal existing_caption_node, caption_node4
   end
 
   def test_caption_with_multiple_nodes
     caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
-    text_node = ReVIEW::AST::TextNode.new(content: 'Text with ')
-    inline_node = ReVIEW::AST::InlineNode.new(inline_type: :b)
-    inline_node.add_child(ReVIEW::AST::TextNode.new(content: 'bold'))
-    text_node2 = ReVIEW::AST::TextNode.new(content: ' content')
+    text_node = ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Text with ')
+    inline_node = ReVIEW::AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :b)
+    inline_node.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'bold'))
+    text_node2 = ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: ' content')
     caption_node.add_child(text_node)
     caption_node.add_child(inline_node)
     caption_node.add_child(text_node2)

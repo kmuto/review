@@ -9,7 +9,7 @@ module ReVIEW
       attr_accessor :caption_node, :first_line_num
       attr_reader :lang, :line_numbers, :code_type
 
-      def initialize(location: nil, lang: nil, id: nil, caption_node: nil, line_numbers: false, code_type: nil, first_line_num: nil, **kwargs)
+      def initialize(location:, lang: nil, id: nil, caption_node: nil, line_numbers: false, code_type: nil, first_line_num: nil, **kwargs)
         super(location: location, id: id, **kwargs)
         @lang = lang
         @caption_node = caption_node

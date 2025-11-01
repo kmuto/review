@@ -27,7 +27,7 @@ module ReVIEW
     class LeafNode < Node
       attr_reader :content
 
-      def initialize(location: nil, content: nil, **kwargs)
+      def initialize(location:, content: nil, **kwargs)
         super(location: location, **kwargs)
         @content = content
       end

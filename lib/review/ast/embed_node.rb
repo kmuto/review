@@ -24,7 +24,7 @@ module ReVIEW
     class EmbedNode < LeafNode
       attr_reader :lines, :arg, :embed_type, :target_builders
 
-      def initialize(location: nil, lines: [], arg: nil, embed_type: :block, target_builders: nil, content: nil, **kwargs)
+      def initialize(location:, lines: [], arg: nil, embed_type: :block, target_builders: nil, content: nil, **kwargs)
         super(location: location, content: content, **kwargs)
         @lines = lines
         @arg = arg
