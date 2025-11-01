@@ -65,8 +65,7 @@ class TestReferenceNode < Test::Unit::TestCase
         chapter_number: '1',
         item_number: '1',
         chapter_id: 'chap01',
-        item_id: 'figure1',
-        caption: 'サンプル図'
+        item_id: 'figure1'
       )
     )
     assert_include(resolved_node.to_s, 'resolved: 図1.1')

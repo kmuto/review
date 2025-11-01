@@ -375,7 +375,6 @@ class TestHtmlRenderer < Test::Unit::TestCase
     equation = ReVIEW::AST::TexEquationNode.new(
       location: nil,
       id: nil,
-      caption: nil,
       latex_content: 'E = mc^2'
     )
 
@@ -398,7 +397,6 @@ class TestHtmlRenderer < Test::Unit::TestCase
     equation = ReVIEW::AST::TexEquationNode.new(
       location: nil,
       id: nil,
-      caption: nil,
       latex_content: 'E = mc^2'
     )
 

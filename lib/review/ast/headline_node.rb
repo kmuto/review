@@ -7,23 +7,15 @@ module ReVIEW
   module AST
     class HeadlineNode < Node
       attr_accessor :caption_node, :auto_id
-      attr_reader :level, :label, :caption, :tag
+      attr_reader :level, :label, :tag
 
-      def initialize(location: nil, level: nil, label: nil, caption: nil, caption_node: nil, tag: nil, auto_id: nil, **kwargs)
+      def initialize(location:, level: nil, label: nil, caption_node: nil, tag: nil, auto_id: nil, **kwargs)
         super(location: location, **kwargs)
         @level = level
         @label = label
         @caption_node = caption_node
-        @caption = caption
         @tag = tag
         @auto_id = auto_id
-      end
-
-      # Get caption text for legacy Builder compatibility
-      def caption_markup_text
-        return '' if caption.nil? && caption_node.nil?
-
-        caption || caption_node&.to_text || ''
       end
 
       # Check if headline has specific tag option
@@ -48,7 +40,6 @@ module ReVIEW
         result = super.merge(
           level: level,
           label: label,
-          caption: caption,
           caption_node: caption_node&.to_h,
           tag: tag
         )

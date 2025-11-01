@@ -19,13 +19,12 @@ class TestCaptionInlineIntegration < Test::Unit::TestCase
 
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
-      caption: 'Simple Caption',
       caption_node: caption_node
     )
 
-    assert_equal 'Simple Caption', code_block.caption
+    assert_equal 'Simple Caption', code_block.caption_node&.to_text
     assert_instance_of(ReVIEW::AST::CaptionNode, code_block.caption_node)
-    assert_equal 'Simple Caption', code_block.caption_markup_text
+    assert_equal 'Simple Caption', code_block.caption_node&.to_text
   end
 
   def test_caption_node_behavior_in_code_block
@@ -41,34 +40,29 @@ class TestCaptionInlineIntegration < Test::Unit::TestCase
 
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
-      caption: 'Caption with @<b>{bold} text',
       caption_node: caption_node
     )
 
-    assert_equal 'Caption with @<b>{bold} text', code_block.caption
+    assert_equal 'Caption with @<b>{bold} text', code_block.caption_node&.to_text
     assert_instance_of(ReVIEW::AST::CaptionNode, code_block.caption_node)
-    assert_equal 'Caption with @<b>{bold} text', code_block.caption_markup_text
+    assert_equal 'Caption with @<b>{bold} text', code_block.caption_node&.to_text
   end
 
   def test_empty_caption_handling
     # Test empty captions
     code_block = ReVIEW::AST::CodeBlockNode.new(
-      location: @location,
-      caption: nil
+      location: @location
     )
 
-    assert_nil(code_block.caption)
-    assert_equal '', code_block.caption_markup_text
+    assert_nil(code_block.caption_node&.to_text)
   end
 
   def test_nil_caption_handling
     # Test when caption is not provided
     code_block = ReVIEW::AST::CodeBlockNode.new(
-      location: @location,
-      caption: nil
+      location: @location
     )
 
-    assert_nil(code_block.caption)
-    assert_equal '', code_block.caption_markup_text
+    assert_nil(code_block.caption_node&.to_text)
   end
 end

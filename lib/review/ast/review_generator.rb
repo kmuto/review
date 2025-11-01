@@ -36,7 +36,7 @@ module ReVIEW
         text = '=' * (node.level || 1)
         text += "[#{node.label}]" if node.label && !node.label.empty?
 
-        caption_text = caption_to_text(node.caption, node.caption_node)
+        caption_text = caption_to_text(node.caption_node)
         text += ' ' + caption_text unless caption_text.empty?
 
         text + "\n\n" + visit_children(node)
@@ -100,7 +100,7 @@ module ReVIEW
         text = '//' + block_type
         text += "[#{node.id}]" if node.id?
 
-        caption_text = caption_to_text(node.caption, node.caption_node)
+        caption_text = caption_to_text(node.caption_node)
         text += "[#{caption_text}]" if caption_text && !caption_text.empty?
         text += "{\n"
 
@@ -158,7 +158,7 @@ module ReVIEW
         text = "//#{table_type}"
         text += "[#{node.id}]" if node.id?
 
-        caption_text = caption_to_text(node.caption, node.caption_node)
+        caption_text = caption_to_text(node.caption_node)
         text += "[#{caption_text}]" if caption_text && !caption_text.empty?
         text += "{\n"
 
@@ -190,7 +190,7 @@ module ReVIEW
       def visit_image(node)
         text = "//image[#{node.id || ''}]"
 
-        caption_text = caption_to_text(node.caption, node.caption_node)
+        caption_text = caption_to_text(node.caption_node)
         text += "[#{caption_text}]" if caption_text && !caption_text.empty?
         text += "[#{node.metric}]" if node.metric && !node.metric.empty?
         text + "\n\n"
@@ -199,7 +199,7 @@ module ReVIEW
       def visit_minicolumn(node)
         text = "//#{node.minicolumn_type}"
 
-        caption_text = caption_to_text(node.caption, node.caption_node)
+        caption_text = caption_to_text(node.caption_node)
         text += "[#{caption_text}]" if caption_text && !caption_text.empty?
         text += "{\n"
 
@@ -266,9 +266,10 @@ module ReVIEW
         when :texequation
           # Math equation blocks
           text = '//texequation'
-          if node.id || node.caption
+          caption_text = caption_to_text(node.caption_node)
+          if node.id || !caption_text.empty?
             text += "[#{node.id}]" if node.id
-            text += "[#{node.caption}]" if node.caption
+            text += "[#{caption_text}]" unless caption_text.empty?
           end
           text += "{\n"
           text += visit_children(node)
@@ -352,7 +353,7 @@ module ReVIEW
       def visit_column(node)
         text = '=' * (node.level || 1)
         text += '[column]'
-        caption_text = caption_to_text(node.caption, node.caption_node)
+        caption_text = caption_to_text(node.caption_node)
         text += " #{caption_text}" unless caption_text.empty?
         text + "\n\n" + visit_children(node)
       end
@@ -418,17 +419,15 @@ module ReVIEW
       end
 
       # Helper to extract text from caption nodes
-      def caption_to_text(caption, caption_node)
-        if caption.is_a?(String)
-          caption
-        elsif caption.respond_to?(:to_text)
-          caption.to_text
-        elsif caption_node.respond_to?(:to_text)
+      def caption_to_text(caption_node)
+        return '' if caption_node.nil?
+
+        if caption_node.respond_to?(:to_text)
           caption_node.to_text
-        elsif caption_node.blank?
-          ''
-        else
+        elsif caption_node.respond_to?(:children)
           caption_node.children.map { |child| visit(child) }.join
+        else
+          ''
         end
       end
 

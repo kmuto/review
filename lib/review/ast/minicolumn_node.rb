@@ -8,27 +8,18 @@ module ReVIEW
     # MinicolumnNode - Represents minicolumn blocks (note, memo, tip, etc.)
     class MinicolumnNode < Node
       attr_accessor :caption_node
-      attr_reader :minicolumn_type, :caption
+      attr_reader :minicolumn_type
 
-      def initialize(location: nil, minicolumn_type: nil, caption: nil, caption_node: nil, **kwargs)
+      def initialize(location: nil, minicolumn_type: nil, caption_node: nil, **kwargs)
         super(location: location, **kwargs)
         @minicolumn_type = minicolumn_type # :note, :memo, :tip, :info, :warning, :important, :caution, :notice
         @caption_node = caption_node
-        @caption = caption
-      end
-
-      # Get caption text for legacy Builder compatibility
-      def caption_markup_text
-        return '' if caption.nil? && caption_node.nil?
-
-        caption || caption_node&.to_text || ''
       end
 
       def to_h
         result = super.merge(
           minicolumn_type: minicolumn_type
         )
-        result[:caption] = caption if caption
         result[:caption_node] = caption_node&.to_h if caption_node
         result
       end

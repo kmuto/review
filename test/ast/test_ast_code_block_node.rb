@@ -34,7 +34,6 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       id: 'sample',
-      caption: 'Test Code',
       original_text: original_text
     )
 
@@ -186,7 +185,6 @@ class TestASTCodeBlockNode < Test::Unit::TestCase
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       id: 'test',
-      caption: 'Test Caption',
       caption_node: caption_node,
       original_text: 'puts hello'
     )

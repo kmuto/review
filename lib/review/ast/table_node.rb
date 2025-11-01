@@ -21,11 +21,6 @@ module ReVIEW
         @body_rows = []
       end
 
-      # Get caption text from caption_node
-      def caption
-        @caption_node&.to_text
-      end
-
       def header_rows
         @children.find_all do |node|
           node.row_type == :header
@@ -51,13 +46,6 @@ module ReVIEW
       def add_body_row(row_node)
         row_node.row_type = :body
         add_child(row_node)
-      end
-
-      # Get caption text for legacy Builder compatibility
-      def caption_markup_text
-        return '' if caption.nil? && caption_node.nil?
-
-        caption || caption_node&.to_text || ''
       end
 
       # Get column count from table rows

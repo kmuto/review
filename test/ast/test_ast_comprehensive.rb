@@ -63,11 +63,11 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     list_block = code_blocks.find { |n| n.id == 'sample' }
     assert_not_nil(list_block)
-    assert_equal 'Sample Code', list_block.caption_markup_text
+    assert_equal 'Sample Code', list_block.caption_node&.to_text
     assert_equal 'ruby', list_block.lang
     assert_equal false, list_block.line_numbers
 
-    emlist_block = code_blocks.find { |n| n.caption_markup_text == 'Ruby Example' && n.id.nil? }
+    emlist_block = code_blocks.find { |n| n.caption_node&.to_text == 'Ruby Example' && n.id.nil? }
     assert_not_nil(emlist_block)
     assert_equal 'ruby', emlist_block.lang
 
@@ -77,7 +77,7 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     cmd_block = code_blocks.find { |n| n.lang == 'shell' }
     assert_not_nil(cmd_block)
-    assert_equal 'Terminal Commands', cmd_block.caption_markup_text
+    assert_equal 'Terminal Commands', cmd_block.caption_node&.to_text
   end
 
   def test_table_ast_processing
@@ -109,7 +109,7 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     main_table = table_nodes.find { |n| n.id == 'envvars' }
     assert_not_nil(main_table)
-    assert_equal 'Environment Variables', main_table.caption_markup_text
+    assert_equal 'Environment Variables', main_table.caption_node&.to_text
     assert_equal 1, main_table.header_rows.size
     assert_equal 3, main_table.body_rows.size
   end
@@ -136,12 +136,12 @@ class TestASTComprehensive < Test::Unit::TestCase
 
     main_image = image_nodes.find { |n| n.id == 'diagram' }
     assert_not_nil(main_image)
-    assert_equal 'System Diagram', main_image.caption_markup_text
+    assert_equal 'System Diagram', main_image.caption_node&.to_text
     assert_equal 'scale=0.5', main_image.metric
 
     indep_image = image_nodes.find { |n| n.id == 'logo' }
     assert_not_nil(indep_image)
-    assert_equal 'Company Logo', indep_image.caption_markup_text
+    assert_equal 'Company Logo', indep_image.caption_node&.to_text
   end
 
   def test_special_inline_elements_ast_processing

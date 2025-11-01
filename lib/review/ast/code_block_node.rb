@@ -7,13 +7,12 @@ module ReVIEW
   module AST
     class CodeBlockNode < Node
       attr_accessor :caption_node, :first_line_num
-      attr_reader :lang, :caption, :line_numbers, :code_type
+      attr_reader :lang, :line_numbers, :code_type
 
-      def initialize(location: nil, lang: nil, id: nil, caption: nil, caption_node: nil, line_numbers: false, code_type: nil, first_line_num: nil, **kwargs) # rubocop:disable Metrics/ParameterLists
+      def initialize(location: nil, lang: nil, id: nil, caption_node: nil, line_numbers: false, code_type: nil, first_line_num: nil, **kwargs)
         super(location: location, id: id, **kwargs)
         @lang = lang
         @caption_node = caption_node
-        @caption = caption
         @line_numbers = line_numbers
         @code_type = code_type
         @first_line_num = first_line_num
@@ -21,13 +20,6 @@ module ReVIEW
       end
 
       attr_reader :children
-
-      # Get caption text for legacy Builder compatibility
-      def caption_markup_text
-        return '' if caption.nil? && caption_node.nil?
-
-        caption || caption_node&.to_text || ''
-      end
 
       # Get original lines as array (for builders that don't need inline processing)
       def original_lines
@@ -64,9 +56,7 @@ module ReVIEW
 
       def to_h
         result = super.merge(
-          lang: lang,
-          caption: caption,
-          caption_node: caption_node&.to_h,
+          lang: lang, caption_node: caption_node&.to_h,
           line_numbers: line_numbers,
           children: children.map(&:to_h)
         )

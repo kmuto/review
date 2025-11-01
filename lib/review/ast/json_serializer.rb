@@ -236,12 +236,11 @@ module ReVIEW
             end
             node
           when 'HeadlineNode'
-            caption_text, caption_node = deserialize_caption_fields(hash)
+            _, caption_node = deserialize_caption_fields(hash)
             ReVIEW::AST::HeadlineNode.new(
               location: restore_location(hash),
               level: hash['level'],
               label: hash['label'],
-              caption: caption_text,
               caption_node: caption_node
             )
           when 'ParagraphNode'
@@ -308,11 +307,10 @@ module ReVIEW
             end
             node
           when 'CodeBlockNode'
-            caption_text, caption_node = deserialize_caption_fields(hash)
+            _, caption_node = deserialize_caption_fields(hash)
             node = ReVIEW::AST::CodeBlockNode.new(
               location: restore_location(hash),
               id: hash['id'],
-              caption: caption_text,
               caption_node: caption_node,
               lang: hash['lang'],
               line_numbers: hash['numbered'] || hash['line_numbers'] || false,
@@ -327,11 +325,10 @@ module ReVIEW
             end
             node
           when 'TableNode'
-            caption_text, caption_node = deserialize_caption_fields(hash)
+            _, caption_node = deserialize_caption_fields(hash)
             node = ReVIEW::AST::TableNode.new(
               location: restore_location(hash),
               id: hash['id'],
-              caption: caption_text,
               caption_node: caption_node,
               table_type: hash['table_type'] || :table,
               metric: hash['metric']
@@ -348,11 +345,10 @@ module ReVIEW
 
             node
           when 'ImageNode'
-            caption_text, caption_node = deserialize_caption_fields(hash)
+            _, caption_node = deserialize_caption_fields(hash)
             ReVIEW::AST::ImageNode.new(
               location: restore_location(hash),
               id: hash['id'],
-              caption: caption_text,
               caption_node: caption_node,
               metric: hash['metric']
             )
@@ -381,11 +377,10 @@ module ReVIEW
             end
             node
           when 'MinicolumnNode'
-            caption_text, caption_node = deserialize_caption_fields(hash)
+            _, caption_node = deserialize_caption_fields(hash)
             node = ReVIEW::AST::MinicolumnNode.new(
               location: restore_location(hash),
               minicolumn_type: hash['minicolumn_type'] || hash['column_type'],
-              caption: caption_text,
               caption_node: caption_node
             )
             if hash['children'] || hash['content']
@@ -442,12 +437,11 @@ module ReVIEW
             end
             node
           when 'ColumnNode'
-            caption_text, caption_node = deserialize_caption_fields(hash)
+            _, caption_node = deserialize_caption_fields(hash)
             ReVIEW::AST::ColumnNode.new(
               location: restore_location(hash),
               level: hash['level'],
               label: hash['label'],
-              caption: caption_text,
               caption_node: caption_node,
               column_type: hash['column_type']
             )

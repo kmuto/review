@@ -111,7 +111,7 @@ class TestASTDlBlock < Test::Unit::TestCase
     api_code_block = api_dd.children.find { |child| child.is_a?(ReVIEW::AST::CodeBlockNode) }
     assert_not_nil(api_code_block)
     assert_equal 'api-example', api_code_block.id
-    assert_equal 'API呼び出し例', api_code_block.caption
+    assert_equal 'API呼び出し例', api_code_block.caption_node&.to_text
 
     rest_dd = dd_items[1]
     assert_equal ReVIEW::AST::ListItemNode, rest_dd.class
@@ -120,7 +120,7 @@ class TestASTDlBlock < Test::Unit::TestCase
     rest_table = rest_dd.children.find { |child| child.is_a?(ReVIEW::AST::TableNode) }
     assert_not_nil(rest_table)
     assert_equal 'rest-methods', rest_table.id
-    assert_equal 'RESTメソッド一覧', rest_table.caption
+    assert_equal 'RESTメソッド一覧', rest_table.caption_node&.to_text
 
     assert_equal 1, rest_table.header_rows.size
     assert_equal 4, rest_table.body_rows.size

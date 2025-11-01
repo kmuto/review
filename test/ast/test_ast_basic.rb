@@ -31,7 +31,6 @@ class TestASTBasic < Test::Unit::TestCase
       location: location,
       level: 1,
       label: 'test-label',
-      caption: 'Test Headline',
       caption_node: CaptionParserHelper.parse('Test Headline', location: location)
     )
 
@@ -39,9 +38,9 @@ class TestASTBasic < Test::Unit::TestCase
     assert_equal 'HeadlineNode', hash[:type]
     assert_equal 1, hash[:level]
     assert_equal 'test-label', hash[:label]
-    assert_equal 'Test Headline', hash[:caption]
     expected_location = { filename: nil, lineno: 0 }
     assert_equal({ children: [{ content: 'Test Headline', location: expected_location, type: 'TextNode' }], location: expected_location, type: 'CaptionNode' }, hash[:caption_node])
+    assert_equal 'Test Headline', node.caption_node&.to_text
   end
 
   def test_paragraph_node
@@ -92,7 +91,6 @@ class TestASTBasic < Test::Unit::TestCase
     child_node = ReVIEW::AST::HeadlineNode.new(
       location: location,
       level: 1,
-      caption: 'Test',
       caption_node: CaptionParserHelper.parse('Test', location: location)
     )
 

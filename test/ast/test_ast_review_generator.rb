@@ -21,10 +21,16 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
 
   def test_headline
     doc = ReVIEW::AST::DocumentNode.new
+
+    # Create caption node
+    caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
+    caption_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Introduction'))
+
     headline = ReVIEW::AST::HeadlineNode.new(
+      location: @location,
       level: 2,
       label: 'intro',
-      caption: 'Introduction'
+      caption_node: caption_node
     )
     doc.add_child(headline)
 
@@ -69,7 +75,6 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
     code = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
       id: 'hello',
-      caption: 'Hello Example',
       caption_node: caption_node,
       original_text: "def hello\n  puts \"Hello\"\nend",
       lang: 'ruby'
@@ -154,7 +159,6 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
     table = ReVIEW::AST::TableNode.new(
       location: @location,
       id: 'sample',
-      caption: 'Sample Table',
       caption_node: caption_node
     )
 
@@ -197,9 +201,15 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
 
   def test_image
     doc = ReVIEW::AST::DocumentNode.new
+
+    # Create caption node
+    caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
+    caption_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Sample Figure'))
+
     image = ReVIEW::AST::ImageNode.new(
+      location: @location,
       id: 'figure1',
-      caption: 'Sample Figure'
+      caption_node: caption_node
     )
     doc.add_child(image)
 
@@ -209,9 +219,15 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
 
   def test_minicolumn
     doc = ReVIEW::AST::DocumentNode.new
+
+    # Create caption node
+    caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
+    caption_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Important Note'))
+
     minicolumn = ReVIEW::AST::MinicolumnNode.new(
+      location: @location,
       minicolumn_type: :note,
-      caption: 'Important Note'
+      caption_node: caption_node
     )
     para = ReVIEW::AST::ParagraphNode.new
     para.add_child(ReVIEW::AST::TextNode.new(content: 'This is a note.'))
@@ -232,8 +248,11 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
   def test_complex_document
     doc = ReVIEW::AST::DocumentNode.new
 
-    # Headline
-    h1 = ReVIEW::AST::HeadlineNode.new(level: 1, caption: 'Chapter 1')
+    # Headline with caption
+    h1_caption = ReVIEW::AST::CaptionNode.new(location: @location)
+    h1_caption.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Chapter 1'))
+
+    h1 = ReVIEW::AST::HeadlineNode.new(location: @location, level: 1, caption_node: h1_caption)
     doc.add_child(h1)
 
     # Paragraph with inline

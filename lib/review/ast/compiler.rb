@@ -207,7 +207,6 @@ module ReVIEW
           location: location,
           level: parsed.level,
           label: parsed.label,
-          caption: parsed.caption,
           caption_node: caption_node,
           column_type: :column,
           inline_processor: inline_processor
@@ -236,7 +235,6 @@ module ReVIEW
           location: location,
           level: parsed.level,
           label: parsed.label,
-          caption: parsed.caption,
           caption_node: caption_node,
           tag: parsed.tag
         )

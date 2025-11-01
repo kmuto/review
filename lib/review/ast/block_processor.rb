@@ -251,7 +251,6 @@ module ReVIEW
 
         node = context.create_node(AST::ImageNode,
                                    id: context.arg(0),
-                                   caption: caption_node&.to_text,
                                    caption_node: caption_node,
                                    metric: context.arg(2),
                                    image_type: context.name)
@@ -389,7 +388,6 @@ module ReVIEW
         node = context.create_node(AST::MinicolumnNode,
                                    minicolumn_type: context.name,
                                    id: id,
-                                   caption: caption_node&.to_text,
                                    caption_node: caption_node)
 
         # Process structured content
@@ -405,7 +403,6 @@ module ReVIEW
         node = context.create_node(AST::ColumnNode,
                                    level: 2, # Default level for block columns
                                    label: context.arg(0),
-                                   caption: caption_node&.to_text,
                                    caption_node: caption_node,
                                    column_type: :column)
 
@@ -456,7 +453,6 @@ module ReVIEW
         node = context.create_node(AST::BlockNode,
                                    block_type: context.name,
                                    args: context.args,
-                                   caption: caption_node&.to_text,
                                    caption_node: caption_node,
                                    lines: preserve_lines ? context.lines.dup : nil)
 
@@ -508,7 +504,6 @@ module ReVIEW
 
         node = context.create_node(AST::TexEquationNode,
                                    id: context.arg(0),
-                                   caption: caption_node&.to_text,
                                    caption_node: caption_node,
                                    latex_content: latex_content)
 

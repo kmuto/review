@@ -7,14 +7,13 @@ module ReVIEW
   module AST
     class ColumnNode < Node
       attr_accessor :caption_node, :auto_id, :column_number
-      attr_reader :level, :label, :caption, :column_type
+      attr_reader :level, :label, :column_type
 
-      def initialize(location: nil, level: nil, label: nil, caption: nil, caption_node: nil, column_type: :column, auto_id: nil, column_number: nil, **kwargs) # rubocop:disable Metrics/ParameterLists
+      def initialize(location: nil, level: nil, label: nil, caption_node: nil, column_type: :column, auto_id: nil, column_number: nil, **kwargs)
         super(location: location, **kwargs)
         @level = level
         @label = label
         @caption_node = caption_node
-        @caption = caption
         @column_type = column_type
         @auto_id = auto_id
         @column_number = column_number
@@ -23,9 +22,7 @@ module ReVIEW
       def to_h
         result = super.merge(
           level: level,
-          label: label,
-          caption: caption,
-          caption_node: caption_node&.to_h,
+          label: label, caption_node: caption_node&.to_h,
           column_type: column_type
         )
         result[:auto_id] = auto_id if auto_id

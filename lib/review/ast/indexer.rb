@@ -214,7 +214,7 @@ module ReVIEW
           # Build item_id exactly like IndexBuilder
           cursor = node.level - 2
           @headline_stack ||= []
-          caption_text = extract_caption_text(node.caption, node.caption_node)
+          caption_text = extract_caption_text(node.caption_node)
           @headline_stack[cursor] = (node.label || caption_text)
           if @headline_stack.size > cursor + 1
             @headline_stack = @headline_stack.take(cursor + 1)
@@ -234,7 +234,7 @@ module ReVIEW
 
       def visit_column(node)
         # Extract caption text like IndexBuilder does
-        caption_text = extract_caption_text(node.caption, node.caption_node)
+        caption_text = extract_caption_text(node.caption_node)
 
         # Use label if available, otherwise use caption as ID (like IndexBuilder does)
         item_id = node.label || caption_text
@@ -263,7 +263,7 @@ module ReVIEW
       def visit_table(node)
         if node.id?
           check_id(node.id)
-          caption_text = extract_caption_text(node.caption, node.caption_node)
+          caption_text = extract_caption_text(node.caption_node)
           item = ReVIEW::Book::Index::Item.new(node.id, @table_index.size + 1, caption_text, caption_node: node.caption_node)
           @table_index.add_item(item)
 
@@ -282,7 +282,7 @@ module ReVIEW
       def visit_image(node)
         if node.id?
           check_id(node.id)
-          caption_text = extract_caption_text(node.caption, node.caption_node)
+          caption_text = extract_caption_text(node.caption_node)
           item = ReVIEW::Book::Index::Item.new(node.id, @image_index.size + 1, caption_text, caption_node: node.caption_node)
           @image_index.add_item(item)
 
@@ -328,7 +328,7 @@ module ReVIEW
       def visit_tex_equation(node)
         if node.id?
           check_id(node.id)
-          caption_text = extract_caption_text(node.caption, node.caption_node) || ''
+          caption_text = extract_caption_text(node.caption_node) || ''
           item = ReVIEW::Book::Index::Item.new(node.id, @equation_index.size + 1, caption_text, caption_node: node.caption_node)
           @equation_index.add_item(item)
         end
@@ -344,7 +344,7 @@ module ReVIEW
               bib_id = node.args[0]
               bib_caption = node.args[1]
               check_id(bib_id)
-              item = ReVIEW::Book::Index::Item.new(bib_id, @bibpaper_index.size + 1, bib_caption)
+              item = ReVIEW::Book::Index::Item.new(bib_id, @bibpaper_index.size + 1, bib_caption, caption_node: node.caption_node)
               @bibpaper_index.add_item(item)
             end
           end
@@ -410,19 +410,13 @@ module ReVIEW
       end
 
       # Extract plain text from caption node
-      def extract_caption_text(caption, caption_node = nil)
-        return nil if caption.nil? && caption_node.nil?
+      def extract_caption_text(caption_node)
+        return nil if caption_node.nil?
 
-        if caption.is_a?(String)
-          caption
-        elsif caption.respond_to?(:to_text)
-          caption.to_text
-        elsif caption_node.respond_to?(:to_text)
+        if caption_node.respond_to?(:to_text)
           caption_node.to_text
-        elsif caption_node
-          caption_node.to_s
         else
-          caption.to_s
+          caption_node.to_s
         end
       end
 

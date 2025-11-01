@@ -60,7 +60,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Chapter Title'))
 
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption: 'Chapter Title', caption_node: caption_node, label: 'chap1')
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption_node: caption_node, label: 'chap1')
     result = @renderer.visit(headline)
 
     assert_equal "\\chapter{Chapter Title}\n\\label{chap:test}\n\n", result
@@ -70,7 +70,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Section Title'))
 
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption: 'Section Title', caption_node: caption_node)
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption_node: caption_node)
     result = @renderer.visit(headline)
 
     assert_equal "\\section{Section Title}\n\\label{sec:1-1}\n\n", result
@@ -82,7 +82,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Subsection Title'))
 
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 3, caption: 'Subsection Title', caption_node: caption_node)
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 3, caption_node: caption_node)
     result = @renderer.visit(headline)
 
     expected = "\\subsection*{Subsection Title}\n\\addcontentsline{toc}{subsection}{Subsection Title}\n\\label{sec:1-0-1}\n\n"
@@ -96,14 +96,14 @@ class TestLatexRenderer < Test::Unit::TestCase
     # Level 3 - normal subsection
     caption_node3 = AST::CaptionNode.new
     caption_node3.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Subsection Title'))
-    headline3 = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 3, caption: 'Subsection Title', caption_node: caption_node3)
+    headline3 = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 3, caption_node: caption_node3)
     result3 = @renderer.visit(headline3)
     assert_equal "\\subsection{Subsection Title}\n\\label{sec:1-0-1}\n\n", result3
 
     # Level 4 - subsubsection* without addcontentsline (exceeds default toclevel of 3)
     caption_node4 = AST::CaptionNode.new
     caption_node4.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Subsubsection Title'))
-    headline4 = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 4, caption: 'Subsubsection Title', caption_node: caption_node4)
+    headline4 = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 4, caption_node: caption_node4)
     result4 = @renderer.visit(headline4)
     expected4 = "\\subsubsection*{Subsubsection Title}\n\\label{sec:1-0-1-1}\n\n"
     assert_equal expected4, result4
@@ -115,7 +115,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Section Title'))
 
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption: 'Section Title', caption_node: caption_node)
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption_node: caption_node)
     result = @renderer.visit(headline)
 
     expected = "\\section*{Section Title}\n\\addcontentsline{toc}{section}{Section Title}\n\\label{sec:1-1}\n\n"
@@ -130,7 +130,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Section Title'))
 
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption: 'Section Title', caption_node: caption_node)
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption_node: caption_node)
     result = @renderer.visit(headline)
 
     expected = "\\section*{Section Title}\n\\addcontentsline{toc}{section}{Section Title}\n\\label{sec:-1}\n\n"
@@ -144,7 +144,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     # Level 1 - chapter*
     caption_node1 = AST::CaptionNode.new
     caption_node1.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Chapter Title'))
-    headline1 = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption: 'Chapter Title', caption_node: caption_node1)
+    headline1 = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption_node: caption_node1)
     result1 = @renderer.visit(headline1)
     expected1 = "\\chapter*{Chapter Title}\n\\addcontentsline{toc}{chapter}{Chapter Title}\n\\label{chap:test}\n\n"
     assert_equal expected1, result1
@@ -152,7 +152,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     # Level 2 - section*
     caption_node2 = AST::CaptionNode.new
     caption_node2.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Section Title'))
-    headline2 = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption: 'Section Title', caption_node: caption_node2)
+    headline2 = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption_node: caption_node2)
     result2 = @renderer.visit(headline2)
     expected2 = "\\section*{Section Title}\n\\addcontentsline{toc}{section}{Section Title}\n\\label{sec:1-1}\n\n"
     assert_equal expected2, result2
@@ -166,7 +166,7 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Part Title'))
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption: 'Part Title', caption_node: caption_node)
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption_node: caption_node)
     result = part_renderer.visit(headline)
 
     expected = "\\begin{reviewpart}\n\\part{Part Title}\n\\label{chap:part1}\n\n"
@@ -182,7 +182,7 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Part Title'))
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption: 'Part Title', caption_node: caption_node)
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption_node: caption_node)
     result = part_renderer.visit(headline)
 
     expected = "\\begin{reviewpart}\n\\part*{Part Title}\n\\addcontentsline{toc}{part}{Part Title}\n\\label{chap:part1}\n\n"
@@ -197,7 +197,7 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Chapter in Part'))
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption: 'Chapter in Part', caption_node: caption_node)
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption_node: caption_node)
     result = part_renderer.visit(headline)
 
     expected = "\\section{Chapter in Part}\n\\label{sec:1-1}\n\n"
@@ -213,7 +213,7 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Chapter in Numberless Part'))
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption: 'Chapter in Numberless Part', caption_node: caption_node)
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption_node: caption_node)
     result = part_renderer.visit(headline)
 
     expected = "\\section*{Chapter in Numberless Part}\n\\addcontentsline{toc}{section}{Chapter in Numberless Part}\n\\label{sec:-1}\n\n"
@@ -256,7 +256,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: caption))
 
-    code_block = AST::CodeBlockNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), caption: caption, caption_node: caption_node, code_type: 'emlist')
+    code_block = AST::CodeBlockNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), caption_node: caption_node, code_type: 'emlist')
     line1 = AST::CodeLineNode.new(location: nil)
     line1.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'puts "Hello"'))
     code_block.add_child(line1)
@@ -320,7 +320,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Test Image'))
 
-    image = AST::ImageNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), id: 'image1', caption: 'Test Image', caption_node: caption_node)
+    image = AST::ImageNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), id: 'image1', caption_node: caption_node)
     result = @renderer.visit(image)
 
     expected_lines = [
@@ -374,7 +374,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Note Caption'))
 
-    minicolumn = AST::MinicolumnNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), minicolumn_type: :note, caption: 'Note Caption', caption_node: caption_node)
+    minicolumn = AST::MinicolumnNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), minicolumn_type: :note, caption_node: caption_node)
     minicolumn.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'This is a note.'))
 
     result = @renderer.visit(minicolumn)
@@ -438,7 +438,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     # Add level 1 headline (Part title)
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Part Title'))
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption: 'Part Title', caption_node: caption_node)
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption_node: caption_node)
     document.add_child(headline)
 
     # Add a paragraph
@@ -468,13 +468,13 @@ class TestLatexRenderer < Test::Unit::TestCase
     # Add first level 1 headline
     caption_node1 = AST::CaptionNode.new
     caption_node1.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Part Title'))
-    headline1 = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption: 'Part Title', caption_node: caption_node1)
+    headline1 = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption_node: caption_node1)
     document.add_child(headline1)
 
     # Add second level 1 headline (should not open reviewpart again)
     caption_node2 = AST::CaptionNode.new
     caption_node2.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Another Part Title'))
-    headline2 = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption: 'Another Part Title', caption_node: caption_node2)
+    headline2 = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption_node: caption_node2)
     document.add_child(headline2)
 
     result = part_renderer.visit(document)
@@ -500,7 +500,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     # Add level 2 headline first (should not open reviewpart)
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Section Title'))
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption: 'Section Title', caption_node: caption_node)
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption_node: caption_node)
     document.add_child(headline)
 
     result = part_renderer.visit(document)
@@ -518,7 +518,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     # Add level 1 headline
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Chapter Title'))
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption: 'Chapter Title', caption_node: caption_node)
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption_node: caption_node)
     document.add_child(headline)
 
     # Add a paragraph
@@ -540,7 +540,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Unnumbered Section'))
 
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption: 'Unnumbered Section', caption_node: caption_node, tag: 'nonum')
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption_node: caption_node, tag: 'nonum')
     result = @renderer.visit(headline)
 
     # nonum does NOT get labels (matching LATEXBuilder behavior)
@@ -555,7 +555,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'No TOC Section'))
 
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption: 'No TOC Section', caption_node: caption_node, tag: 'notoc')
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption_node: caption_node, tag: 'notoc')
     result = @renderer.visit(headline)
 
     # notoc does NOT get labels (matching LATEXBuilder behavior)
@@ -569,7 +569,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Hidden Section'))
 
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption: 'Hidden Section', caption_node: caption_node, tag: 'nodisp')
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption_node: caption_node, tag: 'nodisp')
     result = @renderer.visit(headline)
 
     expected = "\\addcontentsline{toc}{section}{Hidden Section}\n"
@@ -582,7 +582,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Unnumbered Chapter'))
 
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption: 'Unnumbered Chapter', caption_node: caption_node, tag: 'nonum')
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption_node: caption_node, tag: 'nonum')
     result = @renderer.visit(headline)
 
     # nonum does NOT get labels (matching LATEXBuilder behavior)
@@ -597,7 +597,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Unnumbered Subsection'))
 
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 3, caption: 'Unnumbered Subsection', caption_node: caption_node, tag: 'nonum')
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 3, caption_node: caption_node, tag: 'nonum')
     result = @renderer.visit(headline)
 
     # nonum does NOT get labels (matching LATEXBuilder behavior)
@@ -615,7 +615,7 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Unnumbered Part'))
-    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption: 'Unnumbered Part', caption_node: caption_node, tag: 'nonum')
+    headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption_node: caption_node, tag: 'nonum')
     result = part_renderer.visit(headline)
 
     # Part level 1 with nonum does NOT get a label (matching LATEXBuilder behavior)
@@ -673,7 +673,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: caption))
 
-    column = AST::ColumnNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 3, caption: caption, caption_node: caption_node, column_type: :column, auto_id: 'column-1', column_number: 1)
+    column = AST::ColumnNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 3, caption_node: caption_node, column_type: :column, auto_id: 'column-1', column_number: 1)
     paragraph = AST::ParagraphNode.new
     paragraph.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Column content here.'))
     column.add_child(paragraph)
@@ -719,7 +719,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node = AST::CaptionNode.new
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: caption))
 
-    column = AST::ColumnNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 3, caption: caption, caption_node: caption_node, column_type: :column, auto_id: 'column-1', column_number: 1)
+    column = AST::ColumnNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 3, caption_node: caption_node, column_type: :column, auto_id: 'column-1', column_number: 1)
     paragraph = AST::ParagraphNode.new
     paragraph.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'This should not get TOC entry.'))
     column.add_child(paragraph)
@@ -1152,7 +1152,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Test Image'))
 
     # Create an image node with metric (image doesn't exist)
-    image = AST::ImageNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), id: 'image1', caption: 'Test Image', caption_node: caption_node, metric: 'latex::width=80mm')
+    image = AST::ImageNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), id: 'image1', caption_node: caption_node, metric: 'latex::width=80mm')
     result = @renderer.visit(image)
 
     expected_lines = [

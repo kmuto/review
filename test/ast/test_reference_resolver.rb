@@ -52,7 +52,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add actual ImageNode to generate index
-    img_node = ReVIEW::AST::ImageNode.new(id: 'img01', caption: nil)
+    img_node = ReVIEW::AST::ImageNode.new(id: 'img01', location: ReVIEW::SnapshotLocation.new(nil, 0))
     doc.add_child(img_node)
 
     # Add inline reference to the image
@@ -110,7 +110,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add actual CodeBlockNode (list) to generate index
-    code_node = ReVIEW::AST::CodeBlockNode.new(id: 'list01', code_type: :list, caption: nil)
+    code_node = ReVIEW::AST::CodeBlockNode.new(id: 'list01', code_type: :list)
     doc.add_child(code_node)
 
     # Add inline reference to the list
@@ -164,7 +164,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add actual TexEquationNode to generate index
-    eq_node = ReVIEW::AST::TexEquationNode.new(location: nil, id: 'eq01', caption: nil, latex_content: 'E=mc^2')
+    eq_node = ReVIEW::AST::TexEquationNode.new(location: nil, id: 'eq01', latex_content: 'E=mc^2')
     doc.add_child(eq_node)
 
     # Add inline reference to the equation
@@ -232,7 +232,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add actual ImageNode to generate index
-    img_node = ReVIEW::AST::ImageNode.new(id: 'img01', caption: nil)
+    img_node = ReVIEW::AST::ImageNode.new(id: 'img01', location: ReVIEW::SnapshotLocation.new(nil, 0))
     doc.add_child(img_node)
 
     # Add labelref reference that should find the image
@@ -284,13 +284,13 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add actual block nodes to generate indexes
-    img_node = ReVIEW::AST::ImageNode.new(id: 'img01', caption: nil)
+    img_node = ReVIEW::AST::ImageNode.new(id: 'img01', location: ReVIEW::SnapshotLocation.new(nil, 0))
     doc.add_child(img_node)
 
     table_node = ReVIEW::AST::TableNode.new(id: 'tbl01')
     doc.add_child(table_node)
 
-    code_node = ReVIEW::AST::CodeBlockNode.new(id: 'list01', code_type: :list, caption: nil)
+    code_node = ReVIEW::AST::CodeBlockNode.new(id: 'list01', code_type: :list)
     doc.add_child(code_node)
 
     # Add multiple references
@@ -349,7 +349,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add actual ColumnNode
-    col_node = ReVIEW::AST::ColumnNode.new(location: nil, level: 3, label: 'col01', caption: 'Column Title')
+    col_node = ReVIEW::AST::ColumnNode.new(location: nil, level: 3, label: 'col01')
     doc.add_child(col_node)
 
     # Add inline reference to the column
@@ -374,7 +374,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add actual HeadlineNode
-    headline = ReVIEW::AST::HeadlineNode.new(location: nil, level: 2, label: 'sec01', caption: 'Section Title')
+    headline = ReVIEW::AST::HeadlineNode.new(location: nil, level: 2, label: 'sec01')
     doc.add_child(headline)
 
     # Add inline reference to the headline
@@ -399,7 +399,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add actual HeadlineNode
-    headline = ReVIEW::AST::HeadlineNode.new(location: nil, level: 2, label: 'sec01', caption: 'Section Title')
+    headline = ReVIEW::AST::HeadlineNode.new(location: nil, level: 2, label: 'sec01')
     doc.add_child(headline)
 
     # Add inline reference using sec (alias for hd)
@@ -453,7 +453,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     # Create AST with image node for chapter2
     doc2 = ReVIEW::AST::DocumentNode.new
-    img_node2 = ReVIEW::AST::ImageNode.new(id: 'img01', caption: 'Chapter 2 Image')
+    img_node2 = ReVIEW::AST::ImageNode.new(id: 'img01', location: ReVIEW::SnapshotLocation.new(nil, 0))
     doc2.add_child(img_node2)
 
     # Build index for chapter2 using AST
@@ -496,7 +496,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add actual ImageNode
-    img_node = ReVIEW::AST::ImageNode.new(id: 'img01', caption: nil)
+    img_node = ReVIEW::AST::ImageNode.new(id: 'img01', location: ReVIEW::SnapshotLocation.new(nil, 0))
     doc.add_child(img_node)
 
     # Add paragraph containing inline reference
@@ -519,7 +519,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add actual ImageNode
-    img_node = ReVIEW::AST::ImageNode.new(id: 'img01', caption: nil)
+    img_node = ReVIEW::AST::ImageNode.new(id: 'img01', location: ReVIEW::SnapshotLocation.new(nil, 0))
     doc.add_child(img_node)
 
     # Add paragraph with nested inline elements
@@ -574,9 +574,9 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add actual ImageNodes
-    img_node1 = ReVIEW::AST::ImageNode.new(id: 'img01', caption: nil)
+    img_node1 = ReVIEW::AST::ImageNode.new(id: 'img01', location: ReVIEW::SnapshotLocation.new(nil, 0))
     doc.add_child(img_node1)
-    img_node2 = ReVIEW::AST::ImageNode.new(id: 'img02', caption: nil)
+    img_node2 = ReVIEW::AST::ImageNode.new(id: 'img02', location: ReVIEW::SnapshotLocation.new(nil, 10))
     doc.add_child(img_node2)
 
     # Add single paragraph with multiple references
@@ -634,7 +634,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new
 
     # Add one actual ImageNode
-    img_node = ReVIEW::AST::ImageNode.new(id: 'img01', caption: nil)
+    img_node = ReVIEW::AST::ImageNode.new(id: 'img01', location: ReVIEW::SnapshotLocation.new(nil, 0))
     doc.add_child(img_node)
 
     # Add valid reference

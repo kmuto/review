@@ -71,14 +71,14 @@ class TestASTIndexerPure < Test::Unit::TestCase
     assert_not_nil(table_item)
     assert_equal 1, table_item.number
     assert_equal 'sample-table', table_item.id
-    assert_equal 'Sample Table Caption', table_item.caption
+    assert_equal 'Sample Table Caption', table_item.caption_node&.to_text
 
     assert_equal 1, indexer.image_index.size
     image_item = indexer.image_index['sample-image']
     assert_not_nil(image_item)
     assert_equal 1, image_item.number
     assert_equal 'sample-image', image_item.id
-    assert_equal 'Sample Image Caption', image_item.caption
+    assert_equal 'Sample Image Caption', image_item.caption_node&.to_text
 
     assert_equal 1, indexer.footnote_index.size
     footnote_item = indexer.footnote_index['footnote1']

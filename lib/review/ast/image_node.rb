@@ -7,27 +7,18 @@ module ReVIEW
   module AST
     class ImageNode < Node
       attr_accessor :caption_node
-      attr_reader :caption, :metric, :image_type
+      attr_reader :metric, :image_type
 
-      def initialize(location: nil, id: nil, caption: nil, caption_node: nil, metric: nil, image_type: :image, **kwargs)
+      def initialize(location:, id: nil, caption_node: nil, metric: nil, image_type: :image, **kwargs)
         super(location: location, id: id, **kwargs)
         @caption_node = caption_node
-        @caption = caption
         @metric = metric
         @image_type = image_type
-      end
-
-      # Get caption text for legacy Builder compatibility
-      def caption_markup_text
-        return '' if caption.nil? && caption_node.nil?
-
-        caption || caption_node&.to_text || ''
       end
 
       # Override to_h to exclude children array for ImageNode
       def to_h
         result = super
-        result[:caption] = caption if caption
         result[:caption_node] = caption_node&.to_h if caption_node
         result[:metric] = metric
         result[:image_type] = image_type
