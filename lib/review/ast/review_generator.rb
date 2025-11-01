@@ -107,7 +107,7 @@ module ReVIEW
         # Add code lines from original_text or reconstruct from AST
         if node.original_text && !node.original_text.empty?
           text += node.original_text
-        elsif node.children&.any?
+        elsif node.children.any?
           # Reconstruct from AST structure
           lines = node.children.map do |line_node|
             if line_node.children
@@ -204,7 +204,7 @@ module ReVIEW
         text += "{\n"
 
         # Handle children - they may be strings or nodes
-        if node.children&.any?
+        if node.children.any?
           content_lines = []
           node.children.each do |child|
             if child.is_a?(String)
@@ -359,7 +359,7 @@ module ReVIEW
 
       def visit_unordered_list(node)
         text = ''
-        node.children&.each do |item|
+        node.children.each do |item|
           next unless item.is_a?(ReVIEW::AST::ListItemNode)
 
           text += format_list_item('*', item.level || 1, item)
@@ -369,7 +369,7 @@ module ReVIEW
 
       def visit_ordered_list(node)
         text = ''
-        node.children&.each_with_index do |item, index|
+        node.children.each_with_index do |item, index|
           next unless item.is_a?(ReVIEW::AST::ListItemNode)
 
           number = item.number || (index + 1)
@@ -380,12 +380,12 @@ module ReVIEW
 
       def visit_definition_list(node)
         text = ''
-        node.children&.each do |item|
+        node.children.each do |item|
           next unless item.is_a?(ReVIEW::AST::ListItemNode)
 
-          next unless item.term_children&.any? || item.children&.any?
+          next unless item.term_children.any? || item.children.any?
 
-          term = item.term_children&.any? ? visit_all(item.term_children).join : ''
+          term = item.term_children.any? ? visit_all(item.term_children).join : ''
           text += ": #{term}\n"
 
           item.children.each do |defn|

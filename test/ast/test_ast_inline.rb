@@ -19,7 +19,7 @@ class TestASTInline < Test::Unit::TestCase
   end
 
   def test_text_node_creation
-    node = ReVIEW::AST::TextNode.new(content: 'Hello world')
+    node = ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Hello world')
 
     hash = node.to_h
     assert_equal 'TextNode', hash[:type]
@@ -27,10 +27,9 @@ class TestASTInline < Test::Unit::TestCase
   end
 
   def test_inline_node_creation
-    node = ReVIEW::AST::InlineNode.new(
-      inline_type: :b,
-      args: ['bold text']
-    )
+    node = ReVIEW::AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0),
+                                       inline_type: :b,
+                                       args: ['bold text'])
 
     hash = node.to_h
     assert_equal 'InlineNode', hash[:type]

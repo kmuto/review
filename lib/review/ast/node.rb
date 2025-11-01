@@ -22,7 +22,7 @@ module ReVIEW
       attr_reader :location, :type, :id, :original_text, :children
       attr_accessor :parent
 
-      def initialize(location: nil, type: nil, id: nil, original_text: nil, **_kwargs)
+      def initialize(location:, type: nil, id: nil, original_text: nil, **_kwargs)
         # Prevent direct instantiation of abstract base class (except in tests)
         if self.instance_of?(ReVIEW::AST::Node)
           raise StandardError, 'AST::Node is an abstract class and cannot be instantiated directly. Use a specific subclass instead.'

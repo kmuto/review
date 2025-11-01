@@ -18,18 +18,21 @@ class TestASTBasic < Test::Unit::TestCase
   end
 
   def test_ast_node_creation
-    node = ReVIEW::AST::ParagraphNode.new
+    node = ReVIEW::AST::ParagraphNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
     assert_equal [], node.children
     assert_nil(node.parent)
-    assert_nil(node.location)
+    assert_equal nil, node.location.filename
+    assert_equal 0, node.location.lineno
   end
 
   def test_headline_node
+    location = ReVIEW::SnapshotLocation.new(nil, 0)
     node = ReVIEW::AST::HeadlineNode.new(
+      location: location,
       level: 1,
       label: 'test-label',
       caption: 'Test Headline',
-      caption_node: CaptionParserHelper.parse('Test Headline')
+      caption_node: CaptionParserHelper.parse('Test Headline', location: location)
     )
 
     hash = node.to_h
@@ -37,12 +40,13 @@ class TestASTBasic < Test::Unit::TestCase
     assert_equal 1, hash[:level]
     assert_equal 'test-label', hash[:label]
     assert_equal 'Test Headline', hash[:caption]
-    assert_equal({ children: [{ content: 'Test Headline', location: nil, type: 'TextNode' }], location: nil, type: 'CaptionNode' }, hash[:caption_node])
+    expected_location = { filename: nil, lineno: 0 }
+    assert_equal({ children: [{ content: 'Test Headline', location: expected_location, type: 'TextNode' }], location: expected_location, type: 'CaptionNode' }, hash[:caption_node])
   end
 
   def test_paragraph_node
-    node = ReVIEW::AST::ParagraphNode.new
-    text_node = ReVIEW::AST::TextNode.new(content: 'This is a test paragraph.')
+    node = ReVIEW::AST::ParagraphNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    text_node = ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'This is a test paragraph.')
     node.add_child(text_node)
 
     hash = node.to_h
@@ -83,11 +87,13 @@ class TestASTBasic < Test::Unit::TestCase
   end
 
   def test_json_output_format
-    node = ReVIEW::AST::DocumentNode.new
+    location = ReVIEW::SnapshotLocation.new(nil, 0)
+    node = ReVIEW::AST::DocumentNode.new(location: location)
     child_node = ReVIEW::AST::HeadlineNode.new(
+      location: location,
       level: 1,
       caption: 'Test',
-      caption_node: CaptionParserHelper.parse('Test')
+      caption_node: CaptionParserHelper.parse('Test', location: location)
     )
 
     node.add_child(child_node)
@@ -99,6 +105,7 @@ class TestASTBasic < Test::Unit::TestCase
     assert_equal 1, parsed['children'].size
     assert_equal 'HeadlineNode', parsed['children'][0]['type']
     assert_equal 1, parsed['children'][0]['level']
-    assert_equal({ 'children' => [{ 'content' => 'Test', 'location' => nil, 'type' => 'TextNode' }], 'location' => nil, 'type' => 'CaptionNode' }, parsed['children'][0]['caption_node'])
+    expected_location = { 'filename' => nil, 'lineno' => 0 }
+    assert_equal({ 'children' => [{ 'content' => 'Test', 'location' => expected_location, 'type' => 'TextNode' }], 'location' => expected_location, 'type' => 'CaptionNode' }, parsed['children'][0]['caption_node'])
   end
 end

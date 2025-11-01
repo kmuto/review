@@ -11,7 +11,7 @@ module ReVIEW
       attr_accessor :caption_node
       attr_reader :block_type, :args, :caption, :lines
 
-      def initialize(location: nil, block_type: nil, args: nil, caption: nil, caption_node: nil, lines: nil, **kwargs)
+      def initialize(location:, block_type:, args: nil, caption: nil, caption_node: nil, lines: nil, **kwargs)
         super(location: location, **kwargs)
         @block_type = block_type # :quote, :read, etc.
         @args = args || []
