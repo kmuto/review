@@ -251,13 +251,12 @@ module ReVIEW
       end
 
       def visit_reference(node)
-        # Handle ReferenceNode - use resolved_data if available
-        if node.resolved? && node.resolved_data
-          format_resolved_reference(node.resolved_data)
-        else
-          # Fallback to content for backward compatibility
-          node.content || ''
+        unless node.resolved?
+          ref_type = node.parent.is_a?(AST::InlineNode) ? node.parent.inline_type : 'reference'
+          error "unknown #{ref_type}: #{node.full_ref_id}", location: node.location
         end
+
+        format_resolved_reference(node.resolved_data)
       end
 
       # Format resolved reference based on ResolvedData

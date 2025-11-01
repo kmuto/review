@@ -12,23 +12,21 @@ require 'review/i18n'
 
 module ReVIEW
   module AST
-    # ReferenceNode - 参照情報を保持するノード（InlineNodeの子ノードとして使用）
+    # ReferenceNode - node that holds reference information (used as a child of InlineNode)
     #
-    # 従来のTextNodeの代わりに参照系InlineNodeの子ノードとして配置される。
-    # このノードはイミュータブルであり、参照解決時には新しいインスタンスが作成される。
+    # Placed as a child node of reference-type InlineNode instead of traditional TextNode.
+    # This node is immutable, and a new instance is created when resolving references.
     class ReferenceNode < TextNode
-      attr_reader :ref_id, :context_id, :resolved, :resolved_data
+      attr_reader :ref_id, :context_id, :resolved_data
 
-      # @param ref_id [String] 参照ID（主要な参照先）
-      # @param context_id [String] コンテキストID（章ID等、オプション）
-      # @param resolved [Boolean] 参照が解決済みかどうか
-      # @param resolved_content [String, nil] 解決された内容（後方互換性のため）
-      # @param resolved_data [ResolvedData, nil] 構造化された解決済みデータ
-      # @param location [SnapshotLocation, nil] ソースコード内の位置情報
+      # @param ref_id [String] reference ID (primary reference target)
+      # @param context_id [String] context ID (chapter ID, etc., optional)
+      # @param resolved_data [ResolvedData, nil] structured resolved data
+      # @param location [SnapshotLocation, nil] location in source code
       def initialize(ref_id, context_id = nil, location:, resolved_data: nil)
-        # 解決済みの場合はresolved_dataを、未解決の場合は元の参照IDを表示
+        # Display resolved_data if resolved, otherwise display original reference ID
         content = if resolved_data
-                    # resolved_dataから適切なコンテンツを生成（デフォルト表現）
+                    # Generate appropriate content from resolved_data (default representation)
                     generate_content_from_data(resolved_data)
                   else
                     context_id ? "#{context_id}|#{ref_id}" : ref_id
@@ -39,7 +37,6 @@ module ReVIEW
         @ref_id = ref_id
         @context_id = context_id
         @resolved_data = resolved_data
-        @resolved = !!resolved_data
       end
 
       private
@@ -159,15 +156,21 @@ module ReVIEW
 
       public
 
-      # 参照が解決済みかどうかを判定
-      # @return [Boolean] 解決済みの場合true
+      # Check if the reference has been resolved
+      # @return [Boolean] true if resolved
       def resolved?
         !!@resolved_data
       end
 
-      # 構造化データで解決済みの新しいReferenceNodeインスタンスを返す
-      # @param data [ResolvedData] 構造化された解決済みデータ
-      # @return [ReferenceNode] 解決済みの新しいインスタンス
+      # Return the full reference ID (concatenated with context_id if present)
+      # @return [String] full reference ID
+      def full_ref_id
+        @context_id ? "#{@context_id}|#{@ref_id}" : @ref_id
+      end
+
+      # Return a new ReferenceNode instance resolved with structured data
+      # @param data [ResolvedData] structured resolved data
+      # @return [ReferenceNode] new resolved instance
       def with_resolved_data(data)
         self.class.new(
           @ref_id,
@@ -177,12 +180,11 @@ module ReVIEW
         )
       end
 
-      # ノードの説明文字列
-      # @return [String] デバッグ用の文字列表現
+      # Node description string for debugging
+      # @return [String] debug string representation
       def to_s
-        id_part = @context_id ? "#{@context_id}|#{@ref_id}" : @ref_id
         status = resolved? ? "resolved: #{@content}" : 'unresolved'
-        "#<ReferenceNode {#{id_part}} #{status}>"
+        "#<ReferenceNode {#{full_ref_id}} #{status}>"
       end
     end
   end

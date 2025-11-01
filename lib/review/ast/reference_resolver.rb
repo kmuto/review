@@ -93,17 +93,10 @@ module ReVIEW
       # @param node [ReferenceNode] The reference node to resolve
       # @param ref_type [Symbol] The reference type (e.g., :img, :table, :list)
       def resolve_node(node, ref_type)
-        # Build full reference ID from context_id and ref_id if context_id exists
-        full_ref_id = if node.context_id
-                        "#{node.context_id}|#{node.ref_id}"
-                      else
-                        node.ref_id
-                      end
-
         method_name = @resolver_methods[ref_type]
         raise CompileError, "Unknown reference type: #{ref_type}" unless method_name
 
-        resolved_data = send(method_name, full_ref_id)
+        resolved_data = send(method_name, node.full_ref_id)
 
         resolved_node = node.with_resolved_data(resolved_data)
         node.parent&.replace_child(node, resolved_node)
