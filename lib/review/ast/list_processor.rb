@@ -72,7 +72,8 @@ module ReVIEW
         when :dl
           process_definition_list(f)
         else
-          raise CompileError, "Unknown list type: #{list_type}#{format_location_info}"
+          location_info = @ast_compiler.location&.format_for_error || ''
+          raise CompileError, "Unknown list type: #{list_type}#{location_info}"
         end
       end
 
@@ -97,7 +98,8 @@ module ReVIEW
         when :dl
           @parser.parse_definition_list(f)
         else
-          raise CompileError, "Unknown list type: #{list_type}#{format_location_info}"
+          location_info = @ast_compiler.location&.format_for_error || ''
+          raise CompileError, "Unknown list type: #{list_type}#{location_info}"
         end
       end
 
@@ -115,16 +117,6 @@ module ReVIEW
       # @param list_node [ListNode] List node to add
       def add_to_ast(list_node)
         @ast_compiler.add_child_to_current_node(list_node)
-      end
-
-      # Format location information for error messages
-      def format_location_info
-        location = @ast_compiler.location
-        return '' unless location
-
-        info = " at line #{location.lineno}"
-        info += " in #{location.filename}" if location.filename
-        info
       end
     end
   end

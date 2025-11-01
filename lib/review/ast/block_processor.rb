@@ -185,7 +185,8 @@ module ReVIEW
         handler_method = @dynamic_command_table[block_data.name]
 
         unless handler_method
-          raise CompileError, "Unknown block command: //#{block_data.name}#{format_location_info(block_data.location)}"
+          location_info = block_data.location.format_for_error
+          raise CompileError, "Unknown block command: //#{block_data.name}#{location_info}"
         end
 
         # Process block using Block-Scoped Compilation
@@ -581,16 +582,6 @@ module ReVIEW
       # Process table content
       def process_table_content(table_node, lines, block_location = nil)
         @table_processor.process_content(table_node, lines, block_location)
-      end
-
-      # Format location information for error messages
-      def format_location_info(location = nil)
-        location ||= @ast_compiler.location
-        return '' unless location
-
-        info = " at line #{location.lineno}"
-        info += " in #{location.filename}" if location.filename
-        info
       end
 
       # Create a table row node from a line containing tab-separated cells

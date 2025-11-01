@@ -12,17 +12,17 @@ class TestBlockData < Test::Unit::TestCase
   end
 
   def test_basic_initialization
-    block_data = Compiler::BlockData.new(name: :list, args: ['id', 'caption'])
+    block_data = Compiler::BlockData.new(name: :list, args: ['id', 'caption'], location: @location)
 
     assert_equal :list, block_data.name
     assert_equal ['id', 'caption'], block_data.args
     assert_equal [], block_data.lines
     assert_equal [], block_data.nested_blocks
-    assert_nil(block_data.location)
+    assert_equal @location, block_data.location
   end
 
   def test_initialization_with_all_parameters
-    nested_block = Compiler::BlockData.new(name: :note, args: ['warning'])
+    nested_block = Compiler::BlockData.new(name: :note, args: ['warning'], location: @location)
 
     block_data = Compiler::BlockData.new(
       name: :minicolumn,
@@ -41,35 +41,38 @@ class TestBlockData < Test::Unit::TestCase
   end
 
   def test_nested_blocks
-    block_data = Compiler::BlockData.new(name: :list)
+    block_data = Compiler::BlockData.new(name: :list, location: @location)
     assert_false(block_data.nested_blocks?)
 
-    nested_block = Compiler::BlockData.new(name: :note)
+    nested_block = Compiler::BlockData.new(name: :note, location: @location)
     block_data_with_nested = Compiler::BlockData.new(
       name: :minicolumn,
-      nested_blocks: [nested_block]
+      nested_blocks: [nested_block],
+      location: @location
     )
     assert_true(block_data_with_nested.nested_blocks?)
   end
 
   def test_line_count
-    block_data = Compiler::BlockData.new(name: :list)
+    block_data = Compiler::BlockData.new(name: :list, location: @location)
     assert_equal 0, block_data.line_count
 
     block_data_with_lines = Compiler::BlockData.new(
       name: :list,
-      lines: ['line1', 'line2', 'line3']
+      lines: ['line1', 'line2', 'line3'],
+      location: @location
     )
     assert_equal 3, block_data_with_lines.line_count
   end
 
   def test_content
-    block_data = Compiler::BlockData.new(name: :list)
+    block_data = Compiler::BlockData.new(name: :list, location: @location)
     assert_false(block_data.content?)
 
     block_data_with_content = Compiler::BlockData.new(
       name: :list,
-      lines: ['content']
+      lines: ['content'],
+      location: @location
     )
     assert_true(block_data_with_content.content?)
   end
@@ -77,7 +80,8 @@ class TestBlockData < Test::Unit::TestCase
   def test_arg_method
     block_data = Compiler::BlockData.new(
       name: :list,
-      args: ['id', 'caption', 'lang']
+      args: ['id', 'caption', 'lang'],
+      location: @location
     )
 
     assert_equal 'id', block_data.arg(0)
@@ -91,7 +95,7 @@ class TestBlockData < Test::Unit::TestCase
   end
 
   def test_arg_method_with_no_args
-    block_data = Compiler::BlockData.new(name: :list)
+    block_data = Compiler::BlockData.new(name: :list, location: @location)
     assert_nil(block_data.arg(0))
   end
 
@@ -99,7 +103,8 @@ class TestBlockData < Test::Unit::TestCase
     nested_block = Compiler::BlockData.new(
       name: :note,
       args: ['warning'],
-      lines: ['nested content']
+      lines: ['nested content'],
+      location: @location
     )
 
     block_data = Compiler::BlockData.new(
@@ -130,7 +135,8 @@ class TestBlockData < Test::Unit::TestCase
       name: :list,
       args: ['id', 'caption'],
       lines: ['line1', 'line2'],
-      nested_blocks: [Compiler::BlockData.new(name: :note)]
+      nested_blocks: [Compiler::BlockData.new(name: :note, location: @location)],
+      location: @location
     )
 
     inspect_str = block_data.inspect

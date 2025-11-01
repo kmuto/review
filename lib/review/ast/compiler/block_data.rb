@@ -21,7 +21,7 @@ module ReVIEW
       # @param nested_blocks [Array<BlockData>] Any nested block commands found within this block
       # @param location [Location] Source location information for error reporting
       BlockData = Struct.new(:name, :args, :lines, :nested_blocks, :location, keyword_init: true) do
-        def initialize(name:, args: [], lines: [], nested_blocks: [], location: nil)
+        def initialize(name:, location:, args: [], lines: [], nested_blocks: [])
           # Type validation
           # Ensure args, lines, nested_blocks are always Arrays
           ensure_array!(args, 'args')

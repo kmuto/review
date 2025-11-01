@@ -79,7 +79,7 @@ module ReVIEW
         # @param table_node [TableNode] Table node to populate
         # @param lines [Array<String>] Content lines
         # @param block_location [Location] Block start location
-        def process_content(table_node, lines, block_location = nil)
+        def process_content(table_node, lines, block_location)
           structure = TableStructure.from_lines(lines)
 
           header_rows, body_rows = build_rows_from_structure(structure, block_location)
@@ -95,11 +95,11 @@ module ReVIEW
         # @param first_cell_header [Boolean] Whether only first cell should be header
         # @param block_location [Location] Block start location
         # @return [TableRowNode] Created row node
-        def create_row(line, is_header: false, first_cell_header: false, block_location: nil)
+        def create_row(line, block_location:, is_header: false, first_cell_header: false)
           cells = line.strip.split(row_separator_regexp).map { |s| s.sub(/\A\./, '') }
           if cells.empty?
-            error_location = block_location || @ast_compiler.location
-            raise CompileError, "Invalid table row: empty line or no tab-separated cells#{format_location_info(error_location)}"
+            location_info = block_location.format_for_error
+            raise CompileError, "Invalid table row: empty line or no tab-separated cells#{location_info}"
           end
 
           row_node = create_node(AST::TableRowNode, row_type: is_header ? :header : :body)
@@ -202,18 +202,6 @@ module ReVIEW
         # @return [Node] Created node
         def create_node(node_class, **attributes)
           node_class.new(location: @ast_compiler.location, **attributes)
-        end
-
-        # Format location information for error messages
-        # @param location [Location, nil] Location object
-        # @return [String] Formatted location string
-        def format_location_info(location = nil)
-          location ||= @ast_compiler.location
-          return '' unless location
-
-          info = " at line #{location.lineno}"
-          info += " in #{location.filename}" if location.filename
-          info
         end
       end
     end

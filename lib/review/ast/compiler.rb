@@ -63,6 +63,9 @@ module ReVIEW
         @ast_root = nil
         @current_ast_node = nil
 
+        # Location tracking - initialize with default location
+        @current_location = SnapshotLocation.new(nil, 0)
+
         # Processors for specialized AST handling
         @inline_processor = InlineProcessor.new(self)
         @block_processor = BlockProcessor.new(self)
@@ -167,24 +170,23 @@ module ReVIEW
         parsed = HeadlineParser.parse(line, location: location)
         return nil unless parsed
 
-        caption_node = build_caption_node(parsed.caption)
+        caption_node = build_caption_node(parsed.caption, caption_location: location)
         current_node = find_appropriate_parent_for_level(parsed.level)
 
         create_headline_node(parsed, caption_node, current_node)
       end
 
-      def build_caption_node(caption_text, caption_location: nil)
+      def build_caption_node(caption_text, caption_location:)
         return nil if caption_text.nil? || caption_text.empty?
 
-        loc = caption_location || location
-        caption_node = AST::CaptionNode.new(location: loc)
+        caption_node = AST::CaptionNode.new(location: caption_location)
 
         begin
-          with_temporary_location!(loc) do
+          with_temporary_location!(caption_location) do
             inline_processor.parse_inline_elements(caption_text, caption_node)
           end
         rescue StandardError => e
-          raise CompileError, "Error processing caption '#{caption_text}': #{e.message}#{format_location_info(loc)}"
+          raise CompileError, "Error processing caption '#{caption_text}': #{e.message}#{caption_location.format_for_error}"
         end
 
         caption_node
@@ -220,10 +222,10 @@ module ReVIEW
         # Validate that we're closing the correct tag by checking current AST node
         if open_tag == 'column'
           unless @current_ast_node.is_a?(AST::ColumnNode)
-            raise ReVIEW::ApplicationError, "column is not opened#{format_location_info}"
+            raise ReVIEW::ApplicationError, "column is not opened#{@current_location.format_for_error}"
           end
         else
-          raise ReVIEW::ApplicationError, "Unknown closing tag: /#{open_tag}#{format_location_info}"
+          raise ReVIEW::ApplicationError, "Unknown closing tag: /#{open_tag}#{@current_location.format_for_error}"
         end
 
         @current_ast_node = @current_ast_node.parent || @ast_root
@@ -299,14 +301,6 @@ module ReVIEW
       # @param file_input [LineInput] The file input object
       def update_current_location(file_input)
         @current_location = SnapshotLocation.new(@chapter.basename, file_input.lineno)
-      end
-
-      # Format location information for error messages
-      def format_location_info(loc = nil)
-        loc ||= @current_location
-        return '' unless loc
-
-        loc.format_for_error
       end
 
       # Override error method to accumulate errors (similar to HTMLBuilder's Compiler)
@@ -440,18 +434,18 @@ module ReVIEW
 
         line = initial_line || f.gets
         unless line
-          raise CompileError, "Unexpected end of file while reading block command#{format_location_info}"
+          raise CompileError, "Unexpected end of file while reading block command#{@current_location.format_for_error}"
         end
 
         # Special handling for termination tags (processed in normal compilation flow)
         if line.start_with?('//}')
-          raise CompileError, "Unexpected block terminator '//}' without opening block#{format_location_info}"
+          raise CompileError, "Unexpected block terminator '//}' without opening block#{@current_location.format_for_error}"
         end
 
         # Extract command name
         command_match = line.match(%r{\A//([a-z]+)})
         unless command_match
-          raise CompileError, "Invalid block command syntax: '#{line.strip}'#{format_location_info}"
+          raise CompileError, "Invalid block command syntax: '#{line.strip}'#{@current_location.format_for_error}"
         end
 
         name = command_match[1].to_sym
@@ -477,7 +471,7 @@ module ReVIEW
         if e.is_a?(CompileError)
           raise e
         else
-          raise CompileError, "Error reading block command: #{e.message}#{format_location_info}"
+          raise CompileError, "Error reading block command: #{e.message}#{@current_location.format_for_error}"
         end
       end
 
