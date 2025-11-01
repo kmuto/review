@@ -167,23 +167,23 @@ module ReVIEW
       end
 
       def compile_headline_to_ast(line)
-        parsed = HeadlineParser.parse(line, location: location)
-        return nil unless parsed
+        parse_result = HeadlineParser.parse(line, location: location)
+        return nil unless parse_result
 
-        caption_node = build_caption_node(parsed.caption, caption_location: location)
-        current_node = find_appropriate_parent_for_level(parsed.level)
+        caption_node = build_caption_node(parse_result.caption, caption_location: location)
+        current_node = find_appropriate_parent_for_level(parse_result.level)
 
-        create_headline_node(parsed, caption_node, current_node)
+        create_headline_node(parse_result, caption_node, current_node)
       end
 
-      def build_caption_node(caption_text, caption_location:)
-        return nil if caption_text.nil? || caption_text.empty?
+      def build_caption_node(raw_caption_text, caption_location:)
+        return nil if raw_caption_text.nil? || raw_caption_text.empty?
 
         caption_node = AST::CaptionNode.new(location: caption_location)
 
         begin
           with_temporary_location!(caption_location) do
-            inline_processor.parse_inline_elements(caption_text, caption_node)
+            inline_processor.parse_inline_elements(raw_caption_text, caption_node)
           end
         rescue StandardError => e
           raise CompileError, "Error processing caption '#{caption_text}': #{e.message}#{caption_location.format_for_error}"
@@ -192,21 +192,21 @@ module ReVIEW
         caption_node
       end
 
-      def create_headline_node(parsed, caption_node, current_node)
-        if parsed.column?
-          create_column_node(parsed, caption_node, current_node)
-        elsif parsed.closing_tag?
-          handle_closing_tag(parsed)
+      def create_headline_node(parse_result, caption_node, current_node)
+        if parse_result.column?
+          create_column_node(parse_result, caption_node, current_node)
+        elsif parse_result.closing_tag?
+          handle_closing_tag(parse_result)
         else
-          create_regular_headline(parsed, caption_node, current_node)
+          create_regular_headline(parse_result, caption_node, current_node)
         end
       end
 
-      def create_column_node(parsed, caption_node, current_node)
+      def create_column_node(parse_result, caption_node, current_node)
         node = AST::ColumnNode.new(
           location: location,
-          level: parsed.level,
-          label: parsed.label,
+          level: parse_result.level,
+          label: parse_result.label,
           caption_node: caption_node,
           column_type: :column,
           inline_processor: inline_processor
@@ -215,8 +215,8 @@ module ReVIEW
         @current_ast_node = node
       end
 
-      def handle_closing_tag(parsed)
-        open_tag = parsed.closing_tag_name
+      def handle_closing_tag(parse_result)
+        open_tag = parse_result.closing_tag_name
 
         # Validate that we're closing the correct tag by checking current AST node
         if open_tag == 'column'
@@ -230,13 +230,13 @@ module ReVIEW
         @current_ast_node = @current_ast_node.parent || @ast_root
       end
 
-      def create_regular_headline(parsed, caption_node, current_node)
+      def create_regular_headline(parse_result, caption_node, current_node)
         node = AST::HeadlineNode.new(
           location: location,
-          level: parsed.level,
-          label: parsed.label,
+          level: parse_result.level,
+          label: parse_result.label,
           caption_node: caption_node,
-          tag: parsed.tag
+          tag: parse_result.tag
         )
         current_node.add_child(node)
         @current_ast_node = @ast_root
@@ -525,11 +525,7 @@ module ReVIEW
         resolver = ReferenceResolver.new(@chapter)
         result = resolver.resolve_references(@ast_root)
 
-        if result[:failed] > 0
-          warn "Reference resolution: #{result[:resolved]} resolved, #{result[:failed]} failed"
-        else
-          debug("Reference resolution: #{result[:resolved]} references resolved successfully")
-        end
+        warn "Reference resolution: #{result[:resolved]} resolved, #{result[:failed]} failed" if result[:failed] > 0
       end
     end
   end
