@@ -38,6 +38,9 @@ module ReVIEW
 
         # Walk the Markly AST
         walk_node(markly_doc)
+
+        # Close any remaining open columns at the end of the document
+        close_all_columns
       end
 
       private
@@ -107,14 +110,21 @@ module ReVIEW
         # Extract text content to check for column marker
         heading_text = extract_text(cm_node)
 
-        # Check if this is a column heading: ### [column] Title or ### [column]
-        if heading_text =~ /\A\s*\[column\](.*)/
+        # Check if this is a column end marker: ### [/column]
+        if %r{\A\s*\[/column\]\s*\z}.match?(heading_text)
+          # End the current column
+          end_column_from_heading(cm_node)
+        # Check if this is a column start marker: ### [column] Title or ### [column]
+        elsif heading_text =~ /\A\s*\[column\](.*)/
           title = $1.strip
           title = nil if title.empty?
 
           # Start a column with heading-based syntax
-          start_column_from_heading(cm_node, title)
+          start_column_from_heading(cm_node, title, level)
         else
+          # Auto-close columns if we encounter a heading at the same or higher level
+          auto_close_columns_for_heading(level)
+
           # Regular heading processing
           # Create caption node with inline elements
           caption_node = CaptionNode.new(
@@ -520,7 +530,7 @@ module ReVIEW
       end
 
       # Start a new column context from heading syntax
-      def start_column_from_heading(cm_node, title)
+      def start_column_from_heading(cm_node, title, level)
         # Create caption node if title is provided
         caption_node = if title && !title.empty?
                          node = CaptionNode.new(location: current_location(cm_node))
@@ -538,10 +548,11 @@ module ReVIEW
           caption_node: caption_node
         )
 
-        # Push current context to stack
+        # Push current context to stack with heading level
         @column_stack.push({
                              column_node: column_node,
-                             previous_node: @current_node
+                             previous_node: @current_node,
+                             heading_level: level
                            })
 
         # Set column as current context
@@ -552,6 +563,25 @@ module ReVIEW
       def end_column(_html_node)
         if @column_stack.empty?
           # Warning: /column without matching column
+          return
+        end
+
+        # Pop column context
+        column_context = @column_stack.pop
+        column_node = column_context[:column_node]
+        previous_node = column_context[:previous_node]
+
+        # Add completed column to previous context
+        previous_node.add_child(column_node)
+
+        # Restore previous context
+        @current_node = previous_node
+      end
+
+      # End current column context from heading syntax
+      def end_column_from_heading(_cm_node)
+        if @column_stack.empty?
+          # Warning: [/column] without matching [column]
           return
         end
 
@@ -615,6 +645,45 @@ module ReVIEW
       def extract_image_id(url)
         # Remove file extension for Re:VIEW compatibility
         File.basename(url, '.*')
+      end
+
+      # Auto-close columns when encountering a heading at the same or higher level
+      def auto_close_columns_for_heading(heading_level)
+        # Close columns that are at the same or lower level than the current heading
+        until @column_stack.empty?
+          column_context = @column_stack.last
+          column_level = column_context[:heading_level]
+
+          # If the column was started at the same level or lower, close it
+          # (lower level number = higher heading, e.g., # is level 1, ## is level 2)
+          break if column_level && heading_level > column_level
+
+          # Close the column
+          @column_stack.pop
+          column_node = column_context[:column_node]
+          previous_node = column_context[:previous_node]
+
+          # Add completed column to previous context
+          previous_node.add_child(column_node)
+
+          # Restore previous context
+          @current_node = previous_node
+        end
+      end
+
+      # Close all remaining open columns
+      def close_all_columns
+        until @column_stack.empty?
+          column_context = @column_stack.pop
+          column_node = column_context[:column_node]
+          previous_node = column_context[:previous_node]
+
+          # Add completed column to previous context
+          previous_node.add_child(column_node)
+
+          # Restore previous context
+          @current_node = previous_node
+        end
       end
     end
   end
