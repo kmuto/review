@@ -45,20 +45,12 @@ module ReVIEW
           @original_text = original_text
         end
 
-        def id?
-          !id.nil? && !id.empty?
-        end
-
         def numbered?
           line_numbers
         end
 
         def content?
           !lines.empty?
-        end
-
-        def line_count
-          lines.size
         end
 
         def caption_text

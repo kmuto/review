@@ -62,21 +62,6 @@ module ReVIEW
         args[index]
       end
 
-      # Convert to hash for debugging/serialization
-      #
-      # @return [Hash] hash representation of the block data
-      def to_h
-        {
-          name: name,
-          args: args,
-          lines: lines,
-          nested_blocks: nested_blocks.map(&:to_h),
-          location: location&.to_h,
-          has_nested_blocks: nested_blocks?,
-          line_count: line_count
-        }
-      end
-
       # String representation for debugging
       #
       # @return [String] debug string

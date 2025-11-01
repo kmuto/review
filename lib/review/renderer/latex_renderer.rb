@@ -2508,17 +2508,6 @@ module ReVIEW
         id.to_s.gsub(/[^a-zA-Z0-9_-]/, '_')
       end
 
-      # Check if content looks like list item content
-      # @param content [String] Text content to check
-      # @return [Boolean] True if content appears to be a list item
-      def list_item_content?(content)
-        content = content.strip
-        # Check for unordered list (starts with *)
-        # Check for ordered list (starts with number followed by .)
-        # Check for definition list (starts with word followed by :)
-        content.match?(/\A\*\s/) || content.match?(/\A\d+\.\s/) || content.match?(/\A\w.*:\s/)
-      end
-
       def visit_footnote(_node)
         # FootnoteNode represents a footnote definition (//footnote[id][content])
         # In AST rendering, footnote definitions do not produce direct output.

@@ -2467,28 +2467,6 @@ module ReVIEW
         id
       end
 
-      # Count ul nesting depth by traversing parent contexts
-      def count_ul_nesting_depth
-        depth = 0
-        current = @rendering_context
-        while current
-          depth += 1 if current.context_type == :ul
-          current = current.parent_context
-        end
-        depth
-      end
-
-      # Count ol nesting depth by traversing parent contexts
-      def count_ol_nesting_depth
-        depth = 0
-        current = @rendering_context
-        while current
-          depth += 1 if current.context_type == :ol
-          current = current.parent_context
-        end
-        depth
-      end
-
       # Visit syntaxblock (box, insn) - processes lines with listinfo
       def visit_syntaxblock(node)
         type = node.block_type.to_s

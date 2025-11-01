@@ -294,17 +294,6 @@ module ReVIEW
         result
       end
 
-      # Generic block handler for unknown block types in Markdown
-      # This is not called directly but kept for reference if needed
-      def render_generic_block(node)
-        # Use HTML div for generic blocks
-        css_class = node.block_type.to_s
-        result = %Q(<div class="#{css_class}">\n\n)
-        result += render_children(node)
-        result += "\n</div>\n\n"
-        result
-      end
-
       def visit_inline(node)
         type = node.inline_type
         content = render_children(node)

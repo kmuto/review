@@ -496,25 +496,6 @@ module ReVIEW
         end
       end
 
-      # Get equation number for texequation blocks
-      def get_equation_number(equation_id)
-        if @chapter && @chapter.equation_index
-          begin
-            equation_number = @chapter.equation_index.number(equation_id)
-            if @chapter.number
-              "#{@chapter.number}.#{equation_number}"
-            else
-              equation_number.to_s
-            end
-          rescue StandardError
-            # Fallback if equation not found in index
-            '??'
-          end
-        else
-          '??'
-        end
-      end
-
       # Render AST to HTML body content only (without template).
       # This method is useful for testing and comparison purposes.
       #
@@ -581,12 +562,6 @@ module ReVIEW
         end
 
         layout_file
-      end
-
-      # Render footnote content (must be protected for InlineElementRenderer access)
-      # This method is called with explicit receiver from InlineElementRenderer
-      def render_footnote_content(footnote_node)
-        render_children(footnote_node)
       end
 
       # Public methods for inline element rendering
@@ -1724,13 +1699,6 @@ module ReVIEW
         content = render_children(node)
 
         %Q(<div class="#{type}"#{id_attr}>\n#{caption_html}#{content}</div>)
-      end
-
-      def render_generic_block(node)
-        id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
-        content = render_children(node)
-
-        %Q(<div class="#{escape(node.block_type)}"#{id_attr}>#{content}</div>)
       end
 
       # Render label control block

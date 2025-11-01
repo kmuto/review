@@ -99,37 +99,6 @@ class TestBlockData < Test::Unit::TestCase
     assert_nil(block_data.arg(0))
   end
 
-  def test_to_h
-    nested_block = BlockData.new(
-      name: :note,
-      args: ['warning'],
-      lines: ['nested content'],
-      location: @location
-    )
-
-    block_data = BlockData.new(
-      name: :minicolumn,
-      args: ['title'],
-      lines: ['line1', 'line2'],
-      nested_blocks: [nested_block],
-      location: @location
-    )
-
-    hash = block_data.to_h
-
-    assert_equal :minicolumn, hash[:name]
-    assert_equal ['title'], hash[:args]
-    assert_equal ['line1', 'line2'], hash[:lines]
-    assert_equal 1, hash[:nested_blocks].size
-    assert_equal @location.to_h, hash[:location]
-    assert_equal true, hash[:has_nested_blocks]
-    assert_equal 2, hash[:line_count]
-
-    nested_hash = hash[:nested_blocks].first
-    assert_equal :note, nested_hash[:name]
-    assert_equal ['warning'], nested_hash[:args]
-  end
-
   def test_inspect
     block_data = BlockData.new(
       name: :list,

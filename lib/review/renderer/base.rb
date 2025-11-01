@@ -87,39 +87,12 @@ module ReVIEW
         result.to_s
       end
 
-      # Handle inline elements within content.
-      #
-      # @param node [Object] The node containing inline content
-      # @return [String] The rendered inline content
-      def render_inline_content(node)
-        process_inline_content(node)
-      end
-
       # Escape special characters for the target format.
       #
       # @param str [String] The string to escape
       # @return [String] The escaped string
       def escape(str)
         str.to_s
-      end
-
-      # Generate an ID or label for a node.
-      # This method creates consistent identifiers for elements that can be referenced.
-      #
-      # @param node [Object] The node to generate an ID for
-      # @param prefix [String] Optional prefix for the ID
-      # @return [String] The generated ID
-      def generate_id(node, prefix = nil)
-        id_parts = []
-        id_parts << prefix if prefix
-
-        if node.respond_to?(:id) && node.id
-          id_parts << node.id
-        elsif node.respond_to?(:label) && node.label
-          id_parts << node.label
-        end
-
-        id_parts.join('-')
       end
 
       # Default visit methods for common node types.

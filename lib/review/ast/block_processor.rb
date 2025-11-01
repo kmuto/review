@@ -573,18 +573,6 @@ module ReVIEW
         process_nested_blocks(parent_node, block_data)
       end
 
-      # Process table content
-      def process_table_content(table_node, lines, block_location = nil)
-        @table_processor.process_content(table_node, lines, block_location)
-      end
-
-      # Create a table row node from a line containing tab-separated cells
-      # The is_header parameter determines if all cells should be header cells
-      # The first_cell_header parameter determines if only the first cell should be a header
-      def create_table_row_from_line(line, is_header: false, first_cell_header: false, block_location: nil)
-        @table_processor.create_row(line, is_header: is_header, first_cell_header: first_cell_header, block_location: block_location)
-      end
-
       def parse_raw_content(content)
         return [nil, content] if content.nil? || content.empty?
 

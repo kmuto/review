@@ -42,14 +42,6 @@ module ReVIEW
             @first_cell_header = first_cell_header
           end
 
-          def header_section?
-            !header_lines.empty?
-          end
-
-          def total_row_count
-            header_lines.size + body_lines.size
-          end
-
           class << self
             private
 

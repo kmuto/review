@@ -63,37 +63,6 @@ module ReVIEW
         @footnote_collector.add(footnote_node, footnote_number)
       end
 
-      # Check if any footnotes have been collected in this context
-      # @return [Boolean] true if footnotes were collected
-      def footnotes?
-        @footnote_collector.any?
-      end
-
-      # Get the depth of this context (0 for root)
-      # @return [Integer] context depth
-      def depth
-        current = self
-        depth = 0
-        while current.parent_context
-          depth += 1
-          current = current.parent_context
-        end
-        depth
-      end
-
-      # Check if this context is nested within a specific context type
-      # @param target_type [Symbol] the context type to check for
-      # @return [Boolean] true if nested within the target type
-      def nested_in?(target_type)
-        current = @parent_context
-        while current
-          return true if current.context_type == target_type
-
-          current = current.parent_context
-        end
-        false
-      end
-
       # Get a string representation for debugging
       # @return [String] string representation
       def to_s
