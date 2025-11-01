@@ -42,8 +42,8 @@ class TestColumnSections < Test::Unit::TestCase
     assert_equal(:column, column_node.column_type)
 
     # Check caption
-    assert_not_nil(column_node.caption_node&.to_text)
-    assert_equal('Column Title', column_node.caption_node&.to_text)
+    assert_not_nil(column_node.caption_text)
+    assert_equal('Column Title', column_node.caption_text)
 
     # Check that column has content as children
     assert(column_node.children.any?, 'Column should have content as children')
@@ -73,7 +73,7 @@ class TestColumnSections < Test::Unit::TestCase
     column_node = find_node_by_type(ast_root, ReVIEW::AST::ColumnNode)
     assert_not_nil(column_node)
     assert_equal('col1', column_node.label)
-    assert_equal('Column with Label', column_node.caption_node&.to_text)
+    assert_equal('Column with Label', column_node.caption_text)
 
     # Test round-trip conversion
     generator = ReVIEW::AST::ReVIEWGenerator.new
@@ -106,10 +106,10 @@ class TestColumnSections < Test::Unit::TestCase
     level3_column = column_nodes.find { |n| n.level == 3 }
 
     assert_not_nil(level2_column)
-    assert_equal('Level 2 Column', level2_column.caption_node&.to_text)
+    assert_equal('Level 2 Column', level2_column.caption_text)
 
     assert_not_nil(level3_column)
-    assert_equal('Level 3 Column', level3_column.caption_node&.to_text)
+    assert_equal('Level 3 Column', level3_column.caption_text)
   end
 
   def test_column_vs_regular_headline
@@ -148,7 +148,7 @@ class TestColumnSections < Test::Unit::TestCase
     # Check that column is ColumnNode
     column = column_nodes.first
     assert_equal(2, column.level)
-    assert_equal('Column Headline', column.caption_node&.to_text)
+    assert_equal('Column Headline', column.caption_text)
   end
 
   def test_column_with_inline_elements
@@ -169,7 +169,7 @@ class TestColumnSections < Test::Unit::TestCase
     assert_not_nil(column_node)
 
     # Check that caption has inline elements processed
-    caption_text = column_node.caption_node.to_text
+    caption_text = column_node.caption_text
     assert_include(caption_text, 'Bold')
 
     # Check that content has inline elements in children

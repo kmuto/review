@@ -22,9 +22,9 @@ class TestCaptionInlineIntegration < Test::Unit::TestCase
       caption_node: caption_node
     )
 
-    assert_equal 'Simple Caption', code_block.caption_node&.to_text
+    assert_equal 'Simple Caption', code_block.caption_text
     assert_instance_of(ReVIEW::AST::CaptionNode, code_block.caption_node)
-    assert_equal 'Simple Caption', code_block.caption_node&.to_text
+    assert_equal 'Simple Caption', code_block.caption_text
   end
 
   def test_caption_node_behavior_in_code_block
@@ -43,9 +43,9 @@ class TestCaptionInlineIntegration < Test::Unit::TestCase
       caption_node: caption_node
     )
 
-    assert_equal 'Caption with @<b>{bold} text', code_block.caption_node&.to_text
+    assert_equal 'Caption with @<b>{bold} text', code_block.caption_text
     assert_instance_of(ReVIEW::AST::CaptionNode, code_block.caption_node)
-    assert_equal 'Caption with @<b>{bold} text', code_block.caption_node&.to_text
+    assert_equal 'Caption with @<b>{bold} text', code_block.caption_text
   end
 
   def test_empty_caption_handling
@@ -54,7 +54,7 @@ class TestCaptionInlineIntegration < Test::Unit::TestCase
       location: @location
     )
 
-    assert_nil(code_block.caption_node&.to_text)
+    assert_equal('', code_block.caption_text)
   end
 
   def test_nil_caption_handling
@@ -63,6 +63,6 @@ class TestCaptionInlineIntegration < Test::Unit::TestCase
       location: @location
     )
 
-    assert_nil(code_block.caption_node&.to_text)
+    assert_equal('', code_block.caption_text)
   end
 end

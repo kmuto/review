@@ -16,6 +16,16 @@ module ReVIEW
         @caption_node = caption_node
       end
 
+      # Get caption text from caption_node
+      def caption_text
+        caption_node&.to_text || ''
+      end
+
+      # Check if this minicolumn has a caption
+      def caption?
+        !caption_node.nil?
+      end
+
       def to_h
         result = super.merge(
           minicolumn_type: minicolumn_type

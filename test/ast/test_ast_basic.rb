@@ -40,7 +40,7 @@ class TestASTBasic < Test::Unit::TestCase
     assert_equal 'test-label', hash[:label]
     expected_location = { filename: nil, lineno: 0 }
     assert_equal({ children: [{ content: 'Test Headline', location: expected_location, type: 'TextNode' }], location: expected_location, type: 'CaptionNode' }, hash[:caption_node])
-    assert_equal 'Test Headline', node.caption_node&.to_text
+    assert_equal 'Test Headline', node.caption_text
   end
 
   def test_paragraph_node

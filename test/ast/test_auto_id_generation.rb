@@ -120,7 +120,7 @@ class TestAutoIdGeneration < Test::Unit::TestCase
     # All special headlines should have auto_id
     assert_equal 3, special_headlines.size
     special_headlines.each do |h|
-      assert_not_nil(h.auto_id, "Headline '#{h.caption_node&.to_text}' should have auto_id")
+      assert_not_nil(h.auto_id, "Headline '#{h.caption_text}' should have auto_id")
     end
 
     # Extract numbers from auto_ids

@@ -99,10 +99,10 @@ class TestBlockProcessorInline < Test::Unit::TestCase
       original_text: 'code line'
     )
 
-    assert_not_nil(code_block.caption_node&.to_text)
-    assert_equal 'Simple Caption', code_block.caption_node&.to_text
+    assert_not_nil(code_block.caption_text)
+    assert_equal 'Simple Caption', code_block.caption_text
     assert_instance_of(ReVIEW::AST::CaptionNode, code_block.caption_node)
-    assert_equal 'Simple Caption', code_block.caption_node&.to_text
+    assert_equal 'Simple Caption', code_block.caption_text
   end
 
   def test_code_block_with_inline_caption
@@ -125,10 +125,10 @@ class TestBlockProcessorInline < Test::Unit::TestCase
       original_text: 'code line'
     )
 
-    assert_not_nil(code_block.caption_node&.to_text)
-    assert_equal caption_markup_text, code_block.caption_node&.to_text
+    assert_not_nil(code_block.caption_text)
+    assert_equal caption_markup_text, code_block.caption_text
     assert_instance_of(ReVIEW::AST::CaptionNode, code_block.caption_node)
-    assert_equal caption_markup_text, code_block.caption_node&.to_text
+    assert_equal caption_markup_text, code_block.caption_text
   end
 
   def test_table_node_with_caption
@@ -140,10 +140,10 @@ class TestBlockProcessorInline < Test::Unit::TestCase
       caption_node: caption_node
     )
 
-    assert_not_nil(table.caption_node&.to_text)
-    assert_equal 'Table Caption', table.caption_node&.to_text
+    assert_not_nil(table.caption_text)
+    assert_equal 'Table Caption', table.caption_text
     assert_instance_of(ReVIEW::AST::CaptionNode, table.caption_node)
-    assert_equal 'Table Caption', table.caption_node&.to_text
+    assert_equal 'Table Caption', table.caption_text
   end
 
   def test_image_node_with_caption
@@ -154,10 +154,10 @@ class TestBlockProcessorInline < Test::Unit::TestCase
       caption_node: CaptionParserHelper.parse(caption)
     )
 
-    assert_not_nil(image.caption_node&.to_text)
-    assert_equal 'Figure @<i>{1}: Sample', image.caption_node&.to_text
+    assert_not_nil(image.caption_text)
+    assert_equal 'Figure @<i>{1}: Sample', image.caption_text
     assert_instance_of(ReVIEW::AST::CaptionNode, image.caption_node)
-    assert_equal 'Figure @<i>{1}: Sample', image.caption_node&.to_text
+    assert_equal 'Figure @<i>{1}: Sample', image.caption_text
   end
 
   def test_caption_node_creation_directly
@@ -207,14 +207,14 @@ class TestBlockProcessorInline < Test::Unit::TestCase
       original_text: 'code'
     )
     assert_nil(code_block.caption_node)
-    assert_nil(code_block.caption_node&.to_text)
+    assert_equal('', code_block.caption_text)
 
     table = ReVIEW::AST::TableNode.new(
       location: @location,
       caption_node: nil
     )
     assert_nil(table.caption_node)
-    assert_nil(table.caption_node&.to_text)
+    assert_equal('', table.caption_text)
   end
 
   def test_caption_markup_text_compatibility
@@ -240,10 +240,10 @@ class TestBlockProcessorInline < Test::Unit::TestCase
     )
 
     # caption_markup_text should return the raw text with markup
-    assert_equal caption_with_markup, code_block.caption_node&.to_text
+    assert_equal caption_with_markup, code_block.caption_text
 
     # to_text on the caption should also return the same
-    assert_equal caption_with_markup, code_block.caption_node.to_text
+    assert_equal caption_with_markup, code_block.caption_text
   end
 
   private

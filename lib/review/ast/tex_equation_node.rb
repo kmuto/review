@@ -32,6 +32,11 @@ module ReVIEW
         @latex_content = latex_content || ''
       end
 
+      # Get caption text from caption_node
+      def caption_text
+        caption_node&.to_text || ''
+      end
+
       # Check if this equation has an ID for referencing
       def id?
         !@id.nil? && !@id.empty?

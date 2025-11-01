@@ -19,6 +19,16 @@ module ReVIEW
         @column_number = column_number
       end
 
+      # Get caption text from caption_node
+      def caption_text
+        caption_node&.to_text || ''
+      end
+
+      # Check if this column has a caption
+      def caption?
+        !caption_node.nil?
+      end
+
       def to_h
         result = super.merge(
           level: level,

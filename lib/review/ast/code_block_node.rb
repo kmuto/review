@@ -21,6 +21,16 @@ module ReVIEW
 
       attr_reader :children
 
+      # Get caption text from caption_node
+      def caption_text
+        caption_node&.to_text || ''
+      end
+
+      # Check if this code block has a caption
+      def caption?
+        !caption_node.nil?
+      end
+
       # Get original lines as array (for builders that don't need inline processing)
       def original_lines
         return [] unless original_text

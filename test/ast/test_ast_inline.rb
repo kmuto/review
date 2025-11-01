@@ -119,7 +119,7 @@ class TestASTInline < Test::Unit::TestCase
     # Check headline
     headline_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::HeadlineNode) }
     assert_not_nil(headline_node)
-    assert_equal 'Chapter Title', headline_node.caption_node&.to_text
+    assert_equal 'Chapter Title', headline_node.caption_text
 
     # Check paragraphs with inline elements
     paragraph_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }

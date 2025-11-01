@@ -169,7 +169,7 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
 
     headline_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::HeadlineNode) }
     assert_equal(1, headline_nodes.size, 'Should have one headline')
-    assert_equal('AST Structure Test', headline_nodes.first.caption_node&.to_text)
+    assert_equal('AST Structure Test', headline_nodes.first.caption_text)
 
     paragraph_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
     assert_equal(3, paragraph_nodes.size, 'Should have three paragraphs')

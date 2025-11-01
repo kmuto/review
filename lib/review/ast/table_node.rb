@@ -21,6 +21,16 @@ module ReVIEW
         @body_rows = []
       end
 
+      # Get caption text from caption_node
+      def caption_text
+        caption_node&.to_text || ''
+      end
+
+      # Check if this table has a caption
+      def caption?
+        !caption_node.nil?
+      end
+
       def header_rows
         @children.find_all do |node|
           node.row_type == :header

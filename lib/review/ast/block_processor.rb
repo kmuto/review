@@ -211,7 +211,7 @@ module ReVIEW
       def build_code_block_node_from_structure(context, structure)
         node = context.create_node(AST::CodeBlockNode,
                                    id: structure.id,
-                                   caption: structure.caption_node&.to_text,
+                                   caption: structure.caption_text,
                                    caption_node: structure.caption_node,
                                    lang: structure.lang,
                                    line_numbers: structure.line_numbers,

@@ -18,6 +18,16 @@ module ReVIEW
         @auto_id = auto_id
       end
 
+      # Get caption text from caption_node
+      def caption_text
+        caption_node&.to_text || ''
+      end
+
+      # Check if this headline has a caption
+      def caption?
+        !caption_node.nil?
+      end
+
       # Check if headline has specific tag option
       def tag?(tag_name)
         @tag == tag_name

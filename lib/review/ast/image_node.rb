@@ -16,6 +16,16 @@ module ReVIEW
         @image_type = image_type
       end
 
+      # Get caption text from caption_node
+      def caption_text
+        caption_node&.to_text || ''
+      end
+
+      # Check if this image has a caption
+      def caption?
+        !caption_node.nil?
+      end
+
       # Override to_h to exclude children array for ImageNode
       def to_h
         result = super

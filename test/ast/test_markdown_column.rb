@@ -302,13 +302,13 @@ class TestMarkdownColumn < Test::Unit::TestCase
     # Check first image
     first_image = images.first
     assert_equal 'sample1', first_image.id
-    assert_not_nil(first_image.caption_node&.to_text)
+    assert_not_nil(first_image.caption_text)
     assert_equal 'Sample Image', extract_image_caption(first_image)
 
     # Check second image
     second_image = images.last
     assert_equal 'sample2', second_image.id
-    assert_not_nil(second_image.caption_node&.to_text)
+    assert_not_nil(second_image.caption_text)
     assert_equal 'Another Image', extract_image_caption(second_image)
 
     # Test LaTeX rendering

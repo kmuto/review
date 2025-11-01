@@ -19,6 +19,16 @@ module ReVIEW
         @lines = lines # Optional: original lines for blocks like box, insn
       end
 
+      # Get caption text from caption_node
+      def caption_text
+        caption_node&.to_text || ''
+      end
+
+      # Check if this block has a caption
+      def caption?
+        !caption_node.nil?
+      end
+
       def to_h
         result = super.merge(
           block_type: block_type

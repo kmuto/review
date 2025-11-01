@@ -73,6 +73,10 @@ module ReVIEW
         def line_count
           lines.size
         end
+
+        def caption_text
+          caption_node&.to_text || ''
+        end
       end
     end
   end
