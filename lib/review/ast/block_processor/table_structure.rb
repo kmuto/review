@@ -11,12 +11,9 @@ module ReVIEW
     class BlockProcessor
       class TableProcessor
         # Data structure representing table structure (intermediate representation)
-        # This class represents the result of parsing table text lines into a structured format.
-        # It serves as an intermediate layer between raw text and AST nodes.
         class TableStructure
           attr_reader :header_lines, :body_lines, :first_cell_header
 
-          # Factory method to create TableStructure from raw text lines
           # @param lines [Array<String>] Raw table content lines
           # @return [TableStructure] Parsed table structure
           # @raise [ReVIEW::CompileError] If table is empty or invalid
@@ -45,14 +42,10 @@ module ReVIEW
             @first_cell_header = first_cell_header
           end
 
-          # Check if table has explicit header section (separated by line)
-          # @return [Boolean] True if has separator and header section
           def header_section?
             !header_lines.empty?
           end
 
-          # Get total number of rows (header + body)
-          # @return [Integer] Total row count
           def total_row_count
             header_lines.size + body_lines.size
           end
@@ -60,9 +53,7 @@ module ReVIEW
           class << self
             private
 
-            # Validate table lines for emptiness and structure
             # @param lines [Array<String>] Content lines
-            # @raise [ReVIEW::CompileError] If table is empty or only contains separator
             def validate_lines(lines)
               if lines.nil? || lines.empty?
                 raise ReVIEW::CompileError, 'no rows in the table'
@@ -75,7 +66,6 @@ module ReVIEW
               end
             end
 
-            # Find separator line index in table lines
             # @param lines [Array<String>] Content lines
             # @return [Integer, nil] Separator index or nil if not found
             def find_separator_index(lines)

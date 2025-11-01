@@ -10,17 +10,12 @@ module ReVIEW
   module AST
     class BlockProcessor
       # Data structure representing code block structure (intermediate representation)
-      # This class represents the result of parsing code block command and arguments
-      # into a structured format. It serves as an intermediate layer between
-      # block command context and AST nodes.
       class CodeBlockStructure
         attr_reader :id, :caption_node, :lang, :line_numbers, :code_type, :lines, :original_text
 
-        # Factory method to create CodeBlockStructure from context and config
         # @param context [BlockContext] Block context
         # @param config [Hash] Code block configuration
         # @return [CodeBlockStructure] Parsed code block structure
-        # @raise [CompileError] If configuration is invalid
         def self.from_context(context, config)
           id = context.arg(config[:id_index])
           caption_node = context.process_caption(context.args, config[:caption_index])
@@ -50,26 +45,18 @@ module ReVIEW
           @original_text = original_text
         end
 
-        # Check if this code block has an ID (list-style blocks)
-        # @return [Boolean] True if has ID
         def id?
           !id.nil? && !id.empty?
         end
 
-        # Check if this code block should show line numbers
-        # @return [Boolean] True if line numbers should be shown
         def numbered?
           line_numbers
         end
 
-        # Check if this code block has content lines
-        # @return [Boolean] True if has content
         def content?
           !lines.empty?
         end
 
-        # Get the number of content lines
-        # @return [Integer] Number of lines
         def line_count
           lines.size
         end

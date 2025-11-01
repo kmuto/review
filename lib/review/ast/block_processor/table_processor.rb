@@ -16,20 +16,11 @@ module ReVIEW
       # This class is responsible for processing table block commands
       # (//table, //emtable, //imgtable) and converting them into
       # proper AST structures with TableNode, TableRowNode, and TableCellNode.
-      #
-      # Responsibilities:
-      # - Parse table content lines into structured rows and cells
-      # - Handle different table types (table, emtable, imgtable)
-      # - Adjust column counts for consistency
-      # - Process header/body row separation
-      # - Handle inline elements within table cells
-      #
       class TableProcessor
         def initialize(ast_compiler)
           @ast_compiler = ast_compiler
         end
 
-        # Build table AST node from block context
         # @param context [BlockContext] Block context
         # @return [TableNode] Created table node
         def build_table_node(context)
@@ -75,7 +66,6 @@ module ReVIEW
           node
         end
 
-        # Process table content lines into row nodes
         # @param table_node [TableNode] Table node to populate
         # @param lines [Array<String>] Content lines
         # @param block_location [SnapshotLocation] Block start location
@@ -89,7 +79,6 @@ module ReVIEW
           process_and_add_rows(table_node, header_rows, body_rows)
         end
 
-        # Create table row node from a line containing tab-separated cells
         # @param line [String] Line content
         # @param is_header [Boolean] Whether all cells should be header cells
         # @param first_cell_header [Boolean] Whether only first cell should be header
@@ -123,7 +112,6 @@ module ReVIEW
 
         private
 
-        # Build row nodes from table structure
         # @param structure [TableStructure] Table structure data
         # @param block_location [SnapshotLocation] Block start location
         # @return [Array<Array<TableRowNode>, Array<TableRowNode>>] Header rows and body rows
@@ -139,7 +127,6 @@ module ReVIEW
           [header_rows, body_rows]
         end
 
-        # Process and add rows to table node
         # @param table_node [TableNode] Table node to populate
         # @param header_rows [Array<TableRowNode>] Header rows
         # @param body_rows [Array<TableRowNode>] Body rows
@@ -148,7 +135,6 @@ module ReVIEW
           body_rows.each { |row| table_node.add_body_row(row) }
         end
 
-        # Adjust table row columns to ensure all rows have the same number of columns
         # Matches the behavior of Builder#adjust_n_cols
         # @param rows [Array<TableRowNode>] Rows to adjust
         def adjust_columns(rows)
@@ -172,7 +158,6 @@ module ReVIEW
           end
         end
 
-        # Get table row separator regexp from config
         # Matches the logic in Builder#table_row_separator_regexp
         # @return [Regexp] Separator pattern
         def row_separator_regexp
@@ -196,7 +181,6 @@ module ReVIEW
           end
         end
 
-        # Create any AST node with location automatically set
         # @param node_class [Class] Node class to instantiate
         # @param attributes [Hash] Node attributes
         # @return [Node] Created node

@@ -19,9 +19,6 @@ module ReVIEW
   module AST
     module Command
       # Compile - AST-based compilation command
-      #
-      # This command compiles Re:VIEW source files using AST and Renderer directly,
-      # without using traditional Builder classes.
       class Compile
         include ReVIEW::Loggable
 
@@ -48,7 +45,6 @@ module ReVIEW
           @version_requested = false
           @help_requested = false
 
-          # Initialize logger for Loggable
           @logger = ReVIEW.logger
         end
 
@@ -166,19 +162,15 @@ module ReVIEW
         end
 
         def create_chapter(content)
-          # Load configuration if specified
           config = load_configuration
 
-          # Setup I18n with config language
           require 'review/i18n'
           I18n.setup(config['language'] || 'ja')
 
-          # Create book with configuration
           book_basedir = File.dirname(@input_file)
           book = ReVIEW::Book::Base.new(book_basedir, config: config)
           basename = File.basename(@input_file, '.*')
 
-          # Try to find the correct chapter number from book catalog
           chapter_number = find_chapter_number(book, basename)
 
           # If chapter number not found, try to extract from filename (e.g., ch03.re -> 3)
@@ -186,7 +178,6 @@ module ReVIEW
             chapter_number = extract_chapter_number_from_filename(basename)
           end
 
-          # Final fallback to 1 if all else fails
           chapter_number ||= 1
 
           chapter = ReVIEW::Book::Chapter.new(
@@ -197,7 +188,6 @@ module ReVIEW
             StringIO.new(content)
           )
 
-          # Initialize book-wide indexes early for cross-chapter references
           require 'review/ast/book_indexer'
           ReVIEW::AST::BookIndexer.build(book)
 
@@ -205,10 +195,8 @@ module ReVIEW
         end
 
         def find_chapter_number(book, basename)
-          # Try to load catalog and find chapter number
           return nil unless book
 
-          # Look for catalog.yml in the book directory
           catalog_file = File.join(book.basedir, 'catalog.yml')
           return nil unless File.exist?(catalog_file)
 
@@ -216,7 +204,6 @@ module ReVIEW
             require 'yaml'
             catalog = YAML.load_file(catalog_file)
 
-            # Search in CHAPS section for the chapter filename
             if catalog['CHAPS']
               catalog['CHAPS'].each_with_index do |chapter_file, index|
                 # Remove extension and compare basename
@@ -265,16 +252,13 @@ module ReVIEW
         end
 
         def load_configuration
-          # Determine config file to load
           config_file = @options[:config_file]
 
-          # If no config file specified, try to find default config.yml in the same directory as input file
           if config_file.nil?
             default_config = File.join(File.dirname(@input_file), 'config.yml')
             config_file = default_config if File.exist?(default_config)
           end
 
-          # Load configuration using ReVIEW::Configure
           if config_file && File.exist?(config_file)
             log("Loading configuration: #{config_file}")
             begin
@@ -290,7 +274,6 @@ module ReVIEW
               raise CompileError, "Configuration file not found: #{@options[:config_file]}"
             end
 
-            # Use default configuration
             log('Using default configuration')
             config = ReVIEW::Configure.values
           end
@@ -316,12 +299,10 @@ module ReVIEW
 
         def output_content(content)
           if @options[:output_file]
-            # Output to file
             log("Writing to: #{@options[:output_file]}")
             File.write(@options[:output_file], content)
             puts "Successfully generated: #{@options[:output_file]}"
           else
-            # Output to stdout
             log('Writing to: stdout')
             print content
           end
