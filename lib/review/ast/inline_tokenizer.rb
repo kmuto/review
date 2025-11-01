@@ -347,10 +347,7 @@ module ReVIEW
         info += " in element: #{element_preview}"
 
         # Add file location if available
-        if @location
-          info += " at line #{@location.lineno}"
-          info += " in #{@location.filename}" if @location.filename
-        end
+        info += @location.format_for_error if @location
 
         info
       end

@@ -72,7 +72,7 @@ module ReVIEW
         when :dl
           process_definition_list(f)
         else
-          location_info = @ast_compiler.location&.format_for_error || ''
+          location_info = @ast_compiler.location.format_for_error
           raise CompileError, "Unknown list type: #{list_type}#{location_info}"
         end
       end
@@ -98,7 +98,7 @@ module ReVIEW
         when :dl
           @parser.parse_definition_list(f)
         else
-          location_info = @ast_compiler.location&.format_for_error || ''
+          location_info = @ast_compiler.location.format_for_error
           raise CompileError, "Unknown list type: #{list_type}#{location_info}"
         end
       end
