@@ -2352,12 +2352,13 @@ module ReVIEW
       end
 
       def visit_reference(node)
-        unless node.resolved?
-          ref_type = node.parent.is_a?(AST::InlineNode) ? node.parent.inline_type : 'reference'
-          error "unknown #{ref_type}: #{node.full_ref_id}", location: node.location
+        if node.resolved?
+          format_resolved_reference(node.resolved_data)
+        else
+          # Reference resolution was skipped or disabled
+          # Return content as fallback
+          escape(node.content || '')
         end
-
-        format_resolved_reference(node.resolved_data)
       end
 
       # Format resolved reference based on ResolvedData
