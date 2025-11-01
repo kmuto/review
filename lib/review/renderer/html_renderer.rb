@@ -9,6 +9,7 @@
 require 'review/renderer/base'
 require 'review/ast/caption_node'
 require 'review/renderer/rendering_context'
+require 'review/renderer/formatters/html_reference_formatter'
 require 'review/htmlutils'
 require 'review/textutils'
 require 'review/escape_utils'
@@ -24,7 +25,7 @@ require 'digest'
 
 module ReVIEW
   module Renderer
-    class HtmlRenderer < Base # rubocop:disable Metrics/ClassLength
+    class HtmlRenderer < Base
       include ReVIEW::HTMLUtils
       include ReVIEW::TextUtils
       include ReVIEW::EscapeUtils
@@ -1232,6 +1233,18 @@ module ReVIEW
         secnolevel >= n.to_s.split('.').size
       end
 
+      def format_footnote_reference(data)
+        data.item_number.to_s
+      end
+
+      def format_endnote_reference(data)
+        data.item_number.to_s
+      end
+
+      def format_word_reference(data)
+        escape(data.word_content)
+      end
+
       private
 
       # Code block visitors using dynamic method dispatch
@@ -1444,112 +1457,13 @@ module ReVIEW
         end
       end
 
+      public
+
       # Format resolved reference based on ResolvedData
+      # Uses double dispatch pattern with a dedicated formatter object
       def format_resolved_reference(data)
-        case data
-        when AST::ResolvedData::Image
-          format_image_reference(data)
-        when AST::ResolvedData::Table
-          format_table_reference(data)
-        when AST::ResolvedData::List
-          format_list_reference(data)
-        when AST::ResolvedData::Equation
-          format_equation_reference(data)
-        when AST::ResolvedData::Footnote, AST::ResolvedData::Endnote
-          data.item_number.to_s
-        when AST::ResolvedData::Chapter
-          format_chapter_reference(data)
-        when AST::ResolvedData::Headline
-          format_headline_reference(data)
-        when AST::ResolvedData::Column
-          format_column_reference(data)
-        when AST::ResolvedData::Word
-          escape(data.word_content)
-        else
-          # Default: return item_id
-          escape(data.item_id)
-        end
-      end
-
-      def format_image_reference(data)
-        number_text = if data.chapter_number
-                        "#{I18n.t('image')}#{I18n.t('format_number', [data.chapter_number, data.item_number])}"
-                      else
-                        "#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [data.item_number])}"
-                      end
-
-        if config['chapterlink'] && data.cross_chapter?
-          %Q(<span class="imgref"><a href="./#{data.chapter_id}#{extname}##{normalize_id(data.item_id)}">#{number_text}</a></span>)
-        elsif config['chapterlink']
-          %Q(<span class="imgref"><a href="##{normalize_id(data.item_id)}">#{number_text}</a></span>)
-        else
-          %Q(<span class="imgref">#{number_text}</span>)
-        end
-      end
-
-      def format_table_reference(data)
-        number_text = if data.chapter_number
-                        "#{I18n.t('table')}#{I18n.t('format_number', [data.chapter_number, data.item_number])}"
-                      else
-                        "#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [data.item_number])}"
-                      end
-
-        if config['chapterlink'] && data.cross_chapter?
-          %Q(<span class="tableref"><a href="./#{data.chapter_id}#{extname}##{normalize_id(data.item_id)}">#{number_text}</a></span>)
-        elsif config['chapterlink']
-          %Q(<span class="tableref"><a href="##{normalize_id(data.item_id)}">#{number_text}</a></span>)
-        else
-          %Q(<span class="tableref">#{number_text}</span>)
-        end
-      end
-
-      def format_list_reference(data)
-        number_text = if data.chapter_number
-                        "#{I18n.t('list')}#{I18n.t('format_number', [data.chapter_number, data.item_number])}"
-                      else
-                        "#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [data.item_number])}"
-                      end
-
-        if config['chapterlink'] && data.cross_chapter?
-          %Q(<span class="listref"><a href="./#{data.chapter_id}#{extname}##{normalize_id(data.item_id)}">#{number_text}</a></span>)
-        elsif config['chapterlink']
-          %Q(<span class="listref"><a href="##{normalize_id(data.item_id)}">#{number_text}</a></span>)
-        else
-          %Q(<span class="listref">#{number_text}</span>)
-        end
-      end
-
-      def format_equation_reference(data)
-        number_text = "#{I18n.t('equation')}#{I18n.t('format_number', [data.chapter_number, data.item_number])}"
-        if config['chapterlink']
-          %Q(<span class="eqref"><a href="##{normalize_id(data.item_id)}">#{number_text}</a></span>)
-        else
-          %Q(<span class="eqref">#{number_text}</span>)
-        end
-      end
-
-      def format_chapter_reference(data)
-        # For chap and chapref, format based on parent inline type
-        if data.chapter_title
-          "第#{data.chapter_number}章「#{escape(data.chapter_title)}」"
-        else
-          "第#{data.chapter_number}章"
-        end
-      end
-
-      def format_headline_reference(data)
-        number_str = data.headline_number.join('.')
-        caption = data.caption_text
-
-        if number_str.empty?
-          "「#{escape(caption)}」"
-        else
-          "#{number_str} #{escape(caption)}"
-        end
-      end
-
-      def format_column_reference(data)
-        "#{I18n.t('column')}#{I18n.t('format_number', [data.chapter_number, data.item_number])}"
+        @reference_formatter ||= Formatters::HtmlReferenceFormatter.new(self)
+        data.format_with(@reference_formatter)
       end
 
       def visit_footnote(node)

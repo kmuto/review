@@ -29,6 +29,7 @@ require 'review/textutils'
 require 'review/sec_counter'
 require 'review/ast/caption_node'
 require 'review/ast/paragraph_node'
+require 'review/renderer/formatters/idgxml_reference_formatter'
 require 'review/i18n'
 require 'review/loggable'
 require 'digest/sha2'
@@ -261,85 +262,10 @@ module ReVIEW
       end
 
       # Format resolved reference based on ResolvedData
+      # Uses double dispatch pattern with a dedicated formatter object
       def format_resolved_reference(data)
-        case data
-        when AST::ResolvedData::Image
-          format_image_reference(data)
-        when AST::ResolvedData::Table
-          format_table_reference(data)
-        when AST::ResolvedData::List
-          format_list_reference(data)
-        when AST::ResolvedData::Equation
-          format_equation_reference(data)
-        when AST::ResolvedData::Footnote, AST::ResolvedData::Endnote
-          data.item_number.to_s
-        when AST::ResolvedData::Chapter
-          format_chapter_reference(data)
-        when AST::ResolvedData::Headline
-          format_headline_reference(data)
-        when AST::ResolvedData::Column
-          format_column_reference(data)
-        when AST::ResolvedData::Word
-          escape(data.word_content)
-        else
-          # Default: return item_id
-          escape(data.item_id)
-        end
-      end
-
-      def format_image_reference(data)
-        compose_numbered_reference('image', data)
-      end
-
-      def format_table_reference(data)
-        compose_numbered_reference('table', data)
-      end
-
-      def format_list_reference(data)
-        compose_numbered_reference('list', data)
-      end
-
-      def format_equation_reference(data)
-        number_text = reference_number_text(data)
-        label = I18n.t('equation')
-        escape("#{label}#{number_text || data.item_id || ''}")
-      end
-
-      def format_chapter_reference(data)
-        chapter_number = data.chapter_number
-        chapter_title = data.chapter_title
-
-        if chapter_title && chapter_number
-          number_text = formatted_chapter_number(chapter_number)
-          escape(I18n.t('chapter_quote', [number_text, chapter_title]))
-        elsif chapter_title
-          escape(I18n.t('chapter_quote_without_number', chapter_title))
-        elsif chapter_number
-          escape(formatted_chapter_number(chapter_number))
-        else
-          escape(data.item_id || '')
-        end
-      end
-
-      def format_headline_reference(data)
-        # Use caption_node to render inline elements like IDGXMLBuilder does
-        caption = render_caption_inline(data.caption_node)
-        headline_numbers = Array(data.headline_number).compact
-
-        if !headline_numbers.empty?
-          number_str = headline_numbers.join('.')
-          escape(I18n.t('hd_quote', [number_str, caption]))
-        elsif !caption.empty?
-          escape(I18n.t('hd_quote_without_number', caption))
-        else
-          escape(data.item_id || '')
-        end
-      end
-
-      def format_column_reference(data)
-        label = I18n.t('columnname')
-        number_text = reference_number_text(data)
-        escape("#{label}#{number_text || data.item_id || ''}")
+        @reference_formatter ||= Formatters::IdgxmlReferenceFormatter.new(self)
+        data.format_with(@reference_formatter)
       end
 
       def compose_numbered_reference(label_key, data)
@@ -1639,8 +1565,6 @@ module ReVIEW
         secnolevel >= n.to_s.split('.').size
       end
 
-      private
-
       # Render inline elements from caption_node
       # @param caption_node [CaptionNode] Caption node to render
       # @return [String] Rendered inline elements
@@ -1653,6 +1577,13 @@ module ReVIEW
           content.delete("\n")
         end
       end
+
+      # Escape for IDGXML (uses HTML escaping)
+      def escape(str)
+        escape_html(str.to_s)
+      end
+
+      private
 
       def render_nodes(nodes)
         return '' unless nodes && !nodes.empty?
@@ -2408,11 +2339,6 @@ module ReVIEW
         # Convert literal \n (backslash followed by n) to a protected newline marker
         # The marker will be preserved through paragraph and nolf processing
         content.gsub('\n', "\x01IDGXML_INLINE_NEWLINE\x01")
-      end
-
-      # Escape for IDGXML (uses HTML escaping)
-      def escape(str)
-        escape_html(str.to_s)
       end
 
       # Get list reference for inline @<list>{}

@@ -75,8 +75,6 @@ module ReVIEW
         @item_id || ''
       end
 
-      protected
-
       # Helper methods for text formatting
 
       def safe_i18n(key, args = nil)
@@ -126,8 +124,6 @@ module ReVIEW
       def numeric_string?(value)
         value.to_s.match?(/\A-?\d+\z/)
       end
-
-      public
 
       # Factory methods for common reference types
 
@@ -249,6 +245,11 @@ module ReVIEW
         def to_text
           format_captioned_reference('image')
         end
+
+        # Double dispatch - delegate to formatter
+        def format_with(formatter)
+          formatter.format_image_reference(self)
+        end
       end
     end
 
@@ -265,6 +266,11 @@ module ReVIEW
 
         def to_text
           format_captioned_reference('table')
+        end
+
+        # Double dispatch - delegate to formatter
+        def format_with(formatter)
+          formatter.format_table_reference(self)
         end
       end
     end
@@ -283,6 +289,11 @@ module ReVIEW
         def to_text
           format_captioned_reference('list')
         end
+
+        # Double dispatch - delegate to formatter
+        def format_with(formatter)
+          formatter.format_list_reference(self)
+        end
       end
     end
 
@@ -299,6 +310,11 @@ module ReVIEW
         def to_text
           format_captioned_reference('equation')
         end
+
+        # Double dispatch - delegate to formatter
+        def format_with(formatter)
+          formatter.format_equation_reference(self)
+        end
       end
     end
 
@@ -314,6 +330,11 @@ module ReVIEW
         def to_text
           @item_number.to_s
         end
+
+        # Double dispatch - delegate to formatter
+        def format_with(formatter)
+          formatter.format_footnote_reference(self)
+        end
       end
     end
 
@@ -328,6 +349,11 @@ module ReVIEW
 
         def to_text
           @item_number.to_s
+        end
+
+        # Double dispatch - delegate to formatter
+        def format_with(formatter)
+          formatter.format_endnote_reference(self)
         end
       end
     end
@@ -355,6 +381,11 @@ module ReVIEW
             @item_id || ''
           end
         end
+
+        # Double dispatch - delegate to formatter
+        def format_with(formatter)
+          formatter.format_chapter_reference(self)
+        end
       end
     end
 
@@ -379,6 +410,11 @@ module ReVIEW
             @item_id || ''
           end
         end
+
+        # Double dispatch - delegate to formatter
+        def format_with(formatter)
+          formatter.format_headline_reference(self)
+        end
       end
     end
 
@@ -393,6 +429,11 @@ module ReVIEW
 
         def to_text
           @word_content
+        end
+
+        # Double dispatch - delegate to formatter
+        def format_with(formatter)
+          formatter.format_word_reference(self)
         end
       end
     end
@@ -415,6 +456,11 @@ module ReVIEW
           else
             safe_i18n('column', text)
           end
+        end
+
+        # Double dispatch - delegate to formatter
+        def format_with(formatter)
+          formatter.format_column_reference(self)
         end
       end
     end

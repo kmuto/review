@@ -8,6 +8,7 @@
 
 require 'review/renderer/base'
 require 'review/renderer/rendering_context'
+require 'review/renderer/formatters/latex_reference_formatter'
 require 'review/ast/caption_node'
 require 'review/ast/table_column_width_parser'
 require 'review/latexutils'
@@ -2361,95 +2362,13 @@ module ReVIEW
         end
       end
 
+      public
+
       # Format resolved reference based on ResolvedData
+      # Uses double dispatch pattern with a dedicated formatter object
       def format_resolved_reference(data)
-        case data
-        when AST::ResolvedData::Image
-          format_image_reference(data)
-        when AST::ResolvedData::Table
-          format_table_reference(data)
-        when AST::ResolvedData::List
-          format_list_reference(data)
-        when AST::ResolvedData::Equation
-          format_equation_reference(data)
-        when AST::ResolvedData::Footnote
-          format_footnote_reference(data)
-        when AST::ResolvedData::Endnote
-          data.item_number.to_s
-        when AST::ResolvedData::Chapter
-          format_chapter_reference(data)
-        when AST::ResolvedData::Headline
-          format_headline_reference(data)
-        when AST::ResolvedData::Column
-          format_column_reference(data)
-        when AST::ResolvedData::Word
-          escape(data.word_content)
-        else
-          # Default: return item_id
-          escape(data.item_id)
-        end
-      end
-
-      def format_image_reference(data)
-        # LaTeX uses \ref{} for cross-references
-        if data.cross_chapter?
-          # For cross-chapter references, use full path
-          "\\ref{#{data.chapter_id}:#{data.item_id}}"
-        else
-          "\\ref{#{data.item_id}}"
-        end
-      end
-
-      def format_table_reference(data)
-        # LaTeX uses \ref{} for cross-references
-        if data.cross_chapter?
-          "\\ref{#{data.chapter_id}:#{data.item_id}}"
-        else
-          "\\ref{#{data.item_id}}"
-        end
-      end
-
-      def format_list_reference(data)
-        # LaTeX uses \ref{} for cross-references
-        if data.cross_chapter?
-          "\\ref{#{data.chapter_id}:#{data.item_id}}"
-        else
-          "\\ref{#{data.item_id}}"
-        end
-      end
-
-      def format_equation_reference(data)
-        # LaTeX equation references
-        "\\ref{#{data.item_id}}"
-      end
-
-      def format_footnote_reference(data)
-        # LaTeX footnote references use the footnote number
-        "\\footnotemark[#{data.item_number}]"
-      end
-
-      def format_chapter_reference(data)
-        # Format chapter reference
-        if data.chapter_title
-          "第#{data.chapter_number}章「#{escape(data.chapter_title)}」"
-        else
-          "第#{data.chapter_number}章"
-        end
-      end
-
-      def format_headline_reference(data)
-        number_str = data.headline_number.join('.')
-        caption = data.caption_text
-
-        if number_str.empty?
-          "「#{escape(caption)}」"
-        else
-          "#{number_str} #{escape(caption)}"
-        end
-      end
-
-      def format_column_reference(data)
-        "コラム#{data.chapter_number}.#{data.item_number}"
+        @reference_formatter ||= Formatters::LaTeXReferenceFormatter.new(self)
+        data.format_with(@reference_formatter)
       end
 
       # Render document children with proper separation

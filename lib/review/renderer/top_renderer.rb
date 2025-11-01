@@ -7,6 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/renderer/base'
+require 'review/renderer/formatters/top_reference_formatter'
 require 'review/textutils'
 require 'review/loggable'
 require 'review/i18n'
@@ -554,93 +555,13 @@ module ReVIEW
         "●ページ◆→#{label_id}←◆"
       end
 
+      public
+
+      # Format resolved reference based on ResolvedData
+      # Uses double dispatch pattern with a dedicated formatter object
       def format_resolved_reference(data)
-        case data
-        when AST::ResolvedData::Image
-          format_image_reference(data)
-        when AST::ResolvedData::Table
-          format_table_reference(data)
-        when AST::ResolvedData::List
-          format_list_reference(data)
-        when AST::ResolvedData::Equation
-          format_equation_reference(data)
-        when AST::ResolvedData::Footnote
-          format_footnote_reference(data)
-        when AST::ResolvedData::Endnote
-          format_endnote_reference(data)
-        when AST::ResolvedData::Chapter
-          format_chapter_reference(data)
-        when AST::ResolvedData::Headline
-          format_headline_reference(data)
-        when AST::ResolvedData::Column
-          format_column_reference(data)
-        when AST::ResolvedData::Word
-          data.word_content.to_s
-        else
-          data.item_id.to_s
-        end
-      end
-
-      def format_image_reference(data)
-        compose_numbered_reference('image', data)
-      end
-
-      def format_table_reference(data)
-        compose_numbered_reference('table', data)
-      end
-
-      def format_list_reference(data)
-        compose_numbered_reference('list', data)
-      end
-
-      def format_equation_reference(data)
-        compose_numbered_reference('equation', data)
-      end
-
-      def format_footnote_reference(data)
-        number = data.item_number || data.item_id
-        "【注#{number}】"
-      end
-
-      def format_endnote_reference(data)
-        number = data.item_number || data.item_id
-        "【後注#{number}】"
-      end
-
-      def format_chapter_reference(data)
-        chapter_number = data.chapter_number
-        chapter_title = data.chapter_title
-
-        if chapter_title && chapter_number
-          number_text = formatted_chapter_number(chapter_number)
-          I18n.t('chapter_quote', [number_text, chapter_title])
-        elsif chapter_title
-          I18n.t('chapter_quote_without_number', chapter_title)
-        elsif chapter_number
-          formatted_chapter_number(chapter_number)
-        else
-          data.item_id.to_s
-        end
-      end
-
-      def format_headline_reference(data)
-        caption = data.caption_text
-        headline_numbers = Array(data.headline_number).compact
-
-        if !headline_numbers.empty?
-          number_str = headline_numbers.join('.')
-          I18n.t('hd_quote', [number_str, caption])
-        elsif !caption.empty?
-          I18n.t('hd_quote_without_number', caption)
-        else
-          data.item_id.to_s
-        end
-      end
-
-      def format_column_reference(data)
-        label = I18n.t('columnname')
-        number_text = reference_number_text(data)
-        "#{label}#{number_text || data.item_id || ''}"
+        @reference_formatter ||= Formatters::TopReferenceFormatter.new(self)
+        data.format_with(@reference_formatter)
       end
 
       def compose_numbered_reference(label_key, data)
