@@ -6,11 +6,15 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
+require 'review/htmlutils'
+
 module ReVIEW
   module Renderer
     module Formatters
       # Format resolved references for IDGXML output
       class IdgxmlReferenceFormatter
+        include ReVIEW::HTMLUtils
+
         def initialize(renderer, config:)
           @renderer = renderer
           @config = config
@@ -102,10 +106,6 @@ module ReVIEW
 
         def render_caption_inline(caption_node)
           @renderer.render_caption_inline(caption_node)
-        end
-
-        def escape(str)
-          @renderer.escape(str)
         end
       end
     end

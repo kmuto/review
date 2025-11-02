@@ -6,14 +6,20 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
+require 'review/latexutils'
+
 module ReVIEW
   module Renderer
     module Formatters
       # Format resolved references for LaTeX output
       class LaTeXReferenceFormatter
+        include ReVIEW::LaTeXUtils
+
         def initialize(renderer, config:)
           @renderer = renderer
           @config = config
+          # Initialize LaTeX character escaping
+          initialize_metachars(config['texcommand'])
         end
 
         def format_image_reference(data)
@@ -89,11 +95,6 @@ module ReVIEW
         private
 
         attr_reader :config
-
-        # Delegate helper method to renderer
-        def escape(str)
-          @renderer.escape(str)
-        end
       end
     end
   end
