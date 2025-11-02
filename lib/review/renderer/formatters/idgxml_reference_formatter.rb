@@ -15,8 +15,7 @@ module ReVIEW
       class IdgxmlReferenceFormatter
         include ReVIEW::HTMLUtils
 
-        def initialize(renderer, config:)
-          @renderer = renderer
+        def initialize(config:)
           @config = config
         end
 
@@ -63,8 +62,7 @@ module ReVIEW
         end
 
         def format_headline_reference(data)
-          # Use caption_node to render inline elements like IDGXMLBuilder does
-          caption = render_caption_inline(data.caption_node)
+          caption = data.caption_text
           headline_numbers = Array(data.headline_number).compact
 
           if !headline_numbers.empty?
@@ -91,21 +89,33 @@ module ReVIEW
 
         attr_reader :config
 
-        # Delegate helper methods to renderer
+        # Helper methods for formatting references
         def compose_numbered_reference(label_key, data)
-          @renderer.compose_numbered_reference(label_key, data)
+          label = I18n.t(label_key)
+          number_text = reference_number_text(data)
+          escape("#{label}#{number_text || data.item_id || ''}")
         end
 
         def reference_number_text(data)
-          @renderer.reference_number_text(data)
+          item_number = data.item_number
+          return nil unless item_number
+
+          chapter_number = data.chapter_number
+          if chapter_number && !chapter_number.to_s.empty?
+            I18n.t('format_number', [chapter_number, item_number])
+          else
+            I18n.t('format_number_without_chapter', [item_number])
+          end
+        rescue StandardError
+          nil
         end
 
         def formatted_chapter_number(chapter_number)
-          @renderer.formatted_chapter_number(chapter_number)
-        end
-
-        def render_caption_inline(caption_node)
-          @renderer.render_caption_inline(caption_node)
+          if chapter_number.to_s.match?(/\A-?\d+\z/)
+            I18n.t('chapter', chapter_number.to_i)
+          else
+            chapter_number.to_s
+          end
         end
       end
     end

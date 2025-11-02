@@ -252,36 +252,8 @@ module ReVIEW
       # Format resolved reference based on ResolvedData
       # Uses double dispatch pattern with a dedicated formatter object
       def format_resolved_reference(data)
-        @reference_formatter ||= Formatters::IdgxmlReferenceFormatter.new(self, config: config)
+        @reference_formatter ||= Formatters::IdgxmlReferenceFormatter.new(config: config)
         data.format_with(@reference_formatter)
-      end
-
-      def compose_numbered_reference(label_key, data)
-        label = I18n.t(label_key)
-        number_text = reference_number_text(data)
-        escape("#{label}#{number_text || data.item_id || ''}")
-      end
-
-      def reference_number_text(data)
-        item_number = data.item_number
-        return nil unless item_number
-
-        chapter_number = data.chapter_number
-        if chapter_number && !chapter_number.to_s.empty?
-          I18n.t('format_number', [chapter_number, item_number])
-        else
-          I18n.t('format_number_without_chapter', [item_number])
-        end
-      rescue StandardError
-        nil
-      end
-
-      def formatted_chapter_number(chapter_number)
-        if chapter_number.to_s.match?(/\A-?\d+\z/)
-          I18n.t('chapter', chapter_number.to_i)
-        else
-          chapter_number.to_s
-        end
       end
 
       def visit_list(node)
