@@ -215,80 +215,8 @@ module ReVIEW
           nil
         end
 
-        def find_chapter_by_id(chapter_id)
-          return nil unless book
-
-          begin
-            item = book.chapter_index[chapter_id]
-            return item.content if item.respond_to?(:content)
-          rescue ReVIEW::KeyError
-            # fall back to contents search
-          end
-
-          Array(book.contents).find { |chap| chap.id == chapter_id }
-        end
-
         def over_secnolevel?(num_array, target_chapter)
           target_chapter.on_secnolevel?(num_array, config)
-        end
-
-        # === Reference generation (list, img, table) ===
-
-        def build_list_reference(item_id, chapter_id:)
-          target_chapter = chapter_id ? find_chapter_by_id(chapter_id) : chapter
-          raise ReVIEW::KeyError unless target_chapter
-
-          list_item = target_chapter.list(item_id)
-
-          list_number = if get_chap(target_chapter)
-                          "#{I18n.t('list')}#{I18n.t('format_number', [get_chap(target_chapter), list_item.number])}"
-                        else
-                          "#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [list_item.number])}"
-                        end
-
-          if chapter_link_enabled?
-            %Q(<span class="listref"><a href="./#{target_chapter.id}#{extname}##{normalize_id(item_id)}">#{list_number}</a></span>)
-          else
-            %Q(<span class="listref">#{list_number}</span>)
-          end
-        end
-
-        def build_img_reference(item_id, chapter_id: nil)
-          target_chapter = chapter_id ? find_chapter_by_id(chapter_id) : chapter
-          raise ReVIEW::KeyError unless target_chapter
-
-          img_item = target_chapter.image(item_id)
-
-          image_number = if get_chap(target_chapter)
-                           "#{I18n.t('image')}#{I18n.t('format_number', [get_chap(target_chapter), img_item.number])}"
-                         else
-                           "#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [img_item.number])}"
-                         end
-
-          if chapter_link_enabled?
-            %Q(<span class="imgref"><a href="./#{target_chapter.id}#{extname}##{normalize_id(item_id)}">#{image_number}</a></span>)
-          else
-            %Q(<span class="imgref">#{image_number}</span>)
-          end
-        end
-
-        def build_table_reference(item_id, chapter_id:)
-          target_chapter = chapter_id ? find_chapter_by_id(chapter_id) : chapter
-          raise ReVIEW::KeyError unless target_chapter
-
-          table_item = target_chapter.table(item_id)
-
-          table_number = if get_chap(target_chapter)
-                           "#{I18n.t('table')}#{I18n.t('format_number', [get_chap(target_chapter), table_item.number])}"
-                         else
-                           "#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [table_item.number])}"
-                         end
-
-          if chapter_link_enabled?
-            %Q(<span class="tableref"><a href="./#{target_chapter.id}#{extname}##{normalize_id(item_id)}">#{table_number}</a></span>)
-          else
-            %Q(<span class="tableref">#{table_number}</span>)
-          end
         end
       end
     end

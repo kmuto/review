@@ -1228,14 +1228,29 @@ module ReVIEW
 
       # Render list reference
       def render_inline_list(_type, content, node)
-        return content unless node.args.present?
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          # Fallback to old behavior when reference resolution is disabled
+          # If KeyError occurs here, it's a bug - references should be validated at AST construction time
+          return content unless node.args.present?
 
-        if node.args.length == 2
-          render_cross_chapter_list_reference(node)
-        elsif node.args.length == 1
-          render_same_chapter_list_reference(node)
+          if node.args.length == 2
+            return render_cross_chapter_list_reference(node)
+          elsif node.args.length == 1
+            return render_same_chapter_list_reference(node)
+          else
+            return content
+          end
+        end
+
+        data = ref_node.resolved_data
+        list_number = data.item_number
+
+        if data.chapter_number
+          chapter_num = data.chapter_number
+          "\\reviewlistref{#{chapter_num}.#{list_number}}"
         else
-          content
+          "\\reviewlistref{#{list_number}}"
         end
       end
 
@@ -1246,14 +1261,32 @@ module ReVIEW
 
       # Render table reference
       def render_inline_table(_type, content, node)
-        return content unless node.args.present?
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          # Fallback to old behavior when reference resolution is disabled
+          # If KeyError occurs here, it's a bug - references should be validated at AST construction time
+          return content unless node.args.present?
 
-        if node.args.length == 2
-          render_cross_chapter_table_reference(node)
-        elsif node.args.length == 1
-          render_same_chapter_table_reference(node)
+          if node.args.length == 2
+            return render_cross_chapter_table_reference(node)
+          elsif node.args.length == 1
+            return render_same_chapter_table_reference(node)
+          else
+            return content
+          end
+        end
+
+        data = ref_node.resolved_data
+        table_number = data.item_number
+        # Use current chapter ID if chapter_id is not set in resolved_data
+        chapter_id = data.chapter_id || @chapter&.id
+        table_label = "table:#{chapter_id}:#{data.item_id}"
+
+        if data.chapter_number
+          chapter_num = data.chapter_number
+          "\\reviewtableref{#{chapter_num}.#{table_number}}{#{table_label}}"
         else
-          content
+          "\\reviewtableref{#{table_number}}{#{table_label}}"
         end
       end
 
@@ -1264,14 +1297,32 @@ module ReVIEW
 
       # Render image reference
       def render_inline_img(_type, content, node)
-        return content unless node.args.present?
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          # Fallback to old behavior when reference resolution is disabled
+          # If KeyError occurs here, it's a bug - references should be validated at AST construction time
+          return content unless node.args.present?
 
-        if node.args.length == 2
-          render_cross_chapter_image_reference(node)
-        elsif node.args.length == 1
-          render_same_chapter_image_reference(node)
+          if node.args.length == 2
+            return render_cross_chapter_image_reference(node)
+          elsif node.args.length == 1
+            return render_same_chapter_image_reference(node)
+          else
+            return content
+          end
+        end
+
+        data = ref_node.resolved_data
+        image_number = data.item_number
+        # Use current chapter ID if chapter_id is not set in resolved_data
+        chapter_id = data.chapter_id || @chapter&.id
+        image_label = "image:#{chapter_id}:#{data.item_id}"
+
+        if data.chapter_number
+          chapter_num = data.chapter_number
+          "\\reviewimageref{#{chapter_num}.#{image_number}}{#{image_label}}"
         else
-          content
+          "\\reviewimageref{#{image_number}}{#{image_label}}"
         end
       end
 
@@ -1911,24 +1962,27 @@ module ReVIEW
 
       # Render endnote reference
       def render_inline_endnote(_type, content, node)
-        if node.args.first
-          # Endnote reference
-          ref_id = node.args.first
-          if @chapter && @chapter.endnote_index
-            begin
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          # Fallback to old behavior when reference resolution is disabled
+          # If KeyError occurs here, it's a bug - references should be validated at AST construction time
+          if node.args.first
+            ref_id = node.args.first
+            if @chapter && @chapter.endnote_index
               index_item = @chapter.endnote_index[ref_id]
-              # Use content directly from index item (no endnote_node in traditional index)
               endnote_content = escape(index_item.content || '')
-              "\\endnote{#{endnote_content}}"
-            rescue ReVIEW::KeyError => _e
-              "\\endnote{#{escape(ref_id)}}"
+              return "\\endnote{#{endnote_content}}"
+            else
+              return "\\endnote{#{escape(ref_id)}}"
             end
           else
-            "\\endnote{#{escape(ref_id)}}"
+            return content
           end
-        else
-          content
         end
+
+        data = ref_node.resolved_data
+        endnote_content = escape(data.caption_text || '')
+        "\\endnote{#{endnote_content}}"
       end
 
       # Render page reference

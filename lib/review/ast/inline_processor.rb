@@ -30,6 +30,7 @@ module ReVIEW
         href: :create_inline_href_ast_node,
         kw: :create_inline_kw_ast_node,
         img: :create_inline_ref_ast_node,
+        imgref: :create_inline_ref_ast_node,
         list: :create_inline_ref_ast_node,
         table: :create_inline_ref_ast_node,
         eq: :create_inline_ref_ast_node,

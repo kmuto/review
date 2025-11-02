@@ -102,18 +102,21 @@ module ReVIEW
       # Ensure book_dir is absolute
       book_dir = File.expand_path(book_dir)
 
-      # Load book configuration
-      book = load_book(book_dir)
-
-      # Find chapter by name (with or without .re extension)
+      # Find chapter name (with or without .re extension)
       chapter_name = chapter_name.sub(/\.re$/, '')
-      chapter = book.chapters.find { |ch| ch.name == chapter_name }
 
-      raise "Chapter '#{chapter_name}' not found in book at #{book_dir}" unless chapter
+      # Load book and find chapter for builder
+      book_for_builder = load_book(book_dir)
+      chapter_for_builder = book_for_builder.chapters.find { |ch| ch.name == chapter_name }
+      raise "Chapter '#{chapter_name}' not found in book at #{book_dir}" unless chapter_for_builder
 
-      # Convert with both builder and renderer
-      builder_latex = convert_with_builder(nil, chapter: chapter)
-      renderer_latex = convert_with_renderer(nil, chapter: chapter)
+      # Load book and find chapter for renderer (separate instance)
+      book_for_renderer = load_book(book_dir)
+      chapter_for_renderer = book_for_renderer.chapters.find { |ch| ch.name == chapter_name }
+
+      # Convert with both builder and renderer using separate chapter instances
+      builder_latex = convert_with_builder(nil, chapter: chapter_for_builder)
+      renderer_latex = convert_with_renderer(nil, chapter: chapter_for_renderer)
 
       {
         builder: builder_latex,

@@ -180,11 +180,12 @@ module ReVIEW
       end
 
       # Create ResolvedData for an endnote reference
-      def self.endnote(item_number:, item_id:, caption_node: nil)
+      def self.endnote(item_number:, item_id:, caption_node: nil, caption_text: nil)
         Endnote.new(
           item_number: item_number,
           item_id: item_id,
-          caption_node: caption_node
+          caption_node: caption_node,
+          caption_text: caption_text
         )
       end
 
@@ -200,10 +201,11 @@ module ReVIEW
       end
 
       # Create ResolvedData for a headline/section reference
-      def self.headline(headline_number:, item_id:, chapter_id: nil, caption_node: nil)
+      def self.headline(headline_number:, item_id:, chapter_id: nil, chapter_number: nil, caption_node: nil)
         Headline.new(
           item_id: item_id,
           chapter_id: chapter_id,
+          chapter_number: chapter_number,
           headline_number: headline_number, # Array format [1, 2, 3]
           caption_node: caption_node
         )
@@ -340,15 +342,21 @@ module ReVIEW
 
     class ResolvedData
       class Endnote < ResolvedData
-        def initialize(item_number:, item_id:, caption_node: nil)
+        def initialize(item_number:, item_id:, caption_node: nil, caption_text: nil)
           super()
           @item_number = item_number
           @item_id = item_id
           @caption_node = caption_node
+          @caption_text = caption_text
         end
 
         def to_text
           @item_number.to_s
+        end
+
+        # Override caption_text to return stored content for endnotes
+        def caption_text
+          @caption_text || ''
         end
 
         # Double dispatch - delegate to formatter
@@ -391,10 +399,13 @@ module ReVIEW
 
     class ResolvedData
       class Headline < ResolvedData
-        def initialize(item_id:, headline_number:, chapter_id: nil, caption_node: nil)
+        attr_reader :chapter_number
+
+        def initialize(item_id:, headline_number:, chapter_id: nil, chapter_number: nil, caption_node: nil)
           super()
           @item_id = item_id
           @chapter_id = chapter_id
+          @chapter_number = chapter_number
           @headline_number = headline_number
           @caption_node = caption_node
         end
@@ -402,7 +413,12 @@ module ReVIEW
         def to_text
           caption = caption_text
           if @headline_number && !@headline_number.empty?
-            number_text = @headline_number.join('.')
+            # Build full number with chapter number if available
+            number_text = if @chapter_number
+                            ([@chapter_number] + @headline_number).join('.')
+                          else
+                            @headline_number.join('.')
+                          end
             safe_i18n('hd_quote', [number_text, caption])
           elsif !caption.empty?
             safe_i18n('hd_quote_without_number', caption)

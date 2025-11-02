@@ -228,29 +228,65 @@ module ReVIEW
         # === Reference inline elements ===
 
         def render_inline_list(_type, _content, node)
-          begin
-            @ctx.build_list_reference(node.target_item_id, chapter_id: node.target_chapter_id)
-          rescue ReVIEW::KeyError
-            warn "unknown list: #{node.target_item_id}"
-            %Q(<span class="listref">?? #{node.target_item_id}</span>)
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+            raise 'BUG: Reference should be resolved at AST construction time'
+          end
+
+          data = ref_node.resolved_data
+          list_number = if data.chapter_number
+                          "#{I18n.t('list')}#{I18n.t('format_number', [data.chapter_number, data.item_number])}"
+                        else
+                          "#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [data.item_number])}"
+                        end
+
+          if @ctx.chapter_link_enabled?
+            chapter_id = data.chapter_id || @ctx.chapter.id
+            %Q(<span class="listref"><a href="./#{chapter_id}#{@ctx.extname}##{@ctx.normalize_id(data.item_id)}">#{list_number}</a></span>)
+          else
+            %Q(<span class="listref">#{list_number}</span>)
           end
         end
 
         def render_inline_table(_type, _content, node)
-          begin
-            @ctx.build_table_reference(node.target_item_id, chapter_id: node.target_chapter_id)
-          rescue ReVIEW::KeyError
-            warn "unknown table: #{node.target_item_id}"
-            %Q(<span class="tableref">?? #{node.target_item_id}</span>)
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+            raise 'BUG: Reference should be resolved at AST construction time'
+          end
+
+          data = ref_node.resolved_data
+          table_number = if data.chapter_number
+                           "#{I18n.t('table')}#{I18n.t('format_number', [data.chapter_number, data.item_number])}"
+                         else
+                           "#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [data.item_number])}"
+                         end
+
+          if @ctx.chapter_link_enabled?
+            chapter_id = data.chapter_id || @ctx.chapter.id
+            %Q(<span class="tableref"><a href="./#{chapter_id}#{@ctx.extname}##{@ctx.normalize_id(data.item_id)}">#{table_number}</a></span>)
+          else
+            %Q(<span class="tableref">#{table_number}</span>)
           end
         end
 
         def render_inline_img(_type, _content, node)
-          begin
-            @ctx.build_img_reference(node.target_item_id, chapter_id: node.target_chapter_id)
-          rescue ReVIEW::KeyError
-            warn "unknown image: #{node.target_item_id}"
-            %Q(<span class="imgref">?? #{node.target_item_id}</span>)
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+            raise 'BUG: Reference should be resolved at AST construction time'
+          end
+
+          data = ref_node.resolved_data
+          image_number = if data.chapter_number
+                           "#{I18n.t('image')}#{I18n.t('format_number', [data.chapter_number, data.item_number])}"
+                         else
+                           "#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [data.item_number])}"
+                         end
+
+          if @ctx.chapter_link_enabled?
+            chapter_id = data.chapter_id || @ctx.chapter.id
+            %Q(<span class="imgref"><a href="./#{chapter_id}#{@ctx.extname}##{@ctx.normalize_id(data.item_id)}">#{image_number}</a></span>)
+          else
+            %Q(<span class="imgref">#{image_number}</span>)
           end
         end
 
@@ -322,15 +358,15 @@ module ReVIEW
           end
         end
 
-        def render_inline_endnote(_type, content, node)
+        def render_inline_endnote(_type, _content, node)
           # Endnote reference
-          item_id = node.target_item_id
-          begin
-            number = @ctx.endnote_number(item_id)
-            @ctx.build_endnote_link(item_id, number)
-          rescue ReVIEW::KeyError
-            %Q(<a href="#endnote-#{@ctx.normalize_id(item_id)}" class="noteref">#{content}</a>)
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+            raise 'BUG: Reference should be resolved at AST construction time'
           end
+
+          data = ref_node.resolved_data
+          @ctx.build_endnote_link(data.item_id, data.item_number)
         end
       end
     end

@@ -508,21 +508,14 @@ module ReVIEW
 
       def render_inline_hd(_type, _content, node)
         # Headline reference
-        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
-        headline_id = node.target_item_id
-
-        return '' unless headline_id && chapter
-
-        n = chapter.headline_index.number(headline_id)
-        caption = chapter.headline(headline_id).caption
-
-        if n.present? && chapter.number && over_secnolevel?(n, chapter)
-          I18n.t('hd_quote', [n, caption])
-        else
-          I18n.t('hd_quote_without_number', caption)
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
-      rescue ReVIEW::KeyError
-        ''
+
+        data = ref_node.resolved_data
+        # Use to_text method which formats the headline reference appropriately
+        data.to_text
       end
 
       def render_inline_labelref(_type, _content, _node)
@@ -653,19 +646,6 @@ module ReVIEW
         else
           chapter.format_number(nil)
         end
-      end
-
-      def find_chapter_by_id(chapter_id)
-        return nil unless @book
-
-        begin
-          item = @book.chapter_index[chapter_id]
-          return item.content if item.respond_to?(:content)
-        rescue ReVIEW::KeyError
-          # fall back to contents search
-        end
-
-        Array(@book.contents).find { |chap| chap.id == chapter_id }
       end
 
       def over_secnolevel?(n, _chapter = @chapter)

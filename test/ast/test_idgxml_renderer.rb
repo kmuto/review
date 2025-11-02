@@ -3,6 +3,7 @@
 require_relative '../test_helper'
 require_relative '../book_test_helper'
 require 'review/ast/compiler'
+require 'review/ast/book_indexer'
 require 'review/renderer/idgxml_renderer'
 require 'review/book'
 require 'review/i18n'
@@ -898,10 +899,19 @@ EOS
   end
 
   def test_inline_imgref
-    def @chapter.image(_id)
-      item = Book::Index::Item.new('sampleimg', 1, 'sample photo')
-      item.instance_eval { @path = './images/chap1-sampleimg.png' }
-      item
+    # Mock image_index with caption_node
+    def @chapter.image_index
+      @image_index_mock ||= begin # rubocop:disable Naming/MemoizedInstanceVariableName
+        index = Book::ImageIndex.new(self)
+        # Create a simple caption_node
+        text_node = AST::TextNode.new(location: nil, content: 'sample photo')
+        caption_node = AST::CaptionNode.new(location: nil)
+        caption_node.add_child(text_node)
+        item = Book::Index::Item.new('sampleimg', 1, 'sample photo', caption_node: caption_node)
+        item.instance_eval { @path = './images/chap1-sampleimg.png' }
+        index.add_item(item)
+        index
+      end
     end
 
     actual = compile_block("@<imgref>{sampleimg}\n")
@@ -910,10 +920,15 @@ EOS
   end
 
   def test_inline_imgref2
-    def @chapter.image(_id)
-      item = Book::Index::Item.new('sampleimg', 1)
-      item.instance_eval { @path = './images/chap1-sampleimg.png' }
-      item
+    # Mock image_index with item without caption
+    def @chapter.image_index
+      @image_index_mock ||= begin # rubocop:disable Naming/MemoizedInstanceVariableName
+        index = Book::ImageIndex.new(self)
+        item = Book::Index::Item.new('sampleimg', 1)
+        item.instance_eval { @path = './images/chap1-sampleimg.png' }
+        index.add_item(item)
+        index
+      end
     end
 
     actual = compile_block("@<imgref>{sampleimg}\n")
@@ -1002,20 +1017,21 @@ EOS
   end
 
   def test_column_in_aother_chapter_ref
-    # Create a mock chapter with the column
+    # Create a chapter with actual column content
     chap1 = Book::Chapter.new(@book, 1, 'chap1', nil, StringIO.new)
-
-    def chap1.column(id)
-      raise KeyError unless id == 'column'
-
-      Book::Index::Item.new(id, 1, 'column_cap')
-    end
+    chap1.content = "===[column]{column} column_cap\ncolumn content\n===[/column]\n"
 
     # Override the book's contents method to include chap1
     def @book.contents
       @contents ||= []
     end
     @book.contents << chap1
+
+    # Build indexes for chap1 by compiling its AST
+    compiler = ReVIEW::AST::Compiler.for_chapter(chap1)
+    ast = compiler.compile_to_ast(chap1, reference_resolution: false)
+    indexer = ReVIEW::AST::Indexer.new(chap1)
+    indexer.build_indexes(ast)
 
     actual = compile_inline('test @<column>{chap1|column} test2')
     expected = 'test <link href="column-1">コラム「column_cap」</link> test2'

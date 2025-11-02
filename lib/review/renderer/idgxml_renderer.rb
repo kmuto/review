@@ -1143,81 +1143,114 @@ module ReVIEW
 
       # References
       def render_inline_list(_type, content, node)
-        item_id = node.target_item_id || content
-        begin
-          base_ref = get_list_reference(item_id, chapter_id: node.target_chapter_id)
-          "<span type='list'>#{base_ref}</span>"
-        rescue StandardError
-          "<span type='list'>#{escape(item_id)}</span>"
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          item_id = node.target_item_id || content
+          return "<span type='list'>#{escape(item_id)}</span>"
         end
+
+        data = ref_node.resolved_data
+        base_ref = if data.chapter_number
+                     I18n.t('list') + I18n.t('format_number', [data.chapter_number, data.item_number])
+                   else
+                     I18n.t('list') + I18n.t('format_number_without_chapter', [data.item_number])
+                   end
+        "<span type='list'>#{base_ref}</span>"
       end
 
       def render_inline_table(_type, content, node)
-        item_id = node.target_item_id || content
-        begin
-          base_ref = get_table_reference(item_id, chapter_id: node.target_chapter_id)
-          "<span type='table'>#{base_ref}</span>"
-        rescue StandardError
-          "<span type='table'>#{escape(item_id)}</span>"
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          item_id = node.target_item_id || content
+          return "<span type='table'>#{escape(item_id)}</span>"
         end
+
+        data = ref_node.resolved_data
+        base_ref = if data.chapter_number
+                     I18n.t('table') + I18n.t('format_number', [data.chapter_number, data.item_number])
+                   else
+                     I18n.t('table') + I18n.t('format_number_without_chapter', [data.item_number])
+                   end
+        "<span type='table'>#{base_ref}</span>"
       end
 
       def render_inline_img(_type, content, node)
-        item_id = node.target_item_id || content
-        begin
-          base_ref = get_image_reference(item_id, chapter_id: node.target_chapter_id)
-          "<span type='image'>#{base_ref}</span>"
-        rescue StandardError
-          "<span type='image'>#{escape(item_id)}</span>"
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          item_id = node.target_item_id || content
+          return "<span type='image'>#{escape(item_id)}</span>"
         end
+
+        data = ref_node.resolved_data
+        base_ref = if data.chapter_number
+                     I18n.t('image') + I18n.t('format_number', [data.chapter_number, data.item_number])
+                   else
+                     I18n.t('image') + I18n.t('format_number_without_chapter', [data.item_number])
+                   end
+        "<span type='image'>#{base_ref}</span>"
       end
 
       def render_inline_eq(_type, content, node)
-        item_id = node.target_item_id || content
-        begin
-          base_ref = get_equation_reference(item_id, chapter_id: node.target_chapter_id)
-          "<span type='eq'>#{base_ref}</span>"
-        rescue StandardError
-          "<span type='eq'>#{escape(item_id)}</span>"
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          item_id = node.target_item_id || content
+          return "<span type='eq'>#{escape(item_id)}</span>"
         end
+
+        data = ref_node.resolved_data
+        base_ref = if data.chapter_number
+                     I18n.t('equation') + I18n.t('format_number', [data.chapter_number, data.item_number])
+                   else
+                     I18n.t('equation') + I18n.t('format_number_without_chapter', [data.item_number])
+                   end
+        "<span type='eq'>#{base_ref}</span>"
       end
 
       def render_inline_imgref(type, content, node)
-        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
-        extracted_id = node.target_item_id || content
-
-        if chapter.image(extracted_id).caption.blank?
-          render_inline_img(type, content, node)
-        elsif get_chap(chapter).nil?
-          "<span type='image'>#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [chapter.image(extracted_id).number])}#{I18n.t('image_quote', chapter.image(extracted_id).caption)}</span>"
-        else
-          "<span type='image'>#{I18n.t('image')}#{I18n.t('format_number', [get_chap(chapter), chapter.image(extracted_id).number])}#{I18n.t('image_quote', chapter.image(extracted_id).caption)}</span>"
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
-      rescue StandardError
-        "<span type='image'>#{escape(extracted_id)}</span>"
+
+        data = ref_node.resolved_data
+
+        # If no caption, fall back to render_inline_img
+        if data.caption_text.blank?
+          return render_inline_img(type, content, node)
+        end
+
+        # Build reference with caption
+        base_ref = if data.chapter_number
+                     I18n.t('image') + I18n.t('format_number', [data.chapter_number, data.item_number])
+                   else
+                     I18n.t('image') + I18n.t('format_number_without_chapter', [data.item_number])
+                   end
+        caption = I18n.t('image_quote', data.caption_text)
+        "<span type='image'>#{base_ref}#{caption}</span>"
       end
 
       # Column reference
-      def render_inline_column(_type, content, node)
-        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
-        column_id = node.target_item_id || content
+      def render_inline_column(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
 
-        app_error "unknown chapter: #{node.target_chapter_id}" if node.target_chapter_id && !chapter
+        data = ref_node.resolved_data
 
-        # Render column reference
-        item = chapter.column(column_id)
-
-        # Use caption_node to render inline elements
-        compiled_caption = item.caption_node ? render_caption_inline(item.caption_node) : item.caption
+        # Use caption_node to render inline elements if available
+        # For cross-chapter references, caption_node may not be available, so fall back to caption_text
+        compiled_caption = if data.caption_node
+                             render_caption_inline(data.caption_node)
+                           else
+                             escape(data.caption_text)
+                           end
 
         if config['chapterlink']
-          num = item.number
-          %Q(<link href="column-#{num}">#{I18n.t('column', compiled_caption)}</link>)
+          %Q(<link href="column-#{data.item_number}">#{I18n.t('column', compiled_caption)}</link>)
         else
           I18n.t('column', compiled_caption)
         end
-      rescue ReVIEW::KeyError
-        app_error "unknown column: #{column_id}"
       end
 
       # Footnotes
@@ -1263,29 +1296,17 @@ module ReVIEW
 
       # Headline reference
       def render_inline_hd(_type, content, node)
-        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
-        headline_id = node.target_item_id || content
+        ref_node = node.children.first
+        return content unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
 
-        if chapter
-          render_hd_for_chapter(chapter, headline_id)
-        else
-          content
-        end
-      rescue ReVIEW::KeyError
-        app_error "unknown headline: #{headline_id}"
-      rescue StandardError
-        content
-      end
+        n = ref_node.resolved_data.headline_number
+        chapter_num = ref_node.resolved_data.chapter_number
+        caption = ref_node.resolved_data.caption_node ? render_caption_inline(ref_node.resolved_data.caption_node) : ref_node.resolved_data.caption_text
 
-      def render_hd_for_chapter(chapter, headline_id)
-        # headline_id is already in the correct format (e.g., "parent|child")
-        # The headline_index stores IDs in hierarchical format with |
-        # Don't split it further - just use it as-is to look up in headline_index
-        n = chapter.headline_index.number(headline_id)
-        caption = chapter.headline(headline_id).caption
-
-        if n.present? && chapter.number && over_secnolevel?(n)
-          I18n.t('hd_quote', [n, caption])
+        if n.present? && over_secnolevel?(n)
+          # Build full section number including chapter number
+          full_number = ([chapter_num] + n).join('.')
+          I18n.t('hd_quote', [full_number, caption])
         else
           I18n.t('hd_quote_without_number', caption)
         end
@@ -1293,40 +1314,28 @@ module ReVIEW
 
       # Section number reference
       def render_inline_sec(_type, _content, node)
-        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
-        extracted_id = node.target_item_id
-        begin
-          # extracted_id is already in the correct format (e.g., "parent|child")
-          # Don't split it - use it as-is
-          n = chapter.headline_index.number(extracted_id)
+        ref_node = node.children.first
+        return '' unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
 
-          # Get section number like Builder does
-          if n.present? && chapter.number && over_secnolevel?(n)
-            n
-          else
-            ''
-          end
-        rescue ReVIEW::KeyError
-          app_error "unknown headline: #{extracted_id}"
+        n = ref_node.resolved_data.headline_number
+        chapter_num = ref_node.resolved_data.chapter_number
+        # Get section number like Builder does (including chapter number)
+        if n.present? && over_secnolevel?(n)
+          ([chapter_num] + n).join('.')
+        else
+          ''
         end
       end
 
       # Section title reference
       def render_inline_sectitle(_type, content, node)
-        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
-        extracted_id = node.target_item_id
-        begin
-          # extracted_id is already in the correct format (e.g., "parent|child")
-          # Don't split it - use it as-is
-          headline_item = chapter.headline(extracted_id)
-          # Use caption_node to render inline elements
-          if headline_item.caption_node
-            render_caption_inline(headline_item.caption_node)
-          else
-            headline_item.caption
-          end
-        rescue ReVIEW::KeyError
-          content
+        ref_node = node.children.first
+        return content unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+
+        if ref_node.resolved_data.caption_node
+          render_caption_inline(ref_node.resolved_data.caption_node)
+        else
+          ref_node.resolved_data.caption_text
         end
       end
 
@@ -1488,22 +1497,6 @@ module ReVIEW
       def normalize_id(id)
         # Normalize ID for XML attributes
         id.to_s.gsub(/[^a-zA-Z0-9_-]/, '_')
-      end
-
-      def find_chapter_by_id(chapter_id)
-        return nil unless @book
-
-        index = @book.chapter_index
-        if index
-          begin
-            item = index[chapter_id]
-            return item.content if item.respond_to?(:content)
-          rescue ReVIEW::KeyError
-            # fall through to contents search
-          end
-        end
-
-        Array(@book.contents).find { |chap| chap.id == chapter_id }
       end
 
       def get_chap(chapter = @chapter)
@@ -2297,58 +2290,6 @@ module ReVIEW
         # Convert literal \n (backslash followed by n) to a protected newline marker
         # The marker will be preserved through paragraph and nolf processing
         content.gsub('\n', "\x01IDGXML_INLINE_NEWLINE\x01")
-      end
-
-      # Get list reference for inline @<list>{}
-      def get_list_reference(item_id, chapter_id: nil)
-        chapter = chapter_id ? find_chapter_by_id(chapter_id) : @chapter
-
-        if get_chap(chapter)
-          I18n.t('list') + I18n.t('format_number', [get_chap(chapter), chapter.list(item_id).number])
-        else
-          I18n.t('list') + I18n.t('format_number_without_chapter', [chapter.list(item_id).number])
-        end
-      rescue ReVIEW::KeyError
-        item_id
-      end
-
-      # Get table reference for inline @<table>{}
-      def get_table_reference(item_id, chapter_id: nil)
-        chapter = chapter_id ? find_chapter_by_id(chapter_id) : @chapter
-
-        if get_chap(chapter)
-          I18n.t('table') + I18n.t('format_number', [get_chap(chapter), chapter.table(item_id).number])
-        else
-          I18n.t('table') + I18n.t('format_number_without_chapter', [chapter.table(item_id).number])
-        end
-      rescue ReVIEW::KeyError
-        item_id
-      end
-
-      # Get image reference for inline @<img>{}
-      def get_image_reference(item_id, chapter_id: nil)
-        chapter = chapter_id ? find_chapter_by_id(chapter_id) : @chapter
-
-        if get_chap(chapter)
-          I18n.t('image') + I18n.t('format_number', [get_chap(chapter), chapter.image(item_id).number])
-        else
-          I18n.t('image') + I18n.t('format_number_without_chapter', [chapter.image(item_id).number])
-        end
-      rescue ReVIEW::KeyError
-        item_id
-      end
-
-      # Get equation reference for inline @<eq>{}
-      def get_equation_reference(item_id, chapter_id: nil)
-        chapter = chapter_id ? find_chapter_by_id(chapter_id) : @chapter
-
-        if get_chap(chapter)
-          I18n.t('equation') + I18n.t('format_number', [get_chap(chapter), chapter.equation(item_id).number])
-        else
-          I18n.t('equation') + I18n.t('format_number_without_chapter', [chapter.equation(item_id).number])
-        end
-      rescue ReVIEW::KeyError
-        item_id
       end
 
       # Visit syntaxblock (box, insn) - processes lines with listinfo

@@ -86,14 +86,18 @@ module ReVIEW
       # Normalize chapter_name (remove .re extension)
       chapter_name = chapter_name.sub(/\.re$/, '')
 
-      # Load book once and find chapter
-      book = load_book(book_dir)
-      chapter = book.chapters.find { |ch| ch.name == chapter_name }
-      raise "Chapter '#{chapter_name}' not found in book at #{book_dir}" unless chapter
+      # Load book and find chapter for builder
+      book_for_builder = load_book(book_dir)
+      chapter_for_builder = book_for_builder.chapters.find { |ch| ch.name == chapter_name }
+      raise "Chapter '#{chapter_name}' not found in book at #{book_dir}" unless chapter_for_builder
 
-      # Convert with both builder and renderer
-      builder_html = convert_with_builder(nil, chapter: chapter)
-      renderer_html = convert_with_renderer(nil, chapter: chapter)
+      # Load book and find chapter for renderer (separate instance)
+      book_for_renderer = load_book(book_dir)
+      chapter_for_renderer = book_for_renderer.chapters.find { |ch| ch.name == chapter_name }
+
+      # Convert with both builder and renderer using separate chapter instances
+      builder_html = convert_with_builder(nil, chapter: chapter_for_builder)
+      renderer_html = convert_with_renderer(nil, chapter: chapter_for_renderer)
 
       {
         builder: builder_html,

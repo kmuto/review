@@ -23,6 +23,7 @@ module ReVIEW
       # Default mapping of reference types to resolver methods
       DEFAULT_RESOLVER_METHODS = {
         img: :resolve_image_ref,
+        imgref: :resolve_image_ref,
         table: :resolve_table_ref,
         list: :resolve_list_ref,
         eq: :resolve_equation_ref,
@@ -241,7 +242,7 @@ module ReVIEW
 
           if target_chapter.image_index && (item = find_index_item(target_chapter.image_index, item_id))
             ResolvedData.image(
-              chapter_number: target_chapter.number,
+              chapter_number: format_chapter_number(target_chapter),
               item_number: index_item_number(item),
               chapter_id: chapter_id,
               item_id: item_id,
@@ -253,7 +254,7 @@ module ReVIEW
         elsif (item = find_index_item(@chapter.image_index, id))
           # Same-chapter reference
           ResolvedData.image(
-            chapter_number: @chapter.number,
+            chapter_number: format_chapter_number(@chapter),
             item_number: index_item_number(item),
             item_id: id,
             caption_node: item.caption_node
@@ -275,7 +276,7 @@ module ReVIEW
 
           if target_chapter.table_index && (item = find_index_item(target_chapter.table_index, item_id))
             ResolvedData.table(
-              chapter_number: target_chapter.number,
+              chapter_number: format_chapter_number(target_chapter),
               item_number: index_item_number(item),
               chapter_id: chapter_id,
               item_id: item_id,
@@ -287,7 +288,7 @@ module ReVIEW
         elsif (item = find_index_item(@chapter.table_index, id))
           # Same-chapter reference
           ResolvedData.table(
-            chapter_number: @chapter.number,
+            chapter_number: format_chapter_number(@chapter),
             item_number: index_item_number(item),
             item_id: id,
             caption_node: item.caption_node
@@ -307,7 +308,7 @@ module ReVIEW
 
           if target_chapter.list_index && (item = find_index_item(target_chapter.list_index, item_id))
             ResolvedData.list(
-              chapter_number: target_chapter.number,
+              chapter_number: format_chapter_number(target_chapter),
               item_number: index_item_number(item),
               chapter_id: chapter_id,
               item_id: item_id,
@@ -319,7 +320,7 @@ module ReVIEW
         elsif (item = find_index_item(@chapter.list_index, id))
           # Same-chapter reference
           ResolvedData.list(
-            chapter_number: @chapter.number,
+            chapter_number: format_chapter_number(@chapter),
             item_number: index_item_number(item),
             item_id: id,
             caption_node: item.caption_node
@@ -333,7 +334,7 @@ module ReVIEW
       def resolve_equation_ref(id)
         if (item = find_index_item(@chapter.equation_index, id))
           ResolvedData.equation(
-            chapter_number: @chapter.number,
+            chapter_number: format_chapter_number(@chapter),
             item_number: index_item_number(item),
             item_id: id,
             caption_node: item.caption_node
@@ -371,9 +372,12 @@ module ReVIEW
           end
 
           number = item.respond_to?(:number) ? item.number : nil
+          # For endnotes, store the content in caption_text field
+          content_text = item.respond_to?(:content) ? item.content : nil
           ResolvedData.endnote(
             item_number: number,
             item_id: id,
+            caption_text: content_text,
             caption_node: nil # Endnotes don't use caption_node
           )
         else
@@ -389,7 +393,7 @@ module ReVIEW
 
           item = safe_column_fetch(target_chapter, item_id)
           ResolvedData.column(
-            chapter_number: target_chapter.number,
+            chapter_number: format_chapter_number(target_chapter),
             item_number: index_item_number(item),
             chapter_id: chapter_id,
             item_id: item_id,
@@ -398,7 +402,7 @@ module ReVIEW
         else
           item = safe_column_fetch(@chapter, id)
           ResolvedData.column(
-            chapter_number: @chapter.number,
+            chapter_number: format_chapter_number(@chapter),
             item_number: index_item_number(item),
             item_id: id,
             caption_node: item.caption_node
@@ -412,7 +416,7 @@ module ReVIEW
           chapter = find_chapter_by_id(id)
           if chapter
             ResolvedData.chapter(
-              chapter_number: chapter.number,
+              chapter_number: format_chapter_number(chapter),
               chapter_id: id,
               chapter_title: chapter.title
             )
@@ -462,6 +466,7 @@ module ReVIEW
 
           ResolvedData.headline(
             headline_number: headline.number,
+            chapter_number: format_chapter_number(target_chapter),
             chapter_id: chapter_id,
             item_id: headline_id,
             caption_node: headline.caption_node
@@ -480,6 +485,7 @@ module ReVIEW
 
           ResolvedData.headline(
             headline_number: headline.number,
+            chapter_number: format_chapter_number(@chapter),
             item_id: id,
             caption_node: headline.caption_node
           )
@@ -505,7 +511,7 @@ module ReVIEW
           item = find_index_item(@chapter.image_index, id)
           if item
             return ResolvedData.image(
-              chapter_number: @chapter.number,
+              chapter_number: format_chapter_number(@chapter),
               item_number: index_item_number(item),
               item_id: id,
               caption_node: item.caption_node
@@ -518,7 +524,7 @@ module ReVIEW
           item = find_index_item(@chapter.table_index, id)
           if item
             return ResolvedData.table(
-              chapter_number: @chapter.number,
+              chapter_number: format_chapter_number(@chapter),
               item_number: index_item_number(item),
               item_id: id,
               caption_node: item.caption_node
@@ -531,7 +537,7 @@ module ReVIEW
           item = find_index_item(@chapter.list_index, id)
           if item
             return ResolvedData.list(
-              chapter_number: @chapter.number,
+              chapter_number: format_chapter_number(@chapter),
               item_number: index_item_number(item),
               item_id: id,
               caption_node: item.caption_node
@@ -544,7 +550,7 @@ module ReVIEW
           item = find_index_item(@chapter.equation_index, id)
           if item
             return ResolvedData.equation(
-              chapter_number: @chapter.number,
+              chapter_number: format_chapter_number(@chapter),
               item_number: index_item_number(item),
               item_id: id,
               caption_node: item.caption_node
@@ -558,6 +564,7 @@ module ReVIEW
           if item
             return ResolvedData.headline(
               headline_number: item.number,
+              chapter_number: format_chapter_number(@chapter),
               item_id: id,
               caption_node: item.caption_node
             )
@@ -569,7 +576,7 @@ module ReVIEW
           item = find_index_item(@chapter.column_index, id)
           if item
             return ResolvedData.column(
-              chapter_number: @chapter.number,
+              chapter_number: format_chapter_number(@chapter),
               item_number: index_item_number(item),
               item_id: id,
               caption_node: item.caption_node
@@ -640,6 +647,17 @@ module ReVIEW
         end
 
         Array(@book.contents).find { |chap| chap.id == id }
+      end
+
+      # Format chapter number (handling appendix case)
+      # This mimics the behavior of HeadlineIndex#number
+      def format_chapter_number(chapter)
+        n = chapter.number
+        if chapter.on_appendix? && chapter.number > 0 && chapter.number < 28
+          chapter.format_number(false)
+        else
+          n
+        end
       end
     end
   end

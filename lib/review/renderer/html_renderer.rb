@@ -609,27 +609,29 @@ module ReVIEW
 
       def render_inline_sec(_type, _content, node)
         # Section number reference: @<sec>{id} or @<sec>{chapter|id}
-        # This should match HTMLBuilder's inline_sec behavior
-        chap = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
-        id2 = node.target_item_id
-        begin
-          n = chap.headline_index.number(id2)
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
 
-          # Get section number like Builder does
-          section_number = if n.present? && chap.number && over_secnolevel?(n, chap)
-                             n
-                           else
-                             ''
-                           end
+        data = ref_node.resolved_data
+        n = data.headline_number
+        chapter_num = data.chapter_number
 
-          if config['chapterlink']
-            anchor = 'h' + n.tr('.', '-')
-            %Q(<a href="#{chap.id}#{extname}##{anchor}">#{section_number}</a>)
-          else
-            section_number
-          end
-        rescue ReVIEW::KeyError
-          app_error "unknown headline: #{id2}"
+        # Build full section number including chapter number
+        full_number = if n.present? && chapter_num && over_secnolevel?(n)
+                        ([chapter_num] + n).join('.')
+                      else
+                        ''
+                      end
+
+        if config['chapterlink'] && full_number.present?
+          # Get target chapter ID for link
+          chapter_id = data.chapter_id || @chapter.id
+          anchor = 'h' + full_number.tr('.', '-')
+          %Q(<a href="#{chapter_id}#{extname}##{anchor}">#{full_number}</a>)
+        else
+          full_number
         end
       end
 
@@ -648,102 +650,121 @@ module ReVIEW
         render_inline_labelref(type, content, node)
       end
 
-      def render_inline_eq(_type, content, node)
+      def render_inline_eq(_type, _content, node)
         # Equation reference
-        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
-        extracted_id = node.target_item_id
-        begin
-          equation_number = if get_chap(chapter)
-                              %Q(#{I18n.t('equation')}#{I18n.t('format_number', [get_chap(chapter), chapter.equation(extracted_id).number])})
-                            else
-                              %Q(#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [chapter.equation(extracted_id).number])})
-                            end
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
 
-          if config['chapterlink']
-            %Q(<span class="eqref"><a href="./#{chapter.id}#{extname}##{normalize_id(extracted_id)}">#{equation_number}</a></span>)
-          else
-            %Q(<span class="eqref">#{equation_number}</span>)
-          end
-        rescue ReVIEW::KeyError
-          %Q(<span class="eqref">#{content}</span>)
+        data = ref_node.resolved_data
+        equation_number = if data.chapter_number
+                            %Q(#{I18n.t('equation')}#{I18n.t('format_number', [data.chapter_number, data.item_number])})
+                          else
+                            %Q(#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [data.item_number])})
+                          end
+
+        if config['chapterlink']
+          chapter_id = data.chapter_id || @chapter.id
+          %Q(<span class="eqref"><a href="./#{chapter_id}#{extname}##{normalize_id(data.item_id)}">#{equation_number}</a></span>)
+        else
+          %Q(<span class="eqref">#{equation_number}</span>)
         end
       end
 
       def render_inline_hd(_type, _content, node)
         # Headline reference: @<hd>{id} or @<hd>{chapter|id}
-        # This should match HTMLBuilder's inline_hd_chap behavior
-        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
-        headline_id = node.target_item_id
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
 
-        begin
-          return '' unless chapter
+        data = ref_node.resolved_data
+        n = data.headline_number
+        chapter_num = data.chapter_number
 
-          n = chapter.headline_index.number(headline_id)
-          headline_item = chapter.headline(headline_id)
+        # Render caption with inline markup
+        caption_html = if data.caption_node
+                         render_children(data.caption_node)
+                       else
+                         data.caption_text
+                       end
 
-          # Use caption_node to render caption with inline markup
-          caption_html = render_children(headline_item.caption_node)
+        # Build full section number including chapter number
+        full_number = if n.present? && chapter_num && over_secnolevel?(n)
+                        ([chapter_num] + n).join('.')
+                      end
 
-          str = if n.present? && chapter.number && over_secnolevel?(n, chapter)
-                  I18n.t('hd_quote', [n, caption_html])
-                else
-                  I18n.t('hd_quote_without_number', caption_html)
-                end
+        str = if full_number
+                I18n.t('hd_quote', [full_number, caption_html])
+              else
+                I18n.t('hd_quote_without_number', caption_html)
+              end
 
-          if config['chapterlink']
-            anchor = 'h' + n.tr('.', '-')
-            %Q(<a href="#{chapter.id}#{extname}##{anchor}">#{str}</a>)
-          else
-            str
-          end
-        rescue ReVIEW::KeyError
-          app_error "unknown headline: #{headline_id}"
+        if config['chapterlink'] && full_number
+          # Get target chapter ID for link
+          chapter_id = data.chapter_id || @chapter.id
+          anchor = 'h' + full_number.tr('.', '-')
+          %Q(<a href="#{chapter_id}#{extname}##{anchor}">#{str}</a>)
+        else
+          str
         end
       end
 
       def render_inline_column(_type, _content, node)
         # Column reference: @<column>{id} or @<column>{chapter|id}
-        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
-        column_id = node.target_item_id
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
 
-        begin
-          app_error "unknown chapter: #{node.target_chapter_id}" if node.target_chapter_id && !chapter
-          return '' unless chapter
+        data = ref_node.resolved_data
 
-          column_caption = chapter.column(column_id).caption
-          column_number = chapter.column(column_id).number
+        # Render caption with inline markup
+        caption_html = if data.caption_node
+                         render_children(data.caption_node)
+                       else
+                         escape_content(data.caption_text)
+                       end
 
-          anchor = "column-#{column_number}"
-          if config['chapterlink']
-            %Q(<a href="#{chapter.id}#{extname}##{anchor}" class="columnref">#{I18n.t('column', escape_content(column_caption))}</a>)
-          else
-            I18n.t('column', escape_content(column_caption))
-          end
-        rescue ReVIEW::KeyError
-          app_error "unknown column: #{column_id}"
+        anchor = "column-#{data.item_number}"
+        column_text = I18n.t('column', caption_html)
+
+        if config['chapterlink']
+          chapter_id = data.chapter_id || @chapter.id
+          %Q(<a href="#{chapter_id}#{extname}##{anchor}" class="columnref">#{column_text}</a>)
+        else
+          column_text
         end
       end
 
-      def render_inline_sectitle(_type, content, node)
+      def render_inline_sectitle(_type, _content, node)
         # Section title reference
-        chap = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
-        id2 = node.target_item_id
-        begin
-          if config['chapterlink']
-            anchor = 'h' + chap.headline_index.number(id2).tr('.', '-')
-            headline_item = chap.headline(id2)
-            # Render caption with inline elements
-            title_html = if headline_item.caption_node
-                           render_children(headline_item.caption_node)
-                         else
-                           escape_content(headline_item.caption)
-                         end
-            %Q(<a href="#{chap.id}#{extname}##{anchor}">#{title_html}</a>)
-          else
-            content
-          end
-        rescue ReVIEW::KeyError
-          content
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
+
+        data = ref_node.resolved_data
+
+        # Render caption with inline markup
+        title_html = if data.caption_node
+                       render_children(data.caption_node)
+                     else
+                       escape_content(data.caption_text)
+                     end
+
+        if config['chapterlink']
+          n = data.headline_number
+          chapter_num = data.chapter_number
+          full_number = ([chapter_num] + n).join('.')
+          anchor = 'h' + full_number.tr('.', '-')
+
+          # Get target chapter ID for link
+          chapter_id = data.chapter_id || @chapter.id
+          %Q(<a href="#{chapter_id}#{extname}##{anchor}">#{title_html}</a>)
+        else
+          title_html
         end
       end
 
@@ -758,19 +779,6 @@ module ReVIEW
           end
         end
         nil
-      end
-
-      def find_chapter_by_id(chapter_id)
-        return nil unless @book
-
-        begin
-          item = @book.chapter_index[chapter_id]
-          return item.content if item.respond_to?(:content)
-        rescue ReVIEW::KeyError
-          # fall back to contents search
-        end
-
-        Array(@book.contents).find { |chap| chap.id == chapter_id }
       end
 
       def extname
