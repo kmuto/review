@@ -368,6 +368,167 @@ module ReVIEW
           data = ref_node.resolved_data
           @ctx.build_endnote_link(data.item_id, data.item_number)
         end
+
+        def render_inline_sec(_type, _content, node)
+          # Section number reference: @<sec>{id} or @<sec>{chapter|id}
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+            raise 'BUG: Reference should be resolved at AST construction time'
+          end
+
+          data = ref_node.resolved_data
+          n = data.headline_number
+          chapter_num = data.chapter_number
+
+          # Build full section number including chapter number
+          full_number = if n.present? && chapter_num && @ctx.over_secnolevel?(n)
+                          ([chapter_num] + n).join('.')
+                        else
+                          ''
+                        end
+
+          if @ctx.config['chapterlink'] && full_number.present?
+            # Get target chapter ID for link
+            chapter_id = data.chapter_id || @ctx.chapter.id
+            anchor = 'h' + full_number.tr('.', '-')
+            %Q(<a href="#{chapter_id}#{@ctx.extname}##{anchor}">#{full_number}</a>)
+          else
+            full_number
+          end
+        end
+
+        def render_inline_secref(type, content, node)
+          render_inline_hd(type, content, node)
+        end
+
+        def render_inline_labelref(_type, content, node)
+          # Label reference: @<labelref>{id}
+          # This should match HTMLBuilder's inline_labelref behavior
+          idref = node.target_item_id || content
+          %Q(<a target='#{@ctx.escape_content(idref)}'>「#{ReVIEW::I18n.t('label_marker')}#{@ctx.escape_content(idref)}」</a>)
+        end
+
+        def render_inline_ref(type, content, node)
+          render_inline_labelref(type, content, node)
+        end
+
+        def render_inline_eq(_type, _content, node)
+          # Equation reference
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+            raise 'BUG: Reference should be resolved at AST construction time'
+          end
+
+          data = ref_node.resolved_data
+          equation_number = if data.chapter_number
+                              %Q(#{ReVIEW::I18n.t('equation')}#{ReVIEW::I18n.t('format_number', [data.chapter_number, data.item_number])})
+                            else
+                              %Q(#{ReVIEW::I18n.t('equation')}#{ReVIEW::I18n.t('format_number_without_chapter', [data.item_number])})
+                            end
+
+          if @ctx.config['chapterlink']
+            chapter_id = data.chapter_id || @ctx.chapter.id
+            %Q(<span class="eqref"><a href="./#{chapter_id}#{@ctx.extname}##{@ctx.normalize_id(data.item_id)}">#{equation_number}</a></span>)
+          else
+            %Q(<span class="eqref">#{equation_number}</span>)
+          end
+        end
+
+        def render_inline_hd(_type, _content, node)
+          # Headline reference: @<hd>{id} or @<hd>{chapter|id}
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+            raise 'BUG: Reference should be resolved at AST construction time'
+          end
+
+          data = ref_node.resolved_data
+          n = data.headline_number
+          chapter_num = data.chapter_number
+
+          # Render caption with inline markup
+          caption_html = if data.caption_node
+                           @ctx.render_children(data.caption_node)
+                         else
+                           data.caption_text
+                         end
+
+          # Build full section number including chapter number
+          full_number = if n.present? && chapter_num && @ctx.over_secnolevel?(n)
+                          ([chapter_num] + n).join('.')
+                        end
+
+          str = if full_number
+                  ReVIEW::I18n.t('hd_quote', [full_number, caption_html])
+                else
+                  ReVIEW::I18n.t('hd_quote_without_number', caption_html)
+                end
+
+          if @ctx.config['chapterlink'] && full_number
+            # Get target chapter ID for link
+            chapter_id = data.chapter_id || @ctx.chapter.id
+            anchor = 'h' + full_number.tr('.', '-')
+            %Q(<a href="#{chapter_id}#{@ctx.extname}##{anchor}">#{str}</a>)
+          else
+            str
+          end
+        end
+
+        def render_inline_column(_type, _content, node)
+          # Column reference: @<column>{id} or @<column>{chapter|id}
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+            raise 'BUG: Reference should be resolved at AST construction time'
+          end
+
+          data = ref_node.resolved_data
+
+          # Render caption with inline markup
+          caption_html = if data.caption_node
+                           @ctx.render_children(data.caption_node)
+                         else
+                           @ctx.escape_content(data.caption_text)
+                         end
+
+          anchor = "column-#{data.item_number}"
+          column_text = ReVIEW::I18n.t('column', caption_html)
+
+          if @ctx.config['chapterlink']
+            chapter_id = data.chapter_id || @ctx.chapter.id
+            %Q(<a href="#{chapter_id}#{@ctx.extname}##{anchor}" class="columnref">#{column_text}</a>)
+          else
+            column_text
+          end
+        end
+
+        def render_inline_sectitle(_type, _content, node)
+          # Section title reference
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+            raise 'BUG: Reference should be resolved at AST construction time'
+          end
+
+          data = ref_node.resolved_data
+
+          # Render caption with inline markup
+          title_html = if data.caption_node
+                         @ctx.render_children(data.caption_node)
+                       else
+                         @ctx.escape_content(data.caption_text)
+                       end
+
+          if @ctx.config['chapterlink']
+            n = data.headline_number
+            chapter_num = data.chapter_number
+            full_number = ([chapter_num] + n).join('.')
+            anchor = 'h' + full_number.tr('.', '-')
+
+            # Get target chapter ID for link
+            chapter_id = data.chapter_id || @ctx.chapter.id
+            %Q(<a href="#{chapter_id}#{@ctx.extname}##{anchor}">#{title_html}</a>)
+          else
+            title_html
+          end
+        end
       end
     end
   end

@@ -18,12 +18,13 @@ module ReVIEW
         include ReVIEW::HTMLUtils
         include ReVIEW::EscapeUtils
 
-        attr_reader :config, :book, :chapter
+        attr_reader :config, :book, :chapter, :renderer
 
-        def initialize(config:, book:, chapter:)
+        def initialize(config:, book:, chapter:, renderer:)
           @config = config
           @book = book
           @chapter = chapter
+          @renderer = renderer
         end
 
         # === Computed properties ===
@@ -139,35 +140,6 @@ module ReVIEW
           end
         end
 
-        # === Bibliography logic ===
-
-        def build_bib_link(bib_id)
-          %Q([<a href="#bib-#{normalize_id(bib_id)}">#{bib_id}</a>])
-        end
-
-        # === Column logic ===
-
-        def column_caption(column_id)
-          column_item = chapter.column(column_id)
-          escape_content(column_item.caption.to_s)
-        rescue ReVIEW::KeyError
-          nil
-        end
-
-        def build_column_link(column_id)
-          caption = column_caption(column_id)
-          return column_id unless caption
-
-          anchor = "column_#{normalize_id(column_id)}"
-          display = I18n.t('column', caption)
-
-          if chapter_link_enabled?
-            %Q(<a href="##{anchor}" class="columnref">#{display}</a>)
-          else
-            display
-          end
-        end
-
         # === Icon/Image logic ===
 
         def build_icon_html(icon_id)
@@ -189,10 +161,6 @@ module ReVIEW
 
         # === Endnote logic ===
 
-        def endnote_number(endnote_id)
-          chapter.endnote(endnote_id).number
-        end
-
         def build_endnote_link(endnote_id, number)
           if epub3?
             %Q(<a id="endnoteb-#{normalize_id(endnote_id)}" href="#endnote-#{normalize_id(endnote_id)}" class="noteref" epub:type="noteref">#{I18n.t('html_endnote_refmark', number)}</a>)
@@ -203,20 +171,13 @@ module ReVIEW
 
         # === Chapter/Section navigation helpers ===
 
-        def get_chap(target_chapter = chapter)
-          if config['secnolevel'] && config['secnolevel'] > 0 &&
-             !target_chapter.number.nil? && !target_chapter.number.to_s.empty?
-            if target_chapter.is_a?(ReVIEW::Book::Part)
-              return I18n.t('part_short', target_chapter.number)
-            else
-              return target_chapter.format_number(nil)
-            end
-          end
-          nil
+        def over_secnolevel?(n)
+          secnolevel = config['secnolevel'] || 0
+          secnolevel >= n.to_s.split('.').size
         end
 
-        def over_secnolevel?(num_array, target_chapter)
-          target_chapter.on_secnolevel?(num_array, config)
+        def render_children(node)
+          renderer.render_children(node)
         end
       end
     end
