@@ -46,6 +46,10 @@ module ReVIEW
         @book.each_chapter do |chapter|
           build_chapter_index(chapter)
         end
+
+        # Build book-level indexes
+        build_bibpaper_index_from_bib_file
+        build_chapter_index_for_book
       end
 
       # Build index for a specific chapter using AST::Indexer
@@ -68,6 +72,32 @@ module ReVIEW
       def compile_chapter_to_ast(chapter)
         compiler = AST::Compiler.for_chapter(chapter)
         compiler.compile_to_ast(chapter, reference_resolution: false)
+      end
+
+      # Build bibpaper index from bib file if it exists
+      def build_bibpaper_index_from_bib_file
+        return unless @book.bib_exist?
+
+        begin
+          # Create a Bib object with file content
+          bib = ReVIEW::Book::Bib.new(file_content: @book.bib_content, book: @book)
+
+          # Compile bib file to AST
+          ast = compile_chapter_to_ast(bib)
+
+          # Create indexer and build indexes
+          # The bibpaper_index will be set on @book via ast_indexes= in BookUnit
+          indexer = AST::Indexer.new(bib)
+          indexer.build_indexes(ast)
+        rescue StandardError => e
+          warn "Failed to build bibpaper index: #{e.message}"
+        end
+      end
+
+      # Build chapter index for the book (chapters and parts)
+      # Calling chapter_index triggers lazy initialization via create_chapter_index
+      def build_chapter_index_for_book
+        @book.chapter_index
       end
     end
   end
