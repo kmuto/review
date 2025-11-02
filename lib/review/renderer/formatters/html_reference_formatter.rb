@@ -15,8 +15,7 @@ module ReVIEW
       class HtmlReferenceFormatter
         include ReVIEW::HTMLUtils
 
-        def initialize(renderer, config:)
-          @renderer = renderer
+        def initialize(config:)
           @config = config
         end
 
@@ -118,7 +117,7 @@ module ReVIEW
         attr_reader :config
 
         def extname
-          @renderer.extname
+          ".#{config['htmlext'] || 'html'}"
         end
       end
     end

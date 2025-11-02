@@ -10,6 +10,8 @@ require 'review/renderer/base'
 require 'review/ast/caption_node'
 require 'review/renderer/rendering_context'
 require 'review/renderer/formatters/html_reference_formatter'
+require 'review/renderer/html/inline_context'
+require 'review/renderer/html/inline_element_handler'
 require 'review/htmlutils'
 require 'review/textutils'
 require 'review/escape_utils'
@@ -51,6 +53,11 @@ module ReVIEW
 
         # Initialize RenderingContext for cleaner state management
         @rendering_context = RenderingContext.new(:document)
+
+        # Initialize HTML-specific inline context and inline element handler
+        @inline_context = Html::InlineContext.new(config: config, book: book, chapter: chapter)
+        @inline_element_handler = Html::InlineElementHandler.new(@inline_context)
+        @reference_formatter = Formatters::HtmlReferenceFormatter.new(config: config)
       end
 
       def visit_document(node)
@@ -561,314 +568,6 @@ module ReVIEW
         layout_file
       end
 
-      # Public methods for inline element rendering
-      # These methods need to be accessible from InlineElementRenderer
-
-      def render_list(content, _node)
-        # Generate proper list reference exactly like HTMLBuilder's inline_list method
-        list_id = content
-
-        begin
-          # Use exactly the same logic as HTMLBuilder's inline_list method
-          chapter, extracted_id = extract_chapter_id(list_id)
-
-          # Generate list number using the same pattern as Builder base class
-          list_number = if get_chap(chapter)
-                          %Q(#{I18n.t('list')}#{I18n.t('format_number', [get_chap(chapter), chapter.list(extracted_id).number])})
-                        else
-                          %Q(#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [chapter.list(extracted_id).number])})
-                        end
-
-          # Generate href exactly like HTMLBuilder with chapterlink check
-          if config['chapterlink']
-            %Q(<span class="listref"><a href="./#{chapter.id}#{extname}##{normalize_id(extracted_id)}">#{list_number}</a></span>)
-          else
-            %Q(<span class="listref">#{list_number}</span>)
-          end
-        rescue ReVIEW::KeyError
-          # Use app_error for consistency with HTMLBuilder error handling
-          app_error("unknown list: #{list_id}")
-        end
-      end
-
-      def render_img(content, _node)
-        # Generate proper image reference exactly like HTMLBuilder's inline_img method
-        img_id = content
-
-        begin
-          # Use exactly the same logic as HTMLBuilder's inline_img method
-          chapter, extracted_id = extract_chapter_id(img_id)
-
-          # Generate image number using the same pattern as Builder base class
-          image_number = if get_chap(chapter)
-                           %Q(#{I18n.t('image')}#{I18n.t('format_number', [get_chap(chapter), chapter.image(extracted_id).number])})
-                         else
-                           %Q(#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [chapter.image(extracted_id).number])})
-                         end
-
-          # Generate href exactly like HTMLBuilder with chapterlink check
-          if config['chapterlink']
-            %Q(<span class="imgref"><a href="./#{chapter.id}#{extname}##{normalize_id(extracted_id)}">#{image_number}</a></span>)
-          else
-            %Q(<span class="imgref">#{image_number}</span>)
-          end
-        rescue ReVIEW::KeyError
-          # Use app_error for consistency with HTMLBuilder error handling
-          app_error("unknown image: #{img_id}")
-        end
-      end
-
-      def render_inline_b(_type, content, _node)
-        %Q(<b>#{content}</b>)
-      end
-
-      def render_inline_strong(_type, content, _node)
-        %Q(<strong>#{content}</strong>)
-      end
-
-      def render_inline_i(_type, content, _node)
-        %Q(<i>#{content}</i>)
-      end
-
-      def render_inline_em(_type, content, _node)
-        %Q(<em>#{content}</em>)
-      end
-
-      def render_inline_code(_type, content, _node)
-        %Q(<code class="inline-code tt">#{content}</code>)
-      end
-
-      def render_inline_tt(_type, content, _node)
-        %Q(<code class="tt">#{content}</code>)
-      end
-
-      def render_inline_ttb(_type, content, _node)
-        %Q(<code class="tt"><b>#{content}</b></code>)
-      end
-
-      def render_inline_tti(_type, content, _node)
-        %Q(<code class="tt"><i>#{content}</i></code>)
-      end
-
-      def render_inline_kbd(_type, content, _node)
-        %Q(<kbd>#{content}</kbd>)
-      end
-
-      def render_inline_samp(_type, content, _node)
-        %Q(<samp>#{content}</samp>)
-      end
-
-      def render_inline_var(_type, content, _node)
-        %Q(<var>#{content}</var>)
-      end
-
-      def render_inline_sup(_type, content, _node)
-        %Q(<sup>#{content}</sup>)
-      end
-
-      def render_inline_sub(_type, content, _node)
-        %Q(<sub>#{content}</sub>)
-      end
-
-      def render_inline_del(_type, content, _node)
-        %Q(<del>#{content}</del>)
-      end
-
-      def render_inline_ins(_type, content, _node)
-        %Q(<ins>#{content}</ins>)
-      end
-
-      def render_inline_u(_type, content, _node)
-        %Q(<u>#{content}</u>)
-      end
-
-      def render_inline_br(_type, _content, _node)
-        '<br />'
-      end
-
-      def render_inline_raw(_type, content, node)
-        if node.args.first
-          format = node.args.first
-          if format == 'html'
-            content
-          else
-            '' # Ignore raw content for other formats
-          end
-        else
-          content
-        end
-      end
-
-      def render_inline_embed(_type, content, node)
-        # @<embed> simply outputs its content as-is, like Builder's inline_embed
-        # It can optionally specify target formats like @<embed>{|html,latex|content}
-        if node.args.first
-          args = node.args.first
-          # DEBUG
-          if ENV['REVIEW_DEBUG']
-            puts "DEBUG render_inline_embed: content=#{content.inspect}, args=#{args.inspect}"
-          end
-          if matched = args.match(/\|(.*?)\|(.*)/)
-            builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }
-            if builders.include?('html')
-              matched[2]
-            else
-              ''
-            end
-          else
-            args
-          end
-        else
-          content
-        end
-      end
-
-      def render_inline_chap(_type, _content, node)
-        id = node.reference_id
-        begin
-          chapter_num = @book.chapter_index.number(id)
-          if config['chapterlink']
-            %Q(<a href="./#{id}#{extname}">#{chapter_num}</a>)
-          else
-            chapter_num
-          end
-        rescue ReVIEW::KeyError
-          app_error "unknown chapter: #{id}"
-        end
-      end
-
-      def render_inline_title(_type, _content, node)
-        id = node.reference_id
-        begin
-          # Find the chapter and get its title
-          chapter = find_chapter_by_id(id)
-          raise ReVIEW::KeyError unless chapter
-
-          # Chapter title is already plain text (markup removed), just escape it
-          title = escape_content(chapter.title)
-          if config['chapterlink']
-            %Q(<a href="./#{id}#{extname}">#{title}</a>)
-          else
-            title
-          end
-        rescue ReVIEW::KeyError
-          app_error "unknown chapter: #{id}"
-        end
-      end
-
-      def render_inline_chapref(_type, _content, node)
-        id = node.reference_id
-        begin
-          # Use display_string like Builder to get chapter number + title
-          # This returns formatted string like "第1章「タイトル」" from I18n.t('chapter_quote')
-          display_str = @book.chapter_index.display_string(id)
-          if config['chapterlink']
-            %Q(<a href="./#{id}#{extname}">#{display_str}</a>)
-          else
-            display_str
-          end
-        rescue ReVIEW::KeyError
-          app_error "unknown chapter: #{id}"
-        end
-      end
-
-      def render_inline_list(_type, _content, node)
-        id = node.reference_id
-        self.render_list(id, node)
-      end
-
-      def render_inline_img(_type, _content, node)
-        id = node.reference_id
-        self.render_img(id, node)
-      end
-
-      def render_inline_table(_type, _content, node)
-        id = node.reference_id
-        self.render_table(id, node)
-      end
-
-      def render_inline_fn(_type, content, node)
-        fn_id = node.reference_id
-        if fn_id
-          # Get footnote number from chapter like HTMLBuilder
-          begin
-            fn_number = @chapter.footnote(fn_id).number
-            # Check epubversion for consistent output with HTMLBuilder
-            if config['epubversion'].to_i == 3
-              %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref" epub:type="noteref">#{I18n.t('html_footnote_refmark', fn_number)}</a>)
-            else
-              %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref">*#{fn_number}</a>)
-            end
-          rescue ReVIEW::KeyError
-            # Fallback if footnote not found
-            content
-          end
-        else
-          content
-        end
-      end
-
-      def render_inline_kw(_type, content, node)
-        if node.args.length >= 2
-          word = escape_content(node.args[0])
-          alt = escape_content(node.args[1].strip)
-          # Format like HTMLBuilder: word + space + parentheses with alt inside <b> tag
-          text = "#{word} (#{alt})"
-          # IDX comment uses only the word, like HTMLBuilder
-          %Q(<b class="kw">#{text}</b><!-- IDX:#{word} -->)
-        else
-          # content is already escaped, use node.args.first for IDX comment
-          index_term = node.args.first || content
-          %Q(<b class="kw">#{content}</b><!-- IDX:#{escape_content(index_term)} -->)
-        end
-      end
-
-      def render_inline_bou(_type, content, _node)
-        %Q(<span class="bou">#{content}</span>)
-      end
-
-      def render_inline_ami(_type, content, _node)
-        %Q(<span class="ami">#{content}</span>)
-      end
-
-      def render_inline_href(_type, content, node)
-        args = node.args || []
-        if args.length >= 2
-          # Get raw URL and text from args, escape them
-          url = escape_content(args[0])
-          text = escape_content(args[1])
-          # Handle internal references (URLs starting with #)
-          if args[0].start_with?('#')
-            anchor = args[0].sub(/\A#/, '')
-            %Q(<a href="##{escape_content(anchor)}" class="link">#{text}</a>)
-          else
-            %Q(<a href="#{url}" class="link">#{text}</a>)
-          end
-        elsif node.args.first
-          # Single argument case - use raw arg for URL
-          url = escape_content(node.args.first)
-          if node.args.first.start_with?('#')
-            anchor = node.args.first.sub(/\A#/, '')
-            %Q(<a href="##{escape_content(anchor)}" class="link">#{content}</a>)
-          else
-            %Q(<a href="#{url}" class="link">#{content}</a>)
-          end
-        else
-          # Fallback: content is already escaped
-          %Q(<a href="#{content}" class="link">#{content}</a>)
-        end
-      end
-
-      def render_inline_ruby(_type, content, node)
-        if node.args.length >= 2
-          base = node.args[0]
-          ruby = node.args[1]
-          %Q(<ruby>#{escape_content(base)}<rt>#{escape_content(ruby)}</rt></ruby>)
-        else
-          content
-        end
-      end
-
       def render_inline_m(_type, content, node)
         # Get raw string from node args (content is already escaped)
         str = node.args.first || content
@@ -905,28 +604,6 @@ module ReVIEW
           end
         else
           %Q(<span class="equation">#{escape(str)}</span>)
-        end
-      end
-
-      def render_inline_idx(_type, content, node)
-        # Use HTML comment format like HTMLBuilder
-        # content is already escaped for display
-        index_str = node.args.first || content
-        %Q(#{content}<!-- IDX:#{escape_comment(index_str)} -->)
-      end
-
-      def render_inline_hidx(_type, _content, node)
-        # Use HTML comment format like HTMLBuilder
-        # hidx doesn't display content, only outputs the index comment
-        index_str = node.args.first || ''
-        %Q(<!-- IDX:#{escape_comment(index_str)} -->)
-      end
-
-      def render_inline_comment(_type, content, _node)
-        if config['draft']
-          %Q(<span class="draft-comment">#{content}</span>)
-        else
-          ''
         end
       end
 
@@ -969,99 +646,6 @@ module ReVIEW
 
       def render_inline_ref(type, content, node)
         render_inline_labelref(type, content, node)
-      end
-
-      def render_inline_w(_type, content, _node)
-        # Content should already be resolved by ReferenceResolver
-        content
-      end
-
-      def render_inline_wb(_type, content, _node)
-        # Content should already be resolved by ReferenceResolver
-        %Q(<b>#{content}</b>)
-      end
-
-      def render_inline_abbr(_type, content, _node)
-        %Q(<abbr>#{content}</abbr>)
-      end
-
-      def render_inline_acronym(_type, content, _node)
-        %Q(<acronym>#{content}</acronym>)
-      end
-
-      def render_inline_cite(_type, content, _node)
-        %Q(<cite>#{content}</cite>)
-      end
-
-      def render_inline_dfn(_type, content, _node)
-        %Q(<dfn>#{content}</dfn>)
-      end
-
-      def render_inline_big(_type, content, _node)
-        %Q(<big>#{content}</big>)
-      end
-
-      def render_inline_small(_type, content, _node)
-        %Q(<small>#{content}</small>)
-      end
-
-      def render_inline_dtp(_type, content, _node)
-        "<?dtp #{content} ?>"
-      end
-
-      def render_inline_recipe(_type, content, _node)
-        %Q(<span class="recipe">「#{content}」</span>)
-      end
-
-      def render_inline_icon(_type, content, node)
-        # Icon is an image reference
-        id = node.args.first || content
-        begin
-          %Q(<img src="#{@chapter.image(id).path.sub(%r{\A\./}, '')}" alt="[#{id}]" />)
-        rescue ReVIEW::KeyError, NoMethodError
-          warn "image not bound: #{id}"
-          %Q(<pre>missing image: #{id}</pre>)
-        end
-      end
-
-      def render_inline_uchar(_type, content, _node)
-        %Q(&#x#{content};)
-      end
-
-      def render_inline_tcy(_type, content, _node)
-        # 縦中横用のtcy、uprightのCSSスタイルについては電書協ガイドラインを参照
-        style = 'tcy'
-        if content.size == 1 && content.match(/[[:ascii:]]/)
-          style = 'upright'
-        end
-        %Q(<span class="#{style}">#{content}</span>)
-      end
-
-      def render_inline_balloon(_type, content, _node)
-        %Q(<span class="balloon">#{content}</span>)
-      end
-
-      def render_inline_bib(_type, content, node)
-        # Bibliography reference
-        id = node.args.first || content
-        begin
-          bib_file = @book.bib_file.gsub(/\.re\Z/, ".#{config['htmlext'] || 'html'}")
-          number = @chapter.bibpaper(id).number
-          %Q(<a href="#{bib_file}#bib-#{normalize_id(id)}">[#{number}]</a>)
-        rescue ReVIEW::KeyError
-          %Q([#{id}])
-        end
-      end
-
-      def render_inline_endnote(_type, content, node)
-        # Endnote reference
-        id = node.reference_id
-        begin
-          number = @chapter.endnote(id).number
-          %Q(<a id="endnoteb-#{normalize_id(id)}" href="#endnote-#{normalize_id(id)}" class="noteref" epub:type="noteref">#{I18n.t('html_endnote_refmark', number)}</a>)
-        rescue ReVIEW::KeyError
-          %Q(<a href="#endnote-#{normalize_id(id)}" class="noteref">#{content}</a>)
-        end
       end
 
       def render_inline_eq(_type, content, node)
@@ -1171,11 +755,6 @@ module ReVIEW
         rescue ReVIEW::KeyError
           content
         end
-      end
-
-      def render_inline_pageref(_type, content, _node)
-        # Page reference is unsupported in HTML
-        content
       end
 
       # Helper methods for references
@@ -1453,7 +1032,6 @@ module ReVIEW
       # Format resolved reference based on ResolvedData
       # Uses double dispatch pattern with a dedicated formatter object
       def format_resolved_reference(data)
-        @reference_formatter ||= Formatters::HtmlReferenceFormatter.new(self, config: config)
         data.format_with(@reference_formatter)
       end
 
@@ -1521,6 +1099,13 @@ module ReVIEW
       end
 
       def render_inline_element(type, content, node)
+        # Try delegating to inline element handler first
+        handler_method = "render_inline_#{type}"
+        if @inline_element_handler.respond_to?(handler_method, true)
+          return @inline_element_handler.send(handler_method, type, content, node)
+        end
+
+        # Fall back to renderer's own methods if handler returns nil
         method_name = "render_inline_#{type}"
         if respond_to?(method_name, true)
           send(method_name, type, content, node)
@@ -1712,33 +1297,6 @@ module ReVIEW
       def escape(str)
         # Use EscapeUtils for consistency
         escape_content(str.to_s)
-      end
-
-      def render_table(id, _node)
-        # Generate proper table reference exactly like HTMLBuilder's inline_table method
-        table_id = id
-
-        begin
-          # Use exactly the same logic as HTMLBuilder's inline_table method
-          chapter, extracted_id = extract_chapter_id(table_id)
-
-          # Generate table number using the same pattern as Builder base class
-          table_number = if get_chap(chapter)
-                           %Q(#{I18n.t('table')}#{I18n.t('format_number', [get_chap(chapter), chapter.table(extracted_id).number])})
-                         else
-                           %Q(#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [chapter.table(extracted_id).number])})
-                         end
-
-          # Generate href exactly like HTMLBuilder with chapterlink check
-          if config['chapterlink']
-            %Q(<span class="tableref"><a href="./#{chapter.id}#{extname}##{normalize_id(extracted_id)}">#{table_number}</a></span>)
-          else
-            %Q(<span class="tableref">#{table_number}</span>)
-          end
-        rescue ReVIEW::KeyError
-          # Use app_error for consistency with HTMLBuilder error handling
-          app_error("unknown table: #{table_id}")
-        end
       end
 
       # Generate headline prefix and anchor like HTMLBuilder
