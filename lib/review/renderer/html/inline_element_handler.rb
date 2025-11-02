@@ -6,6 +6,8 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
+require 'digest'
+
 module ReVIEW
   module Renderer
     module Html
@@ -367,6 +369,41 @@ module ReVIEW
 
           data = ref_node.resolved_data
           @ctx.build_endnote_link(data.item_id, data.item_number)
+        end
+
+        def render_inline_m(_type, content, node)
+          # Math/equation rendering
+          # Get raw string from node args (content is already escaped)
+          str = node.args.first || content
+
+          # Use 'equation' class like HTMLBuilder
+          case @ctx.config['math_format']
+          when 'mathml'
+            begin
+              require 'math_ml'
+              require 'math_ml/symbol/character_reference'
+            rescue LoadError
+              @ctx.renderer.app_error 'not found math_ml'
+              return %Q(<span class="equation">#{@ctx.escape(str)}</span>)
+            end
+            parser = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
+            # parser.parse returns MathML::Math object, need to convert to string
+            %Q(<span class="equation">#{parser.parse(str, nil)}</span>)
+          when 'mathjax'
+            %Q(<span class="equation">\\( #{str.gsub('<', '\lt{}').gsub('>', '\gt{}').gsub('&', '&amp;')} \\)</span>)
+          when 'imgmath'
+            unless @img_math
+              @ctx.renderer.app_error 'ImgMath not initialized'
+              return %Q(<span class="equation">#{@ctx.escape(str)}</span>)
+            end
+
+            math_str = '$' + str + '$'
+            key = Digest::SHA256.hexdigest(str)
+            img_path = @img_math.defer_math_image(math_str, key)
+            %Q(<span class="equation"><img src="#{img_path}" class="math_gen_#{key}" alt="#{@ctx.escape(str)}" /></span>)
+          else
+            %Q(<span class="equation">#{@ctx.escape(str)}</span>)
+          end
         end
 
         def render_inline_sec(_type, _content, node)

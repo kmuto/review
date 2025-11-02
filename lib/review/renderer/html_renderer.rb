@@ -491,13 +491,8 @@ module ReVIEW
         math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{content}\n\\end{equation*}\n"
         key = Digest::SHA256.hexdigest(math_str)
 
-        if config.check_version('2', exception: false)
-          img_path = @img_math.make_math_image(math_str, key)
-          %Q(<img src="#{img_path}" />\n)
-        else
-          img_path = @img_math.defer_math_image(math_str, key)
-          %Q(<img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(content)}" />\n)
-        end
+        img_path = @img_math.defer_math_image(math_str, key)
+        %Q(<img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(content)}" />\n)
       end
 
       # Render AST to HTML body content only (without template).
@@ -566,45 +561,6 @@ module ReVIEW
         end
 
         layout_file
-      end
-
-      def render_inline_m(_type, content, node)
-        # Get raw string from node args (content is already escaped)
-        str = node.args.first || content
-
-        # Use 'equation' class like HTMLBuilder
-        case config['math_format']
-        when 'mathml'
-          begin
-            require 'math_ml'
-            require 'math_ml/symbol/character_reference'
-          rescue LoadError
-            app_error 'not found math_ml'
-            return %Q(<span class="equation">#{escape(str)}</span>)
-          end
-          parser = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
-          # parser.parse returns MathML::Math object, need to convert to string
-          %Q(<span class="equation">#{parser.parse(str, nil)}</span>)
-        when 'mathjax'
-          %Q(<span class="equation">\\( #{str.gsub('<', '\lt{}').gsub('>', '\gt{}').gsub('&', '&amp;')} \\)</span>)
-        when 'imgmath'
-          unless @img_math
-            app_error 'ImgMath not initialized'
-            return %Q(<span class="equation">#{escape(str)}</span>)
-          end
-
-          math_str = '$' + str + '$'
-          key = Digest::SHA256.hexdigest(str)
-          if config.check_version('2', exception: false)
-            img_path = @img_math.make_math_image(math_str, key)
-            %Q(<span class="equation"><img src="#{img_path}" /></span>)
-          else
-            img_path = @img_math.defer_math_image(math_str, key)
-            %Q(<span class="equation"><img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(str)}" /></span>)
-          end
-        else
-          %Q(<span class="equation">#{escape(str)}</span>)
-        end
       end
 
       # Helper methods for references
