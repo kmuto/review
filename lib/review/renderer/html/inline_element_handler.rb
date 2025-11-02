@@ -16,6 +16,7 @@ module ReVIEW
       class InlineElementHandler
         def initialize(inline_context)
           @ctx = inline_context
+          @img_math = @ctx.img_math
         end
 
         # === Pure inline elements (simple HTML wrapping) ===

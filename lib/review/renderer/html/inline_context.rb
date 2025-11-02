@@ -18,13 +18,14 @@ module ReVIEW
         include ReVIEW::HTMLUtils
         include ReVIEW::EscapeUtils
 
-        attr_reader :config, :book, :chapter, :renderer
+        attr_reader :config, :book, :chapter, :renderer, :img_math
 
-        def initialize(config:, book:, chapter:, renderer:)
+        def initialize(config:, book:, chapter:, renderer:, img_math: nil)
           @config = config
           @book = book
           @chapter = chapter
           @renderer = renderer
+          @img_math = img_math
         end
 
         # === Computed properties ===

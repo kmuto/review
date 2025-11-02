@@ -35,8 +35,8 @@ module ReVIEW
 
       attr_reader :chapter, :book
 
-      def initialize(chapter)
-        super
+      def initialize(chapter, img_math: nil)
+        super(chapter)
 
         # Initialize logger like HTMLBuilder for error handling
         @logger = ReVIEW.logger
@@ -49,13 +49,14 @@ module ReVIEW
         @body_ext = ''
 
         # Initialize ImgMath for equation image generation (like Builder)
-        @img_math = ReVIEW::ImgMath.new(config)
+        # Accept shared instance or create new one
+        @img_math = img_math || ReVIEW::ImgMath.new(config)
 
         # Initialize RenderingContext for cleaner state management
         @rendering_context = RenderingContext.new(:document)
 
         # Initialize HTML-specific inline context and inline element handler
-        @inline_context = Html::InlineContext.new(config: config, book: book, chapter: chapter, renderer: self)
+        @inline_context = Html::InlineContext.new(config: config, book: book, chapter: chapter, renderer: self, img_math: @img_math)
         @inline_element_handler = Html::InlineElementHandler.new(@inline_context)
         @reference_formatter = Formatters::HtmlReferenceFormatter.new(config: config)
       end
