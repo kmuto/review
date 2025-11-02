@@ -433,7 +433,7 @@ module ReVIEW
 
       # Inline rendering methods
       def render_inline_fn(_type, _content, node)
-        fn_id = node.reference_id
+        fn_id = node.target_item_id
         return '' unless fn_id && @chapter
 
         footnote_number = @chapter.footnote(fn_id).number
@@ -508,19 +508,10 @@ module ReVIEW
 
       def render_inline_hd(_type, _content, node)
         # Headline reference
-        id = node.reference_id
-        return '' unless id
+        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
+        headline_id = node.target_item_id
 
-        # Extract chapter and headline ID
-        m = /\A([^|]+)\|(.+)/.match(id)
-        chapter = if m && m[1]
-                    find_chapter_by_id(m[1])
-                  else
-                    @chapter
-                  end
-        headline_id = m ? m[2] : id
-
-        return '' unless chapter
+        return '' unless headline_id && chapter
 
         n = chapter.headline_index.number(headline_id)
         caption = chapter.headline(headline_id).caption
@@ -549,7 +540,7 @@ module ReVIEW
       end
 
       def render_inline_chapref(_type, _content, node)
-        id = node.reference_id
+        id = node.target_item_id
         return '' unless id
 
         @book.chapter_index.display_string(id)

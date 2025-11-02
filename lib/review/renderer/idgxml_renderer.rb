@@ -50,12 +50,7 @@ module ReVIEW
         # Initialize logger for Loggable module
         @logger = ReVIEW.logger
 
-        # Initialize I18n if not already setup
-        if config['language']
-          I18n.setup(config['language'])
-        else
-          I18n.setup('ja') # Default to Japanese
-        end
+        I18n.setup(config['language'] || 'ja')
 
         # Initialize section counters like IDGXMLBuilder
         @section = 0
@@ -1148,48 +1143,48 @@ module ReVIEW
 
       # References
       def render_inline_list(_type, content, node)
-        id = node.reference_id || content
+        item_id = node.target_item_id || content
         begin
-          base_ref = get_list_reference(id)
+          base_ref = get_list_reference(item_id, chapter_id: node.target_chapter_id)
           "<span type='list'>#{base_ref}</span>"
         rescue StandardError
-          "<span type='list'>#{escape(id)}</span>"
+          "<span type='list'>#{escape(item_id)}</span>"
         end
       end
 
       def render_inline_table(_type, content, node)
-        id = node.reference_id || content
+        item_id = node.target_item_id || content
         begin
-          base_ref = get_table_reference(id)
+          base_ref = get_table_reference(item_id, chapter_id: node.target_chapter_id)
           "<span type='table'>#{base_ref}</span>"
         rescue StandardError
-          "<span type='table'>#{escape(id)}</span>"
+          "<span type='table'>#{escape(item_id)}</span>"
         end
       end
 
       def render_inline_img(_type, content, node)
-        id = node.reference_id || content
+        item_id = node.target_item_id || content
         begin
-          base_ref = get_image_reference(id)
+          base_ref = get_image_reference(item_id, chapter_id: node.target_chapter_id)
           "<span type='image'>#{base_ref}</span>"
         rescue StandardError
-          "<span type='image'>#{escape(id)}</span>"
+          "<span type='image'>#{escape(item_id)}</span>"
         end
       end
 
       def render_inline_eq(_type, content, node)
-        id = node.reference_id || content
+        item_id = node.target_item_id || content
         begin
-          base_ref = get_equation_reference(id)
+          base_ref = get_equation_reference(item_id, chapter_id: node.target_chapter_id)
           "<span type='eq'>#{base_ref}</span>"
         rescue StandardError
-          "<span type='eq'>#{escape(id)}</span>"
+          "<span type='eq'>#{escape(item_id)}</span>"
         end
       end
 
       def render_inline_imgref(type, content, node)
-        id = node.reference_id || content
-        chapter, extracted_id = extract_chapter_id(id)
+        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
+        extracted_id = node.target_item_id || content
 
         if chapter.image(extracted_id).caption.blank?
           render_inline_img(type, content, node)
@@ -1199,24 +1194,15 @@ module ReVIEW
           "<span type='image'>#{I18n.t('image')}#{I18n.t('format_number', [get_chap(chapter), chapter.image(extracted_id).number])}#{I18n.t('image_quote', chapter.image(extracted_id).caption)}</span>"
         end
       rescue StandardError
-        "<span type='image'>#{escape(id)}</span>"
+        "<span type='image'>#{escape(extracted_id)}</span>"
       end
 
       # Column reference
       def render_inline_column(_type, content, node)
-        id = node.reference_id || content
+        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
+        column_id = node.target_item_id || content
 
-        # Parse chapter|id format
-        m = /\A([^|]+)\|(.+)/.match(id)
-        if m && m[1]
-          chapter = find_chapter_by_id(m[1])
-          column_id = m[2]
-        else
-          chapter = @chapter
-          column_id = id
-        end
-
-        app_error "unknown chapter: #{m[1]}" unless chapter
+        app_error "unknown chapter: #{node.target_chapter_id}" if node.target_chapter_id && !chapter
 
         # Render column reference
         item = chapter.column(column_id)
@@ -1236,9 +1222,9 @@ module ReVIEW
 
       # Footnotes
       def render_inline_fn(_type, content, node)
-        id = node.reference_id || content
+        item_id = node.target_item_id || content
         begin
-          fn_entry = @chapter.footnote(id)
+          fn_entry = @chapter.footnote(item_id)
           fn_node = fn_entry&.footnote_node
 
           if fn_node
@@ -1251,17 +1237,17 @@ module ReVIEW
             %Q(<footnote>#{rendered_text}</footnote>)
           end
         rescue ReVIEW::KeyError
-          app_error "unknown footnote: #{id}"
+          app_error "unknown footnote: #{item_id}"
         end
       end
 
       # Endnotes
       def render_inline_endnote(_type, content, node)
-        id = node.reference_id || content
+        item_id = node.target_item_id || content
         begin
-          %Q(<span type='endnoteref' idref='endnoteb-#{normalize_id(id)}'>(#{@chapter.endnote(id).number})</span>)
+          %Q(<span type='endnoteref' idref='endnoteb-#{normalize_id(item_id)}'>(#{@chapter.endnote(item_id).number})</span>)
         rescue ReVIEW::KeyError
-          app_error "unknown endnote: #{id}"
+          app_error "unknown endnote: #{item_id}"
         end
       end
 
@@ -1277,18 +1263,8 @@ module ReVIEW
 
       # Headline reference
       def render_inline_hd(_type, content, node)
-        # Use reference_id if available (from ReferenceResolver)
-        id = node.reference_id || node.args.first || content
-
-        # Parse chapter|id format like Builder does
-        m = /\A([^|]+)\|(.+)/.match(id)
-        if m && m[1]
-          chapter = @book.contents.detect { |chap| chap.id == m[1] }
-          headline_id = m[2]
-        else
-          chapter = @chapter
-          headline_id = id
-        end
+        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
+        headline_id = node.target_item_id || content
 
         if chapter
           render_hd_for_chapter(chapter, headline_id)
@@ -1296,7 +1272,7 @@ module ReVIEW
           content
         end
       rescue ReVIEW::KeyError
-        app_error "unknown headline: #{id}"
+        app_error "unknown headline: #{headline_id}"
       rescue StandardError
         content
       end
@@ -1317,10 +1293,9 @@ module ReVIEW
 
       # Section number reference
       def render_inline_sec(_type, _content, node)
-        id = node.reference_id
+        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
+        extracted_id = node.target_item_id
         begin
-          chapter, extracted_id = extract_chapter_id(id)
-
           # extracted_id is already in the correct format (e.g., "parent|child")
           # Don't split it - use it as-is
           n = chapter.headline_index.number(extracted_id)
@@ -1332,19 +1307,24 @@ module ReVIEW
             ''
           end
         rescue ReVIEW::KeyError
-          app_error "unknown headline: #{id}"
+          app_error "unknown headline: #{extracted_id}"
         end
       end
 
       # Section title reference
       def render_inline_sectitle(_type, content, node)
-        id = node.reference_id
+        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
+        extracted_id = node.target_item_id
         begin
-          chapter, extracted_id = extract_chapter_id(id)
-
           # extracted_id is already in the correct format (e.g., "parent|child")
           # Don't split it - use it as-is
-          chapter.headline(extracted_id).caption
+          headline_item = chapter.headline(extracted_id)
+          # Use caption_node to render inline elements
+          if headline_item.caption_node
+            render_caption_inline(headline_item.caption_node)
+          else
+            headline_item.caption
+          end
         rescue ReVIEW::KeyError
           content
         end
@@ -1508,17 +1488,6 @@ module ReVIEW
       def normalize_id(id)
         # Normalize ID for XML attributes
         id.to_s.gsub(/[^a-zA-Z0-9_-]/, '_')
-      end
-
-      def extract_chapter_id(chap_ref)
-        m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
-        if m
-          ch = @book.contents.detect { |chap| chap.id == m[1] }
-          raise ReVIEW::KeyError unless ch
-
-          return [ch, m[2]]
-        end
-        [@chapter, chap_ref]
       end
 
       def find_chapter_by_id(chapter_id)
@@ -2331,55 +2300,55 @@ module ReVIEW
       end
 
       # Get list reference for inline @<list>{}
-      def get_list_reference(id)
-        chapter, extracted_id = extract_chapter_id(id)
+      def get_list_reference(item_id, chapter_id: nil)
+        chapter = chapter_id ? find_chapter_by_id(chapter_id) : @chapter
 
         if get_chap(chapter)
-          I18n.t('list') + I18n.t('format_number', [get_chap(chapter), chapter.list(extracted_id).number])
+          I18n.t('list') + I18n.t('format_number', [get_chap(chapter), chapter.list(item_id).number])
         else
-          I18n.t('list') + I18n.t('format_number_without_chapter', [chapter.list(extracted_id).number])
+          I18n.t('list') + I18n.t('format_number_without_chapter', [chapter.list(item_id).number])
         end
       rescue ReVIEW::KeyError
-        id
+        item_id
       end
 
       # Get table reference for inline @<table>{}
-      def get_table_reference(id)
-        chapter, extracted_id = extract_chapter_id(id)
+      def get_table_reference(item_id, chapter_id: nil)
+        chapter = chapter_id ? find_chapter_by_id(chapter_id) : @chapter
 
         if get_chap(chapter)
-          I18n.t('table') + I18n.t('format_number', [get_chap(chapter), chapter.table(extracted_id).number])
+          I18n.t('table') + I18n.t('format_number', [get_chap(chapter), chapter.table(item_id).number])
         else
-          I18n.t('table') + I18n.t('format_number_without_chapter', [chapter.table(extracted_id).number])
+          I18n.t('table') + I18n.t('format_number_without_chapter', [chapter.table(item_id).number])
         end
       rescue ReVIEW::KeyError
-        id
+        item_id
       end
 
       # Get image reference for inline @<img>{}
-      def get_image_reference(id)
-        chapter, extracted_id = extract_chapter_id(id)
+      def get_image_reference(item_id, chapter_id: nil)
+        chapter = chapter_id ? find_chapter_by_id(chapter_id) : @chapter
 
         if get_chap(chapter)
-          I18n.t('image') + I18n.t('format_number', [get_chap(chapter), chapter.image(extracted_id).number])
+          I18n.t('image') + I18n.t('format_number', [get_chap(chapter), chapter.image(item_id).number])
         else
-          I18n.t('image') + I18n.t('format_number_without_chapter', [chapter.image(extracted_id).number])
+          I18n.t('image') + I18n.t('format_number_without_chapter', [chapter.image(item_id).number])
         end
       rescue ReVIEW::KeyError
-        id
+        item_id
       end
 
       # Get equation reference for inline @<eq>{}
-      def get_equation_reference(id)
-        chapter, extracted_id = extract_chapter_id(id)
+      def get_equation_reference(item_id, chapter_id: nil)
+        chapter = chapter_id ? find_chapter_by_id(chapter_id) : @chapter
 
         if get_chap(chapter)
-          I18n.t('equation') + I18n.t('format_number', [get_chap(chapter), chapter.equation(extracted_id).number])
+          I18n.t('equation') + I18n.t('format_number', [get_chap(chapter), chapter.equation(item_id).number])
         else
-          I18n.t('equation') + I18n.t('format_number_without_chapter', [chapter.equation(extracted_id).number])
+          I18n.t('equation') + I18n.t('format_number_without_chapter', [chapter.equation(item_id).number])
         end
       rescue ReVIEW::KeyError
-        id
+        item_id
       end
 
       # Visit syntaxblock (box, insn) - processes lines with listinfo

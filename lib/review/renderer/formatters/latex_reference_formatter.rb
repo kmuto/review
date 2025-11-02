@@ -15,8 +15,7 @@ module ReVIEW
       class LaTeXReferenceFormatter
         include ReVIEW::LaTeXUtils
 
-        def initialize(renderer, config:)
-          @renderer = renderer
+        def initialize(config:)
           @config = config
           # Initialize LaTeX character escaping
           initialize_metachars(config['texcommand'])

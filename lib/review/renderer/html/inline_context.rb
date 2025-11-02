@@ -203,17 +203,6 @@ module ReVIEW
 
         # === Chapter/Section navigation helpers ===
 
-        def extract_chapter_id(chap_ref)
-          m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
-          if m
-            ch = find_chapter_by_id(m[1])
-            raise ReVIEW::KeyError unless ch
-
-            return [ch, m[2]]
-          end
-          [chapter, chap_ref]
-        end
-
         def get_chap(target_chapter = chapter)
           if config['secnolevel'] && config['secnolevel'] > 0 &&
              !target_chapter.number.nil? && !target_chapter.number.to_s.empty?
@@ -245,9 +234,11 @@ module ReVIEW
 
         # === Reference generation (list, img, table) ===
 
-        def build_list_reference(list_id)
-          target_chapter, extracted_id = extract_chapter_id(list_id)
-          list_item = target_chapter.list(extracted_id)
+        def build_list_reference(item_id, chapter_id:)
+          target_chapter = chapter_id ? find_chapter_by_id(chapter_id) : chapter
+          raise ReVIEW::KeyError unless target_chapter
+
+          list_item = target_chapter.list(item_id)
 
           list_number = if get_chap(target_chapter)
                           "#{I18n.t('list')}#{I18n.t('format_number', [get_chap(target_chapter), list_item.number])}"
@@ -256,15 +247,17 @@ module ReVIEW
                         end
 
           if chapter_link_enabled?
-            %Q(<span class="listref"><a href="./#{target_chapter.id}#{extname}##{normalize_id(extracted_id)}">#{list_number}</a></span>)
+            %Q(<span class="listref"><a href="./#{target_chapter.id}#{extname}##{normalize_id(item_id)}">#{list_number}</a></span>)
           else
             %Q(<span class="listref">#{list_number}</span>)
           end
         end
 
-        def build_img_reference(img_id)
-          target_chapter, extracted_id = extract_chapter_id(img_id)
-          img_item = target_chapter.image(extracted_id)
+        def build_img_reference(item_id, chapter_id: nil)
+          target_chapter = chapter_id ? find_chapter_by_id(chapter_id) : chapter
+          raise ReVIEW::KeyError unless target_chapter
+
+          img_item = target_chapter.image(item_id)
 
           image_number = if get_chap(target_chapter)
                            "#{I18n.t('image')}#{I18n.t('format_number', [get_chap(target_chapter), img_item.number])}"
@@ -273,15 +266,17 @@ module ReVIEW
                          end
 
           if chapter_link_enabled?
-            %Q(<span class="imgref"><a href="./#{target_chapter.id}#{extname}##{normalize_id(extracted_id)}">#{image_number}</a></span>)
+            %Q(<span class="imgref"><a href="./#{target_chapter.id}#{extname}##{normalize_id(item_id)}">#{image_number}</a></span>)
           else
             %Q(<span class="imgref">#{image_number}</span>)
           end
         end
 
-        def build_table_reference(table_id)
-          target_chapter, extracted_id = extract_chapter_id(table_id)
-          table_item = target_chapter.table(extracted_id)
+        def build_table_reference(item_id, chapter_id:)
+          target_chapter = chapter_id ? find_chapter_by_id(chapter_id) : chapter
+          raise ReVIEW::KeyError unless target_chapter
+
+          table_item = target_chapter.table(item_id)
 
           table_number = if get_chap(target_chapter)
                            "#{I18n.t('table')}#{I18n.t('format_number', [get_chap(target_chapter), table_item.number])}"
@@ -290,7 +285,7 @@ module ReVIEW
                          end
 
           if chapter_link_enabled?
-            %Q(<span class="tableref"><a href="./#{target_chapter.id}#{extname}##{normalize_id(extracted_id)}">#{table_number}</a></span>)
+            %Q(<span class="tableref"><a href="./#{target_chapter.id}#{extname}##{normalize_id(item_id)}">#{table_number}</a></span>)
           else
             %Q(<span class="tableref">#{table_number}</span>)
           end

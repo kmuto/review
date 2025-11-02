@@ -43,6 +43,7 @@ module ReVIEW
         chapref: :create_inline_cross_ref_ast_node,
         sec: :create_inline_cross_ref_ast_node,
         secref: :create_inline_cross_ref_ast_node,
+        sectitle: :create_inline_cross_ref_ast_node,
         labelref: :create_inline_cross_ref_ast_node,
         ref: :create_inline_cross_ref_ast_node,
         raw: :create_inline_raw_ast_node
@@ -266,20 +267,25 @@ module ReVIEW
       # Create inline reference AST node (for img, list, table, eq, fn, endnote)
       def create_inline_ref_ast_node(ref_type, arg, parent_node)
         # Parse reference format: "ID" or "chapter_id|ID"
-        args, reference_node = if arg.include?('|')
-                                 parts = arg.split('|', 2)
-                                 context_id = parts[0].strip
-                                 ref_id = parts[1].strip
-                                 [[context_id, ref_id], AST::ReferenceNode.new(ref_id, context_id, location: @ast_compiler.location)]
-                               else
-                                 ref_id = arg
-                                 [[ref_id], AST::ReferenceNode.new(ref_id, nil, location: @ast_compiler.location)]
-                               end
+        if arg.include?('|')
+          parts = arg.split('|', 2)
+          chapter_id = parts[0].strip
+          item_id = parts[1].strip
+          reference_node = AST::ReferenceNode.new(item_id, chapter_id, location: @ast_compiler.location)
+          args = [chapter_id, item_id]
+        else
+          chapter_id = nil
+          item_id = arg
+          reference_node = AST::ReferenceNode.new(item_id, nil, location: @ast_compiler.location)
+          args = [arg]
+        end
 
         inline_node = AST::InlineNode.new(
           location: @ast_compiler.location,
           inline_type: ref_type,
-          args: args
+          args: args,
+          target_chapter_id: chapter_id,
+          target_item_id: item_id
         )
 
         inline_node.add_child(reference_node)
@@ -287,23 +293,29 @@ module ReVIEW
         parent_node.add_child(inline_node)
       end
 
-      # Create inline cross-reference AST node (for chap, chapref, sec, secref, labelref, ref)
+      # Create inline cross-reference AST node (for chap, chapref, sec, secref, sectitle, labelref, ref)
       def create_inline_cross_ref_ast_node(ref_type, arg, parent_node)
-        # Handle special case for hd which supports pipe-separated format
-        args, reference_node = if ref_type.to_sym == :hd && arg.include?('|')
-                                 parts = arg.split('|', 2)
-                                 context_id = parts[0].strip
-                                 ref_id = parts[1].strip
-                                 [[context_id, ref_id], AST::ReferenceNode.new(ref_id, context_id, location: @ast_compiler.location)]
-                               else
-                                 # Standard cross-references with single ID argument
-                                 [[arg], AST::ReferenceNode.new(arg, nil, location: @ast_compiler.location)]
-                               end
+        # Handle special case for hd, sec, secref, and sectitle which support pipe-separated format
+        if %i[hd sec secref sectitle].include?(ref_type.to_sym) && arg.include?('|')
+          parts = arg.split('|', 2)
+          chapter_id = parts[0].strip
+          item_id = parts[1].strip
+          reference_node = AST::ReferenceNode.new(item_id, chapter_id, location: @ast_compiler.location)
+          args = [chapter_id, item_id]
+        else
+          # Standard cross-references with single ID argument
+          chapter_id = nil
+          item_id = arg
+          reference_node = AST::ReferenceNode.new(item_id, nil, location: @ast_compiler.location)
+          args = [arg]
+        end
 
         inline_node = AST::InlineNode.new(
           location: @ast_compiler.location,
           inline_type: ref_type,
-          args: args
+          args: args,
+          target_chapter_id: chapter_id,
+          target_item_id: item_id
         )
 
         inline_node.add_child(reference_node)

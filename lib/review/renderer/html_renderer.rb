@@ -610,9 +610,9 @@ module ReVIEW
       def render_inline_sec(_type, _content, node)
         # Section number reference: @<sec>{id} or @<sec>{chapter|id}
         # This should match HTMLBuilder's inline_sec behavior
-        id = node.reference_id
+        chap = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
+        id2 = node.target_item_id
         begin
-          chap, id2 = extract_chapter_id(id)
           n = chap.headline_index.number(id2)
 
           # Get section number like Builder does
@@ -629,7 +629,7 @@ module ReVIEW
             section_number
           end
         rescue ReVIEW::KeyError
-          app_error "unknown headline: #{id}"
+          app_error "unknown headline: #{id2}"
         end
       end
 
@@ -640,7 +640,7 @@ module ReVIEW
       def render_inline_labelref(_type, content, node)
         # Label reference: @<labelref>{id}
         # This should match HTMLBuilder's inline_labelref behavior
-        idref = node.reference_id || content
+        idref = node.target_item_id || content
         %Q(<a target='#{escape_content(idref)}'>「#{I18n.t('label_marker')}#{escape_content(idref)}」</a>)
       end
 
@@ -650,9 +650,9 @@ module ReVIEW
 
       def render_inline_eq(_type, content, node)
         # Equation reference
-        id = node.reference_id
+        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
+        extracted_id = node.target_item_id
         begin
-          chapter, extracted_id = extract_chapter_id(id)
           equation_number = if get_chap(chapter)
                               %Q(#{I18n.t('equation')}#{I18n.t('format_number', [get_chap(chapter), chapter.equation(extracted_id).number])})
                             else
@@ -672,16 +672,8 @@ module ReVIEW
       def render_inline_hd(_type, _content, node)
         # Headline reference: @<hd>{id} or @<hd>{chapter|id}
         # This should match HTMLBuilder's inline_hd_chap behavior
-        id = node.reference_id
-        m = /\A([^|]+)\|(.+)/.match(id)
-
-        chapter = if m && m[1]
-                    @book.contents.detect { |chap| chap.id == m[1] }
-                  else
-                    @chapter
-                  end
-
-        headline_id = m ? m[2] : id
+        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
+        headline_id = node.target_item_id
 
         begin
           return '' unless chapter
@@ -705,25 +697,17 @@ module ReVIEW
             str
           end
         rescue ReVIEW::KeyError
-          app_error "unknown headline: #{id}"
+          app_error "unknown headline: #{headline_id}"
         end
       end
 
       def render_inline_column(_type, _content, node)
         # Column reference: @<column>{id} or @<column>{chapter|id}
-        id = node.reference_id
-        m = /\A([^|]+)\|(.+)/.match(id)
-
-        chapter = if m && m[1]
-                    find_chapter_by_id(m[1])
-                  else
-                    @chapter
-                  end
-
-        column_id = m ? m[2] : id
+        chapter = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
+        column_id = node.target_item_id
 
         begin
-          app_error "unknown chapter: #{m[1]}" if m && !chapter
+          app_error "unknown chapter: #{node.target_chapter_id}" if node.target_chapter_id && !chapter
           return '' unless chapter
 
           column_caption = chapter.column(column_id).caption
@@ -742,13 +726,19 @@ module ReVIEW
 
       def render_inline_sectitle(_type, content, node)
         # Section title reference
-        id = node.reference_id
+        chap = node.target_chapter_id ? find_chapter_by_id(node.target_chapter_id) : @chapter
+        id2 = node.target_item_id
         begin
           if config['chapterlink']
-            chap, id2 = extract_chapter_id(id)
             anchor = 'h' + chap.headline_index.number(id2).tr('.', '-')
-            title = chap.headline(id2).caption
-            %Q(<a href="#{chap.id}#{extname}##{anchor}">#{escape_content(title)}</a>)
+            headline_item = chap.headline(id2)
+            # Render caption with inline elements
+            title_html = if headline_item.caption_node
+                           render_children(headline_item.caption_node)
+                         else
+                           escape_content(headline_item.caption)
+                         end
+            %Q(<a href="#{chap.id}#{extname}##{anchor}">#{title_html}</a>)
           else
             content
           end
@@ -758,17 +748,6 @@ module ReVIEW
       end
 
       # Helper methods for references
-      def extract_chapter_id(chap_ref)
-        m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
-        if m
-          ch = find_chapter_by_id(m[1])
-          raise ReVIEW::KeyError unless ch
-
-          return [ch, m[2]]
-        end
-        [@chapter, chap_ref]
-      end
-
       def get_chap(chapter = @chapter)
         if config['secnolevel'] && config['secnolevel'] > 0 &&
            !chapter.number.nil? && !chapter.number.to_s.empty?
@@ -1524,7 +1503,6 @@ module ReVIEW
           %Q(<div#{id_attr} class="imgtable image">\n<pre class="dummyimage">#{lines_content}</pre>\n#{caption_html}</div>\n)
         end
       end
-
 
       def render_caption_markup(caption_node)
         return '' unless caption_node

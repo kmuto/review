@@ -5,33 +5,29 @@ require 'review/ast/node'
 module ReVIEW
   module AST
     class InlineNode < Node
-      attr_reader :inline_type, :args
+      attr_reader :inline_type, :args, :target_chapter_id, :target_item_id
 
-      def initialize(location:, inline_type: nil, args: nil, **kwargs)
+      def initialize(location:, inline_type: nil, args: nil,
+                     target_chapter_id: nil, target_item_id: nil, **kwargs)
         super(location: location, **kwargs)
         @inline_type = inline_type
         @args = args || []
+        @target_chapter_id = target_chapter_id
+        @target_item_id = target_item_id
       end
 
       def to_h
         super.merge(
           inline_type: inline_type,
-          args: args
+          args: args,
+          target_chapter_id: target_chapter_id,
+          target_item_id: target_item_id
         )
       end
 
-      # Returns the reference ID in the format expected by extract_chapter_id
-      # For cross-chapter references (args.length >= 2), joins all elements with '|'
-      # For simple references, returns the first arg
-      # Falls back to nil if args is empty, allowing proper error handling in reference resolution
-      #
-      # @return [String, nil] The reference ID or nil
-      def reference_id
-        if args.length >= 2
-          args.join('|')
-        else
-          args.first
-        end
+      # Check if this is a cross-chapter reference
+      def cross_chapter_reference?
+        !target_chapter_id.nil?
       end
 
       private
@@ -40,6 +36,8 @@ module ReVIEW
         hash[:children] = children.map { |child| child.serialize_to_hash(options) }
         hash[:inline_type] = inline_type
         hash[:args] = args
+        hash[:target_chapter_id] = target_chapter_id if target_chapter_id
+        hash[:target_item_id] = target_item_id if target_item_id
         hash
       end
     end

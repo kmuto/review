@@ -34,6 +34,7 @@ module ReVIEW
         hd: :resolve_headline_ref,
         sec: :resolve_section_ref,
         secref: :resolve_section_ref,
+        sectitle: :resolve_section_ref,
         labelref: :resolve_label_ref,
         ref: :resolve_label_ref,
         w: :resolve_word_ref,

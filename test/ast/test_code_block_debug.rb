@@ -180,7 +180,8 @@ class TestCodeBlockDebug < Test::Unit::TestCase
                     "inline_type": "fn",
                     "args": [
                       "code-fn"
-                    ]
+                    ],
+                    "target_item_id": "code-fn"
                   }
                 ],
                 "original_text": "# Comment with @<fn>{code-fn}"
@@ -273,7 +274,8 @@ class TestCodeBlockDebug < Test::Unit::TestCase
               "inline_type": "fn",
               "args": [
                 "code-fn"
-              ]
+              ],
+              "target_item_id": "code-fn"
             }
           ],
           "original_text": "# Comment with @<fn>{code-fn}"

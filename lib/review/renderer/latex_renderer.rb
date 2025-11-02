@@ -33,12 +33,7 @@ module ReVIEW
         @ast_compiler = nil
         @list_structure_normalizer = nil
 
-        # Initialize I18n if not already setup
-        if config['language']
-          I18n.setup(config['language'])
-        else
-          I18n.setup('ja') # Default to Japanese
-        end
+        I18n.setup(config['language'] || 'ja')
 
         # Initialize LaTeX character escaping
         initialize_metachars(config['texcommand'])
@@ -2360,7 +2355,7 @@ module ReVIEW
       # Format resolved reference based on ResolvedData
       # Uses double dispatch pattern with a dedicated formatter object
       def format_resolved_reference(data)
-        @reference_formatter ||= Formatters::LaTeXReferenceFormatter.new(self, config: config)
+        @reference_formatter ||= Formatters::LaTeXReferenceFormatter.new(config: config)
         data.format_with(@reference_formatter)
       end
 

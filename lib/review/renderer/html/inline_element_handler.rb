@@ -228,32 +228,29 @@ module ReVIEW
         # === Reference inline elements ===
 
         def render_inline_list(_type, _content, node)
-          id = node.reference_id
           begin
-            @ctx.build_list_reference(id)
+            @ctx.build_list_reference(node.target_item_id, chapter_id: node.target_chapter_id)
           rescue ReVIEW::KeyError
-            warn "unknown list: #{id}"
-            %Q(<span class="listref">?? #{id}</span>)
+            warn "unknown list: #{node.target_item_id}"
+            %Q(<span class="listref">?? #{node.target_item_id}</span>)
           end
         end
 
         def render_inline_table(_type, _content, node)
-          id = node.reference_id
           begin
-            @ctx.build_table_reference(id)
+            @ctx.build_table_reference(node.target_item_id, chapter_id: node.target_chapter_id)
           rescue ReVIEW::KeyError
-            warn "unknown table: #{id}"
-            %Q(<span class="tableref">?? #{id}</span>)
+            warn "unknown table: #{node.target_item_id}"
+            %Q(<span class="tableref">?? #{node.target_item_id}</span>)
           end
         end
 
         def render_inline_img(_type, _content, node)
-          id = node.reference_id
           begin
-            @ctx.build_img_reference(id)
+            @ctx.build_img_reference(node.target_item_id, chapter_id: node.target_chapter_id)
           rescue ReVIEW::KeyError
-            warn "unknown image: #{id}"
-            %Q(<span class="imgref">?? #{id}</span>)
+            warn "unknown image: #{node.target_item_id}"
+            %Q(<span class="imgref">?? #{node.target_item_id}</span>)
           end
         end
 
@@ -327,12 +324,12 @@ module ReVIEW
 
         def render_inline_endnote(_type, content, node)
           # Endnote reference
-          id = node.reference_id
+          item_id = node.target_item_id
           begin
-            number = @ctx.endnote_number(id)
-            @ctx.build_endnote_link(id, number)
+            number = @ctx.endnote_number(item_id)
+            @ctx.build_endnote_link(item_id, number)
           rescue ReVIEW::KeyError
-            %Q(<a href="#endnote-#{@ctx.normalize_id(id)}" class="noteref">#{content}</a>)
+            %Q(<a href="#endnote-#{@ctx.normalize_id(item_id)}" class="noteref">#{content}</a>)
           end
         end
       end
