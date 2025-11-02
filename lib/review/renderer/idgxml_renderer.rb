@@ -51,8 +51,8 @@ module ReVIEW
         @logger = ReVIEW.logger
 
         # Initialize I18n if not already setup
-        if @book && @book.config['language']
-          I18n.setup(@book.config['language'])
+        if config['language']
+          I18n.setup(config['language'])
         else
           I18n.setup('ja') # Default to Japanese
         end
@@ -84,7 +84,7 @@ module ReVIEW
         @rootelement = 'doc'
 
         # Get structuredxml setting
-        @secttags = @book&.config&.[]('structuredxml')
+        @secttags = config['structuredxml']
 
         # Initialize RenderingContext
         @rendering_context = RenderingContext.new(:document)
@@ -104,7 +104,7 @@ module ReVIEW
 
         # Check nolf mode (enabled by default for IDGXML)
         # IDGXML format removes newlines between tags by default
-        nolf = @book.config.key?('nolf') ? @book.config['nolf'] : true
+        nolf = config.key?('nolf') ? config['nolf'] : true
 
         # Output XML declaration and root element
         output = []
@@ -220,7 +220,7 @@ module ReVIEW
         # Join lines in paragraph by removing newlines (like join_lines in IDGXMLBuilder)
         # Inline elements like @<br>{} and @<raw>{} use protected markers that are preserved
         # unless join_lines_by_lang is explicitly enabled
-        content = if @book.config['join_lines_by_lang']
+        content = if config['join_lines_by_lang']
                     content.tr("\n", ' ')
                   else
                     content.delete("\n")
@@ -264,7 +264,7 @@ module ReVIEW
       # Format resolved reference based on ResolvedData
       # Uses double dispatch pattern with a dedicated formatter object
       def format_resolved_reference(data)
-        @reference_formatter ||= Formatters::IdgxmlReferenceFormatter.new(self)
+        @reference_formatter ||= Formatters::IdgxmlReferenceFormatter.new(self, config: config)
         data.format_with(@reference_formatter)
       end
 
@@ -639,7 +639,7 @@ module ReVIEW
             require 'playwrightrunner'
             unless @img_graph
               require 'review/img_graph'
-              @img_graph = ReVIEW::ImgGraph.new(@book.config, 'idgxml')
+              @img_graph = ReVIEW::ImgGraph.new(config, 'idgxml')
             end
             # Defer mermaid image generation
             file_path = @img_graph.defer_mermaid_image(content, id)
@@ -788,15 +788,15 @@ module ReVIEW
         end
 
         # Handle math format
-        if @book.config['math_format'] == 'imgmath'
+        if config['math_format'] == 'imgmath'
           # Initialize ImgMath if needed
           unless @img_math
             require 'review/img_math'
-            @img_math = ReVIEW::ImgMath.new(@book.config)
+            @img_math = ReVIEW::ImgMath.new(config)
           end
 
-          fontsize = @book.config.dig('imgmath_options', 'fontsize').to_f
-          lineheight = @book.config.dig('imgmath_options', 'lineheight').to_f
+          fontsize = config.dig('imgmath_options', 'fontsize').to_f
+          lineheight = config.dig('imgmath_options', 'lineheight').to_f
           math_str = "\\begin{equation*}\n\\fontsize{#{fontsize}}{#{lineheight}}\\selectfont\n#{content}\n\\end{equation*}\n"
           key = Digest::SHA256.hexdigest(math_str)
           img_path = @img_math.defer_math_image(math_str, key)
@@ -918,7 +918,7 @@ module ReVIEW
             # Render paragraph content
             content = render_children(child)
             # Join lines in paragraph by removing newlines (like join_lines in Builder)
-            content = if @book.config['join_lines_by_lang']
+            content = if config['join_lines_by_lang']
                         content.tr("\n", ' ')
                       else
                         content.delete("\n")
@@ -1052,7 +1052,7 @@ module ReVIEW
 
       # Hints
       def render_inline_hint(_type, content, _node)
-        if @book.config['nolf']
+        if config['nolf']
           %Q(<hint>#{content}</hint>)
         else
           %Q(\n<hint>#{content}</hint>)
@@ -1231,7 +1231,7 @@ module ReVIEW
         # Use caption_node to render inline elements
         compiled_caption = item.caption_node ? render_caption_inline(item.caption_node) : item.caption
 
-        if @book.config['chapterlink']
+        if config['chapterlink']
           num = item.number
           %Q(<link href="column-#{num}">#{I18n.t('column', compiled_caption)}</link>)
         else
@@ -1360,7 +1360,7 @@ module ReVIEW
       # Chapter reference
       def render_inline_chap(_type, content, node)
         id = node.args.first || content
-        if @book.config['chapterlink']
+        if config['chapterlink']
           %Q(<link href="#{id}">#{@book.chapter_index.number(id)}</link>)
         else
           @book.chapter_index.number(id)
@@ -1375,7 +1375,7 @@ module ReVIEW
         # Use display_string like Builder base class does
         display_str = @book.chapter_index.display_string(id)
 
-        if @book.config['chapterlink']
+        if config['chapterlink']
           %Q(<link href="#{id}">#{display_str}</link>)
         else
           display_str
@@ -1387,7 +1387,7 @@ module ReVIEW
       def render_inline_title(_type, content, node)
         id = node.args.first || content
         title = @book.chapter_index.title(id)
-        if @book.config['chapterlink']
+        if config['chapterlink']
           %Q(<link href="#{id}">#{title}</link>)
         else
           title
@@ -1455,13 +1455,13 @@ module ReVIEW
       def render_inline_m(_type, content, node)
         str = node.args.first || content
 
-        if @book.config['math_format'] == 'imgmath'
+        if config['math_format'] == 'imgmath'
           require 'review/img_math'
           @texinlineequation += 1
 
           math_str = '$' + str + '$'
           key = Digest::SHA256.hexdigest(str)
-          @img_math ||= ReVIEW::ImgMath.new(@book.config)
+          @img_math ||= ReVIEW::ImgMath.new(config)
           img_path = @img_math.defer_math_image(math_str, key)
           %Q(<inlineequation><Image href="file://#{img_path}" type="inline" /></inlineequation>)
         else
@@ -1496,7 +1496,7 @@ module ReVIEW
 
       # Comment
       def render_inline_comment(_type, content, node)
-        if @book.config['draft']
+        if config['draft']
           str = node.args.first || content
           %Q(<msg>#{escape(str)}</msg>)
         else
@@ -1531,25 +1531,21 @@ module ReVIEW
       def find_chapter_by_id(chapter_id)
         return nil unless @book
 
-        if @book.respond_to?(:chapter_index)
-          index = @book.chapter_index
-          if index
-            begin
-              item = index[chapter_id]
-              return item.content if item.respond_to?(:content)
-            rescue ReVIEW::KeyError
-              # fall through to contents search
-            end
+        index = @book.chapter_index
+        if index
+          begin
+            item = index[chapter_id]
+            return item.content if item.respond_to?(:content)
+          rescue ReVIEW::KeyError
+            # fall through to contents search
           end
         end
 
-        if @book.respond_to?(:contents)
-          Array(@book.contents).find { |chap| chap.id == chapter_id }
-        end
+        Array(@book.contents).find { |chap| chap.id == chapter_id }
       end
 
       def get_chap(chapter = @chapter)
-        if @book&.config&.[]('secnolevel') && @book.config['secnolevel'] > 0 &&
+        if config['secnolevel'] && config['secnolevel'] > 0 &&
            !chapter.number.nil? && !chapter.number.to_s.empty?
           if chapter.is_a?(ReVIEW::Book::Part)
             return I18n.t('part_short', chapter.number)
@@ -1561,7 +1557,7 @@ module ReVIEW
       end
 
       def over_secnolevel?(n)
-        secnolevel = @book&.config&.[]('secnolevel') || 2
+        secnolevel = config['secnolevel'] || 2
         secnolevel >= n.to_s.split('.').size
       end
 
@@ -1571,7 +1567,7 @@ module ReVIEW
       def render_caption_inline(caption_node)
         content = caption_node ? render_children(caption_node) : ''
 
-        if @book.config['join_lines_by_lang']
+        if config['join_lines_by_lang']
           content.gsub(/\n+/, ' ')
         else
           content.delete("\n")
@@ -1601,7 +1597,7 @@ module ReVIEW
         return '' if buffer.empty?
 
         content = buffer.join("\n")
-        if @book.config['join_lines_by_lang']
+        if config['join_lines_by_lang']
           content.tr("\n", ' ')
         else
           content.delete("\n")
@@ -1631,13 +1627,13 @@ module ReVIEW
 
         @sec_counter.inc(level)
         anchor = @sec_counter.anchor(level)
-        prefix = @sec_counter.prefix(level, @book&.config&.[]('secnolevel'))
+        prefix = @sec_counter.prefix(level, config['secnolevel'])
         [prefix, anchor]
       end
 
       # Check caption position
       def caption_top?(type)
-        @book&.config&.dig('caption_position', type) == 'top'
+        config.dig('caption_position', type) == 'top'
       end
 
       # Handle metric for IDGXML
@@ -1734,7 +1730,7 @@ module ReVIEW
               # Empty line signals paragraph break
               unless current_paragraph.empty?
                 # Join lines in paragraph according to join_lines_by_lang setting
-                paragraphs << if @book.config['join_lines_by_lang']
+                paragraphs << if config['join_lines_by_lang']
                                 current_paragraph.join(' ')
                               else
                                 current_paragraph.join
@@ -1747,7 +1743,7 @@ module ReVIEW
           end
           # Add last paragraph
           unless current_paragraph.empty?
-            paragraphs << if @book.config['join_lines_by_lang']
+            paragraphs << if config['join_lines_by_lang']
                             current_paragraph.join(' ')
                           else
                             current_paragraph.join
@@ -1898,7 +1894,7 @@ module ReVIEW
         no = 1
 
         lines.each do |line|
-          if @book.config['listinfo']
+          if config['listinfo']
             line_output = %Q(<listinfo line="#{no}")
             line_output += %Q( begin="1") if no == 1
             line_output += %Q( end="#{no}") if no == lines.size
@@ -1928,7 +1924,7 @@ module ReVIEW
           # Add line number span
           line_with_number = detab(%Q(<span type='lineno'>) + (i + first_line_num).to_s.rjust(2) + ': </span>' + line, tabwidth)
 
-          if @book.config['listinfo']
+          if config['listinfo']
             line_output = %Q(<listinfo line="#{no}")
             line_output += %Q( begin="1") if no == 1
             line_output += %Q( end="#{no}") if no == lines.size
@@ -1998,11 +1994,11 @@ module ReVIEW
       # Visit regular table
       def visit_regular_table(node)
         @tablewidth = nil
-        if @book.config['tableopt']
-          pt_unit = @book.config['pt_to_mm_unit']
+        if config['tableopt']
+          pt_unit = config['pt_to_mm_unit']
           pt_unit = pt_unit.to_f if pt_unit
           pt_unit = 1.0 if pt_unit.nil? || pt_unit == 0
-          @tablewidth = @book.config['tableopt'].split(',')[0].to_f / pt_unit
+          @tablewidth = config['tableopt'].split(',')[0].to_f / pt_unit
         end
         @col = 0
 
@@ -2117,7 +2113,7 @@ module ReVIEW
 
             totallength = 0
             cellwidth.size.times do |n|
-              cellwidth[n] = cellwidth[n].to_f / @book.config['pt_to_mm_unit']
+              cellwidth[n] = cellwidth[n].to_f / config['pt_to_mm_unit']
               totallength += cellwidth[n]
             end
             if cellwidth.size < @col
@@ -2303,7 +2299,7 @@ module ReVIEW
 
       # Visit comment block
       def visit_comment_block(node)
-        return '' unless @book.config['draft']
+        return '' unless config['draft']
 
         lines = []
         lines << escape(node.args.first) if node.args.first && !node.args.first.empty?
@@ -2419,7 +2415,7 @@ module ReVIEW
 
         # Process lines with listinfo
         lines = extract_lines_from_node(node)
-        if @book.config['listinfo'] && lines.any?
+        if config['listinfo'] && lines.any?
           # Generate all listinfo entries as a single string (like IDGXMLBuilder's print/puts)
           listinfo_output = lines.map.with_index do |line, i|
             no = i + 1
@@ -2515,7 +2511,7 @@ module ReVIEW
 
       # Get tabwidth setting (default to 8)
       def tabwidth
-        @book&.config&.[]('tabwidth') || 8
+        config['tabwidth'] || 8
       end
 
       # Graph generation helper methods (for non-mermaid graphs)

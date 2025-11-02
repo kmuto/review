@@ -11,8 +11,9 @@ module ReVIEW
     module Formatters
       # Format resolved references for TOP output
       class TopReferenceFormatter
-        def initialize(renderer)
+        def initialize(renderer, config:)
           @renderer = renderer
+          @config = config
         end
 
         def format_image_reference(data)
@@ -82,6 +83,8 @@ module ReVIEW
         end
 
         private
+
+        attr_reader :config
 
         # Delegate helper methods to renderer
         def compose_numbered_reference(label_key, data)

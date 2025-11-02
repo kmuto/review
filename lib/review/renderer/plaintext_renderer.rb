@@ -550,21 +550,9 @@ module ReVIEW
 
       def render_inline_chapref(_type, _content, node)
         id = node.reference_id
-        return '' unless id && @book
+        return '' unless id
 
-        if @book.config.check_version('2', exception: false)
-          # Backward compatibility
-          chs = ['', '「', '」']
-          if @book.config['chapref']
-            chs2 = @book.config['chapref'].split(',')
-            if chs2.size == 3
-              chs = chs2
-            end
-          end
-          "#{chs[0]}#{@book.chapter_index.number(id)}#{chs[1]}#{@book.chapter_index.title(id)}#{chs[2]}"
-        else
-          @book.chapter_index.display_string(id)
-        end
+        @book.chapter_index.display_string(id)
       rescue ReVIEW::KeyError
         ''
       end

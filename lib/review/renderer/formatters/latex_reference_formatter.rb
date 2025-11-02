@@ -11,8 +11,9 @@ module ReVIEW
     module Formatters
       # Format resolved references for LaTeX output
       class LaTeXReferenceFormatter
-        def initialize(renderer)
+        def initialize(renderer, config:)
           @renderer = renderer
+          @config = config
         end
 
         def format_image_reference(data)
@@ -86,6 +87,8 @@ module ReVIEW
         end
 
         private
+
+        attr_reader :config
 
         # Delegate helper method to renderer
         def escape(str)

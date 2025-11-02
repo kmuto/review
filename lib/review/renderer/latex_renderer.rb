@@ -34,14 +34,14 @@ module ReVIEW
         @list_structure_normalizer = nil
 
         # Initialize I18n if not already setup
-        if @book && @book.config['language']
-          I18n.setup(@book.config['language'])
+        if config['language']
+          I18n.setup(config['language'])
         else
           I18n.setup('ja') # Default to Japanese
         end
 
         # Initialize LaTeX character escaping
-        initialize_metachars(@book.config['texcommand'])
+        initialize_metachars(config['texcommand'])
 
         # Initialize section counter like LATEXBuilder
         @sec_counter = SecCounter.new(5, @chapter) if @chapter
@@ -125,8 +125,8 @@ module ReVIEW
 
         # Add \addcontentsline for unnumbered sections within toclevel
         # Match LATEXBuilder logic: only add to TOC if level is within toclevel
-        if (level > @book.config['secnolevel'] || (@chapter.number.to_s.empty? && level > 1)) &&
-           level <= @book.config['toclevel'].to_i
+        if (level > config['secnolevel'] || (@chapter.number.to_s.empty? && level > 1)) &&
+           level <= config['toclevel'].to_i
           # Get the base section name for TOC entry
           toc_section_name = get_base_section_name(level)
           result << "\\addcontentsline{toc}{#{toc_section_name}}{#{caption}}"
@@ -804,7 +804,7 @@ module ReVIEW
 
       def visit_comment_block(node)
         # block comment - only display in draft mode
-        return '' unless @book&.config&.[]('draft')
+        return '' unless config['draft']
 
         content_lines = []
 
@@ -856,7 +856,7 @@ module ReVIEW
         result << "\\begin{reviewcolumn}#{caption_part}"
 
         # Add TOC entry if within toclevel
-        if node.level && caption && node.level <= @book.config['toclevel'].to_i
+        if node.level && caption && node.level <= config['toclevel'].to_i
           toc_level = case node.level
                       when 1
                         'chapter'
@@ -1055,7 +1055,7 @@ module ReVIEW
           result = []
 
           # Header with number and caption
-          if @book&.bibpaper_index
+          if @book.bibpaper_index
             begin
               bib_number = @book.bibpaper_index.number(bib_id)
               result << "[#{bib_number}] #{escape(bib_caption)}"
@@ -1081,7 +1081,7 @@ module ReVIEW
           result << ''
 
           # Add content - process paragraphs
-          result << if @book.config['join_lines_by_lang']
+          result << if config['join_lines_by_lang']
                       split_paragraph(content).join("\n\n")
                     else
                       content
@@ -1213,7 +1213,7 @@ module ReVIEW
           end
 
           # Check if we need to use footnotetext mode (like LATEXBuilder line 1143)
-          if @book.config['footnotetext']
+          if config['footnotetext']
             # footnotetext config is enabled - always use footnotemark (like LATEXBuilder line 1144)
             "\\footnotemark[#{footnote_number}]"
           elsif @rendering_context.requires_footnotetext?
@@ -1346,7 +1346,7 @@ module ReVIEW
         bib_id = node.args.first.to_s
         # Get bibpaper_index from book (which has attr_accessor)
         # This avoids bib_exist? check when bibpaper_index is set directly in tests
-        bibpaper_index = @book&.bibpaper_index
+        bibpaper_index = @book.bibpaper_index
 
         if bibpaper_index
           begin
@@ -1415,7 +1415,7 @@ module ReVIEW
         chapter_id, list_id = node.args
 
         # Find the target chapter
-        target_chapter = @book&.contents&.detect { |chap| chap.id == chapter_id }
+        target_chapter = @book.contents&.detect { |chap| chap.id == chapter_id }
         unless target_chapter
           raise NotImplementedError, "Cross-chapter list reference failed: chapter '#{chapter_id}' not found"
         end
@@ -1443,7 +1443,7 @@ module ReVIEW
         chapter_id, table_id = node.args
 
         # Find the target chapter
-        target_chapter = @book&.contents&.detect { |chap| chap.id == chapter_id }
+        target_chapter = @book.contents&.detect { |chap| chap.id == chapter_id }
         unless target_chapter
           raise NotImplementedError, "Cross-chapter table reference failed: chapter '#{chapter_id}' not found"
         end
@@ -1472,7 +1472,7 @@ module ReVIEW
         chapter_id, image_id = node.args
 
         # Find the target chapter
-        target_chapter = @book&.contents&.detect { |chap| chap.id == chapter_id }
+        target_chapter = @book.contents&.detect { |chap| chap.id == chapter_id }
         unless target_chapter
           raise NotImplementedError, "Cross-chapter image reference failed: chapter '#{chapter_id}' not found"
         end
@@ -1501,7 +1501,7 @@ module ReVIEW
         return content unless node.args.first
 
         chapter_id = node.args.first
-        if @book && @book.chapter_index
+        if @book.chapter_index
           begin
             chapter_number = @book.chapter_index.number(chapter_id)
             "\\reviewchapref{#{chapter_number}}{chap:#{chapter_id}}"
@@ -1518,7 +1518,7 @@ module ReVIEW
         return content unless node.args.first
 
         chapter_id = node.args.first
-        if @book && @book.chapter_index
+        if @book.chapter_index
           begin
             title = @book.chapter_index.display_string(chapter_id)
             "\\reviewchapref{#{escape(title)}}{chap:#{chapter_id}}"
@@ -1652,14 +1652,14 @@ module ReVIEW
         @index_db = {}
         @index_mecab = nil
 
-        return unless @book && @book.config['pdfmaker'] && @book.config['pdfmaker']['makeindex']
+        return unless config['pdfmaker'] && config['pdfmaker']['makeindex']
 
         # Load index dictionary file
-        if @book.config['pdfmaker']['makeindex_dic']
-          @index_db = load_idxdb(@book.config['pdfmaker']['makeindex_dic'])
+        if config['pdfmaker']['makeindex_dic']
+          @index_db = load_idxdb(config['pdfmaker']['makeindex_dic'])
         end
 
-        return unless @book.config['pdfmaker']['makeindex_mecab']
+        return unless config['pdfmaker']['makeindex_mecab']
 
         # Initialize MeCab for Japanese text indexing
         begin
@@ -1669,7 +1669,7 @@ module ReVIEW
             require 'mecab'
           end
           require 'nkf'
-          @index_mecab = MeCab::Tagger.new(@book.config['pdfmaker']['makeindex_mecab_opts'])
+          @index_mecab = MeCab::Tagger.new(config['pdfmaker']['makeindex_mecab_opts'])
         rescue LoadError
           # MeCab not available, will fall back to text-only indexing
         end
@@ -1743,7 +1743,7 @@ module ReVIEW
         image_path = find_image_path(icon_id)
 
         if image_path
-          command = @book&.config&.check_version('2', exception: false) ? 'includegraphics' : 'reviewicon'
+          command = 'reviewicon'
           "\\#{command}{#{image_path}}"
         else
           "\\verb|--[[path = #{icon_id} (not exist)]]--|"
@@ -1818,7 +1818,7 @@ module ReVIEW
         # Unicode character handling like LATEXBuilder
         if node.args.first
           char_code = node.args.first
-          texcompiler = @book.config['texcommand']
+          texcompiler = config['texcommand']
           if texcompiler&.start_with?('platex')
             # with otf package - use \UTF macro
             "\\UTF{#{escape(char_code)}}"
@@ -1890,7 +1890,7 @@ module ReVIEW
 
       # Render inline comment
       def render_inline_comment(_type, content, _node)
-        if @book&.config&.[]('draft')
+        if config['draft']
           "\\pdfcomment{#{escape(content)}}"
         else
           ''
@@ -1902,10 +1902,10 @@ module ReVIEW
         if node.args.first
           # Book/chapter title reference
           chapter_id = node.args.first
-          if @book && @book.chapter_index
+          if @book.chapter_index
             begin
               title = @book.chapter_index.title(chapter_id)
-              if @book.config['chapterlink']
+              if config['chapterlink']
                 "\\reviewchapref{#{escape(title)}}{chap:#{chapter_id}}"
               else
                 escape(title)
@@ -1960,7 +1960,7 @@ module ReVIEW
         if node.args.length == 2
           # Cross-chapter reference: args = [chapter_id, column_id]
           chapter_id, column_id = node.args
-          chapter = @book ? @book.chapters.detect { |chap| chap.id == chapter_id } : nil
+          chapter = @book.chapters.detect { |chap| chap.id == chapter_id }
           if chapter
             render_column_chap(chapter, column_id)
           else
@@ -1972,7 +1972,7 @@ module ReVIEW
           m = /\A([^|]+)\|(.+)/.match(id)
           if m && m[1] && m[2]
             # Cross-chapter reference format: chapter|column
-            chapter = @book ? @book.chapters.detect { |chap| chap.id == m[1] } : nil
+            chapter = @book.chapters.detect { |chap| chap.id == m[1] }
             if chapter
               render_column_chap(chapter, m[2])
             else
@@ -2016,7 +2016,7 @@ module ReVIEW
           heading_parts = parts[1..-1]
 
           # Try to find the target chapter and its headline
-          target_chapter = @book.chapters.find { |ch| ch.id == chapter_id } if @book
+          target_chapter = @book.chapters.find { |ch| ch.id == chapter_id }
 
           if target_chapter && target_chapter.headline_index
             # Build the hierarchical heading ID like IndexBuilder does
@@ -2095,7 +2095,7 @@ module ReVIEW
 
       # Check if section number level is within secnolevel
       def over_secnolevel?(num)
-        @book.config['secnolevel'] >= num.to_s.split('.').size
+        config['secnolevel'] >= num.to_s.split('.').size
       end
 
       private
@@ -2336,7 +2336,7 @@ module ReVIEW
                  HEADLINE[level] || raise(CompileError, "Unsupported headline level: #{level}. LaTeX only supports levels 1-6")
                end
 
-        if level > @book.config['secnolevel'] || (@chapter.number.to_s.empty? && level > 1)
+        if level > config['secnolevel'] || (@chapter.number.to_s.empty? && level > 1)
           "#{name}*"
         else
           name
@@ -2367,7 +2367,7 @@ module ReVIEW
       # Format resolved reference based on ResolvedData
       # Uses double dispatch pattern with a dedicated formatter object
       def format_resolved_reference(data)
-        @reference_formatter ||= Formatters::LaTeXReferenceFormatter.new(self)
+        @reference_formatter ||= Formatters::LaTeXReferenceFormatter.new(self, config: config)
         data.format_with(@reference_formatter)
       end
 
@@ -2439,19 +2439,19 @@ module ReVIEW
 
       # Check caption position configuration
       def caption_top?(type)
-        unless %w[top bottom].include?(@book&.config&.dig('caption_position', type))
+        unless %w[top bottom].include?(config.dig('caption_position', type))
           # Default to top if not configured
           return true
         end
 
-        @book.config['caption_position'][type] != 'bottom'
+        config['caption_position'][type] != 'bottom'
       end
 
       # This method calls super to use the base implementation, then applies LaTeX-specific logic
       def parse_metric(type, metric)
         s = super
         # If use_original_image_size is enabled and result is empty and no metric provided
-        if @book.config&.dig('pdfmaker', 'use_original_image_size') && s.empty? && !metric&.present?
+        if config&.dig('pdfmaker', 'use_original_image_size') && s.empty? && !metric&.present?
           return ' ' # pass empty space to \reviewincludegraphics to use original size
         end
 
@@ -2461,7 +2461,7 @@ module ReVIEW
       # Handle individual metric transformations (like scale to width conversion)
       def handle_metric(str)
         # Check if image_scale2width is enabled and metric is scale
-        if @book.config&.dig('pdfmaker', 'image_scale2width') && str =~ /\Ascale=([\d.]+)\Z/
+        if config&.dig('pdfmaker', 'image_scale2width') && str =~ /\Ascale=([\d.]+)\Z/
           return "width=#{$1}\\maxwidth"
         end
 

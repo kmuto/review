@@ -11,8 +11,9 @@ module ReVIEW
     module Formatters
       # Format resolved references for HTML output
       class HtmlReferenceFormatter
-        def initialize(renderer)
+        def initialize(renderer, config:)
           @renderer = renderer
+          @config = config
         end
 
         def format_image_reference(data)
@@ -110,13 +111,11 @@ module ReVIEW
 
         private
 
+        attr_reader :config
+
         # Delegate helper methods to renderer
         def escape(str)
           @renderer.escape(str)
-        end
-
-        def config
-          @renderer.config
         end
 
         def extname

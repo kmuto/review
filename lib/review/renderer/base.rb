@@ -38,8 +38,6 @@ module ReVIEW
     #   renderer = HtmlRenderer.new
     #   html_output = renderer.render(ast_root)
     class Base < ReVIEW::AST::Visitor
-      attr_reader :chapter, :book, :config
-
       # Initialize the renderer with chapter context.
       #
       # @param chapter [ReVIEW::Book::Chapter] Chapter context
@@ -76,6 +74,8 @@ module ReVIEW
       end
 
       private
+
+      attr_reader :config
 
       # Post-process the rendered result.
       # Subclasses can override this to perform final formatting,

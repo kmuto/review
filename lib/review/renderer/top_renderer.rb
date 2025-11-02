@@ -52,7 +52,7 @@ module ReVIEW
         @rendering_context = nil
 
         # Ensure locale strings are available
-        I18n.setup(@book.config['language'] || 'ja')
+        I18n.setup(config['language'] || 'ja')
       end
 
       def target_name
@@ -475,7 +475,7 @@ module ReVIEW
 
       def should_format_table_header?
         # Check config for header formatting
-        @book&.config&.dig('textmaker', 'th_bold') || false
+        config&.dig('textmaker', 'th_bold') || false
       end
 
       def format_image_metrics(node)
@@ -522,7 +522,7 @@ module ReVIEW
 
       def render_comment(_node, content)
         # Only render in draft mode
-        if @book&.config&.[]('draft')
+        if config['draft']
           "◆→#{content}←◆"
         else
           ''
@@ -560,7 +560,7 @@ module ReVIEW
       # Format resolved reference based on ResolvedData
       # Uses double dispatch pattern with a dedicated formatter object
       def format_resolved_reference(data)
-        @reference_formatter ||= Formatters::TopReferenceFormatter.new(self)
+        @reference_formatter ||= Formatters::TopReferenceFormatter.new(self, config: config)
         data.format_with(@reference_formatter)
       end
 

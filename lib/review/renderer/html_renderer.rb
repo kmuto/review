@@ -50,7 +50,7 @@ module ReVIEW
         @body_ext = ''
 
         # Initialize ImgMath for equation image generation (like Builder)
-        @img_math = @book ? ReVIEW::ImgMath.new(@book.config) : nil
+        @img_math = ReVIEW::ImgMath.new(config)
 
         # Initialize RenderingContext for cleaner state management
         @rendering_context = RenderingContext.new(:document)
@@ -113,13 +113,13 @@ module ReVIEW
       # @param content [String] paragraph content with newlines
       # @return [String] processed content with lines joined appropriately
       def join_paragraph_lines(content)
-        if @book.config['join_lines_by_lang']
+        if config['join_lines_by_lang']
           # Split by newlines to get individual lines
           lines = content.split("\n")
 
           # Add spaces between lines based on language rules
           lazy = true
-          lang = @book.config['language'] || 'ja'
+          lang = config['language'] || 'ja'
           0.upto(lines.size - 2) do |n|
             if add_space?(lines[n], lines[n + 1], lang, lazy)
               lines[n] += ' '
@@ -548,7 +548,7 @@ module ReVIEW
                          File.join(htmldir, 'layout-xhtml1.html.erb')
                        end
 
-        layout_file = File.join(@book&.basedir || '.', 'layouts', localfilename)
+        layout_file = File.join(@book.basedir || '.', 'layouts', localfilename)
 
         # Check for custom layout file
         if File.exist?(layout_file)
@@ -798,7 +798,7 @@ module ReVIEW
           begin
             fn_number = @chapter.footnote(fn_id).number
             # Check epubversion for consistent output with HTMLBuilder
-            if @book.config['epubversion'].to_i == 3
+            if config['epubversion'].to_i == 3
               %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref" epub:type="noteref">#{I18n.t('html_footnote_refmark', fn_number)}</a>)
             else
               %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref">*#{fn_number}</a>)
@@ -1182,11 +1182,6 @@ module ReVIEW
         content
       end
 
-      # Configuration accessor - returns book config or empty hash for nil safety
-      def config
-        @book&.config || {}
-      end
-
       # Helper methods for references
       def extract_chapter_id(chap_ref)
         m = /\A([\w+-]+)\|(.+)/.match(chap_ref)
@@ -1462,7 +1457,7 @@ module ReVIEW
       # Format resolved reference based on ResolvedData
       # Uses double dispatch pattern with a dedicated formatter object
       def format_resolved_reference(data)
-        @reference_formatter ||= Formatters::HtmlReferenceFormatter.new(self)
+        @reference_formatter ||= Formatters::HtmlReferenceFormatter.new(self, config: config)
         data.format_with(@reference_formatter)
       end
 
@@ -1994,7 +1989,7 @@ module ReVIEW
 
         # Generate book-level indexes if book is available
         # This handles bib files and chapter index creation
-        if @book && @book.respond_to?(:generate_indexes)
+        if @book.respond_to?(:generate_indexes)
           @book.generate_indexes
         end
 
