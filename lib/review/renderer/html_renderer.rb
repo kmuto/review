@@ -42,9 +42,6 @@ module ReVIEW
         # Initialize section counter like HTMLBuilder (handle nil chapter)
         @sec_counter = @chapter ? SecCounter.new(5, @chapter) : nil
 
-        # Flag to track if indexes have been generated using AST::Indexer
-        @ast_indexes_generated = false
-
         # Initialize template variables like HTMLBuilder
         @javascripts = []
         @body_ext = ''
@@ -57,7 +54,6 @@ module ReVIEW
       end
 
       def visit_document(node)
-        generate_ast_indexes(node)
         render_children(node)
       end
 
@@ -1971,30 +1967,6 @@ module ReVIEW
         end
       end
 
-      # Generate indexes using AST::Indexer for Renderer (builder-independent)
-      def generate_ast_indexes(ast_node)
-        return if @ast_indexes_generated
-
-        # Check if indexes are already generated on the AST node
-        if ast_node.is_a?(ReVIEW::AST::DocumentNode) && ast_node.indexes_generated
-          @ast_indexes_generated = true
-          return
-        end
-
-        if @chapter
-          # Use AST::Indexer to generate indexes directly from AST
-          @ast_indexer = ReVIEW::AST::Indexer.new(@chapter)
-          @ast_indexer.build_indexes(ast_node)
-        end
-
-        # Generate book-level indexes if book is available
-        # This handles bib files and chapter index creation
-        if @book.respond_to?(:generate_indexes)
-          @book.generate_indexes
-        end
-
-        @ast_indexes_generated = true
-      end
 
       def render_caption_markup(caption_node)
         return '' unless caption_node

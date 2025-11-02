@@ -57,13 +57,6 @@ module ReVIEW
       end
 
       def visit_document(node)
-        # Build indexes using AST::Indexer for proper footnote support
-        if @chapter && !@ast_indexer
-          require 'review/ast/indexer'
-          @ast_indexer = ReVIEW::AST::Indexer.new(@chapter)
-          @ast_indexer.build_indexes(node)
-        end
-
         # Generate content with proper separation between document-level elements
         content = render_document_children(node)
 

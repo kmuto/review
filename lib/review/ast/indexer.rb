@@ -59,11 +59,6 @@ module ReVIEW
 
         set_indexes_on_chapter
 
-        # This prevents duplicate index generation by renderers
-        if ast_root.is_a?(DocumentNode)
-          ast_root.indexes_generated = true
-        end
-
         self
       end
 
