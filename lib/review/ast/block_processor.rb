@@ -10,6 +10,7 @@ require 'review/ast'
 require 'review/ast/block_data'
 require 'review/ast/block_processor/code_block_structure'
 require 'review/ast/block_processor/table_processor'
+require 'review/ast/raw_content_parser'
 require 'review/lineinput'
 require 'stringio'
 
@@ -519,7 +520,7 @@ module ReVIEW
 
       def build_raw_ast(context)
         raw_content = context.arg(0) || ''
-        target_builders, content = parse_raw_content(raw_content)
+        target_builders, content = RawContentParser.parse(raw_content)
 
         node = context.create_node(AST::EmbedNode,
                                    embed_type: :raw,
@@ -556,20 +557,6 @@ module ReVIEW
 
         @ast_compiler.add_child_to_current_node(node)
         node
-      end
-
-      def parse_raw_content(content)
-        return [nil, content] if content.nil? || content.empty?
-
-        # Check for builder specification: |builder1,builder2|content
-        if matched = content.match(/\A\|(.*?)\|(.*)/)
-          builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }
-          processed_content = matched[2]
-          [builders, processed_content]
-        else
-          # No builder specification - target all builders
-          [nil, content]
-        end
       end
 
       CODE_BLOCK_CONFIGS = { # rubocop:disable Lint/UselessConstantScoping

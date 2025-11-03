@@ -9,6 +9,7 @@
 require 'review/ast'
 require_relative 'inline_tokenizer'
 require_relative 'reference_node'
+require 'review/ast/raw_content_parser'
 
 module ReVIEW
   module AST
@@ -145,7 +146,7 @@ module ReVIEW
 
       # Create inline embed AST node
       def create_inline_embed_ast_node(arg, parent_node)
-        target_builders, embed_content = parse_raw_content(arg)
+        target_builders, embed_content = RawContentParser.parse(arg)
 
         node = AST::EmbedNode.new(
           location: @ast_compiler.location,
@@ -327,7 +328,7 @@ module ReVIEW
 
       # Create inline raw AST node (@<raw> command)
       def create_inline_raw_ast_node(content, parent_node)
-        target_builders, processed_content = parse_raw_content(content)
+        target_builders, processed_content = RawContentParser.parse(content)
 
         embed_node = AST::EmbedNode.new(
           location: @ast_compiler.location,
@@ -338,21 +339,6 @@ module ReVIEW
         )
 
         parent_node.add_child(embed_node)
-      end
-
-      # Parse raw content for builder specification (shared with BlockProcessor)
-      def parse_raw_content(content)
-        return [nil, content] if content.nil? || content.empty?
-
-        # Check for builder specification: |builder1,builder2|content
-        if matched = content.match(/\A\|(.*?)\|(.*)/)
-          builders = matched[1].split(',').map { |i| i.gsub(/\s/, '') }
-          processed_content = matched[2]
-          [builders, processed_content]
-        else
-          # No builder specification - target all builders
-          [nil, content]
-        end
       end
     end
   end
