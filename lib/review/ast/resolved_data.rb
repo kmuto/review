@@ -259,6 +259,15 @@ module ReVIEW
           caption_node: caption_node
         )
       end
+
+      # Create ResolvedData for a bibpaper reference
+      def self.bibpaper(item_number:, item_id:, caption_node: nil)
+        Bibpaper.new(
+          item_number: item_number,
+          item_id: item_id,
+          caption_node: caption_node
+        )
+      end
     end
 
     # Concrete subclasses representing each reference type
@@ -517,6 +526,26 @@ module ReVIEW
         # Double dispatch - delegate to formatter
         def format_with(formatter)
           formatter.format_column_reference(self)
+        end
+      end
+    end
+
+    class ResolvedData
+      class Bibpaper < ResolvedData
+        def initialize(item_number:, item_id:, caption_node: nil)
+          super()
+          @item_number = item_number
+          @item_id = item_id
+          @caption_node = caption_node
+        end
+
+        def to_text
+          "[#{@item_number}]"
+        end
+
+        # Double dispatch - delegate to formatter
+        def format_with(formatter)
+          formatter.format_bibpaper_reference(self)
         end
       end
     end

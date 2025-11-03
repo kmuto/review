@@ -40,7 +40,9 @@ module ReVIEW
         labelref: :resolve_label_ref,
         ref: :resolve_label_ref,
         w: :resolve_word_ref,
-        wb: :resolve_word_ref
+        wb: :resolve_word_ref,
+        bib: :resolve_bib_ref,
+        bibref: :resolve_bib_ref
       }.freeze
 
       def initialize(chapter)
@@ -658,6 +660,22 @@ module ReVIEW
         else
           raise CompileError, "word not bound: #{id}"
         end
+      end
+
+      # Resolve bibpaper references
+      # Bibpapers are book-wide, so use @book.bibpaper_index instead of chapter index
+      def resolve_bib_ref(id)
+        if (item = find_index_item(@book.bibpaper_index, id))
+          ResolvedData.bibpaper(
+            item_number: index_item_number(item),
+            item_id: id,
+            caption_node: item.caption_node
+          )
+        else
+          raise CompileError, "unknown bib: #{id}"
+        end
+      rescue ReVIEW::KeyError
+        raise CompileError, "unknown bib: #{id}"
       end
 
       # Split cross-chapter reference ID into chapter_id and item_id
