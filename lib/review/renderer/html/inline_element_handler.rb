@@ -207,7 +207,7 @@ module ReVIEW
           end
         end
 
-        def render_inline_ruby(_type, _content, node)
+        def render_inline_ruby(_type, content, node)
           if node.args.length >= 2
             build_ruby(node.args[0], node.args[1])
           else

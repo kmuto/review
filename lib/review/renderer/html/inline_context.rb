@@ -84,7 +84,10 @@ module ReVIEW
 
         def over_secnolevel?(n)
           secnolevel = config['secnolevel'] || 0
-          secnolevel >= n.to_s.split('.').size
+          # Section level = chapter level (1) + n.size
+          # Only show numbers if secnolevel is >= section level
+          section_level = n.is_a?(::Array) ? (1 + n.size) : (1 + n.to_s.split('.').size)
+          secnolevel >= section_level
         end
 
         def render_children(node)
