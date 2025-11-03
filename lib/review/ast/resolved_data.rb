@@ -180,12 +180,11 @@ module ReVIEW
       end
 
       # Create ResolvedData for an endnote reference
-      def self.endnote(item_number:, item_id:, caption_node: nil, caption_text: nil)
+      def self.endnote(item_number:, item_id:, caption_node: nil)
         Endnote.new(
           item_number: item_number,
           item_id: item_id,
-          caption_node: caption_node,
-          caption_text: caption_text
+          caption_node: caption_node
         )
       end
 
@@ -342,21 +341,15 @@ module ReVIEW
 
     class ResolvedData
       class Endnote < ResolvedData
-        def initialize(item_number:, item_id:, caption_node: nil, caption_text: nil)
+        def initialize(item_number:, item_id:, caption_node: nil)
           super()
           @item_number = item_number
           @item_id = item_id
           @caption_node = caption_node
-          @caption_text = caption_text
         end
 
         def to_text
           @item_number.to_s
-        end
-
-        # Override caption_text to return stored content for endnotes
-        def caption_text
-          @caption_text || ''
         end
 
         # Double dispatch - delegate to formatter

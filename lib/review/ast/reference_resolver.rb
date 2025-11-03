@@ -372,13 +372,11 @@ module ReVIEW
           end
 
           number = item.respond_to?(:number) ? item.number : nil
-          # For endnotes, store the content in caption_text field
-          content_text = item.respond_to?(:content) ? item.content : nil
+          caption_node = item.respond_to?(:caption_node) ? item.caption_node : nil
           ResolvedData.endnote(
             item_number: number,
             item_id: id,
-            caption_text: content_text,
-            caption_node: nil # Endnotes don't use caption_node
+            caption_node: caption_node
           )
         else
           raise CompileError, "Endnote reference not found: #{id}"
