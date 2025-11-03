@@ -392,29 +392,47 @@ module ReVIEW
         "\n"
       end
 
-      def render_inline_raw(_type, content, node)
-        if node.args.first
-          format = node.args.first
-          if format == 'markdown'
-            content
-          else
-            '' # Ignore raw content for other formats
-          end
-        else
-          content
+      def render_inline_raw(_type, _content, node)
+        # EmbedNode has target_builders and content parsed at AST construction time
+        node.targeted_for?('markdown') ? (node.content || '') : ''
+      end
+
+      def render_inline_embed(_type, _content, node)
+        # EmbedNode has target_builders and content parsed at AST construction time
+        node.targeted_for?('markdown') ? (node.content || '') : ''
+      end
+
+      def render_inline_chap(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
+
+        data = ref_node.resolved_data
+        chapter_num = data.to_number_text
+        escape_content(chapter_num.to_s)
       end
 
-      def render_inline_chap(_type, content, _node)
-        escape_content(content)
+      def render_inline_title(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
+
+        data = ref_node.resolved_data
+        title = data.to_title_text
+        "**#{escape_asterisks(title)}**"
       end
 
-      def render_inline_title(_type, content, _node)
-        "**#{escape_asterisks(content)}**"
-      end
+      def render_inline_chapref(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
 
-      def render_inline_chapref(_type, content, _node)
-        escape_content(content)
+        data = ref_node.resolved_data
+        display_str = data.to_text
+        escape_content(display_str)
       end
 
       def render_inline_list(_type, content, _node)

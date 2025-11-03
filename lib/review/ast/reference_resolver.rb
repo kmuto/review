@@ -32,6 +32,7 @@ module ReVIEW
         column: :resolve_column_ref,
         chap: :resolve_chapter_ref,
         chapref: :resolve_chapter_ref_with_title,
+        title: :resolve_chapter_title,
         hd: :resolve_headline_ref,
         sec: :resolve_section_ref,
         secref: :resolve_section_ref,
@@ -408,7 +409,7 @@ module ReVIEW
         end
       end
 
-      # Resolve chapter references
+      # Resolve chapter references (chapter number only, for @<chap>)
       def resolve_chapter_ref(id)
         if @book
           chapter = find_chapter_by_id(id)
@@ -426,11 +427,40 @@ module ReVIEW
         end
       end
 
-      # Resolve chapter references with title
+      # Resolve chapter references with title (for @<chapref>)
       def resolve_chapter_ref_with_title(id)
-        # Use the same method as resolve_chapter_ref
-        # The renderer will decide whether to include the title
-        resolve_chapter_ref(id)
+        if @book
+          chapter = find_chapter_by_id(id)
+          if chapter
+            ResolvedData.chapter(
+              chapter_number: format_chapter_number(chapter),
+              chapter_id: id,
+              chapter_title: chapter.title
+            )
+          else
+            raise CompileError, "Chapter reference not found: #{id}"
+          end
+        else
+          raise CompileError, "Book not available for chapter reference: #{id}"
+        end
+      end
+
+      # Resolve chapter title only (for @<title>)
+      def resolve_chapter_title(id)
+        if @book
+          chapter = find_chapter_by_id(id)
+          if chapter
+            ResolvedData.chapter(
+              chapter_number: format_chapter_number(chapter),
+              chapter_id: id,
+              chapter_title: chapter.title
+            )
+          else
+            raise CompileError, "Chapter reference not found: #{id}"
+          end
+        else
+          raise CompileError, "Book not available for chapter reference: #{id}"
+        end
       end
 
       # Resolve headline references
@@ -647,15 +677,13 @@ module ReVIEW
         Array(@book.contents).find { |chap| chap.id == id }
       end
 
-      # Format chapter number (handling appendix case)
-      # This mimics the behavior of HeadlineIndex#number
+      # Format chapter number in long form (for all reference types)
+      # Returns formatted chapter number like "第1章", "付録A", "第II部", etc.
+      # This mimics ChapterIndex#number behavior
       def format_chapter_number(chapter)
-        n = chapter.number
-        if chapter.on_appendix? && chapter.number > 0 && chapter.number < 28
-          chapter.format_number(false)
-        else
-          n
-        end
+        chapter.format_number # true (default) = long form with heading
+      rescue StandardError # part
+        ReVIEW::I18n.t('part', chapter.number)
       end
     end
   end

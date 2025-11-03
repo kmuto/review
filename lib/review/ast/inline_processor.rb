@@ -42,6 +42,7 @@ module ReVIEW
         hd: :create_inline_cross_ref_ast_node,
         chap: :create_inline_cross_ref_ast_node,
         chapref: :create_inline_cross_ref_ast_node,
+        title: :create_inline_cross_ref_ast_node,
         sec: :create_inline_cross_ref_ast_node,
         secref: :create_inline_cross_ref_ast_node,
         sectitle: :create_inline_cross_ref_ast_node,

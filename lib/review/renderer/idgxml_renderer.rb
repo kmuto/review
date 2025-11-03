@@ -1122,8 +1122,9 @@ module ReVIEW
         end
 
         data = ref_node.resolved_data
-        base_ref = if data.chapter_number
-                     I18n.t('list') + I18n.t('format_number', [data.chapter_number, data.item_number])
+        short_num = data.short_chapter_number
+        base_ref = if short_num && !short_num.empty?
+                     I18n.t('list') + I18n.t('format_number', [short_num, data.item_number])
                    else
                      I18n.t('list') + I18n.t('format_number_without_chapter', [data.item_number])
                    end
@@ -1138,8 +1139,9 @@ module ReVIEW
         end
 
         data = ref_node.resolved_data
-        base_ref = if data.chapter_number
-                     I18n.t('table') + I18n.t('format_number', [data.chapter_number, data.item_number])
+        short_num = data.short_chapter_number
+        base_ref = if short_num && !short_num.empty?
+                     I18n.t('table') + I18n.t('format_number', [short_num, data.item_number])
                    else
                      I18n.t('table') + I18n.t('format_number_without_chapter', [data.item_number])
                    end
@@ -1154,8 +1156,9 @@ module ReVIEW
         end
 
         data = ref_node.resolved_data
-        base_ref = if data.chapter_number
-                     I18n.t('image') + I18n.t('format_number', [data.chapter_number, data.item_number])
+        short_num = data.short_chapter_number
+        base_ref = if short_num && !short_num.empty?
+                     I18n.t('image') + I18n.t('format_number', [short_num, data.item_number])
                    else
                      I18n.t('image') + I18n.t('format_number_without_chapter', [data.item_number])
                    end
@@ -1170,8 +1173,9 @@ module ReVIEW
         end
 
         data = ref_node.resolved_data
-        base_ref = if data.chapter_number
-                     I18n.t('equation') + I18n.t('format_number', [data.chapter_number, data.item_number])
+        short_num = data.short_chapter_number
+        base_ref = if short_num && !short_num.empty?
+                     I18n.t('equation') + I18n.t('format_number', [short_num, data.item_number])
                    else
                      I18n.t('equation') + I18n.t('format_number_without_chapter', [data.item_number])
                    end
@@ -1192,8 +1196,9 @@ module ReVIEW
         end
 
         # Build reference with caption
-        base_ref = if data.chapter_number
-                     I18n.t('image') + I18n.t('format_number', [data.chapter_number, data.item_number])
+        short_num = data.short_chapter_number
+        base_ref = if short_num && !short_num.empty?
+                     I18n.t('image') + I18n.t('format_number', [short_num, data.item_number])
                    else
                      I18n.t('image') + I18n.t('format_number_without_chapter', [data.item_number])
                    end
@@ -1247,13 +1252,14 @@ module ReVIEW
       end
 
       # Endnotes
-      def render_inline_endnote(_type, content, node)
-        item_id = node.target_item_id || content
-        begin
-          %Q(<span type='endnoteref' idref='endnoteb-#{normalize_id(item_id)}'>(#{@chapter.endnote(item_id).number})</span>)
-        rescue ReVIEW::KeyError
-          app_error "unknown endnote: #{item_id}"
+      def render_inline_endnote(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
+
+        data = ref_node.resolved_data
+        %Q(<span type='endnoteref' idref='endnoteb-#{normalize_id(data.item_id)}'>(#{data.item_number})</span>)
       end
 
       # Bibliography
@@ -1272,12 +1278,12 @@ module ReVIEW
         return content unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
 
         n = ref_node.resolved_data.headline_number
-        chapter_num = ref_node.resolved_data.chapter_number
+        short_num = ref_node.resolved_data.short_chapter_number
         caption = ref_node.resolved_data.caption_node ? render_caption_inline(ref_node.resolved_data.caption_node) : ref_node.resolved_data.caption_text
 
-        if n.present? && over_secnolevel?(n)
+        if n.present? && short_num && !short_num.empty? && over_secnolevel?(n)
           # Build full section number including chapter number
-          full_number = ([chapter_num] + n).join('.')
+          full_number = ([short_num] + n).join('.')
           I18n.t('hd_quote', [full_number, caption])
         else
           I18n.t('hd_quote_without_number', caption)
@@ -1290,10 +1296,10 @@ module ReVIEW
         return '' unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
 
         n = ref_node.resolved_data.headline_number
-        chapter_num = ref_node.resolved_data.chapter_number
+        short_num = ref_node.resolved_data.short_chapter_number
         # Get section number like Builder does (including chapter number)
-        if n.present? && over_secnolevel?(n)
-          ([chapter_num] + n).join('.')
+        if n.present? && short_num && !short_num.empty? && over_secnolevel?(n)
+          ([short_num] + n).join('.')
         else
           ''
         end
@@ -1312,42 +1318,49 @@ module ReVIEW
       end
 
       # Chapter reference
-      def render_inline_chap(_type, content, node)
-        id = node.args.first || content
-        if config['chapterlink']
-          %Q(<link href="#{id}">#{@book.chapter_index.number(id)}</link>)
-        else
-          @book.chapter_index.number(id)
+      def render_inline_chap(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
-      rescue ReVIEW::KeyError
-        escape(id)
+
+        data = ref_node.resolved_data
+        chapter_num = data.to_number_text
+        if config['chapterlink']
+          %Q(<link href="#{data.item_id}">#{chapter_num}</link>)
+        else
+          chapter_num.to_s
+        end
       end
 
-      def render_inline_chapref(_type, content, node)
-        id = node.args.first || content
+      def render_inline_chapref(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
 
-        # Use display_string like Builder base class does
-        display_str = @book.chapter_index.display_string(id)
-
+        data = ref_node.resolved_data
+        display_str = data.to_text
         if config['chapterlink']
-          %Q(<link href="#{id}">#{display_str}</link>)
+          %Q(<link href="#{data.item_id}">#{display_str}</link>)
         else
           display_str
         end
-      rescue ReVIEW::KeyError
-        escape(id)
       end
 
-      def render_inline_title(_type, content, node)
-        id = node.args.first || content
-        title = @book.chapter_index.title(id)
+      def render_inline_title(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
+
+        data = ref_node.resolved_data
+        title = data.to_title_text
         if config['chapterlink']
-          %Q(<link href="#{id}">#{title}</link>)
+          %Q(<link href="#{data.item_id}">#{title}</link>)
         else
           title
         end
-      rescue ReVIEW::KeyError
-        escape(id)
       end
 
       # Labels
@@ -1438,13 +1451,23 @@ module ReVIEW
       end
 
       # Raw
-      def render_inline_raw(_type, content, node)
-        if node.args.first
-          raw_content = node.args.first
+      def render_inline_raw(_type, _content, node)
+        # EmbedNode has target_builders and content parsed at AST construction time
+        if node.targeted_for?('idgxml')
           # Convert \\n to actual newlines
-          raw_content.gsub('\\n', "\n")
+          (node.content || '').gsub('\\n', "\n")
         else
-          content.gsub('\\n', "\n")
+          ''
+        end
+      end
+
+      def render_inline_embed(_type, _content, node)
+        # EmbedNode has target_builders and content parsed at AST construction time
+        if node.targeted_for?('idgxml')
+          # Convert \\n to actual newlines
+          (node.content || '').gsub('\\n', "\n")
+        else
+          ''
         end
       end
 

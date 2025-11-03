@@ -75,6 +75,18 @@ module ReVIEW
         @item_id || ''
       end
 
+      # Get short-form chapter number from long form
+      # @return [String] Short chapter number ("1", "A", "II"), empty string if no chapter_number
+      # @example
+      #   "第1章" -> "1"
+      #   "付録A" -> "A"
+      #   "第II部" -> "II"
+      def short_chapter_number
+        return '' unless @chapter_number && !@chapter_number.to_s.empty?
+
+        extract_short_chapter_number(@chapter_number)
+      end
+
       # Helper methods for text formatting
 
       def safe_i18n(key, args = nil)
@@ -85,10 +97,18 @@ module ReVIEW
 
       def format_reference_number
         if @chapter_number && !@chapter_number.to_s.empty?
-          safe_i18n('format_number', [@chapter_number, @item_number])
+          # Extract short chapter number from long form (e.g., "第1章" -> "1", "付録A" -> "A")
+          short_num = extract_short_chapter_number(@chapter_number)
+          safe_i18n('format_number', [short_num, @item_number])
         else
           safe_i18n('format_number_without_chapter', [@item_number])
         end
+      end
+
+      def extract_short_chapter_number(long_num)
+        # Extract number/letter from formatted chapter number
+        # "第1章" -> "1", "付録A" -> "A", "第II部" -> "II"
+        long_num.to_s.gsub(/[^0-9A-Z]+/, '')
       end
 
       def caption_separator
@@ -114,9 +134,19 @@ module ReVIEW
       end
 
       def chapter_number_text(chapter_num)
+        return chapter_num.to_s if chapter_num.to_s.empty?
+
+        # Numeric chapter (e.g., "1", "2")
         if numeric_string?(chapter_num)
           safe_i18n('chapter', chapter_num.to_i)
+        # Single uppercase letter (appendix, e.g., "A", "B")
+        elsif chapter_num.to_s.match?(/\A[A-Z]\z/)
+          safe_i18n('appendix', chapter_num.to_s)
+        # Roman numerals (part, e.g., "I", "II", "III")
+        elsif chapter_num.to_s.match?(/\A[IVX]+\z/)
+          safe_i18n('part', chapter_num.to_s)
         else
+          # For other formats, return as-is
           chapter_num.to_s
         end
       end
@@ -360,6 +390,7 @@ module ReVIEW
     end
 
     class ResolvedData
+      # Chapter - represents chapter references (@<chap>, @<chapref>, @<title>)
       class Chapter < ResolvedData
         def initialize(chapter_number:, chapter_id:, item_id:, chapter_title: nil, caption_node: nil)
           super()
@@ -370,6 +401,21 @@ module ReVIEW
           @caption_node = caption_node
         end
 
+        # Return chapter number only (for @<chap>)
+        # Example: "第1章", "付録A", "第II部"
+        # chapter_number already contains the long form
+        def to_number_text
+          @chapter_number || @item_id || ''
+        end
+
+        # Return chapter title only (for @<title>)
+        # Example: "章見出し", "付録の見出し"
+        def to_title_text
+          @chapter_title || @item_id || ''
+        end
+
+        # Return full chapter reference (for @<chapref>)
+        # Example: "第1章「章見出し」"
         def to_text
           if @chapter_number && @chapter_title
             number_text = chapter_number_text(@chapter_number)
@@ -408,7 +454,8 @@ module ReVIEW
           if @headline_number && !@headline_number.empty?
             # Build full number with chapter number if available
             number_text = if @chapter_number
-                            ([@chapter_number] + @headline_number).join('.')
+                            short_num = short_chapter_number
+                            ([short_num] + @headline_number).join('.')
                           else
                             @headline_number.join('.')
                           end

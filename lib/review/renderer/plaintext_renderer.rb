@@ -472,9 +472,24 @@ module ReVIEW
         "\n"
       end
 
-      def render_inline_raw(_type, content, _node)
+      def render_inline_raw(_type, _content, node)
+        # EmbedNode has target_builders and content parsed at AST construction time
         # Convert \n to actual newlines like PLAINTEXTBuilder
-        content.gsub('\\n', "\n")
+        if node.targeted_for?('plaintext') || node.targeted_for?('text')
+          (node.content || '').gsub('\\n', "\n")
+        else
+          ''
+        end
+      end
+
+      def render_inline_embed(_type, _content, node)
+        # EmbedNode has target_builders and content parsed at AST construction time
+        # Convert \n to actual newlines like PLAINTEXTBuilder
+        if node.targeted_for?('plaintext') || node.targeted_for?('text')
+          (node.content || '').gsub('\\n', "\n")
+        else
+          ''
+        end
       end
 
       def render_inline_hidx(_type, _content, _node)
@@ -528,17 +543,24 @@ module ReVIEW
         '●ページ'
       end
 
-      def render_inline_chap(_type, content, _node)
-        content
+      def render_inline_chap(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
+
+        data = ref_node.resolved_data
+        data.to_number_text.to_s
       end
 
       def render_inline_chapref(_type, _content, node)
-        id = node.target_item_id
-        return '' unless id
+        ref_node = node.children.first
+        unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
 
-        @book.chapter_index.display_string(id)
-      rescue ReVIEW::KeyError
-        ''
+        data = ref_node.resolved_data
+        data.to_text
       end
 
       # Default inline rendering - just return content

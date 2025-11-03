@@ -14,9 +14,14 @@ module ReVIEW
       # Inline element handler for HTML rendering
       # Uses InlineContext for shared logic
       class InlineElementHandler
+        include ReVIEW::HTMLUtils
+        include ReVIEW::EscapeUtils
+        include ReVIEW::Loggable
+
         def initialize(inline_context)
           @ctx = inline_context
           @img_math = @ctx.img_math
+          @logger = ReVIEW.logger
         end
 
         # === Pure inline elements (simple HTML wrapping) ===
@@ -120,66 +125,86 @@ module ReVIEW
         # === Logic-dependent inline elements (use InlineContext) ===
 
         def render_inline_chap(_type, _content, node)
-          id = node.args.first
-          chapter_num = @ctx.chapter_number(id)
-          @ctx.build_chapter_link(id, chapter_num)
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+            raise 'BUG: Reference should be resolved at AST construction time'
+          end
+
+          data = ref_node.resolved_data
+          chapter_num = data.to_number_text
+          build_chapter_link(data.item_id, chapter_num)
         end
 
         def render_inline_chapref(_type, _content, node)
-          id = node.args.first
-          display_str = @ctx.chapter_display_string(id)
-          @ctx.build_chapter_link(id, display_str)
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+            raise 'BUG: Reference should be resolved at AST construction time'
+          end
+
+          data = ref_node.resolved_data
+          display_str = data.to_text
+          build_chapter_link(data.item_id, display_str)
         end
 
         def render_inline_title(_type, _content, node)
-          id = node.args.first
-          title = @ctx.chapter_title(id)
-          @ctx.build_chapter_link(id, title)
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+            raise 'BUG: Reference should be resolved at AST construction time'
+          end
+
+          data = ref_node.resolved_data
+          title = data.to_title_text
+          build_chapter_link(data.item_id, title)
         end
 
         def render_inline_fn(_type, _content, node)
-          fn_id = node.args.first
-          fn_number = @ctx.footnote_number(fn_id)
-          @ctx.build_footnote_link(fn_id, fn_number)
+          # Footnote reference
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
+            raise 'BUG: Reference should be resolved at AST construction time'
+          end
+
+          data = ref_node.resolved_data
+          build_footnote_link(data.item_id, data.item_number)
         end
 
         def render_inline_kw(_type, content, node)
           if node.args.length >= 2
-            @ctx.build_keyword_with_index(node.args[0], alt: node.args[1].strip)
+            build_keyword_with_index(node.args[0], alt: node.args[1].strip)
           elsif node.args.length == 1
-            @ctx.build_keyword_with_index(node.args[0])
+            build_keyword_with_index(node.args[0])
           else
-            @ctx.build_keyword_with_index(content)
+            build_keyword_with_index(content)
           end
         end
 
         def render_inline_idx(_type, content, node)
           index_str = node.args.first || content
-          content + @ctx.build_index_comment(index_str)
+          content + build_index_comment(index_str)
         end
 
         def render_inline_hidx(_type, _content, node)
           index_str = node.args.first
-          @ctx.build_index_comment(index_str)
+          build_index_comment(index_str)
         end
 
         def render_inline_href(_type, _content, node)
           args = node.args
           if args.length >= 2
             url = args[0]
-            text = @ctx.escape_content(args[1])
+            text = escape_content(args[1])
             if url.start_with?('#')
-              @ctx.build_anchor_link(url[1..-1], text)
+              build_anchor_link(url[1..-1], text)
             else
-              @ctx.build_external_link(url, text)
+              build_external_link(url, text)
             end
           elsif args.length >= 1
             url = args[0]
-            escaped_url = @ctx.escape_content(url)
+            escaped_url = escape_content(url)
             if url.start_with?('#')
-              @ctx.build_anchor_link(url[1..-1], escaped_url)
+              build_anchor_link(url[1..-1], escaped_url)
             else
-              @ctx.build_external_link(url, escaped_url)
+              build_external_link(url, escaped_url)
             end
           else
             content
@@ -188,7 +213,7 @@ module ReVIEW
 
         def render_inline_ruby(_type, _content, node)
           if node.args.length >= 2
-            @ctx.build_ruby(node.args[0], node.args[1])
+            build_ruby(node.args[0], node.args[1])
           else
             content
           end
@@ -196,26 +221,12 @@ module ReVIEW
 
         # === Format-dependent rendering ===
 
-        def render_inline_raw(_type, content, node)
-          if node.args.first
-            format = node.args.first
-            @ctx.target_format?(format) ? content : ''
-          else
-            content
-          end
+        def render_inline_raw(_type, _content, node)
+          node.targeted_for?('html') ? (node.content || '') : ''
         end
 
-        def render_inline_embed(_type, content, node)
-          if node.args.first
-            formats, embed_content = @ctx.parse_embed_formats(node.args.first)
-            if formats
-              formats.include?('html') ? embed_content : ''
-            else
-              embed_content
-            end
-          else
-            content
-          end
+        def render_inline_embed(_type, _content, node)
+          node.targeted_for?('html') ? (node.content || '') : ''
         end
 
         # === Special cases that need raw args ===
@@ -237,15 +248,16 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          list_number = if data.chapter_number
-                          "#{I18n.t('list')}#{I18n.t('format_number', [data.chapter_number, data.item_number])}"
+          short_num = data.short_chapter_number
+          list_number = if short_num && !short_num.empty?
+                          "#{I18n.t('list')}#{I18n.t('format_number', [short_num, data.item_number])}"
                         else
                           "#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [data.item_number])}"
                         end
 
           if @ctx.chapter_link_enabled?
             chapter_id = data.chapter_id || @ctx.chapter.id
-            %Q(<span class="listref"><a href="./#{chapter_id}#{@ctx.extname}##{@ctx.normalize_id(data.item_id)}">#{list_number}</a></span>)
+            %Q(<span class="listref"><a href="./#{chapter_id}#{@ctx.extname}##{normalize_id(data.item_id)}">#{list_number}</a></span>)
           else
             %Q(<span class="listref">#{list_number}</span>)
           end
@@ -258,15 +270,16 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          table_number = if data.chapter_number
-                           "#{I18n.t('table')}#{I18n.t('format_number', [data.chapter_number, data.item_number])}"
+          short_num = data.short_chapter_number
+          table_number = if short_num && !short_num.empty?
+                           "#{I18n.t('table')}#{I18n.t('format_number', [short_num, data.item_number])}"
                          else
                            "#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [data.item_number])}"
                          end
 
           if @ctx.chapter_link_enabled?
             chapter_id = data.chapter_id || @ctx.chapter.id
-            %Q(<span class="tableref"><a href="./#{chapter_id}#{@ctx.extname}##{@ctx.normalize_id(data.item_id)}">#{table_number}</a></span>)
+            %Q(<span class="tableref"><a href="./#{chapter_id}#{@ctx.extname}##{normalize_id(data.item_id)}">#{table_number}</a></span>)
           else
             %Q(<span class="tableref">#{table_number}</span>)
           end
@@ -279,15 +292,16 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          image_number = if data.chapter_number
-                           "#{I18n.t('image')}#{I18n.t('format_number', [data.chapter_number, data.item_number])}"
+          short_num = data.short_chapter_number
+          image_number = if short_num && !short_num.empty?
+                           "#{I18n.t('image')}#{I18n.t('format_number', [short_num, data.item_number])}"
                          else
                            "#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [data.item_number])}"
                          end
 
           if @ctx.chapter_link_enabled?
             chapter_id = data.chapter_id || @ctx.chapter.id
-            %Q(<span class="imgref"><a href="./#{chapter_id}#{@ctx.extname}##{@ctx.normalize_id(data.item_id)}">#{image_number}</a></span>)
+            %Q(<span class="imgref"><a href="./#{chapter_id}#{@ctx.extname}##{normalize_id(data.item_id)}">#{image_number}</a></span>)
           else
             %Q(<span class="imgref">#{image_number}</span>)
           end
@@ -326,7 +340,6 @@ module ReVIEW
         end
 
         def render_inline_tcy(_type, content, _node)
-          # 縦中横用のtcy、uprightのCSSスタイルについては電書協ガイドラインを参照
           style = 'tcy'
           if content.size == 1 && content.match(/[[:ascii:]]/)
             style = 'upright'
@@ -369,7 +382,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          @ctx.build_endnote_link(data.item_id, data.item_number)
+          build_endnote_link(data.item_id, data.item_number)
         end
 
         def render_inline_m(_type, content, node)
@@ -384,8 +397,8 @@ module ReVIEW
               require 'math_ml'
               require 'math_ml/symbol/character_reference'
             rescue LoadError
-              @ctx.renderer.app_error 'not found math_ml'
-              return %Q(<span class="equation">#{@ctx.escape(str)}</span>)
+              app_error 'not found math_ml'
+              return %Q(<span class="equation">#{escape(str)}</span>)
             end
             parser = MathML::LaTeX::Parser.new(symbol: MathML::Symbol::CharacterReference)
             # parser.parse returns MathML::Math object, need to convert to string
@@ -394,16 +407,16 @@ module ReVIEW
             %Q(<span class="equation">\\( #{str.gsub('<', '\lt{}').gsub('>', '\gt{}').gsub('&', '&amp;')} \\)</span>)
           when 'imgmath'
             unless @img_math
-              @ctx.renderer.app_error 'ImgMath not initialized'
-              return %Q(<span class="equation">#{@ctx.escape(str)}</span>)
+              app_error 'ImgMath not initialized'
+              return %Q(<span class="equation">#{escape(str)}</span>)
             end
 
             math_str = '$' + str + '$'
             key = Digest::SHA256.hexdigest(str)
             img_path = @img_math.defer_math_image(math_str, key)
-            %Q(<span class="equation"><img src="#{img_path}" class="math_gen_#{key}" alt="#{@ctx.escape(str)}" /></span>)
+            %Q(<span class="equation"><img src="#{img_path}" class="math_gen_#{key}" alt="#{escape(str)}" /></span>)
           else
-            %Q(<span class="equation">#{@ctx.escape(str)}</span>)
+            %Q(<span class="equation">#{escape(str)}</span>)
           end
         end
 
@@ -416,11 +429,11 @@ module ReVIEW
 
           data = ref_node.resolved_data
           n = data.headline_number
-          chapter_num = data.chapter_number
+          short_num = data.short_chapter_number
 
           # Build full section number including chapter number
-          full_number = if n.present? && chapter_num && @ctx.over_secnolevel?(n)
-                          ([chapter_num] + n).join('.')
+          full_number = if n.present? && short_num && !short_num.empty? && @ctx.over_secnolevel?(n)
+                          ([short_num] + n).join('.')
                         else
                           ''
                         end
@@ -443,7 +456,7 @@ module ReVIEW
           # Label reference: @<labelref>{id}
           # This should match HTMLBuilder's inline_labelref behavior
           idref = node.target_item_id || content
-          %Q(<a target='#{@ctx.escape_content(idref)}'>「#{ReVIEW::I18n.t('label_marker')}#{@ctx.escape_content(idref)}」</a>)
+          %Q(<a target='#{escape_content(idref)}'>「#{ReVIEW::I18n.t('label_marker')}#{escape_content(idref)}」</a>)
         end
 
         def render_inline_ref(type, content, node)
@@ -458,15 +471,16 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          equation_number = if data.chapter_number
-                              %Q(#{ReVIEW::I18n.t('equation')}#{ReVIEW::I18n.t('format_number', [data.chapter_number, data.item_number])})
+          short_num = data.short_chapter_number
+          equation_number = if short_num && !short_num.empty?
+                              %Q(#{ReVIEW::I18n.t('equation')}#{ReVIEW::I18n.t('format_number', [short_num, data.item_number])})
                             else
                               %Q(#{ReVIEW::I18n.t('equation')}#{ReVIEW::I18n.t('format_number_without_chapter', [data.item_number])})
                             end
 
           if @ctx.config['chapterlink']
             chapter_id = data.chapter_id || @ctx.chapter.id
-            %Q(<span class="eqref"><a href="./#{chapter_id}#{@ctx.extname}##{@ctx.normalize_id(data.item_id)}">#{equation_number}</a></span>)
+            %Q(<span class="eqref"><a href="./#{chapter_id}#{@ctx.extname}##{normalize_id(data.item_id)}">#{equation_number}</a></span>)
           else
             %Q(<span class="eqref">#{equation_number}</span>)
           end
@@ -481,7 +495,7 @@ module ReVIEW
 
           data = ref_node.resolved_data
           n = data.headline_number
-          chapter_num = data.chapter_number
+          short_num = data.short_chapter_number
 
           # Render caption with inline markup
           caption_html = if data.caption_node
@@ -491,8 +505,8 @@ module ReVIEW
                          end
 
           # Build full section number including chapter number
-          full_number = if n.present? && chapter_num && @ctx.over_secnolevel?(n)
-                          ([chapter_num] + n).join('.')
+          full_number = if n.present? && short_num && !short_num.empty? && @ctx.over_secnolevel?(n)
+                          ([short_num] + n).join('.')
                         end
 
           str = if full_number
@@ -524,7 +538,7 @@ module ReVIEW
           caption_html = if data.caption_node
                            @ctx.render_children(data.caption_node)
                          else
-                           @ctx.escape_content(data.caption_text)
+                           escape_content(data.caption_text)
                          end
 
           anchor = "column-#{data.item_number}"
@@ -551,13 +565,13 @@ module ReVIEW
           title_html = if data.caption_node
                          @ctx.render_children(data.caption_node)
                        else
-                         @ctx.escape_content(data.caption_text)
+                         escape_content(data.caption_text)
                        end
 
           if @ctx.config['chapterlink']
             n = data.headline_number
-            chapter_num = data.chapter_number
-            full_number = ([chapter_num] + n).join('.')
+            short_num = data.short_chapter_number
+            full_number = ([short_num] + n).join('.')
             anchor = 'h' + full_number.tr('.', '-')
 
             # Get target chapter ID for link
@@ -565,6 +579,65 @@ module ReVIEW
             %Q(<a href="#{chapter_id}#{@ctx.extname}##{anchor}">#{title_html}</a>)
           else
             title_html
+          end
+        end
+
+        private
+
+        def target_format?(format_name)
+          format_name.to_s == 'html'
+        end
+
+        def build_index_comment(index_str)
+          %Q(<!-- IDX:#{escape_comment(index_str)} -->)
+        end
+
+        def build_keyword_with_index(word, alt: nil)
+          escaped_word = escape_content(word)
+
+          if alt && !alt.empty?
+            escaped_alt = escape_content(alt)
+            # Include alt text in visible content, but only word in IDX comment
+            text = "#{escaped_word} (#{escaped_alt})"
+            %Q(<b class="kw">#{text}</b><!-- IDX:#{escaped_word} -->)
+          else
+            %Q(<b class="kw">#{escaped_word}</b><!-- IDX:#{escaped_word} -->)
+          end
+        end
+
+        def build_ruby(base, ruby_text)
+          %Q(<ruby>#{escape_content(base)}<rt>#{escape_content(ruby_text)}</rt></ruby>)
+        end
+
+        def build_anchor_link(anchor_id, content, css_class: 'link')
+          %Q(<a href="##{normalize_id(anchor_id)}" class="#{css_class}">#{content}</a>)
+        end
+
+        def build_external_link(url, content, css_class: 'link')
+          %Q(<a href="#{escape_content(url)}" class="#{css_class}">#{content}</a>)
+        end
+
+        def build_footnote_link(fn_id, number)
+          if @ctx.epub3?
+            %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref" epub:type="noteref">#{I18n.t('html_footnote_refmark', number)}</a>)
+          else
+            %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref">*#{number}</a>)
+          end
+        end
+
+        def build_chapter_link(chapter_id, content)
+          if @ctx.chapter_link_enabled?
+            %Q(<a href="./#{chapter_id}#{@ctx.extname}">#{content}</a>)
+          else
+            content
+          end
+        end
+
+        def build_endnote_link(endnote_id, number)
+          if @ctx.epub3?
+            %Q(<a id="endnoteb-#{normalize_id(endnote_id)}" href="#endnote-#{normalize_id(endnote_id)}" class="noteref" epub:type="noteref">#{I18n.t('html_endnote_refmark', number)}</a>)
+          else
+            %Q(<a id="endnoteb-#{normalize_id(endnote_id)}" href="#endnote-#{normalize_id(endnote_id)}" class="noteref">#{number}</a>)
           end
         end
       end

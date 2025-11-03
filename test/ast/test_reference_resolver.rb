@@ -74,7 +74,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     data = resolved_node.resolved_data
     assert_equal ReVIEW::AST::ResolvedData::Image, data.class
-    assert_equal '1', data.chapter_number
+    assert_equal '第1章', data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'img01', data.item_id
   end
@@ -101,7 +101,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     data = resolved_node.resolved_data
     assert_equal ReVIEW::AST::ResolvedData::Table, data.class
-    assert_equal '1', data.chapter_number
+    assert_equal '第1章', data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'tbl01', data.item_id
   end
@@ -128,7 +128,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     data = resolved_node.resolved_data
     assert_equal ReVIEW::AST::ResolvedData::List, data.class
-    assert_equal '1', data.chapter_number
+    assert_equal '第1章', data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'list01', data.item_id
   end
@@ -182,7 +182,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     data = resolved_node.resolved_data
     assert_equal ReVIEW::AST::ResolvedData::Equation, data.class
-    assert_equal '1', data.chapter_number
+    assert_equal '第1章', data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'eq01', data.item_id
   end
@@ -250,7 +250,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     data = resolved_node.resolved_data
     assert_equal ReVIEW::AST::ResolvedData::Image, data.class
-    assert_equal '1', data.chapter_number
+    assert_equal '第1章', data.chapter_number
     assert_equal '1', data.item_number
   end
 
@@ -276,7 +276,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     data = resolved_node.resolved_data
     assert_equal ReVIEW::AST::ResolvedData::Table, data.class
-    assert_equal '1', data.chapter_number
+    assert_equal '第1章', data.chapter_number
     assert_equal '1', data.item_number
   end
 
@@ -487,7 +487,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     data = resolved_node.resolved_data
     assert_equal ReVIEW::AST::ResolvedData::Image, data.class
-    assert_equal '2', data.chapter_number
+    assert_equal '第2章', data.chapter_number
     assert_equal 'chap02', data.chapter_id
     assert_equal 'img01', data.item_id
   end

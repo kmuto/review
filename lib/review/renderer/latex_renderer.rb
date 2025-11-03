@@ -1246,9 +1246,9 @@ module ReVIEW
         data = ref_node.resolved_data
         list_number = data.item_number
 
-        if data.chapter_number
-          chapter_num = data.chapter_number
-          "\\reviewlistref{#{chapter_num}.#{list_number}}"
+        short_num = data.short_chapter_number
+        if short_num && !short_num.empty?
+          "\\reviewlistref{#{short_num}.#{list_number}}"
         else
           "\\reviewlistref{#{list_number}}"
         end
@@ -1282,9 +1282,9 @@ module ReVIEW
         chapter_id = data.chapter_id || @chapter&.id
         table_label = "table:#{chapter_id}:#{data.item_id}"
 
-        if data.chapter_number
-          chapter_num = data.chapter_number
-          "\\reviewtableref{#{chapter_num}.#{table_number}}{#{table_label}}"
+        short_num = data.short_chapter_number
+        if short_num && !short_num.empty?
+          "\\reviewtableref{#{short_num}.#{table_number}}{#{table_label}}"
         else
           "\\reviewtableref{#{table_number}}{#{table_label}}"
         end
@@ -1318,9 +1318,9 @@ module ReVIEW
         chapter_id = data.chapter_id || @chapter&.id
         image_label = "image:#{chapter_id}:#{data.item_id}"
 
-        if data.chapter_number
-          chapter_num = data.chapter_number
-          "\\reviewimageref{#{chapter_num}.#{image_number}}{#{image_label}}"
+        short_num = data.short_chapter_number
+        if short_num && !short_num.empty?
+          "\\reviewimageref{#{short_num}.#{image_number}}{#{image_label}}"
         else
           "\\reviewimageref{#{image_number}}{#{image_label}}"
         end
@@ -1536,37 +1536,27 @@ module ReVIEW
       end
 
       # Render chapter number reference
-      def render_inline_chap(_type, content, node)
-        return content unless node.args.first
-
-        chapter_id = node.args.first
-        if @book.chapter_index
-          begin
-            chapter_number = @book.chapter_index.number(chapter_id)
-            "\\reviewchapref{#{chapter_number}}{chap:#{chapter_id}}"
-          rescue ReVIEW::KeyError => e
-            raise NotImplementedError, "Chapter reference failed for #{chapter_id}: #{e.message}"
-          end
-        else
-          "\\reviewchapref{#{escape(chapter_id)}}{chap:#{escape(chapter_id)}}"
+      def render_inline_chap(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
+
+        data = ref_node.resolved_data
+        chapter_number = data.to_number_text
+        "\\reviewchapref{#{chapter_number}}{chap:#{data.item_id}}"
       end
 
       # Render chapter title reference
-      def render_inline_chapref(_type, content, node)
-        return content unless node.args.first
-
-        chapter_id = node.args.first
-        if @book.chapter_index
-          begin
-            title = @book.chapter_index.display_string(chapter_id)
-            "\\reviewchapref{#{escape(title)}}{chap:#{chapter_id}}"
-          rescue ReVIEW::KeyError => e
-            raise NotImplementedError, "Chapter title reference failed for #{chapter_id}: #{e.message}"
-          end
-        else
-          "\\reviewchapref{#{escape(chapter_id)}}{chap:#{escape(chapter_id)}}"
+      def render_inline_chapref(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
+
+        data = ref_node.resolved_data
+        display_str = data.to_text
+        "\\reviewchapref{#{escape(display_str)}}{chap:#{data.item_id}}"
       end
 
       # Extract heading reference from node.args, handling ReferenceResolver's array splitting
@@ -1888,24 +1878,15 @@ module ReVIEW
       end
 
       # Render raw content
-      def render_inline_raw(_type, content, node)
-        if node.args.first
-          # Raw content for specific format
-          format = node.args.first
-          if ['latex', 'tex'].include?(format)
-            content
-          else
-            '' # Ignore raw content for other formats
-          end
-        else
-          content
-        end
+      def render_inline_raw(_type, _content, node)
+        # EmbedNode has target_builders and content parsed at AST construction time
+        node.targeted_for?('latex') ? (node.content || '') : ''
       end
 
       # Render embedded content
-      def render_inline_embed(_type, content, _node)
-        # Embedded content - pass through
-        content
+      def render_inline_embed(_type, _content, node)
+        # EmbedNode has target_builders and content parsed at AST construction time
+        node.targeted_for?('latex') ? (node.content || '') : ''
       end
 
       # Render label reference
@@ -1937,26 +1918,18 @@ module ReVIEW
       end
 
       # Render title reference
-      def render_inline_title(_type, content, node)
-        if node.args.first
-          # Book/chapter title reference
-          chapter_id = node.args.first
-          if @book.chapter_index
-            begin
-              title = @book.chapter_index.title(chapter_id)
-              if config['chapterlink']
-                "\\reviewchapref{#{escape(title)}}{chap:#{chapter_id}}"
-              else
-                escape(title)
-              end
-            rescue ReVIEW::KeyError => e
-              raise NotImplementedError, "Chapter title reference failed for #{chapter_id}: #{e.message}"
-            end
-          else
-            "\\reviewtitle{#{escape(chapter_id)}}"
-          end
+      def render_inline_title(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
+
+        data = ref_node.resolved_data
+        title = data.to_title_text
+        if config['chapterlink']
+          "\\reviewchapref{#{escape(title)}}{chap:#{data.item_id}}"
         else
-          content
+          escape(title)
         end
       end
 

@@ -864,8 +864,8 @@ EOS
     error = assert_raise(ReVIEW::CompileError) { compile_block("@<secref>{n}\n") }
     assert_equal 'Headline not found: n', error.message
 
-    error = assert_raise(KeyError) { compile_block("@<title>{n}\n") }
-    assert_equal 'key not found: "n"', error.message
+    error = assert_raise(ReVIEW::CompileError) { compile_block("@<title>{n}\n") }
+    assert_equal 'Chapter reference not found: n', error.message
 
     error = assert_raise(ReVIEW::CompileError) { compile_block("@<fn>{n}\n") }
     assert_equal 'Footnote reference not found: n', error.message
