@@ -1332,24 +1332,20 @@ module ReVIEW
       end
 
       # Render equation reference
-      def render_inline_eq(_type, content, node)
-        return content unless node.args.first
+      def render_inline_eq(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
 
-        equation_id = node.args.first
-        if @chapter && @chapter.equation_index
-          begin
-            equation_item = @chapter.equation_index.number(equation_id)
-            if @chapter.number
-              chapter_num = @chapter.format_number(false)
-              "\\reviewequationref{#{chapter_num}.#{equation_item}}"
-            else
-              "\\reviewequationref{#{equation_item}}"
-            end
-          rescue ReVIEW::KeyError => e
-            raise NotImplementedError, "Equation reference failed for #{equation_id}: #{e.message}"
-          end
+        data = ref_node.resolved_data
+        equation_number = data.item_number
+
+        short_num = data.short_chapter_number
+        if short_num && !short_num.empty?
+          "\\reviewequationref{#{short_num}.#{equation_number}}"
         else
-          raise NotImplementedError, 'Equation reference requires chapter context but none provided'
+          "\\reviewequationref{#{equation_number}}"
         end
       end
 
@@ -1971,35 +1967,24 @@ module ReVIEW
 
       # Render column reference
       def render_inline_column(_type, _content, node)
-        # AST may provide args as array [chapter_id, column_id] or single string
-        if node.args.length == 2
-          # Cross-chapter reference: args = [chapter_id, column_id]
-          chapter_id, column_id = node.args
-          chapter = @book.chapters.detect { |chap| chap.id == chapter_id }
-          if chapter
-            render_column_chap(chapter, column_id)
-          else
-            raise NotImplementedError, "Unknown chapter for column reference: #{chapter_id}"
-          end
-        else
-          # Same-chapter reference or string format "chapter|column"
-          id = node.args.first
-          m = /\A([^|]+)\|(.+)/.match(id)
-          if m && m[1] && m[2]
-            # Cross-chapter reference format: chapter|column
-            chapter = @book.chapters.detect { |chap| chap.id == m[1] }
-            if chapter
-              render_column_chap(chapter, m[2])
-            else
-              raise NotImplementedError, "Unknown chapter for column reference: #{m[1]}"
-            end
-          else
-            # Same-chapter reference
-            render_column_chap(@chapter, id)
-          end
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
-      rescue ReVIEW::KeyError => e
-        raise NotImplementedError, "Unknown column: #{node.args.join('|')} - #{e.message}"
+
+        data = ref_node.resolved_data
+        column_number = data.item_number
+        chapter_id = data.chapter_id || @chapter&.id
+        column_label = "column:#{chapter_id}:#{column_number}"
+
+        # Render caption with inline markup
+        compiled_caption = if data.caption_node
+                             render_caption_inline(data.caption_node)
+                           else
+                             data.caption_text
+                           end
+        column_text = I18n.t('column', compiled_caption)
+        "\\reviewcolumnref{#{column_text}}{#{column_label}}"
       end
 
       # Render column reference for specific chapter

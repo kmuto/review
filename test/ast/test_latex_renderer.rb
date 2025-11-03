@@ -1366,12 +1366,23 @@ class TestLatexRenderer < Test::Unit::TestCase
     column_item = ReVIEW::Book::Index::Item.new('column1', 1, 'Test Column', caption_node: caption_node)
     @chapter.column_index.add_item(column_item)
 
+    # Create InlineNode with ReferenceNode child containing resolved_data
     inline = AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :column, args: ['column1'])
+    resolved_data = AST::ResolvedData.column(
+      chapter_number: '第1章',
+      item_number: 1,
+      item_id: 'column1',
+      chapter_id: nil, # Same chapter
+      caption_node: caption_node
+    )
+    ref_node = AST::ReferenceNode.new('column1', nil, location: ReVIEW::SnapshotLocation.new(nil, 0), resolved_data: resolved_data)
+    inline.add_child(ref_node)
+
     result = @renderer.visit(inline)
 
     # Should generate \reviewcolumnref with column text and label
     assert_match(/\\reviewcolumnref\{/, result)
-    assert_match(/column:test:1/, result) # Label format: column:chapter_id:number
+    assert_match(/column:test:1/, result) # Label format: chapter_id:number
   end
 
   def test_inline_column_cross_chapter
@@ -1392,8 +1403,18 @@ class TestLatexRenderer < Test::Unit::TestCase
     column_item = ReVIEW::Book::Index::Item.new('column2', 1, 'Column in Ch03', caption_node: caption_node)
     ch03.column_index.add_item(column_item)
 
-    # Create inline node with args as 2-element array (as AST parser does)
+    # Create InlineNode with ReferenceNode child containing resolved_data for cross-chapter reference
     inline = AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :column, args: ['ch03', 'column2'])
+    resolved_data = AST::ResolvedData.column(
+      chapter_number: '第3章',
+      item_number: 1,
+      item_id: 'column2',
+      chapter_id: 'ch03', # Cross-chapter reference
+      caption_node: caption_node
+    )
+    ref_node = AST::ReferenceNode.new('column2', 'ch03', location: ReVIEW::SnapshotLocation.new(nil, 0), resolved_data: resolved_data)
+    inline.add_child(ref_node)
+
     result = @renderer.visit(inline)
 
     # Should generate \reviewcolumnref with column text and label from ch03
@@ -1402,14 +1423,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_match(/Column in Ch03/, result) # Should include caption
   end
 
-  def test_inline_column_cross_chapter_not_found
-    # Test @<column>{ch99|column1} - reference to non-existent chapter
-    # Should raise NotImplementedError
-
-    inline = AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :column, args: ['ch99', 'column1'])
-
-    assert_raise(NotImplementedError) do
-      @renderer.visit(inline)
-    end
-  end
+  # test_inline_column_cross_chapter_not_found removed
+  # The new implementation expects ReferenceNode with resolved_data to be created at AST construction time.
+  # Invalid references should be caught during AST construction, not during rendering.
 end
