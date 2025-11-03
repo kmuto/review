@@ -649,8 +649,6 @@ module ReVIEW
         )
       end
 
-      # render_fallback_code_block removed - Base renderer will raise NotImplementedError for unknown code block types
-
       def code_block_wrapper(node, div_class:, pre_class:, content:, caption_style:)
         id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
 
