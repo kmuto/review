@@ -432,10 +432,6 @@ module ReVIEW
       end
 
       def build_complex_block_ast(context)
-        # For syntaxblock types (box, insn) and captionblock types (point, term),
-        # preserve the original lines array for proper formatting
-        preserve_lines = %i[box insn point term].include?(context.name)
-
         # Determine caption index based on block type
         caption_index = case context.name
                         when :graph
@@ -452,15 +448,31 @@ module ReVIEW
         node = context.create_node(AST::BlockNode,
                                    block_type: context.name,
                                    args: context.args,
-                                   caption_node: caption_node,
-                                   lines: preserve_lines ? context.lines.dup : nil)
+                                   caption_node: caption_node)
 
         # Process content and nested blocks
         if context.nested_blocks?
           context.process_structured_content_with_blocks(node)
         elsif context.content?
-          context.lines.each do |line|
-            context.process_inline_elements(line, node)
+          case context.name
+          when :box, :insn
+            # Line-based processing for box/insn - preserve each line as separate node
+            context.lines.each do |line|
+              # Create a paragraph node for each line (including empty lines)
+              # This preserves line structure for listinfo processing
+              para_node = context.create_node(AST::ParagraphNode)
+              context.process_inline_elements(line, para_node) unless line.empty?
+              node.add_child(para_node)
+            end
+          when :point, :shoot, :term
+            # Paragraph-based processing for point/shoot/term
+            # Empty lines separate paragraphs
+            @ast_compiler.process_structured_content(node, context.lines)
+          else
+            # Default: inline processing for each line
+            context.lines.each do |line|
+              context.process_inline_elements(line, node)
+            end
           end
         end
 

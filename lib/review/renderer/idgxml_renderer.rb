@@ -456,9 +456,9 @@ module ReVIEW
         content = render_block_content_with_paragraphs(node)
         if caption && !caption.empty? && node.caption_node
           caption_with_inline = render_caption_inline(node.caption_node)
-          captionblock('point-t', content, caption_with_inline, 'point-title')
+          captionblock_with_content('point-t', content, caption_with_inline, 'point-title')
         else
-          captionblock('point', content, nil)
+          captionblock_with_content('point', content, nil)
         end
       end
 
@@ -467,9 +467,9 @@ module ReVIEW
         content = render_block_content_with_paragraphs(node)
         if caption && !caption.empty? && node.caption_node
           caption_with_inline = render_caption_inline(node.caption_node)
-          captionblock('shoot-t', content, caption_with_inline, 'shoot-title')
+          captionblock_with_content('shoot-t', content, caption_with_inline, 'shoot-title')
         else
-          captionblock('shoot', content, nil)
+          captionblock_with_content('shoot', content, nil)
         end
       end
 
@@ -478,15 +478,15 @@ module ReVIEW
         content = render_block_content_with_paragraphs(node)
         if caption && !caption.empty? && node.caption_node
           caption_with_inline = render_caption_inline(node.caption_node)
-          captionblock('notice-t', content, caption_with_inline, 'notice-title')
+          captionblock_with_content('notice-t', content, caption_with_inline, 'notice-title')
         else
-          captionblock('notice', content, nil)
+          captionblock_with_content('notice', content, nil)
         end
       end
 
       def visit_block_term(node)
         content = render_block_content_with_paragraphs(node)
-        captionblock('term', content, nil)
+        captionblock_with_content('term', content, nil)
       end
 
       def visit_block_insn(node)
@@ -1658,54 +1658,8 @@ module ReVIEW
       # Render block content with paragraph grouping
       # Used for point/shoot/notice/term blocks
       def render_block_content_with_paragraphs(node)
-        # Use preserved lines if available (like box/insn)
-        if node.lines && node.lines.any?
-          # Process each line through inline processor
-          processed_lines = node.lines.map do |line|
-            if line.empty?
-              ''
-            else
-              temp_node = ReVIEW::AST::ParagraphNode.new(location: nil)
-              @ast_compiler ||= ReVIEW::AST::Compiler.for_chapter(@chapter)
-              @ast_compiler.inline_processor.parse_inline_elements(line, temp_node)
-              render_children(temp_node)
-            end
-          end
-
-          # Group lines into paragraphs (split on empty lines)
-          paragraphs = []
-          current_paragraph = []
-          processed_lines.each do |line|
-            if line.empty?
-              # Empty line signals paragraph break
-              unless current_paragraph.empty?
-                # Join lines in paragraph according to join_lines_by_lang setting
-                paragraphs << if config['join_lines_by_lang']
-                                current_paragraph.join(' ')
-                              else
-                                current_paragraph.join
-                              end
-              end
-              current_paragraph = []
-            else
-              current_paragraph << line
-            end
-          end
-          # Add last paragraph
-          unless current_paragraph.empty?
-            paragraphs << if config['join_lines_by_lang']
-                            current_paragraph.join(' ')
-                          else
-                            current_paragraph.join
-                          end
-          end
-
-          # Join paragraphs with double newlines so split_paragraph_content can split them
-          paragraphs.join("\n\n")
-        else
-          # Fallback: render children directly
-          render_children(node)
-        end
+        # Render children directly - inline elements are already parsed during AST construction
+        render_children(node)
       end
 
       # Visit unordered list
@@ -2344,23 +2298,12 @@ module ReVIEW
 
       # Extract lines from block node and process inline elements
       def extract_lines_from_node(node)
-        # If the node has preserved original lines, use them with inline processing
-        if node.lines && node.lines.any?
-          node.lines.map do |line|
-            # Empty lines should remain empty
-            if line.empty?
-              ''
-            else
-              # Create a temporary paragraph node to process inline elements in this line
-              temp_node = ReVIEW::AST::ParagraphNode.new(location: nil)
-              @ast_compiler ||= ReVIEW::AST::Compiler.for_chapter(@chapter)
-              @ast_compiler.inline_processor.parse_inline_elements(line, temp_node)
-              # Render the inline elements
-              render_children(temp_node)
-            end
-          end
+        # If node has ParagraphNode children (e.g., box/insn blocks), treat each as a separate line
+        if node.children.all?(AST::ParagraphNode)
+          # Each ParagraphNode represents one line - inline elements are already parsed
+          node.children.map { |para| render_children(para) }
         else
-          # Fallback: render all children to get the full content
+          # Fallback: render all children and split by newlines
           full_content = render_children(node)
 
           # Split by newlines to get individual lines
