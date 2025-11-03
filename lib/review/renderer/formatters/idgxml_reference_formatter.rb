@@ -85,6 +85,12 @@ module ReVIEW
           escape(data.word_content)
         end
 
+        def format_bibpaper_reference(data)
+          bib_id = data.item_id
+          bib_number = data.item_number
+          %Q(<span type='bibref' idref='#{bib_id}'>[#{bib_number}]</span>)
+        end
+
         private
 
         attr_reader :config

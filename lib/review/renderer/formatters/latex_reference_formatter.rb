@@ -91,6 +91,10 @@ module ReVIEW
           escape(data.word_content)
         end
 
+        def format_bibpaper_reference(data)
+          "\\reviewbibref{[#{data.item_number}]}{bib:#{data.item_id}}"
+        end
+
         private
 
         attr_reader :config

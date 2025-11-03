@@ -40,6 +40,8 @@ module ReVIEW
         column: :create_inline_ref_ast_node,
         w: :create_inline_ref_ast_node,
         wb: :create_inline_ref_ast_node,
+        bib: :create_inline_ref_ast_node,
+        bibref: :create_inline_ref_ast_node,
         hd: :create_inline_cross_ref_ast_node,
         chap: :create_inline_cross_ref_ast_node,
         chapref: :create_inline_cross_ref_ast_node,

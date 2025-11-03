@@ -351,15 +351,16 @@ module ReVIEW
           end
         end
 
-        def render_inline_bib(_type, content, node)
-          # Bibliography reference
-          id = node.args.first || content
-          begin
-            number = @ctx.bibpaper_number(id)
-            @ctx.build_bib_reference_link(id, number)
-          rescue ReVIEW::KeyError
-            %Q([#{id}])
+        def render_inline_bib(_type, _content, node)
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+            raise 'BUG: Reference should be resolved at AST construction time'
           end
+
+          data = ref_node.resolved_data
+          bib_id = data.item_id
+          bib_number = data.item_number
+          @ctx.build_bib_reference_link(bib_id, bib_number)
         end
 
         def render_inline_endnote(_type, _content, node)

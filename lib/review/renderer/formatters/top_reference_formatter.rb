@@ -82,6 +82,11 @@ module ReVIEW
           "#{label}#{number_text || data.item_id || ''}"
         end
 
+        def format_bibpaper_reference(data)
+          number = data.item_number || data.item_id
+          "[#{number}]"
+        end
+
         private
 
         attr_reader :config

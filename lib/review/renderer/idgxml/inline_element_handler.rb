@@ -341,13 +341,16 @@ module ReVIEW
         end
 
         # Bibliography
-        def render_inline_bib(_type, content, node)
-          id = node.args.first || content
-          begin
-            %Q(<span type='bibref' idref='#{id}'>[#{@ctx.bibpaper_number(id)}]</span>)
-          rescue ReVIEW::KeyError
-            app_error "unknown bib: #{id}"
+        def render_inline_bib(_type, _content, node)
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+            raise 'BUG: Reference should be resolved at AST construction time'
           end
+
+          data = ref_node.resolved_data
+          bib_id = data.item_id
+          bib_number = data.item_number
+          %Q(<span type='bibref' idref='#{bib_id}'>[#{bib_number}]</span>)
         end
 
         # Headline reference

@@ -513,12 +513,13 @@ module ReVIEW
       end
 
       def render_inline_bib(_type, _content, node)
-        id = node.args.first
-        return '' unless id && @chapter
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved?
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
 
-        @chapter.bibpaper(id).number.to_s
-      rescue ReVIEW::KeyError
-        ''
+        data = ref_node.resolved_data
+        data.item_number.to_s
       end
 
       def render_inline_hd(_type, _content, node)

@@ -1236,7 +1236,19 @@ class TestLatexRenderer < Test::Unit::TestCase
     bibpaper_index.add_item(item)
     @book.bibpaper_index = bibpaper_index
 
+    # Create resolved data
+    resolved_data = AST::ResolvedData.bibpaper(
+      item_number: 1,
+      item_id: 'lins',
+      caption_node: nil
+    )
+
+    # Create ReferenceNode with resolved data
+    ref_node = AST::ReferenceNode.new('lins', nil, location: ReVIEW::SnapshotLocation.new(nil, 0), resolved_data: resolved_data)
+
     inline = AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :bib, args: ['lins'])
+    inline.add_child(ref_node)
+
     result = @renderer.visit(inline)
     assert_equal '\\reviewbibref{[1]}{bib:lins}', result
   end
@@ -1250,11 +1262,31 @@ class TestLatexRenderer < Test::Unit::TestCase
     bibpaper_index.add_item(item2)
     @book.bibpaper_index = bibpaper_index
 
+    # First reference
+    resolved_data1 = AST::ResolvedData.bibpaper(
+      item_number: 1,
+      item_id: 'lins',
+      caption_node: nil
+    )
+    ref_node1 = AST::ReferenceNode.new('lins', nil, location: ReVIEW::SnapshotLocation.new(nil, 0), resolved_data: resolved_data1)
+
     inline1 = AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :bib, args: ['lins'])
+    inline1.add_child(ref_node1)
+
     result1 = @renderer.visit(inline1)
     assert_equal '\\reviewbibref{[1]}{bib:lins}', result1
 
+    # Second reference
+    resolved_data2 = AST::ResolvedData.bibpaper(
+      item_number: 2,
+      item_id: 'knuth',
+      caption_node: nil
+    )
+    ref_node2 = AST::ReferenceNode.new('knuth', nil, location: ReVIEW::SnapshotLocation.new(nil, 0), resolved_data: resolved_data2)
+
     inline2 = AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :bib, args: ['knuth'])
+    inline2.add_child(ref_node2)
+
     result2 = @renderer.visit(inline2)
     assert_equal '\\reviewbibref{[2]}{bib:knuth}', result2
   end
@@ -1266,31 +1298,24 @@ class TestLatexRenderer < Test::Unit::TestCase
     bibpaper_index.add_item(item)
     @book.bibpaper_index = bibpaper_index
 
+    # Create resolved data
+    resolved_data = AST::ResolvedData.bibpaper(
+      item_number: 1,
+      item_id: 'lins',
+      caption_node: nil
+    )
+
+    # Create ReferenceNode with resolved data
+    ref_node = AST::ReferenceNode.new('lins', nil,
+                                      location: ReVIEW::SnapshotLocation.new(nil, 0),
+                                      resolved_data: resolved_data)
+
+    # Create InlineNode and add ReferenceNode as child
     inline = AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :bibref, args: ['lins'])
+    inline.add_child(ref_node)
+
     result = @renderer.visit(inline)
     assert_equal '\\reviewbibref{[1]}{bib:lins}', result
-  end
-
-  def test_inline_bib_no_index
-    # Test @<bib> when there's no bibpaper_index (should fallback to \cite)
-    @book.bibpaper_index = nil
-
-    inline = AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :bib, args: ['lins'])
-    result = @renderer.visit(inline)
-    assert_equal '\\cite{lins}', result
-  end
-
-  def test_inline_bib_not_found_in_index
-    # Test @<bib> when the ID is not found in index (should fallback to \cite)
-    bibpaper_index = ReVIEW::Book::BibpaperIndex.new
-    item = ReVIEW::Book::Index::Item.new('knuth', 1, 'Knuth, 1997')
-    bibpaper_index.add_item(item)
-    @book.bibpaper_index = bibpaper_index
-
-    inline = AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :bib, args: ['lins'])
-    result = @renderer.visit(inline)
-    # Should fallback to \cite when not found
-    assert_equal '\\cite{lins}', result
   end
 
   def test_inline_idx_simple

@@ -248,17 +248,16 @@ module ReVIEW
         end
 
         # Render bibliography reference
-        def render_inline_bib(_type, content, node)
-          return content unless node.args.first
-
-          bib_id = node.args.first.to_s
-
-          begin
-            bib_number = @ctx.bibpaper_number(bib_id)
-            "\\reviewbibref{[#{bib_number}]}{bib:#{bib_id}}"
-          rescue ReVIEW::KeyError
-            raise ReVIEW::CompileError, "unknown bib: #{bib_id}"
+        def render_inline_bib(_type, _content, node)
+          ref_node = node.children.first
+          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+            raise 'BUG: Reference should be resolved at AST construction time'
           end
+
+          data = ref_node.resolved_data
+          bib_number = data.item_number
+          bib_id = data.item_id
+          "\\reviewbibref{[#{bib_number}]}{bib:#{bib_id}}"
         end
 
         # Render bibref reference (same as bib)
