@@ -193,7 +193,7 @@ module ReVIEW
             inline_processor.parse_inline_elements(raw_caption_text, caption_node)
           end
         rescue StandardError => e
-          raise CompileError, "Error processing caption '#{caption_text}': #{e.message}#{caption_location.format_for_error}"
+          raise CompileError, "Error processing caption '#{raw_caption_text}': #{e.message}#{caption_location.format_for_error}"
         end
 
         caption_node
