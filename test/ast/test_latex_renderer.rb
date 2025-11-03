@@ -379,7 +379,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     document.add_child(paragraph)
 
     result = @renderer.visit(document)
-    assert_equal "Hello World\n\n", result
+    assert_equal "Hello World\n", result
   end
 
   def test_render_inline_element_href_with_args
@@ -519,7 +519,7 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     expected = "\\chapter{Chapter Title}\n" +
                "\\label{chap:test}\n\n" +
-               "Chapter content here.\n\n"
+               "Chapter content here.\n"
 
     assert_equal expected, result
   end

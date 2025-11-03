@@ -72,8 +72,9 @@ module ReVIEW
         end
 
         # Ensure content ends with single newline if it contains content
+        # Remove all trailing newlines and add exactly one back
         if content && !content.empty?
-          content.chomp + "\n"
+          content.sub(/\n+\z/, '') + "\n"
         else
           content || ''
         end
