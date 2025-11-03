@@ -1169,58 +1169,38 @@ module ReVIEW
         end
       end
 
-      def render_inline_fn(_type, content, node)
-        if node.args.first
-          footnote_id = node.args.first.to_s
+      def render_inline_fn(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
 
-          # Get footnote info from chapter index
-          unless @chapter && @chapter.footnote_index
-            return "\\footnote{#{footnote_id}}"
-          end
+        data = ref_node.resolved_data
+        footnote_number = data.item_number
 
-          begin
-            footnote_number = @chapter.footnote_index.number(footnote_id)
-            index_item = @chapter.footnote_index[footnote_id]
-          rescue ReVIEW::KeyError
-            return "\\footnote{#{footnote_id}}"
+        # Check if we need to use footnotetext mode
+        if config['footnotetext']
+          "\\footnotemark[#{footnote_number}]"
+        elsif @rendering_context.requires_footnotetext?
+          if data.caption_node
+            @rendering_context.collect_footnote(data.caption_node, footnote_number)
           end
-
-          # Check if we need to use footnotetext mode
-          if config['footnotetext']
-            "\\footnotemark[#{footnote_number}]"
-          elsif @rendering_context.requires_footnotetext?
-            if index_item.footnote_node?
-              @rendering_context.collect_footnote(index_item.footnote_node, footnote_number)
-            end
-            '\\protect\\footnotemark{}'
-          else
-            footnote_content = if index_item.footnote_node?
-                                 render_footnote_content(index_item.footnote_node)
-                               else
-                                 escape(index_item.content || '')
-                               end
-            "\\footnote{#{footnote_content}}"
-          end
+          '\\protect\\footnotemark{}'
         else
-          "\\footnote{#{content}}"
+          footnote_content = if data.caption_node
+                               render_footnote_content(data.caption_node)
+                             else
+                               escape(data.caption_text || '')
+                             end
+          "\\footnote{#{footnote_content}}"
         end
       end
 
       # Render list reference
-      def render_inline_list(_type, content, node)
+      def render_inline_list(_type, _content, node)
         ref_node = node.children.first
         unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
-          # Fallback to old behavior when reference resolution is disabled
-          # If KeyError occurs here, it's a bug - references should be validated at AST construction time
-          return content unless node.args.present?
-
-          if node.args.length == 2
-            return render_cross_chapter_list_reference(node)
-          elsif node.args.length == 1
-            return render_same_chapter_list_reference(node)
-          else
-            return content
-          end
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
 
         data = ref_node.resolved_data
@@ -1240,20 +1220,10 @@ module ReVIEW
       end
 
       # Render table reference
-      def render_inline_table(_type, content, node)
+      def render_inline_table(_type, _content, node)
         ref_node = node.children.first
         unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
-          # Fallback to old behavior when reference resolution is disabled
-          # If KeyError occurs here, it's a bug - references should be validated at AST construction time
-          return content unless node.args.present?
-
-          if node.args.length == 2
-            return render_cross_chapter_table_reference(node)
-          elsif node.args.length == 1
-            return render_same_chapter_table_reference(node)
-          else
-            return content
-          end
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
 
         data = ref_node.resolved_data
@@ -1276,20 +1246,10 @@ module ReVIEW
       end
 
       # Render image reference
-      def render_inline_img(_type, content, node)
+      def render_inline_img(_type, _content, node)
         ref_node = node.children.first
         unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
-          # Fallback to old behavior when reference resolution is disabled
-          # If KeyError occurs here, it's a bug - references should be validated at AST construction time
-          return content unless node.args.present?
-
-          if node.args.length == 2
-            return render_cross_chapter_image_reference(node)
-          elsif node.args.length == 1
-            return render_same_chapter_image_reference(node)
-          else
-            return content
-          end
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
 
         data = ref_node.resolved_data
@@ -1949,23 +1909,10 @@ module ReVIEW
       end
 
       # Render endnote reference
-      def render_inline_endnote(_type, content, node)
+      def render_inline_endnote(_type, _content, node)
         ref_node = node.children.first
         unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
-          # Fallback to old behavior when reference resolution is disabled
-          # If KeyError occurs here, it's a bug - references should be validated at AST construction time
-          if node.args.first
-            ref_id = node.args.first
-            if @chapter && @chapter.endnote_index
-              index_item = @chapter.endnote_index[ref_id]
-              endnote_content = escape(index_item.content || '')
-              return "\\endnote{#{endnote_content}}"
-            else
-              return "\\endnote{#{escape(ref_id)}}"
-            end
-          else
-            return content
-          end
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
 
         data = ref_node.resolved_data

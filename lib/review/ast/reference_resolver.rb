@@ -355,10 +355,12 @@ module ReVIEW
           end
 
           number = item.respond_to?(:number) ? item.number : nil
+          # Get footnote_node (AST node with inline content) if available
+          fn_node = item.respond_to?(:footnote_node) ? item.footnote_node : nil
           ResolvedData.footnote(
             item_number: number,
             item_id: id,
-            caption_node: nil # Footnotes don't use caption_node
+            caption_node: fn_node
           )
         else
           raise CompileError, "Footnote reference not found: #{id}"

@@ -1114,11 +1114,10 @@ module ReVIEW
       end
 
       # References
-      def render_inline_list(_type, content, node)
+      def render_inline_list(_type, _content, node)
         ref_node = node.children.first
         unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
-          item_id = node.target_item_id || content
-          return "<span type='list'>#{escape(item_id)}</span>"
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
 
         data = ref_node.resolved_data
@@ -1131,11 +1130,10 @@ module ReVIEW
         "<span type='list'>#{base_ref}</span>"
       end
 
-      def render_inline_table(_type, content, node)
+      def render_inline_table(_type, _content, node)
         ref_node = node.children.first
         unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
-          item_id = node.target_item_id || content
-          return "<span type='table'>#{escape(item_id)}</span>"
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
 
         data = ref_node.resolved_data
@@ -1148,11 +1146,10 @@ module ReVIEW
         "<span type='table'>#{base_ref}</span>"
       end
 
-      def render_inline_img(_type, content, node)
+      def render_inline_img(_type, _content, node)
         ref_node = node.children.first
         unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
-          item_id = node.target_item_id || content
-          return "<span type='image'>#{escape(item_id)}</span>"
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
 
         data = ref_node.resolved_data
@@ -1165,11 +1162,10 @@ module ReVIEW
         "<span type='image'>#{base_ref}</span>"
       end
 
-      def render_inline_eq(_type, content, node)
+      def render_inline_eq(_type, _content, node)
         ref_node = node.children.first
         unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
-          item_id = node.target_item_id || content
-          return "<span type='eq'>#{escape(item_id)}</span>"
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
 
         data = ref_node.resolved_data
@@ -1231,23 +1227,21 @@ module ReVIEW
       end
 
       # Footnotes
-      def render_inline_fn(_type, content, node)
-        item_id = node.target_item_id || content
-        begin
-          fn_entry = @chapter.footnote(item_id)
-          fn_node = fn_entry&.footnote_node
+      def render_inline_fn(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
 
-          if fn_node
-            # Render the stored AST node when available to preserve inline markup
-            rendered = render_inline_nodes(fn_node.children)
-            %Q(<footnote>#{rendered}</footnote>)
-          else
-            # Fallback: compile inline text (matches IDGXMLBuilder inline_fn)
-            rendered_text = escape(fn_entry.content.to_s.strip)
-            %Q(<footnote>#{rendered_text}</footnote>)
-          end
-        rescue ReVIEW::KeyError
-          app_error "unknown footnote: #{item_id}"
+        data = ref_node.resolved_data
+        if data.caption_node
+          # Render the stored AST node when available to preserve inline markup
+          rendered = render_inline_nodes(data.caption_node.children)
+          %Q(<footnote>#{rendered}</footnote>)
+        else
+          # Fallback: use caption_text
+          rendered_text = escape(data.caption_text.to_s.strip)
+          %Q(<footnote>#{rendered_text}</footnote>)
         end
       end
 

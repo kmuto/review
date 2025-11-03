@@ -238,13 +238,6 @@ class TestLatexRenderer < Test::Unit::TestCase
     assert_equal '\\reviewtt{code text}', result
   end
 
-  def test_visit_inline_footnote
-    inline = AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :fn, args: ['footnote1'])
-
-    result = @renderer.visit(inline)
-    assert_equal '\\footnote{footnote1}', result
-  end
-
   def test_visit_code_block_with_caption
     caption = 'Code Example'
     caption_node = AST::CaptionNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
