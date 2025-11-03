@@ -60,6 +60,11 @@ module ReVIEW
         # Generate content with proper separation between document-level elements
         content = render_document_children(node)
 
+        # Wrap Part documents with reviewpart environment
+        if should_wrap_part_with_reviewpart?
+          content = "\\begin{reviewpart}\n" + content + "\\end{reviewpart}\n"
+        end
+
         # Add any remaining collected footnotetext commands
         if @rendering_context.footnote_collector.any?
           content += generate_footnotetext_from_collector(@rendering_context.footnote_collector)
@@ -1453,6 +1458,11 @@ module ReVIEW
         else
           content
         end
+      end
+
+      # Check if Part document should be wrapped with reviewpart environment
+      def should_wrap_part_with_reviewpart?
+        @chapter.is_a?(ReVIEW::Book::Part)
       end
 
       # Generate TOC entry only (for nodisp headlines)

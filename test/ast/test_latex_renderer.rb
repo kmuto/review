@@ -435,9 +435,11 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     result = part_renderer.visit(document)
 
-    expected = "\\part{Part Title}\n" +
+    expected = "\\begin{reviewpart}\n" +
+               "\\part{Part Title}\n" +
                "\\label{chap:part1}\n\n" +
-               "Part content here.\n\n"
+               "Part content here.\n\n" +
+               "\\end{reviewpart}\n"
 
     assert_equal expected, result
   end
@@ -464,23 +466,25 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     result = part_renderer.visit(document)
 
-    expected = "\\part{Part Title}\n" +
+    expected = "\\begin{reviewpart}\n" +
+               "\\part{Part Title}\n" +
                "\\label{chap:part1}\n\n" +
                "\\part{Another Part Title}\n" +
-               "\\label{chap:part1}\n\n"
+               "\\label{chap:part1}\n\n" +
+               "\\end{reviewpart}\n"
 
     assert_equal expected, result
   end
 
   def test_visit_part_document_with_level_2_first
-    # Test Part document that starts with level 2 headline (no reviewpart environment should be opened)
+    # Test Part document that starts with level 2 headline (reviewpart environment wraps entire document)
     part = ReVIEW::Book::Part.new(@book, 1, 'part1', 'part1.re', StringIO.new)
     part.generate_indexes
     part_renderer = Renderer::LatexRenderer.new(part)
 
     document = AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
 
-    # Add level 2 headline first (should not open reviewpart)
+    # Add level 2 headline first
     caption_node = AST::CaptionNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
     caption_node.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Section Title'))
     headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, caption_node: caption_node)
@@ -488,8 +492,10 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     result = part_renderer.visit(document)
 
-    expected = "\\section{Section Title}\n" +
-               "\\label{sec:1-1}\n\n"
+    expected = "\\begin{reviewpart}\n" +
+               "\\section{Section Title}\n" +
+               "\\label{sec:1-1}\n\n" +
+               "\\end{reviewpart}\n"
 
     assert_equal expected, result
   end
