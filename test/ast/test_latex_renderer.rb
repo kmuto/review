@@ -163,7 +163,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption_node: caption_node)
     result = part_renderer.visit(headline)
 
-    expected = "\\begin{reviewpart}\n\\part{Part Title}\n\\label{chap:part1}\n\n"
+    expected = "\\part{Part Title}\n\\label{chap:part1}\n\n"
     assert_equal expected, result
   end
 
@@ -179,7 +179,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     headline = AST::HeadlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, caption_node: caption_node)
     result = part_renderer.visit(headline)
 
-    expected = "\\begin{reviewpart}\n\\part*{Part Title}\n\\addcontentsline{toc}{part}{Part Title}\n\\label{chap:part1}\n\n"
+    expected = "\\part*{Part Title}\n\\addcontentsline{toc}{part}{Part Title}\n\\label{chap:part1}\n\n"
     assert_equal expected, result
   end
 
@@ -435,11 +435,9 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     result = part_renderer.visit(document)
 
-    expected = "\\begin{reviewpart}\n" +
-               "\\part{Part Title}\n" +
+    expected = "\\part{Part Title}\n" +
                "\\label{chap:part1}\n\n" +
-               "Part content here.\n\n" +
-               "\\end{reviewpart}\n"
+               "Part content here.\n\n"
 
     assert_equal expected, result
   end
@@ -466,12 +464,10 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     result = part_renderer.visit(document)
 
-    expected = "\\begin{reviewpart}\n" +
-               "\\part{Part Title}\n" +
+    expected = "\\part{Part Title}\n" +
                "\\label{chap:part1}\n\n" +
                "\\part{Another Part Title}\n" +
-               "\\label{chap:part1}\n\n" +
-               "\\end{reviewpart}\n"
+               "\\label{chap:part1}\n\n"
 
     assert_equal expected, result
   end
@@ -606,8 +602,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     result = part_renderer.visit(headline)
 
     # Part level 1 with nonum does NOT get a label (matching LATEXBuilder behavior)
-    expected = "\\begin{reviewpart}\n" +
-               "\\part*{Unnumbered Part}\n" +
+    expected = "\\part*{Unnumbered Part}\n" +
                "\\addcontentsline{toc}{chapter}{Unnumbered Part}\n\n"
 
     assert_equal expected, result

@@ -44,9 +44,6 @@ module ReVIEW
         # Initialize RenderingContext for cleaner state management
         @rendering_context = RenderingContext.new(:document)
 
-        # Initialize Part environment tracking for reviewpart wrapper
-        @part_env_opened = false
-
         # Initialize index database and MeCab for Japanese text indexing
         initialize_index_support
       end
@@ -54,11 +51,6 @@ module ReVIEW
       def visit_document(node)
         # Generate content with proper separation between document-level elements
         content = render_document_children(node)
-
-        # Close the reviewpart environment if it was opened
-        if @part_env_opened
-          content += "\\end{reviewpart}\n"
-        end
 
         # Add any remaining collected footnotetext commands
         if @rendering_context.footnote_collector.any?
@@ -78,25 +70,17 @@ module ReVIEW
         level = node.level
         caption = render_children(node.caption_node) if node.caption_node
 
-        # For Part documents with legacy configuration, open reviewpart environment
-        # on first level 1 headline (matching LATEXBuilder behavior)
-        prefix = ''
-        if should_wrap_part_with_reviewpart? && level == 1 && !@part_env_opened
-          @part_env_opened = true
-          prefix = "\\begin{reviewpart}\n"
-        end
-
         # Handle special headline options (nonum, notoc, nodisp)
         # These do NOT increment the section counter (matching LATEXBuilder behavior)
         if node.nodisp?
           # nodisp: Only add TOC entry, no visible heading
-          return prefix + generate_toc_entry(level, caption)
+          return generate_toc_entry(level, caption)
         elsif node.nonum?
           # nonum: Unnumbered section that appears in TOC
-          return prefix + generate_nonum_headline(level, caption, node)
+          return generate_nonum_headline(level, caption, node)
         elsif node.notoc?
           # notoc: Unnumbered section that does NOT appear in TOC
-          return prefix + generate_notoc_headline(level, caption, node)
+          return generate_notoc_headline(level, caption, node)
         end
 
         # Update section counter like LATEXBuilder (only for regular numbered headlines)
@@ -133,7 +117,7 @@ module ReVIEW
           end
         end
 
-        prefix + result.join("\n") + "\n\n"
+        result.join("\n") + "\n\n"
       end
 
       def visit_paragraph(node)
@@ -2355,11 +2339,6 @@ module ReVIEW
         else
           content
         end
-      end
-
-      # Check if Part document should be wrapped with reviewpart environment
-      def should_wrap_part_with_reviewpart?
-        @chapter.is_a?(ReVIEW::Book::Part)
       end
 
       # Generate TOC entry only (for nodisp headlines)
