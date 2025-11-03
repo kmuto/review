@@ -15,16 +15,31 @@ module ReVIEW
       # Context for inline element rendering with business logic
       # Used by InlineElementHandler
       class InlineContext
+        # Proxy that provides minimal interface to renderer
+        # Only exposes render_children method to InlineContext
+        # This class is private and should not be used directly outside InlineContext
+        class InlineRenderProxy
+          def initialize(renderer)
+            @renderer = renderer
+          end
+
+          def render_children(node)
+            @renderer.render_children(node)
+          end
+        end
+        private_constant :InlineRenderProxy
+
         include ReVIEW::HTMLUtils
         include ReVIEW::EscapeUtils
 
-        attr_reader :config, :book, :chapter, :renderer, :img_math
+        attr_reader :config, :book, :chapter, :img_math
 
         def initialize(config:, book:, chapter:, renderer:, img_math: nil)
           @config = config
           @book = book
           @chapter = chapter
-          @renderer = renderer
+          # Automatically create proxy from renderer to limit access
+          @render_proxy = InlineRenderProxy.new(renderer)
           @img_math = img_math
         end
 
@@ -91,7 +106,7 @@ module ReVIEW
         end
 
         def render_children(node)
-          renderer.render_children(node)
+          @render_proxy.render_children(node)
         end
       end
     end
