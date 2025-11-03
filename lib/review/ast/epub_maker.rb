@@ -28,7 +28,7 @@ module ReVIEW
       def create_converter(book)
         # Create a wrapper that makes Renderer compatible with Converter interface
         # Renderer will be created per chapter in the adapter
-        HtmlRendererConverterAdapter.new(book)
+        RendererConverterAdapter.new(book)
       end
 
       # Override build_body to use AST Renderer instead of traditional Builder
@@ -83,8 +83,8 @@ module ReVIEW
       end
     end
 
-    # Adapter to make HTML Renderer compatible with Converter interface
-    class HtmlRendererConverterAdapter
+    # Adapter to make Renderer compatible with Converter interface
+    class RendererConverterAdapter
       def initialize(book)
         @book = book
         @config = book.config
