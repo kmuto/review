@@ -499,32 +499,6 @@ module ReVIEW
         visit(ast_root)
       end
 
-      # Overrides Base#render to generate a complete HTML document with template.
-      #
-      # @return [String] Complete HTML document with template applied
-      def render(ast_root)
-        @body = render_body(ast_root)
-
-        # Set up template variables like HTMLBuilder
-        # Chapter title is already plain text (markup removed), just escape it
-        @title = escape_content(@chapter&.title || '')
-        @language = config['language'] || 'ja'
-        @stylesheets = config['stylesheet'] || []
-        @next = @chapter&.next_chapter
-        @prev = @chapter&.prev_chapter
-        @next_title = @next ? escape_content(@next.title) : ''
-        @prev_title = @prev ? escape_content(@prev.title) : ''
-
-        # Handle MathJax configuration like HTMLBuilder
-        if config['math_format'] == 'mathjax'
-          @javascripts.push(%Q(<script>MathJax = { tex: { inlineMath: [['\\\\(', '\\\\)']] }, svg: { fontCache: 'global' } };</script>))
-          @javascripts.push(%Q(<script type="text/javascript" id="MathJax-script" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>))
-        end
-
-        # Render template
-        ReVIEW::Template.load(layoutfile).result(binding)
-      end
-
       def layoutfile
         # Determine layout file like HTMLBuilder
         if config.maker == 'webmaker'
@@ -573,7 +547,29 @@ module ReVIEW
 
       private
 
-      # Code block visitors using dynamic method dispatch
+      # Generate a complete HTML document with template.
+      def post_process(result)
+        @body = result
+
+        # Set up template variables like HTMLBuilder
+        # Chapter title is already plain text (markup removed), just escape it
+        @title = escape_content(@chapter&.title || '')
+        @language = config['language'] || 'ja'
+        @stylesheets = config['stylesheet'] || []
+        @next = @chapter&.next_chapter
+        @prev = @chapter&.prev_chapter
+        @next_title = @next ? escape_content(@next.title) : ''
+        @prev_title = @prev ? escape_content(@prev.title) : ''
+
+        # Handle MathJax configuration like HTMLBuilder
+        if config['math_format'] == 'mathjax'
+          @javascripts.push(%Q(<script>MathJax = { tex: { inlineMath: [['\\\\(', '\\\\)']] }, svg: { fontCache: 'global' } };</script>))
+          @javascripts.push(%Q(<script type="text/javascript" id="MathJax-script" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>))
+        end
+
+        # Render template
+        ReVIEW::Template.load(layoutfile).result(binding)
+      end
 
       def visit_code_block_emlist(node)
         lines_content = render_children(node)
