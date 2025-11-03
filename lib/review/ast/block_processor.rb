@@ -558,28 +558,6 @@ module ReVIEW
         node
       end
 
-      # Process nested blocks
-      def process_nested_blocks(parent_node, block_data)
-        return unless block_data.nested_blocks?
-
-        # Use public API to temporarily change current node
-        @ast_compiler.with_temporary_ast_node!(parent_node) do
-          # Process nested blocks recursively
-          block_data.nested_blocks.each do |nested_block|
-            process_block_command(nested_block)
-          end
-        end
-      end
-
-      # Process structured content including nested blocks
-      def process_structured_content_with_blocks(parent_node, block_data)
-        # Process regular lines
-        @ast_compiler.process_structured_content(parent_node, block_data.lines) if block_data.content?
-
-        # Process nested blocks
-        process_nested_blocks(parent_node, block_data)
-      end
-
       def parse_raw_content(content)
         return [nil, content] if content.nil? || content.empty?
 
