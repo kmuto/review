@@ -2418,19 +2418,8 @@ module ReVIEW
           return ''
         end
 
-        # Get processed content - use content if available, otherwise parse arg
-        content = if node.content
-                    node.content
-                  elsif node.arg
-                    # Fallback: parse arg directly if content is not set
-                    if matched = node.arg.match(/\A\|(.*?)\|(.*)/)
-                      matched[2] # Extract content part after |builder|
-                    else
-                      node.arg
-                    end
-                  else
-                    ''
-                  end
+        # Get processed content
+        content = node.content || ''
 
         # Convert \n to actual newlines
         content.gsub('\\n', "\n")
