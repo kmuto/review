@@ -2,13 +2,14 @@
 
 require_relative '../test_helper'
 require 'review/html_converter'
-require 'review/ast/html_diff'
+require 'review/ast/diff/html'
 
 class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
   include ReVIEW
 
   def setup
     @converter = HTMLConverter.new
+    @comparator = AST::Diff::Html.new
   end
 
   def test_simple_paragraph_comparison
@@ -17,15 +18,15 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts "Builder HTML: #{builder_html.inspect}"
       puts "Renderer HTML: #{renderer_html.inspect}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?, 'Simple paragraph should produce equivalent HTML'
+    assert result.same_hash?, 'Simple paragraph should produce equivalent HTML'
   end
 
   def test_headline_comparison
@@ -34,15 +35,15 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts "Builder HTML: #{builder_html.inspect}"
       puts "Renderer HTML: #{renderer_html.inspect}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?, 'Headline should produce equivalent HTML'
+    assert result.same_hash?, 'Headline should produce equivalent HTML'
   end
 
   def test_inline_formatting_comparison
@@ -51,15 +52,15 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts "Builder HTML: #{builder_html.inspect}"
       puts "Renderer HTML: #{renderer_html.inspect}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?, 'Inline formatting should produce equivalent HTML'
+    assert result.same_hash?, 'Inline formatting should produce equivalent HTML'
   end
 
   def test_code_block_comparison
@@ -74,15 +75,15 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts "Builder HTML: #{builder_html.inspect}"
       puts "Renderer HTML: #{renderer_html.inspect}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?
+    assert result.same_hash?
   end
 
   def test_table_comparison
@@ -98,15 +99,15 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts "Builder HTML: #{builder_html.inspect}"
       puts "Renderer HTML: #{renderer_html.inspect}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?
+    assert result.same_hash?
   end
 
   def test_list_comparison
@@ -119,15 +120,15 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts "Builder HTML: #{builder_html.inspect}"
       puts "Renderer HTML: #{renderer_html.inspect}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?
+    assert result.same_hash?
   end
 
   def test_note_block_comparison
@@ -140,15 +141,15 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts "Builder HTML: #{builder_html.inspect}"
       puts "Renderer HTML: #{renderer_html.inspect}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?
+    assert result.same_hash?
   end
 
   def test_complex_document_comparison
@@ -181,18 +182,18 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts 'Complex document differences found:'
       puts "Builder HTML length: #{builder_html.length}"
       puts "Renderer HTML length: #{renderer_html.length}"
       puts "Builder HTML: #{builder_html.inspect}"
       puts "Renderer HTML: #{renderer_html.inspect}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?
+    assert result.same_hash?
   end
 
   # Tests with actual Re:VIEW files from samples/syntax-book
@@ -203,16 +204,16 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts 'ch01.re differences found:'
       puts "Builder HTML length: #{builder_html.length}"
       puts "Renderer HTML length: #{renderer_html.length}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?, 'ch01.re should produce equivalent HTML'
+    assert result.same_hash?, 'ch01.re should produce equivalent HTML'
   end
 
   def test_syntax_book_ch02
@@ -222,16 +223,16 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = result[:builder]
     renderer_html = result[:renderer]
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts 'ch02.re differences found:'
       puts "Builder HTML length: #{builder_html.length}"
       puts "Renderer HTML length: #{renderer_html.length}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?, 'ch02.re should produce equivalent HTML'
+    assert result.same_hash?, 'ch02.re should produce equivalent HTML'
   end
 
   def test_syntax_book_ch03
@@ -241,16 +242,16 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts 'ch03.re differences found:'
       puts "Builder HTML: #{builder_html}"
       puts "Renderer HTML: #{renderer_html}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?, 'ch03.re should produce equivalent HTML'
+    assert result.same_hash?, 'ch03.re should produce equivalent HTML'
   end
 
   def test_syntax_book_pre01
@@ -260,16 +261,16 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts 'pre01.re differences found:'
       puts "Builder HTML length: #{builder_html.length}"
       puts "Renderer HTML length: #{renderer_html.length}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?, 'pre01.re should produce equivalent HTML'
+    assert result.same_hash?, 'pre01.re should produce equivalent HTML'
   end
 
   def test_syntax_book_appA
@@ -279,16 +280,16 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts 'appA.re differences found:'
       puts "Builder HTML length: #{builder_html.length}"
       puts "Renderer HTML length: #{renderer_html.length}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?, 'appA.re should produce equivalent HTML'
+    assert result.same_hash?, 'appA.re should produce equivalent HTML'
   end
 
   def test_syntax_book_part2
@@ -298,16 +299,16 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts 'part2.re differences found:'
       puts "Builder HTML length: #{builder_html.length}"
       puts "Renderer HTML length: #{renderer_html.length}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?, 'part2.re should produce equivalent HTML'
+    assert result.same_hash?, 'part2.re should produce equivalent HTML'
   end
 
   def test_syntax_book_bib
@@ -317,16 +318,16 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = result[:builder]
     renderer_html = result[:renderer]
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts 'bib.re differences found:'
       puts "Builder HTML length: #{builder_html.length}"
       puts "Renderer HTML length: #{renderer_html.length}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?, 'bib.re should produce equivalent HTML'
+    assert result.same_hash?, 'bib.re should produce equivalent HTML'
   end
 
   # Tests with actual Re:VIEW files from samples/debug-book
@@ -337,16 +338,16 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts 'advanced_features.re differences found:'
       puts "Builder HTML length: #{builder_html.length}"
       puts "Renderer HTML length: #{renderer_html.length}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?, 'advanced_features.re should produce equivalent HTML'
+    assert result.same_hash?, 'advanced_features.re should produce equivalent HTML'
   end
 
   def test_debug_book_comprehensive
@@ -356,16 +357,16 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts 'comprehensive.re differences found:'
       puts "Builder HTML length: #{builder_html.length}"
       puts "Renderer HTML length: #{renderer_html.length}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?, 'comprehensive.re should produce equivalent HTML'
+    assert result.same_hash?, 'comprehensive.re should produce equivalent HTML'
   end
 
   def test_debug_book_edge_cases_test
@@ -375,16 +376,16 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts 'edge_cases_test.re differences found:'
       puts "Builder HTML length: #{builder_html.length}"
       puts "Renderer HTML length: #{renderer_html.length}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?, 'edge_cases_test.re should produce equivalent HTML'
+    assert result.same_hash?, 'edge_cases_test.re should produce equivalent HTML'
   end
 
   def test_debug_book_extreme_features
@@ -394,16 +395,16 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts 'extreme_features.re differences found:'
       puts "Builder HTML length: #{builder_html.length}"
       puts "Renderer HTML length: #{renderer_html.length}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?, 'extreme_features.re should produce equivalent HTML'
+    assert result.same_hash?, 'extreme_features.re should produce equivalent HTML'
   end
 
   def test_debug_book_multicontent_test
@@ -413,15 +414,15 @@ class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
     builder_html = @converter.convert_with_builder(source)
     renderer_html = @converter.convert_with_renderer(source)
 
-    diff = ReVIEW::AST::HtmlDiff.new(builder_html, renderer_html)
+    result = @comparator.compare(builder_html, renderer_html)
 
-    unless diff.same_hash?
+    unless result.same_hash?
       puts 'multicontent_test.re differences found:'
       puts "Builder HTML length: #{builder_html.length}"
       puts "Renderer HTML length: #{renderer_html.length}"
-      puts diff.pretty_diff
+      puts result.pretty_diff
     end
 
-    assert diff.same_hash?, 'multicontent_test.re should produce equivalent HTML'
+    assert result.same_hash?, 'multicontent_test.re should produce equivalent HTML'
   end
 end
