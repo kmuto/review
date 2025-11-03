@@ -140,6 +140,15 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
     assert_match(%r{<ruby>漢字<rt>かんじ</rt></ruby>}, output)
   end
 
+  def test_inline_ruby_without_annotation
+    content = "= Chapter\n\n@<ruby>{漢字}\n"
+    assert_nothing_raised do
+      output = render_inline(content)
+      assert_match(/漢字/, output)
+      assert_no_match(%r{<rt></rt>}, output)
+    end
+  end
+
   # Special Japanese formatting
   def test_inline_bou
     content = "= Chapter\n\n@<bou>{傍点}\n"
@@ -417,6 +426,24 @@ class TestHtmlRendererInlineElements < Test::Unit::TestCase
     REVIEW
     output = render_inline(content)
     assert_match(/1\.1/, output)
+  end
+
+  def test_inline_sec_respects_secnolevel
+    @config['secnolevel'] = 1
+    @config['chapterlink'] = true
+
+    content = <<~REVIEW
+      = Chapter
+
+      == Section 1
+
+      See @<sec>{Section 1}.
+    REVIEW
+
+    output = render_inline(content)
+    assert_match(/Section 1/, output)
+    assert_no_match(/1\.1/, output)
+    assert_no_match(%r{href="\./test\.html#h1-1"}, output)
   end
 
   # Column reference
