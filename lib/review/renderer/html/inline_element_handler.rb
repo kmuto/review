@@ -24,8 +24,6 @@ module ReVIEW
           @logger = ReVIEW.logger
         end
 
-        # === Pure inline elements (simple HTML wrapping) ===
-
         def render_inline_b(_type, content, _node)
           %Q(<b>#{content}</b>)
         end
@@ -122,8 +120,6 @@ module ReVIEW
           %Q(<dfn>#{content}</dfn>)
         end
 
-        # === Logic-dependent inline elements (use InlineContext) ===
-
         def render_inline_chap(_type, _content, node)
           ref_node = node.children.first
           unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved_data
@@ -219,8 +215,6 @@ module ReVIEW
           end
         end
 
-        # === Format-dependent rendering ===
-
         def render_inline_raw(_type, _content, node)
           node.targeted_for?('html') ? (node.content || '') : ''
         end
@@ -229,8 +223,6 @@ module ReVIEW
           node.targeted_for?('html') ? (node.content || '') : ''
         end
 
-        # === Special cases that need raw args ===
-
         def render_inline_abbr(_type, content, _node)
           %Q(<abbr>#{content}</abbr>)
         end
@@ -238,8 +230,6 @@ module ReVIEW
         def render_inline_acronym(_type, content, _node)
           %Q(<acronym>#{content}</acronym>)
         end
-
-        # === Reference inline elements ===
 
         def render_inline_list(_type, _content, node)
           ref_node = node.children.first
@@ -306,8 +296,6 @@ module ReVIEW
             %Q(<span class="imgref">#{image_number}</span>)
           end
         end
-
-        # === Special inline elements ===
 
         def render_inline_comment(_type, content, _node)
           if @ctx.config['draft']

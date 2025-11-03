@@ -202,8 +202,6 @@ module ReVIEW
         render_inline_element(node.inline_type, content, node)
       end
 
-      # visit_code_block is now handled by Base renderer with dynamic method dispatch
-
       def visit_code_line(node)
         # Process each line like HTMLBuilder - detab and preserve exact content
         # Add newline like other renderers (LaTeX, Markdown, Top) do
@@ -449,7 +447,6 @@ module ReVIEW
         result + math_content + "</div>\n"
       end
 
-      # Render math content based on format
       def render_math_format(content, math_format)
         case math_format
         when 'mathjax'
@@ -465,7 +462,6 @@ module ReVIEW
         end
       end
 
-      # Render MathML format
       def render_mathml_format(content)
         begin
           require 'math_ml'
@@ -480,7 +476,6 @@ module ReVIEW
         parser.parse(content + "\n", true).to_s
       end
 
-      # Render imgmath format
       def render_imgmath_format(content)
         unless @img_math
           app_error 'ImgMath not initialized'
@@ -497,7 +492,6 @@ module ReVIEW
       end
 
       # Render AST to HTML body content only (without template).
-      # This method is useful for testing and comparison purposes.
       #
       # @param ast_root [Object] The root AST node to render
       # @return [String] HTML body content only
@@ -919,17 +913,14 @@ module ReVIEW
       end
 
       def render_comment_block(node)
-        # ブロックcomment - draft設定時のみ表示
         return '' unless config['draft']
 
         content_lines = []
 
-        # 引数があれば最初に追加
         if node.args.first && !node.args.first.empty?
           content_lines << escape(node.args.first)
         end
 
-        # 本文を追加
         if node.content && !node.content.empty?
           body_content = render_children(node)
           content_lines << body_content unless body_content.empty?
@@ -952,7 +943,6 @@ module ReVIEW
         %Q(<div class="#{type}"#{id_attr}>\n#{caption_html}#{content}</div>)
       end
 
-      # Render label control block
       def render_label_block(node)
         # Extract label from args
         label = node.args.first
@@ -961,14 +951,12 @@ module ReVIEW
         %Q(<a id="#{normalize_id(label)}"></a>)
       end
 
-      # Render tsize control block
       def render_tsize_block(_node)
         # Table size control - HTMLBuilder outputs nothing for HTML
         # tsize is only used for LaTeX/PDF output
         ''
       end
 
-      # Render printendnotes control block
       def render_printendnotes_block(_node)
         # Render collected endnotes like HTMLBuilder's printendnotes method
         return '' unless @chapter
@@ -998,7 +986,6 @@ module ReVIEW
         result + %Q(</div>\n)
       end
 
-      # Render flushright block like HTMLBuilder's flushright method
       def render_flushright_block(node)
         # Render children (which produces <p> tags)
         content = render_children(node)
@@ -1006,7 +993,6 @@ module ReVIEW
         content.gsub('<p>', %Q(<p class="flushright">))
       end
 
-      # Render centering block like HTMLBuilder's centering method
       def render_centering_block(node)
         # Render children (which produces <p> tags)
         content = render_children(node)
@@ -1014,7 +1000,6 @@ module ReVIEW
         content.gsub('<p>', %Q(<p class="center">))
       end
 
-      # Render bibpaper block like HTMLBuilder's bibpaper method
       def render_bibpaper_block(node)
         # For BlockNode, id and caption are in args array like HTMLBuilder's bibpaper(lines, id, caption)
         id = node.args[0]
@@ -1059,7 +1044,6 @@ module ReVIEW
         escape_content(str.to_s)
       end
 
-      # Generate headline prefix and anchor like HTMLBuilder
       def headline_prefix(level)
         return [nil, nil] unless @sec_counter
 
@@ -1069,7 +1053,6 @@ module ReVIEW
         [prefix, anchor]
       end
 
-      # Image helper methods matching HTMLBuilder's implementation
       def image_image_html(id, caption_node, id_attr, image_type = :image)
         caption_html = image_header_html(id, caption_node, image_type)
         caption_present = !caption_html.empty?
@@ -1092,7 +1075,6 @@ module ReVIEW
         end
       end
 
-      # Context-aware version of image_image_html
       def image_image_html_with_context(id, caption_node, id_attr, caption_context, image_type = :image)
         caption_html = image_header_html_with_context(id, caption_node, caption_context, image_type)
         caption_present = !caption_html.empty?
@@ -1133,7 +1115,6 @@ module ReVIEW
         end
       end
 
-      # Context-aware version of image_dummy_html
       def image_dummy_html_with_context(id, caption_node, lines, id_attr, caption_context, image_type = :image)
         caption_html = image_header_html_with_context(id, caption_node, caption_context, image_type)
         caption_present = !caption_html.empty?
@@ -1177,7 +1158,6 @@ module ReVIEW
         %Q(<p class="caption">\n#{image_number}#{I18n.t('caption_prefix')}#{caption_content}\n</p>\n)
       end
 
-      # Context-aware version of image_header_html
       def image_header_html_with_context(id, caption_node, caption_context, image_type = :image)
         caption_content = render_caption_with_context(caption_node, caption_context)
         return '' if caption_content.empty?
@@ -1202,7 +1182,6 @@ module ReVIEW
         %Q(<p class="caption">\n#{image_number}#{I18n.t('caption_prefix')}#{caption_content}\n</p>\n)
       end
 
-      # Generate table header like HTMLBuilder's table_header method
       def generate_table_header(id, caption)
         table_item = @chapter.table(id)
         table_num = table_item.number
@@ -1217,7 +1196,6 @@ module ReVIEW
         raise NotImplementedError, "no such table: #{id}"
       end
 
-      # Render imgtable (table as image) like HTMLBuilder's imgtable method
       def render_imgtable(node)
         id = node.id
         caption_node = node.caption_node
@@ -1257,7 +1235,6 @@ module ReVIEW
         end
       end
 
-      # Render dummy imgtable when image is not found
       def render_imgtable_dummy(id, caption_node, lines)
         id_attr = id ? %Q( id="#{normalize_id(id)}") : ''
 
@@ -1316,7 +1293,6 @@ module ReVIEW
         ensure_xhtml_compliance(processed_content)
       end
 
-      # Ensure XHTML compliance for self-closing tags
       def ensure_xhtml_compliance(content)
         content.gsub(/<hr(\s[^>]*)?>/, '<hr\1 />').
           gsub(/<br(\s[^>]*)?>/, '<br\1 />').
@@ -1329,7 +1305,6 @@ module ReVIEW
         'html'
       end
 
-      # Render children with specific rendering context
       def render_children_with_context(node, context)
         old_context = @rendering_context
         @rendering_context = context
@@ -1338,7 +1313,6 @@ module ReVIEW
         result
       end
 
-      # Visit node with specific rendering context
       def visit_with_context(node, context)
         old_context = @rendering_context
         @rendering_context = context

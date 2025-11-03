@@ -28,8 +28,6 @@ module ReVIEW
           @img_math = img_math
         end
 
-        # === Computed properties ===
-
         def extname
           ".#{config['htmlext'] || 'html'}"
         end
@@ -48,8 +46,6 @@ module ReVIEW
         # - escape_comment(str)
         # - normalize_id(id)
         # - escape_url(str)
-
-        # === Chapter/Book navigation logic ===
 
         def chapter_number(chapter_id)
           book.chapter_index.number(chapter_id)
