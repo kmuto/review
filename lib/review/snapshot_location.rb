@@ -30,8 +30,6 @@ module ReVIEW
 
     # Format location information for error messages
     # Returns a string like " at line 42 in chapter01.re"
-    #
-    # @return [String] formatted location information
     def format_for_error
       info = " at line #{@lineno}"
       info += " in #{@filename}" if @filename
