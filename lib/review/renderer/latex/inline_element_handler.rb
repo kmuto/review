@@ -252,21 +252,12 @@ module ReVIEW
           return content unless node.args.first
 
           bib_id = node.args.first.to_s
-          # Get bibpaper_index from book (which has attr_accessor)
-          # This avoids bib_exist? check when bibpaper_index is set directly in tests
-          bibpaper_index = @ctx.book.bibpaper_index
 
-          if bibpaper_index
-            begin
-              bib_number = bibpaper_index.number(bib_id)
-              "\\reviewbibref{[#{bib_number}]}{bib:#{bib_id}}"
-            rescue ReVIEW::KeyError
-              # Fallback if bibpaper not found in index
-              "\\cite{#{bib_id}}"
-            end
-          else
-            # Fallback when no bibpaper index available
-            "\\cite{#{bib_id}}"
+          begin
+            bib_number = @ctx.bibpaper_number(bib_id)
+            "\\reviewbibref{[#{bib_number}]}{bib:#{bib_id}}"
+          rescue ReVIEW::KeyError
+            raise ReVIEW::CompileError, "unknown bib: #{bib_id}"
           end
         end
 
@@ -782,7 +773,7 @@ module ReVIEW
 
         # Render inline comment
         def render_inline_comment(_type, content, _node)
-          if @ctx.config['draft']
+          if @ctx.draft_mode?
             "\\pdfcomment{#{escape(content)}}"
           else
             ''

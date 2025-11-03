@@ -61,6 +61,10 @@ module ReVIEW
           config['chapterlink']
         end
 
+        def draft_mode?
+          config['draft']
+        end
+
         def over_secnolevel?(n)
           secnolevel = config['secnolevel'] || 2
           secnolevel >= n.to_s.split('.').size
@@ -72,6 +76,14 @@ module ReVIEW
 
         def render_caption_inline(caption_node)
           @render_proxy.render_caption_inline(caption_node)
+        end
+
+        def bibpaper_number(bib_id)
+          if book.bibpaper_index.blank?
+            raise ReVIEW::KeyError, "unknown bib: #{bib_id}"
+          end
+
+          book.bibpaper_index.number(bib_id)
         end
 
         private

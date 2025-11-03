@@ -1082,6 +1082,13 @@ module ReVIEW
         render_children(footnote_node)
       end
 
+      # Render inline elements from caption_node
+      # @param caption_node [CaptionNode] Caption node to render
+      # @return [String] Rendered inline elements
+      def render_caption_inline(caption_node)
+        caption_node ? render_children(caption_node) : ''
+      end
+
       private
 
       # Get image path, returning nil if image doesn't exist
@@ -1347,8 +1354,6 @@ module ReVIEW
         end
       end
 
-      public
-
       # Format resolved reference based on ResolvedData
       # Uses double dispatch pattern with a dedicated formatter object
       def format_resolved_reference(data)
@@ -1382,13 +1387,6 @@ module ReVIEW
         content
       end
 
-      # Render inline elements from caption_node
-      # @param caption_node [CaptionNode] Caption node to render
-      # @return [String] Rendered inline elements
-      def render_caption_inline(caption_node)
-        caption_node ? render_children(caption_node) : ''
-      end
-
       # Render children with specific rendering context
       def render_children_with_context(node, context)
         old_context = @rendering_context
@@ -1405,11 +1403,6 @@ module ReVIEW
         result = visit(node)
         @rendering_context = old_context
         result
-      end
-
-      def normalize_id(id)
-        # LaTeX-safe ID normalization
-        id.to_s.gsub(/[^a-zA-Z0-9_-]/, '_')
       end
 
       def visit_footnote(_node)
@@ -1506,22 +1499,6 @@ module ReVIEW
         else
           HEADLINE[level] || raise(CompileError, "Unsupported headline level: #{level}")
         end
-      end
-
-      # Generate label for headline node
-      def generate_label_for_node(level, node)
-        result = []
-        if level == 1 && @chapter
-          result << "\\label{chap:#{@chapter.id}}"
-        elsif @sec_counter && level >= 2
-          anchor = @sec_counter.anchor(level)
-          result << "\\label{sec:#{anchor}}"
-          # Add custom label if specified (only for level > 1, matching LATEXBuilder)
-          if node.label && !node.label.empty?
-            result << "\\label{#{escape(node.label)}}"
-          end
-        end
-        result.join("\n")
       end
 
       # Generate column label for hypertarget (matches LATEXBuilder behavior)
