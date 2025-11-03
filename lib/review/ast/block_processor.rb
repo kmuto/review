@@ -481,24 +481,19 @@ module ReVIEW
       end
 
       def build_control_command_ast(context)
-        case context.name
-        when :texequation
-          build_tex_equation_ast(context)
-        else
-          node = context.create_node(AST::BlockNode,
-                                     block_type: context.name,
-                                     args: context.args)
+        node = context.create_node(AST::BlockNode,
+                                   block_type: context.name,
+                                   args: context.args)
 
-          if context.content?
-            context.lines.each do |line|
-              text_node = context.create_node(AST::TextNode, content: line)
-              node.add_child(text_node)
-            end
+        if context.content?
+          context.lines.each do |line|
+            text_node = context.create_node(AST::TextNode, content: line)
+            node.add_child(text_node)
           end
-
-          @ast_compiler.add_child_to_current_node(node)
-          node
         end
+
+        @ast_compiler.add_child_to_current_node(node)
+        node
       end
 
       def build_tex_equation_ast(context)
