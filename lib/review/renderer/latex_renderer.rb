@@ -275,9 +275,6 @@ module ReVIEW
         table_context = nil
         table_content = @rendering_context.with_child_context(:table) do |ctx|
           table_context = ctx
-          # Temporarily set the renderer's context to the table context
-          old_context = @rendering_context
-          @rendering_context = table_context
 
           # Get column specification from TableNode (set by TsizeProcessor)
           # or use default values if not set
@@ -323,9 +320,8 @@ module ReVIEW
           result << '\\hline'
 
           # Process all rows using visitor pattern with table context
-          # table_context is now the current @rendering_context within this block
           all_rows.each do |row|
-            row_content = visit(row)
+            row_content = visit_with_context(row, table_context)
             result << "#{row_content} \\\\  \\hline"
           end
 
@@ -335,9 +331,6 @@ module ReVIEW
           if caption.present?
             result << '\\end{table}'
           end
-
-          # Restore the previous context
-          @rendering_context = old_context
 
           result.join("\n") + "\n"
         end
@@ -825,15 +818,7 @@ module ReVIEW
         column_context = nil
         content = @rendering_context.with_child_context(:column) do |ctx|
           column_context = ctx
-          # Temporarily set the renderer's context to the column context
-          old_context = @rendering_context
-          @rendering_context = column_context
-
-          result = render_children(node)
-
-          # Restore the previous context
-          @rendering_context = old_context
-          result
+          render_children_with_context(node, column_context)
         end
 
         result = []
