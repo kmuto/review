@@ -22,6 +22,8 @@ module ReVIEW
         SIGNIFICANT_WS = %w[pre textarea script style code].freeze
         VOID_ELEMENTS = %w[area base br col embed hr img input link meta param source track wbr].freeze
 
+        PreparedData = Struct.new(:tokens, :signature, :doc, keyword_init: true)
+
         def initialize
           # No options needed for HTML comparison
         end
@@ -36,7 +38,7 @@ module ReVIEW
 
           changes = ::Diff::LCS.sdiff(left_data[:tokens], right_data[:tokens])
 
-          Result.new(left_data[:hash], right_data[:hash], changes)
+          Result.new(left_data[:signature], right_data[:signature], changes)
         end
 
         # Quick equality check
@@ -57,14 +59,12 @@ module ReVIEW
 
         private
 
-        PreparedData = Struct.new(:tokens, :hash, :doc, keyword_init: true)
-
         def prepare(html)
           doc = canonicalize(parse_html(html))
           tokens = tokenize(doc)
-          hash = subtree_hash(tokens)
+          signature = subtree_hash(tokens)
 
-          PreparedData.new(tokens: tokens, hash: hash, doc: doc)
+          PreparedData.new(tokens: tokens, signature: signature, doc: doc)
         end
 
         def parse_html(html)

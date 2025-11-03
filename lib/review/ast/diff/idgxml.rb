@@ -25,6 +25,8 @@ module ReVIEW
         # Self-closing elements (void elements) in IDGXML
         VOID_ELEMENTS = %w[br label index].freeze
 
+        PreparedData = Struct.new(:tokens, :signature, :doc, keyword_init: true)
+
         def initialize
           # No options needed for IDGXML comparison
         end
@@ -39,7 +41,7 @@ module ReVIEW
 
           changes = ::Diff::LCS.sdiff(left_data[:tokens], right_data[:tokens])
 
-          Result.new(left_data[:hash], right_data[:hash], changes)
+          Result.new(left_data[:signature], right_data[:signature], changes)
         end
 
         # Quick equality check
@@ -60,14 +62,12 @@ module ReVIEW
 
         private
 
-        PreparedData = Struct.new(:tokens, :hash, :doc, keyword_init: true)
-
         def prepare(idgxml)
           doc = canonicalize(parse_xml(idgxml))
           tokens = tokenize(doc)
-          hash = subtree_hash(tokens)
+          signature = subtree_hash(tokens)
 
-          PreparedData.new(tokens: tokens, hash: hash, doc: doc)
+          PreparedData.new(tokens: tokens, signature: signature, doc: doc)
         end
 
         def parse_xml(idgxml)
