@@ -2,14 +2,14 @@
 
 require_relative '../test_helper'
 require 'review/latex_converter'
-require 'review/latex_comparator'
+require 'review/ast/latex_diff'
 
 class TestLatexRendererBuilderComparison < Test::Unit::TestCase
   include ReVIEW
 
   def setup
     @converter = LATEXConverter.new
-    @comparator = LATEXComparator.new
+    @comparator = AST::LaTexDiff.new
   end
 
   def test_simple_paragraph_comparison
@@ -202,11 +202,11 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
     latex2 = '\\chapter{Test} \\label{chap:test}'
 
     # Whitespace sensitive comparison
-    whitespace_sensitive_comparator = LATEXComparator.new(ignore_whitespace: false)
+    whitespace_sensitive_comparator = AST::LaTexDiff.new(ignore_whitespace: false)
     result1 = whitespace_sensitive_comparator.compare(latex1, latex2)
 
     # Whitespace insensitive comparison
-    whitespace_insensitive_comparator = LATEXComparator.new(ignore_whitespace: true)
+    whitespace_insensitive_comparator = AST::LaTexDiff.new(ignore_whitespace: true)
     result2 = whitespace_insensitive_comparator.compare(latex1, latex2)
 
     assert result1.different?, 'Whitespace sensitive comparison should detect differences'
