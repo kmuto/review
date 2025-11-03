@@ -1185,22 +1185,17 @@ module ReVIEW
             return "\\footnote{#{footnote_id}}"
           end
 
-          # Check if we need to use footnotetext mode (like LATEXBuilder line 1143)
+          # Check if we need to use footnotetext mode
           if config['footnotetext']
-            # footnotetext config is enabled - always use footnotemark (like LATEXBuilder line 1144)
             "\\footnotemark[#{footnote_number}]"
           elsif @rendering_context.requires_footnotetext?
-            # We're in a context that requires footnotetext (caption/table/column/dt)
-            # Collect the footnote for later output (like LATEXBuilder line 1146)
             if index_item.footnote_node?
               @rendering_context.collect_footnote(index_item.footnote_node, footnote_number)
             end
-            # Use protected footnotemark (like LATEXBuilder line 1147)
             '\\protect\\footnotemark{}'
           else
-            # Normal context - use direct footnote (like LATEXBuilder line 1149)
             footnote_content = if index_item.footnote_node?
-                                 self.render_footnote_content(index_item.footnote_node)
+                                 render_footnote_content(index_item.footnote_node)
                                else
                                  escape(index_item.content || '')
                                end
@@ -1543,57 +1538,96 @@ module ReVIEW
       # Extract heading reference from node.args, handling ReferenceResolver's array splitting
       # ReferenceResolver splits "ch02|ブロック命令" into ["ch02", "ブロック命令"]
       # We need to join them back together to get the original format
-      def extract_heading_ref(node, content)
-        if node.args.length >= 2
-          # Multiple args - rejoin with pipe to reconstruct original format
-          node.args.join('|')
-        elsif node.args.first
-          # Single arg - use as-is
-          node.args.first
+      # Build heading reference parts from resolved_data
+      # Returns [section_number, section_label, section_title]
+      def build_heading_reference_parts(data)
+        # Get headline_number array (e.g., [1, 2] for section 1.2)
+        headline_number = data.headline_number || []
+
+        # Get caption from caption_node
+        section_title = data.caption_text
+
+        # Determine chapter context
+        if data.chapter_id && data.chapter_number
+          # Cross-chapter reference
+          short_chapter = data.short_chapter_number
+          chapter_prefix = short_chapter
+        elsif @chapter && @chapter.number
+          # Same chapter reference
+          short_chapter = @chapter.format_number(false)
+          chapter_prefix = short_chapter
         else
-          # No args - fall back to content
-          content
+          # Reference without chapter number
+          short_chapter = '0'
+          chapter_prefix = '0'
         end
+
+        # Build section number for display
+        full_number_parts = [short_chapter] + headline_number
+        full_section_number = full_number_parts.join('.')
+
+        # Check if we should show the number based on secnolevel
+        section_number = if short_chapter != '0' && over_secnolevel?(full_section_number)
+                           # Show full number with chapter: "2.1", "2.1.2", etc.
+                           full_section_number
+                         else
+                           # Without chapter number - use relative section number only
+                           headline_number.join('.')
+                         end
+
+        # Generate label using chapter prefix and relative section number
+        relative_parts = headline_number.join('-')
+        section_label = "sec:#{chapter_prefix}-#{relative_parts}"
+
+        [section_number, section_label, section_title]
       end
 
       # Render heading reference
-      def render_inline_hd(_type, content, node)
-        heading_ref = extract_heading_ref(node, content)
-        return '' if heading_ref.blank?
-
-        handle_heading_reference(heading_ref) do |section_number, section_label, section_title|
-          "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
+      def render_inline_hd(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
+
+        data = ref_node.resolved_data
+        section_number, section_label, section_title = build_heading_reference_parts(data)
+        "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
       end
 
       # Render section reference
-      def render_inline_sec(_type, content, node)
-        heading_ref = extract_heading_ref(node, content)
-        return '' if heading_ref.blank?
-
-        handle_heading_reference(heading_ref) do |section_number, section_label, _section_title|
-          "\\reviewsecref{#{section_number}}{#{section_label}}"
+      def render_inline_sec(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
+
+        data = ref_node.resolved_data
+        section_number, section_label, _section_title = build_heading_reference_parts(data)
+        "\\reviewsecref{#{section_number}}{#{section_label}}"
       end
 
       # Render section reference with full title
-      def render_inline_secref(_type, content, node)
-        heading_ref = extract_heading_ref(node, content)
-        return '' if heading_ref.blank?
-
-        handle_heading_reference(heading_ref) do |section_number, section_label, section_title|
-          "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
+      def render_inline_secref(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
+
+        data = ref_node.resolved_data
+        section_number, section_label, section_title = build_heading_reference_parts(data)
+        "\\reviewsecref{「#{section_number} #{escape(section_title)}」}{#{section_label}}"
       end
 
       # Render section title only
-      def render_inline_sectitle(_type, content, node)
-        heading_ref = extract_heading_ref(node, content)
-        return content if heading_ref.blank?
-
-        handle_heading_reference(heading_ref) do |_section_number, section_label, section_title|
-          "\\reviewsecref{#{escape(section_title)}}{#{section_label}}"
+      def render_inline_sectitle(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved_data
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
+
+        data = ref_node.resolved_data
+        _section_number, section_label, section_title = build_heading_reference_parts(data)
+        "\\reviewsecref{#{escape(section_title)}}{#{section_label}}"
       end
 
       # Render index entry
@@ -1989,92 +2023,6 @@ module ReVIEW
           "\\reviewcolumnref{#{column_text}}{#{column_label}}"
         rescue ReVIEW::KeyError => e
           raise NotImplementedError, "Unknown column: #{id} in chapter #{chapter.id} - #{e.message}"
-        end
-      end
-
-      # Handle heading references with cross-chapter support
-      def handle_heading_reference(heading_ref, fallback_format = '\\ref{%s}')
-        if heading_ref.include?('|')
-          # Cross-chapter reference format: chapter|heading or chapter|section|subsection
-          parts = heading_ref.split('|')
-          chapter_id = parts[0]
-          heading_parts = parts[1..-1]
-
-          # Try to find the target chapter and its headline
-          target_chapter = @book.chapters.find { |ch| ch.id == chapter_id }
-
-          if target_chapter && target_chapter.headline_index
-            # Build the hierarchical heading ID like IndexBuilder does
-            heading_id = heading_parts.join('|')
-
-            begin
-              headline_item = target_chapter.headline_index[heading_id]
-              if headline_item
-                # Get the full section number from headline_index (already includes chapter number)
-                full_number = target_chapter.headline_index.number(heading_id)
-
-                # Check if we should show the number based on secnolevel (like LATEXBuilder line 1095-1100)
-                section_number = if full_number.present? && target_chapter.number && over_secnolevel?(full_number)
-                                   # Show full number with chapter: "2.1", "2.1.2", etc.
-                                   full_number
-                                 else
-                                   # Without chapter number - extract relative part only
-                                   # headline_index.number returns "2.1" but we want "1"
-                                   headline_item.number.join('.')
-                                 end
-
-                # Generate label using chapter number and relative section number (like SecCounter.anchor does)
-                # Use target_chapter.format_number(false) to get the chapter number prefix
-                chapter_prefix = target_chapter.format_number(false)
-                relative_parts = headline_item.number.join('-')
-                section_label = "sec:#{chapter_prefix}-#{relative_parts}"
-                yield(section_number, section_label, headline_item.caption || heading_id)
-              else
-                # Fallback when heading not found in target chapter
-                fallback_format % "#{chapter_id}-#{heading_parts.join('-')}"
-              end
-            rescue ReVIEW::KeyError
-              # Fallback on any error
-              fallback_format % "#{chapter_id}-#{heading_parts.join('-')}"
-            end
-          else
-            # Fallback when target chapter not found or no headline index
-            fallback_format % "#{chapter_id}-#{heading_parts.join('-')}"
-          end
-        elsif @chapter && @chapter.headline_index
-          # Simple heading reference within current chapter
-          begin
-            headline_item = @chapter.headline_index[heading_ref]
-            if headline_item
-              # Get the full section number from headline_index (already includes chapter number)
-              full_number = @chapter.headline_index.number(heading_ref)
-
-              # Check if we should show the number based on secnolevel
-              section_number = if full_number.present? && @chapter.number && over_secnolevel?(full_number)
-                                 # Show full number with chapter: "2.1", "2.1.2", etc.
-                                 full_number
-                               else
-                                 # Without chapter number - extract relative part only
-                                 headline_item.number.join('.')
-                               end
-
-              # Generate label using chapter ID and relative section number (like SecCounter.anchor does)
-              # Use chapter format_number to get chapter ID prefix, then add relative section parts
-              chapter_prefix = @chapter.format_number(false)
-              relative_parts = headline_item.number.join('-')
-              section_label = "sec:#{chapter_prefix}-#{relative_parts}"
-              yield(section_number, section_label, headline_item.caption || heading_ref)
-            else
-              # Fallback if headline not found in index
-              fallback_format % escape(heading_ref)
-            end
-          rescue ReVIEW::KeyError
-            # Fallback on any error
-            fallback_format % escape(heading_ref)
-          end
-        else
-          # Fallback when no headline index available
-          fallback_format % escape(heading_ref)
         end
       end
 
