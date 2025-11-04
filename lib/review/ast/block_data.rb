@@ -20,36 +20,16 @@ module ReVIEW
     # @param nested_blocks [Array<BlockData>] Any nested block commands found within this block
     # @param location [SnapshotLocation] Source location information for error reporting
     BlockData = Struct.new(:name, :args, :lines, :nested_blocks, :location, keyword_init: true) do
-      def initialize(name:, location:, args: [], lines: [], nested_blocks: [])
-        # Type validation
-        # Ensure args, lines, nested_blocks are always Arrays
-        ensure_array!(args, 'args')
-        ensure_array!(lines, 'lines')
-        ensure_array!(nested_blocks, 'nested_blocks')
-
-        # Initialize Struct (using keyword_init: true, so pass as hash)
-        super
-      end
-
-      # Check if this block contains nested block commands
-      #
-      # @return [Boolean] true if nested_blocks is not empty
       def nested_blocks?
         nested_blocks && nested_blocks.any?
       end
 
-      # Get the total number of content lines (excluding nested blocks)
-      #
-      # @return [Integer] number of lines
       def line_count
         lines.size
       end
 
-      # Check if the block has any content lines
-      #
-      # @return [Boolean] true if lines is not empty
       def content?
-        lines.any?
+        lines&.any?
       end
 
       # Get argument at specified index safely
@@ -57,30 +37,13 @@ module ReVIEW
       # @param index [Integer] argument index
       # @return [String, nil] argument value or nil if not found
       def arg(index)
-        return nil unless args && index && index.is_a?(Integer) && index >= 0 && args.size > index
+        return nil unless args && index && index >= 0
 
         args[index]
       end
 
-      # String representation for debugging
-      #
-      # @return [String] debug string
       def inspect
         "#<#{self.class} name=#{name} args=#{args.inspect} lines=#{line_count} nested=#{nested_blocks.size}>"
-      end
-
-      private
-
-      # Ensure value is an Array
-      # Raises error if value is nil or not an Array
-      #
-      # @param value [Object] Value to validate
-      # @param field_name [String] Field name for error messages
-      # @raise [ArgumentError] If value is not an Array
-      def ensure_array!(value, field_name)
-        unless value.is_a?(Array)
-          raise ArgumentError, "BlockData #{field_name} must be an Array, got #{value.class}: #{value.inspect}"
-        end
       end
     end
   end
