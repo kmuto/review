@@ -24,40 +24,31 @@ module ReVIEW
         # @param context [BlockContext] Block context
         # @return [TableNode] Created table node
         def build_table_node(context)
-          node = case context.name
-                 when :table
-                   caption_node = context.process_caption(context.args, 1)
-                   context.create_node(AST::TableNode,
-                                       id: context.arg(0),
-                                       caption_node: caption_node,
-                                       table_type: :table)
-                 when :emtable
-                   caption_node = context.process_caption(context.args, 0)
-                   context.create_node(AST::TableNode,
-                                       id: nil,
-                                       caption_node: caption_node,
-                                       table_type: :emtable)
-                 when :imgtable
-                   caption_node = context.process_caption(context.args, 1)
-                   context.create_node(AST::TableNode,
-                                       id: context.arg(0),
-                                       caption_node: caption_node,
-                                       table_type: :imgtable,
-                                       metric: context.arg(2))
-                 else
-                   caption_node = context.process_caption(context.args, 1)
-                   context.create_node(AST::TableNode,
-                                       id: context.arg(0),
-                                       caption_node: caption_node,
-                                       table_type: context.name)
-                 end
+          id = if context.name == :emtable
+                 nil
+               else
+                 context.arg(0)
+               end
 
-          if !context.content? || context.lines.nil? || context.lines.empty?
-            unless context.name == :imgtable
-              raise ReVIEW::CompileError, 'no rows in the table'
-            end
-          else
+          caption_node = if context.name == :emtable
+                           context.process_caption(context.args, 0)
+                         else
+                           context.process_caption(context.args, 1)
+                         end
+
+          attrs = {
+            id: id,
+            caption_node: caption_node,
+            table_type: context.name
+          }
+          attrs[:metric] = context.arg(2) if context.name == :imgtable
+
+          node = context.create_node(AST::TableNode, **attrs)
+
+          if context.content?
             process_content(node, context.lines, context.start_location)
+          elsif context.name != :imgtable
+            raise ReVIEW::CompileError, 'no rows in the table'
           end
 
           context.process_nested_blocks(node)

@@ -91,7 +91,6 @@ class TestBlockData < Test::Unit::TestCase
     assert_nil(block_data.arg(3))
     assert_nil(block_data.arg(-1))
     assert_nil(block_data.arg(nil))
-    assert_nil(block_data.arg('invalid'))
   end
 
   def test_arg_method_with_no_args

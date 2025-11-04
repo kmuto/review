@@ -20,6 +20,10 @@ module ReVIEW
     # @param nested_blocks [Array<BlockData>] Any nested block commands found within this block
     # @param location [SnapshotLocation] Source location information for error reporting
     BlockData = Struct.new(:name, :args, :lines, :nested_blocks, :location, keyword_init: true) do
+      def initialize(name:, location:, args: [], lines: [], nested_blocks: [])
+        super
+      end
+
       def nested_blocks?
         nested_blocks && nested_blocks.any?
       end
@@ -29,7 +33,7 @@ module ReVIEW
       end
 
       def content?
-        lines&.any?
+        lines.any?
       end
 
       # Get argument at specified index safely
