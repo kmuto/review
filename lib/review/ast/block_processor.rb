@@ -205,34 +205,6 @@ module ReVIEW
         end
       end
 
-      # Build CodeBlockNode from CodeBlockStructure
-      # @param context [BlockContext] Block context
-      # @param structure [CodeBlockStructure] Code block structure
-      # @return [CodeBlockNode] Created code block node
-      def build_code_block_node_from_structure(context, structure)
-        node = context.create_node(AST::CodeBlockNode,
-                                   id: structure.id,
-                                   caption_node: structure.caption_node,
-                                   lang: structure.lang,
-                                   line_numbers: structure.line_numbers,
-                                   code_type: structure.code_type,
-                                   original_text: structure.original_text)
-
-        if structure.content?
-          structure.lines.each_with_index do |line, index|
-            line_node = context.create_node(AST::CodeLineNode,
-                                            line_number: structure.numbered? ? index + 1 : nil,
-                                            original_text: line)
-
-            context.process_inline_elements(line, line_node)
-
-            node.add_child(line_node)
-          end
-        end
-
-        node
-      end
-
       def build_code_block_ast(context)
         config = @dynamic_code_block_configs[context.name]
         unless config
@@ -240,22 +212,37 @@ module ReVIEW
         end
 
         structure = CodeBlockStructure.from_context(context, config)
-        node = build_code_block_node_from_structure(context, structure)
-        context.process_nested_blocks(node)
-        @ast_compiler.add_child_to_current_node(node)
-        node
+        context.append_new_node(AST::CodeBlockNode,
+                                id: structure.id,
+                                caption_node: structure.caption_node,
+                                lang: structure.lang,
+                                line_numbers: structure.line_numbers,
+                                code_type: structure.code_type,
+                                original_text: structure.original_text) do |node|
+          if structure.content?
+            structure.lines.each_with_index do |line, index|
+              line_node = context.create_node(AST::CodeLineNode,
+                                              line_number: structure.numbered? ? index + 1 : nil,
+                                              original_text: line)
+
+              context.process_inline_elements(line, line_node)
+
+              node.add_child(line_node)
+            end
+          end
+
+          context.process_nested_blocks(node)
+        end
       end
 
       def build_image_ast(context)
         caption_node = context.process_caption(context.args, 1)
 
-        node = context.create_node(AST::ImageNode,
-                                   id: context.arg(0),
-                                   caption_node: caption_node,
-                                   metric: context.arg(2),
-                                   image_type: context.name)
-        @ast_compiler.add_child_to_current_node(node)
-        node
+        context.append_new_node(AST::ImageNode,
+                                id: context.arg(0),
+                                caption_node: caption_node,
+                                metric: context.arg(2),
+                                image_type: context.name)
       end
 
       def build_table_ast(context)
@@ -264,23 +251,20 @@ module ReVIEW
 
       # Build list with support for both simple lines and //li blocks
       def build_list_ast(context)
-        list_node = context.create_node(AST::ListNode, list_type: context.name)
-
-        # Process text content as simple list items
-        if context.content?
-          context.lines.each do |line|
-            item_node = context.create_node(AST::ListItemNode,
-                                            content: line,
-                                            level: 1)
-            list_node.add_child(item_node)
+        context.append_new_node(AST::ListNode, list_type: context.name) do |list_node|
+          # Process text content as simple list items
+          if context.content?
+            context.lines.each do |line|
+              item_node = context.create_node(AST::ListItemNode,
+                                              content: line,
+                                              level: 1)
+              list_node.add_child(item_node)
+            end
           end
+
+          # Process nested blocks (including //li blocks)
+          context.process_nested_blocks(list_node)
         end
-
-        # Process nested blocks (including //li blocks)
-        context.process_nested_blocks(list_node)
-
-        @ast_compiler.add_child_to_current_node(list_node)
-        list_node
       end
 
       # Build individual list item with nested content support
@@ -291,21 +275,16 @@ module ReVIEW
           raise CompileError, "//li must be inside //ul, //ol, or //dl block#{context.start_location.format_for_error}"
         end
 
-        # Create list item node - simple, no complex title handling
-        item_node = context.create_node(AST::ListItemNode, level: 1)
+        context.append_new_node(AST::ListItemNode, level: 1) do |item_node|
+          # Process content using the same structured content processing as other blocks
+          # This handles paragraphs, nested lists, and block elements naturally
+          if context.content?
+            @ast_compiler.process_structured_content(item_node, context.lines)
+          end
 
-        # Process content using the same structured content processing as other blocks
-        # This handles paragraphs, nested lists, and block elements naturally
-        if context.content?
-          @ast_compiler.process_structured_content(item_node, context.lines)
+          # Process nested blocks within this item
+          context.process_nested_blocks(item_node)
         end
-
-        # Process nested blocks within this item
-        context.process_nested_blocks(item_node)
-
-        # Add to parent (should be a list node)
-        @ast_compiler.add_child_to_current_node(item_node)
-        item_node
       end
 
       # Build definition term (//dt) for definition lists
@@ -316,20 +295,15 @@ module ReVIEW
           raise CompileError, "//dt must be inside //dl block#{context.start_location.format_for_error}"
         end
 
-        # Create list item node with dt type
-        item_node = context.create_node(AST::ListItemNode, level: 1, item_type: :dt)
+        context.append_new_node(AST::ListItemNode, level: 1, item_type: :dt) do |item_node|
+          # Process content
+          if context.content?
+            @ast_compiler.process_structured_content(item_node, context.lines)
+          end
 
-        # Process content
-        if context.content?
-          @ast_compiler.process_structured_content(item_node, context.lines)
+          # Process nested blocks
+          context.process_nested_blocks(item_node)
         end
-
-        # Process nested blocks
-        context.process_nested_blocks(item_node)
-
-        # Add to parent (should be a dl list node)
-        @ast_compiler.add_child_to_current_node(item_node)
-        item_node
       end
 
       # Build definition description (//dd) for definition lists
@@ -340,20 +314,15 @@ module ReVIEW
           raise CompileError, "//dd must be inside //dl block#{context.start_location.format_for_error}"
         end
 
-        # Create list item node with dd type
-        item_node = context.create_node(AST::ListItemNode, level: 1, item_type: :dd)
+        context.append_new_node(AST::ListItemNode, level: 1, item_type: :dd) do |item_node|
+          # Process content
+          if context.content?
+            @ast_compiler.process_structured_content(item_node, context.lines)
+          end
 
-        # Process content
-        if context.content?
-          @ast_compiler.process_structured_content(item_node, context.lines)
+          # Process nested blocks
+          context.process_nested_blocks(item_node)
         end
-
-        # Process nested blocks
-        context.process_nested_blocks(item_node)
-
-        # Add to parent (should be a dl list node)
-        @ast_compiler.add_child_to_current_node(item_node)
-        item_node
       end
 
       # Build minicolumn (with nesting support)
@@ -385,51 +354,42 @@ module ReVIEW
 
         caption_node = context.process_caption(context.args, caption_index)
 
-        node = context.create_node(AST::MinicolumnNode,
-                                   minicolumn_type: context.name,
-                                   id: id,
-                                   caption_node: caption_node)
-
-        # Process structured content
-        context.process_structured_content_with_blocks(node)
-
-        @ast_compiler.add_child_to_current_node(node)
-        node
+        context.append_new_node(AST::MinicolumnNode,
+                                minicolumn_type: context.name,
+                                id: id,
+                                caption_node: caption_node) do |node|
+          # Process structured content
+          context.process_structured_content_with_blocks(node)
+        end
       end
 
       def build_column_ast(context)
         caption_node = context.process_caption(context.args, 1)
 
-        node = context.create_node(AST::ColumnNode,
-                                   level: 2, # Default level for block columns
-                                   label: context.arg(0),
-                                   caption_node: caption_node,
-                                   column_type: :column)
-
-        # Process structured content
-        context.process_structured_content_with_blocks(node)
-
-        @ast_compiler.add_child_to_current_node(node)
-        node
+        context.append_new_node(AST::ColumnNode,
+                                level: 2, # Default level for block columns
+                                label: context.arg(0),
+                                caption_node: caption_node,
+                                column_type: :column) do |node|
+          # Process structured content
+          context.process_structured_content_with_blocks(node)
+        end
       end
 
       def build_quote_block_ast(context)
-        node = context.create_node(AST::BlockNode, block_type: context.name)
-
-        # Process structured content and nested blocks
-        if context.nested_blocks?
-          context.process_structured_content_with_blocks(node)
-        elsif context.content?
-          case context.name
-          when :quote, :lead, :blockquote, :read, :centering, :flushright, :address, :talk
-            @ast_compiler.process_structured_content(node, context.lines)
-          else
-            context.lines.each { |line| context.process_inline_elements(line, node) }
+        context.append_new_node(AST::BlockNode, block_type: context.name) do |node|
+          # Process structured content and nested blocks
+          if context.nested_blocks?
+            context.process_structured_content_with_blocks(node)
+          elsif context.content?
+            case context.name
+            when :quote, :lead, :blockquote, :read, :centering, :flushright, :address, :talk
+              @ast_compiler.process_structured_content(node, context.lines)
+            else
+              context.lines.each { |line| context.process_inline_elements(line, node) }
+            end
           end
         end
-
-        @ast_compiler.add_child_to_current_node(node)
-        node
       end
 
       def build_complex_block_ast(context)
@@ -446,55 +406,49 @@ module ReVIEW
         # Process caption if applicable
         caption_node = caption_index ? context.process_caption(context.args, caption_index) : nil
 
-        node = context.create_node(AST::BlockNode,
-                                   block_type: context.name,
-                                   args: context.args,
-                                   caption_node: caption_node)
-
-        # Process content and nested blocks
-        if context.nested_blocks?
-          context.process_structured_content_with_blocks(node)
-        elsif context.content?
-          case context.name
-          when :box, :insn
-            # Line-based processing for box/insn - preserve each line as separate node
-            context.lines.each do |line|
-              # Create a paragraph node for each line (including empty lines)
-              # This preserves line structure for listinfo processing
-              para_node = context.create_node(AST::ParagraphNode)
-              context.process_inline_elements(line, para_node) unless line.empty?
-              node.add_child(para_node)
-            end
-          when :point, :shoot, :term
-            # Paragraph-based processing for point/shoot/term
-            # Empty lines separate paragraphs
-            @ast_compiler.process_structured_content(node, context.lines)
-          else
-            # Default: inline processing for each line
-            context.lines.each do |line|
-              context.process_inline_elements(line, node)
+        context.append_new_node(AST::BlockNode,
+                                block_type: context.name,
+                                args: context.args,
+                                caption_node: caption_node) do |node|
+          # Process content and nested blocks
+          if context.nested_blocks?
+            context.process_structured_content_with_blocks(node)
+          elsif context.content?
+            case context.name
+            when :box, :insn
+              # Line-based processing for box/insn - preserve each line as separate node
+              context.lines.each do |line|
+                # Create a paragraph node for each line (including empty lines)
+                # This preserves line structure for listinfo processing
+                para_node = context.create_node(AST::ParagraphNode)
+                context.process_inline_elements(line, para_node) unless line.empty?
+                node.add_child(para_node)
+              end
+            when :point, :shoot, :term
+              # Paragraph-based processing for point/shoot/term
+              # Empty lines separate paragraphs
+              @ast_compiler.process_structured_content(node, context.lines)
+            else
+              # Default: inline processing for each line
+              context.lines.each do |line|
+                context.process_inline_elements(line, node)
+              end
             end
           end
         end
-
-        @ast_compiler.add_child_to_current_node(node)
-        node
       end
 
       def build_control_command_ast(context)
-        node = context.create_node(AST::BlockNode,
-                                   block_type: context.name,
-                                   args: context.args)
-
-        if context.content?
-          context.lines.each do |line|
-            text_node = context.create_node(AST::TextNode, content: line)
-            node.add_child(text_node)
+        context.append_new_node(AST::BlockNode,
+                                block_type: context.name,
+                                args: context.args) do |node|
+          if context.content?
+            context.lines.each do |line|
+              text_node = context.create_node(AST::TextNode, content: line)
+              node.add_child(text_node)
+            end
           end
         end
-
-        @ast_compiler.add_child_to_current_node(node)
-        node
       end
 
       def build_tex_equation_ast(context)
@@ -509,54 +463,42 @@ module ReVIEW
 
         caption_node = context.process_caption(context.args, 1)
 
-        node = context.create_node(AST::TexEquationNode,
-                                   id: context.arg(0),
-                                   caption_node: caption_node,
-                                   latex_content: latex_content)
-
-        @ast_compiler.add_child_to_current_node(node)
-        node
+        context.append_new_node(AST::TexEquationNode,
+                                id: context.arg(0),
+                                caption_node: caption_node,
+                                latex_content: latex_content)
       end
 
       def build_raw_ast(context)
         raw_content = context.arg(0) || ''
         target_builders, content = RawContentParser.parse(raw_content)
 
-        node = context.create_node(AST::EmbedNode,
-                                   embed_type: :raw,
-                                   lines: context.lines || [],
-                                   arg: raw_content,
-                                   target_builders: target_builders,
-                                   content: content)
-
-        @ast_compiler.add_child_to_current_node(node)
-        node
+        context.append_new_node(AST::EmbedNode,
+                                embed_type: :raw,
+                                lines: context.lines || [],
+                                arg: raw_content,
+                                target_builders: target_builders,
+                                content: content)
       end
 
       def build_embed_ast(context)
-        node = context.create_node(AST::EmbedNode,
-                                   embed_type: :block,
-                                   arg: context.arg(0),
-                                   lines: context.lines || [])
-
-        @ast_compiler.add_child_to_current_node(node)
-        node
+        context.append_new_node(AST::EmbedNode,
+                                embed_type: :block,
+                                arg: context.arg(0),
+                                lines: context.lines || [])
       end
 
       def build_footnote_ast(context)
         footnote_id = context.arg(0)
         footnote_content = context.arg(1) || ''
 
-        node = context.create_node(AST::FootnoteNode,
-                                   id: footnote_id,
-                                   footnote_type: context.name)
-
-        if footnote_content && !footnote_content.empty?
-          context.process_inline_elements(footnote_content, node)
+        context.append_new_node(AST::FootnoteNode,
+                                id: footnote_id,
+                                footnote_type: context.name) do |node|
+          if footnote_content && !footnote_content.empty?
+            context.process_inline_elements(footnote_content, node)
+          end
         end
-
-        @ast_compiler.add_child_to_current_node(node)
-        node
       end
 
       CODE_BLOCK_CONFIGS = { # rubocop:disable Lint/UselessConstantScoping

@@ -43,18 +43,15 @@ module ReVIEW
           }
           attrs[:metric] = context.arg(2) if context.name == :imgtable
 
-          node = context.create_node(AST::TableNode, **attrs)
+          context.append_new_node(AST::TableNode, **attrs) do |node|
+            if context.content?
+              process_content(node, context.lines, context.start_location)
+            elsif context.name != :imgtable
+              raise ReVIEW::CompileError, 'no rows in the table'
+            end
 
-          if context.content?
-            process_content(node, context.lines, context.start_location)
-          elsif context.name != :imgtable
-            raise ReVIEW::CompileError, 'no rows in the table'
+            context.process_nested_blocks(node)
           end
-
-          context.process_nested_blocks(node)
-
-          @ast_compiler.add_child_to_current_node(node)
-          node
         end
 
         # @param table_node [TableNode] Table node to populate

@@ -39,6 +39,22 @@ module ReVIEW
         node_class.new(**attrs)
       end
 
+      # Create a new AST node, optionally configure it with a block, and append it to current node
+      #
+      # @return [AST::Node] The created and appended node
+      #
+      # @example
+      #   context.append_new_node(AST::ListNode, list_type: :ul) do |list_node|
+      #     list_node.add_child(item1)
+      #     list_node.add_child(item2)
+      #   end
+      def append_new_node(node_class, **attrs)
+        node = create_node(node_class, **attrs)
+        yield(node) if block_given?
+        @compiler.add_child_to_current_node(node)
+        node
+      end
+
       # Process inline elements within this context
       # Temporarily override compiler's location information to block start location
       #
