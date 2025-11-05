@@ -255,8 +255,7 @@ module ReVIEW
           break if line.strip.empty?
 
           # Match ReVIEW::Compiler behavior: preserve tabs, strip other whitespace
-          # Process: escape tabs -> strip -> restore tabs
-          processed_line = line.sub(/^(\t+)\s*/) { |m| '<!ESCAPETAB!>' * m.size }.strip.gsub('<!ESCAPETAB!>', "\t")
+          processed_line = strip_preserving_leading_tabs(line)
           raw_lines.push(processed_line)
         end
 
@@ -493,6 +492,15 @@ module ReVIEW
       end
 
       private
+
+      # Strip leading and trailing whitespace while preserving leading tabs
+      # @param line [String] The line to process
+      # @return [String] The processed line with preserved leading tabs
+      def strip_preserving_leading_tabs(line)
+        match = line.match(/^\t+/)
+        leading_tabs = match ? match[0] : ''
+        leading_tabs + line.strip
+      end
 
       def block_open?(line)
         line.rstrip.end_with?('{')
