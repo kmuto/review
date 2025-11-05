@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
-require 'review/html_converter'
+require_relative '../support/review/test/html_comparator'
 require 'tmpdir'
 
 class TestHtmlRendererJoinLinesByLang < Test::Unit::TestCase
@@ -19,7 +19,7 @@ English text
 continues here
       RE
 
-      converter = ReVIEW::HTMLConverter.new
+      converter = ReVIEW::Test::HtmlComparator.new
       result = converter.convert_chapter_with_book_context(dir, 'test')
 
       assert_equal result[:builder], result[:renderer],
@@ -42,7 +42,7 @@ continues here
 複数行にわたっています。
       RE
 
-      converter = ReVIEW::HTMLConverter.new
+      converter = ReVIEW::Test::HtmlComparator.new
       result = converter.convert_chapter_with_book_context(dir, 'test')
 
       assert_equal result[:builder], result[:renderer],
@@ -65,7 +65,7 @@ This is English text.
 It spans multiple lines.
       RE
 
-      converter = ReVIEW::HTMLConverter.new
+      converter = ReVIEW::Test::HtmlComparator.new
       result = converter.convert_chapter_with_book_context(dir, 'test')
 
       assert_equal result[:builder], result[:renderer],
@@ -88,7 +88,7 @@ It spans multiple lines.
 次の行です
       RE
 
-      converter = ReVIEW::HTMLConverter.new
+      converter = ReVIEW::Test::HtmlComparator.new
       result = converter.convert_chapter_with_book_context(dir, 'test')
 
       assert_equal result[:builder], result[:renderer],

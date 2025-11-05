@@ -1,15 +1,13 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
-require 'review/idgxml_converter'
+require_relative '../support/review/test/idgxml_comparator'
 require 'review/ast/diff/idgxml'
 
 class TestIdgxmlRendererBuilderComparison < Test::Unit::TestCase
-  include ReVIEW
-
   def setup
-    @converter = IDGXMLConverter.new
-    @comparator = AST::Diff::Idgxml.new
+    @converter = ReVIEW::Test::IdgxmlComparator.new
+    @comparator = ReVIEW::AST::Diff::Idgxml.new
   end
 
   def test_simple_paragraph_comparison

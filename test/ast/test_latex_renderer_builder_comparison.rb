@@ -1,15 +1,13 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
-require 'review/latex_converter'
+require_relative '../support/review/test/latex_comparator'
 require 'review/ast/diff/latex'
 
 class TestLatexRendererBuilderComparison < Test::Unit::TestCase
-  include ReVIEW
-
   def setup
-    @converter = LATEXConverter.new
-    @comparator = AST::Diff::Latex.new
+    @converter = ReVIEW::Test::LatexComparator.new
+    @comparator = ReVIEW::AST::Diff::Latex.new
   end
 
   def test_simple_paragraph_comparison

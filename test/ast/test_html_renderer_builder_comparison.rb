@@ -1,15 +1,13 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
-require 'review/html_converter'
+require_relative '../support/review/test/html_comparator'
 require 'review/ast/diff/html'
 
 class TestHtmlRendererBuilderComparison < Test::Unit::TestCase
-  include ReVIEW
-
   def setup
-    @converter = HTMLConverter.new
-    @comparator = AST::Diff::Html.new
+    @converter = ReVIEW::Test::HtmlComparator.new
+    @comparator = ReVIEW::AST::Diff::Html.new
   end
 
   def test_simple_paragraph_comparison
