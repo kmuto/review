@@ -7,6 +7,8 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'digest'
+require 'review/htmlutils'
+require 'review/html_escape_utils'
 
 module ReVIEW
   module Renderer
@@ -15,7 +17,7 @@ module ReVIEW
       # Uses InlineContext for shared logic
       class InlineElementHandler
         include ReVIEW::HTMLUtils
-        include ReVIEW::EscapeUtils
+        include ReVIEW::HtmlEscapeUtils
         include ReVIEW::Loggable
 
         def initialize(inline_context)

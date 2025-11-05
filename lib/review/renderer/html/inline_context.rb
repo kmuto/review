@@ -7,7 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/htmlutils'
-require 'review/escape_utils'
+require 'review/html_escape_utils'
 
 module ReVIEW
   module Renderer
@@ -30,7 +30,7 @@ module ReVIEW
         private_constant :InlineRenderProxy
 
         include ReVIEW::HTMLUtils
-        include ReVIEW::EscapeUtils
+        include ReVIEW::HtmlEscapeUtils
 
         attr_reader :config, :book, :chapter, :img_math
 
@@ -55,12 +55,14 @@ module ReVIEW
           config['math_format'] || 'mathjax'
         end
 
-        # === HTMLUtils methods are available via include ===
-        # - escape(str)
-        # - escape_content(str) (if EscapeUtils is available)
-        # - escape_comment(str)
-        # - normalize_id(id)
-        # - escape_url(str)
+        # === HTMLUtils and HtmlEscapeUtils methods are available via include ===
+        # From HTMLUtils:
+        # - escape(str) or h(str) - Basic HTML escaping
+        # - escape_comment(str) - HTML comment escaping (escapes '-' to '&#45;')
+        # - normalize_id(id) - ID normalization for HTML elements
+        # From HtmlEscapeUtils:
+        # - escape_content(str) - Content escaping (same as escape)
+        # - escape_url(str) - URL escaping using CGI.escape
 
         def chapter_number(chapter_id)
           book.chapter_index.number(chapter_id)

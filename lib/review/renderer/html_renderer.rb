@@ -14,7 +14,7 @@ require 'review/renderer/html/inline_context'
 require 'review/renderer/html/inline_element_handler'
 require 'review/htmlutils'
 require 'review/textutils'
-require 'review/escape_utils'
+require 'review/html_escape_utils'
 require 'review/highlighter'
 require 'review/sec_counter'
 require 'review/i18n'
@@ -30,7 +30,7 @@ module ReVIEW
     class HtmlRenderer < Base
       include ReVIEW::HTMLUtils
       include ReVIEW::TextUtils
-      include ReVIEW::EscapeUtils
+      include ReVIEW::HtmlEscapeUtils
       include ReVIEW::Loggable
 
       attr_reader :chapter, :book
