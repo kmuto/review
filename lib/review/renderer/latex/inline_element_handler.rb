@@ -61,10 +61,6 @@ module ReVIEW
           "\\reviewstrong{#{content}}"
         end
 
-        def render_inline_underline(type, content, node)
-          render_inline_u(type, content, node)
-        end
-
         def render_inline_href(_type, content, node)
           if node.args.length >= 2
             url = node.args[0]
@@ -669,19 +665,9 @@ module ReVIEW
           "\\textsuperscript{#{content}}"
         end
 
-        # Render superscript (alias)
-        def render_inline_superscript(type, content, node)
-          render_inline_sup(type, content, node)
-        end
-
         # Render subscript
         def render_inline_sub(_type, content, _node)
           "\\textsubscript{#{content}}"
-        end
-
-        # Render subscript (alias)
-        def render_inline_subscript(type, content, node)
-          render_inline_sub(type, content, node)
         end
 
         # Render strikethrough
