@@ -419,7 +419,11 @@ module ReVIEW
             end
             node
           when 'TableRowNode'
-            node = ReVIEW::AST::TableRowNode.new(location: restore_location(hash))
+            row_type = hash['row_type']&.to_sym || :body
+            node = ReVIEW::AST::TableRowNode.new(
+              location: restore_location(hash),
+              row_type: row_type
+            )
             if hash['children']
               hash['children'].each do |child_hash|
                 child = deserialize_from_hash(child_hash)

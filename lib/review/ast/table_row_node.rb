@@ -27,16 +27,16 @@ module ReVIEW
 
       attr_reader :children, :row_type
 
-      def row_type=(value)
-        @row_type = value.to_sym
-        validate_row_type
-      end
-
       def accept(visitor)
         visitor.visit_table_row(self)
       end
 
       private
+
+      def serialize_properties(hash, options)
+        super
+        hash[:row_type] = @row_type.to_s
+      end
 
       def validate_row_type
         unless ROW_TYPES.include?(row_type)

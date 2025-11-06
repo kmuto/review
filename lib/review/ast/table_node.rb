@@ -44,7 +44,10 @@ module ReVIEW
       end
 
       def add_header_row(row_node)
-        row_node.row_type = :header
+        unless row_node.row_type == :header
+          raise ArgumentError, "Expected header row (row_type: :header), got #{row_node.row_type}"
+        end
+
         idx = @children.index { |child| child.row_type == :body }
         if idx
           insert_child(idx, row_node)
@@ -54,7 +57,10 @@ module ReVIEW
       end
 
       def add_body_row(row_node)
-        row_node.row_type = :body
+        unless row_node.row_type == :body
+          raise ArgumentError, "Expected body row (row_type: :body), got #{row_node.row_type}"
+        end
+
         add_child(row_node)
       end
 

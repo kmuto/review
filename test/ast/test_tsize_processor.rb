@@ -31,7 +31,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
 
     # Create table with 3 columns
     table = ReVIEW::AST::TableNode.new(location: nil, id: 'test')
-    row = ReVIEW::AST::TableRowNode.new(location: nil)
+    row = ReVIEW::AST::TableRowNode.new(location: nil, row_type: :body)
     3.times { row.add_child(ReVIEW::AST::TableCellNode.new(location: nil)) }
     table.add_body_row(row)
     root.add_child(table)
@@ -58,7 +58,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(tsize_block)
 
     table = ReVIEW::AST::TableNode.new(location: nil, id: 'test')
-    row = ReVIEW::AST::TableRowNode.new(location: nil)
+    row = ReVIEW::AST::TableRowNode.new(location: nil, row_type: :body)
     3.times { row.add_child(ReVIEW::AST::TableCellNode.new(location: nil)) }
     table.add_body_row(row)
     root.add_child(table)
@@ -82,7 +82,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(tsize_block)
 
     table = ReVIEW::AST::TableNode.new(location: nil, id: 'test')
-    row = ReVIEW::AST::TableRowNode.new(location: nil)
+    row = ReVIEW::AST::TableRowNode.new(location: nil, row_type: :body)
     3.times { row.add_child(ReVIEW::AST::TableCellNode.new(location: nil)) }
     table.add_body_row(row)
     root.add_child(table)
@@ -107,7 +107,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(tsize_block)
 
     table = ReVIEW::AST::TableNode.new(location: nil, id: 'test')
-    row = ReVIEW::AST::TableRowNode.new(location: nil)
+    row = ReVIEW::AST::TableRowNode.new(location: nil, row_type: :body)
     3.times { row.add_child(ReVIEW::AST::TableCellNode.new(location: nil)) }
     table.add_body_row(row)
     root.add_child(table)
@@ -130,7 +130,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(tsize1)
 
     table1 = ReVIEW::AST::TableNode.new(location: nil, id: 'table1')
-    row1 = ReVIEW::AST::TableRowNode.new(location: nil)
+    row1 = ReVIEW::AST::TableRowNode.new(location: nil, row_type: :body)
     2.times { row1.add_child(ReVIEW::AST::TableCellNode.new(location: nil)) }
     table1.add_body_row(row1)
     root.add_child(table1)
@@ -144,7 +144,7 @@ class TestTsizeProcessor < Test::Unit::TestCase
     root.add_child(tsize2)
 
     table2 = ReVIEW::AST::TableNode.new(location: nil, id: 'table2')
-    row2 = ReVIEW::AST::TableRowNode.new(location: nil)
+    row2 = ReVIEW::AST::TableRowNode.new(location: nil, row_type: :body)
     3.times { row2.add_child(ReVIEW::AST::TableCellNode.new(location: nil)) }
     table2.add_body_row(row2)
     root.add_child(table2)

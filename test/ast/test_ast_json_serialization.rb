@@ -158,7 +158,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     )
 
     # Add header row
-    header_row = AST::TableRowNode.new(location: @location)
+    header_row = AST::TableRowNode.new(location: @location, row_type: :header)
     ['Name', 'Age'].each do |cell_content|
       cell = AST::TableCellNode.new(location: @location)
       cell.add_child(AST::TextNode.new(location: @location, content: cell_content))
@@ -168,7 +168,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
 
     # Add body rows
     [['Alice', '25'], ['Bob', '30']].each do |row_data|
-      body_row = AST::TableRowNode.new(location: @location)
+      body_row = AST::TableRowNode.new(location: @location, row_type: :body)
       row_data.each do |cell_content|
         cell = AST::TableCellNode.new(location: @location)
         cell.add_child(AST::TextNode.new(location: @location, content: cell_content))

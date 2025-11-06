@@ -266,7 +266,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     table = AST::TableNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), id: 'table1', caption_node: caption_node)
 
     # Header row
-    header_row = AST::TableRowNode.new(location: nil)
+    header_row = AST::TableRowNode.new(location: nil, row_type: :header)
     header_cell1 = AST::TableCellNode.new(location: nil, cell_type: :th)
     header_cell1.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Header 1'))
     header_cell2 = AST::TableCellNode.new(location: nil, cell_type: :th)
@@ -276,7 +276,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     table.add_header_row(header_row)
 
     # Body row
-    body_row = AST::TableRowNode.new(location: nil)
+    body_row = AST::TableRowNode.new(location: nil, row_type: :body)
     body_cell1 = AST::TableCellNode.new(location: nil)
     body_cell1.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Data 1'))
     body_cell2 = AST::TableCellNode.new(location: nil)
@@ -1150,7 +1150,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     table = AST::TableNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), id: 'table1')
 
     # Header row
-    header_row = AST::TableRowNode.new(location: nil)
+    header_row = AST::TableRowNode.new(location: nil, row_type: :header)
     header_cell1 = AST::TableCellNode.new(location: nil, cell_type: :th)
     header_cell1.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Header 1'))
     header_cell2 = AST::TableCellNode.new(location: nil, cell_type: :th)
@@ -1160,7 +1160,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     table.add_header_row(header_row)
 
     # Body row
-    body_row = AST::TableRowNode.new(location: nil)
+    body_row = AST::TableRowNode.new(location: nil, row_type: :body)
     body_cell1 = AST::TableCellNode.new(location: nil)
     body_cell1.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Data 1'))
     body_cell2 = AST::TableCellNode.new(location: nil)
@@ -1196,7 +1196,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     table = AST::TableNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), id: 'table1', caption_node: empty_caption_node)
 
     # Header row
-    header_row = AST::TableRowNode.new(location: nil)
+    header_row = AST::TableRowNode.new(location: nil, row_type: :header)
     header_cell1 = AST::TableCellNode.new(location: nil, cell_type: :th)
     header_cell1.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Header 1'))
     header_cell2 = AST::TableCellNode.new(location: nil, cell_type: :th)
@@ -1206,7 +1206,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     table.add_header_row(header_row)
 
     # Body row
-    body_row = AST::TableRowNode.new(location: nil)
+    body_row = AST::TableRowNode.new(location: nil, row_type: :body)
     body_cell1 = AST::TableCellNode.new(location: nil)
     body_cell1.add_child(AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Data 1'))
     body_cell2 = AST::TableCellNode.new(location: nil)
