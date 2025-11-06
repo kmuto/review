@@ -43,18 +43,13 @@ def parse_options
     serializer_options.include_location = v
   end
 
-  opts.on('--[no-]empty-arrays', 'include empty arrays (default: false)') do |v|
-    serializer_options.include_empty_arrays = v
-  end
-
   opts.on('--indent=INDENT', 'indentation for pretty print (default: "  ")') do |v|
     serializer_options.indent = v
   end
 
-  opts.on('--compact', 'compact output (no location, no empty arrays, no pretty print)') do
+  opts.on('--compact', 'compact output (no location, no pretty print)') do
     serializer_options.pretty = false
     serializer_options.include_location = false
-    serializer_options.include_empty_arrays = false
   end
 
   opts.on('--help', 'print help and exit') do

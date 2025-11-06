@@ -7,11 +7,10 @@ module ReVIEW
     module JSONSerializer # rubocop:disable Metrics/ModuleLength
       # Options for JSON serialization
       class Options
-        attr_accessor :pretty, :include_location, :include_empty_arrays, :indent
+        attr_accessor :pretty, :include_location, :indent
 
-        def initialize(include_empty_arrays: false, pretty: true, include_location: true)
+        def initialize(pretty: true, include_location: true)
           @pretty = pretty
-          @include_empty_arrays = include_empty_arrays
           @include_location = include_location
           @indent = '  '
         end
@@ -20,7 +19,6 @@ module ReVIEW
           {
             pretty: pretty,
             include_location: include_location,
-            include_empty_arrays: include_empty_arrays,
             indent: indent
           }
         end

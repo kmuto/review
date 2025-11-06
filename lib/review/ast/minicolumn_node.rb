@@ -39,7 +39,7 @@ module ReVIEW
       def serialize_properties(hash, options)
         hash[:minicolumn_type] = minicolumn_type
         hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
-        if options.include_empty_arrays || children.any?
+        if children.any?
           hash[:children] = children.map { |child| child.serialize_to_hash(options) }
         end
         hash

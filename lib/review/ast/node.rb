@@ -149,7 +149,7 @@ module ReVIEW
         serialize_properties(hash, options)
 
         # Serialize child nodes if any
-        if children && (options.include_empty_arrays || children.any?)
+        if children && children.any?
           hash[:children] = children.map { |child| child.serialize_to_hash(options) }
         end
 
@@ -159,10 +159,8 @@ module ReVIEW
       private
 
       # Override this method in subclasses to add node-specific properties
-      def serialize_properties(hash, options)
-        # Base Node implementation
-        hash[:children] = [] if children.none? && options.include_empty_arrays
-
+      def serialize_properties(hash, _options)
+        # Base Node implementation - does nothing by default
         hash
       end
     end

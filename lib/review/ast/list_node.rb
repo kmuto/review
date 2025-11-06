@@ -41,7 +41,7 @@ module ReVIEW
       def serialize_properties(hash, options)
         hash[:list_type] = list_type
         hash[:start_number] = start_number if start_number && start_number != 1
-        if options.include_empty_arrays || children.any?
+        if children.any?
           hash[:children] = children.map { |child| child.serialize_to_hash(options) }
         end
         hash
