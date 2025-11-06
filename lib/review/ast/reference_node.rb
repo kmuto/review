@@ -37,6 +37,10 @@ module ReVIEW
         @resolved_data = resolved_data
       end
 
+      def reference_node?
+        true
+      end
+
       # Check if the reference has been resolved
       # @return [Boolean] true if resolved
       def resolved?

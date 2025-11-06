@@ -41,6 +41,10 @@ module ReVIEW
         false
       end
 
+      def reference_node?
+        false
+      end
+
       def accept(visitor)
         visitor.visit(self)
       end

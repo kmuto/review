@@ -523,7 +523,7 @@ module ReVIEW
 
       def render_inline_bib(_type, _content, node)
         ref_node = node.children.first
-        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved?
+        unless ref_node.reference_node? && ref_node.resolved?
           raise 'BUG: Reference should be resolved at AST construction time'
         end
 
@@ -534,7 +534,7 @@ module ReVIEW
       def render_inline_hd(_type, _content, node)
         # Headline reference
         ref_node = node.children.first
-        unless ref_node.is_a?(AST::ReferenceNode) && ref_node.resolved?
+        unless ref_node.reference_node? && ref_node.resolved?
           raise 'BUG: Reference should be resolved at AST construction time'
         end
 
@@ -555,7 +555,7 @@ module ReVIEW
 
       def render_inline_chap(_type, _content, node)
         ref_node = node.children.first
-        unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+        unless ref_node.reference_node? && ref_node.resolved?
           raise 'BUG: Reference should be resolved at AST construction time'
         end
 
@@ -565,7 +565,7 @@ module ReVIEW
 
       def render_inline_chapref(_type, _content, node)
         ref_node = node.children.first
-        unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+        unless ref_node.reference_node? && ref_node.resolved?
           raise 'BUG: Reference should be resolved at AST construction time'
         end
 

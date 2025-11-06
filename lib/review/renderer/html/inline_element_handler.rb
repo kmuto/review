@@ -124,7 +124,7 @@ module ReVIEW
 
         def render_inline_chap(_type, _content, node)
           ref_node = node.children.first
-          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+          unless ref_node.reference_node? && ref_node.resolved?
             raise 'BUG: Reference should be resolved at AST construction time'
           end
 
@@ -135,7 +135,7 @@ module ReVIEW
 
         def render_inline_chapref(_type, _content, node)
           ref_node = node.children.first
-          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+          unless ref_node.reference_node? && ref_node.resolved?
             raise 'BUG: Reference should be resolved at AST construction time'
           end
 
@@ -146,7 +146,7 @@ module ReVIEW
 
         def render_inline_title(_type, _content, node)
           ref_node = node.children.first
-          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+          unless ref_node.reference_node? && ref_node.resolved?
             raise 'BUG: Reference should be resolved at AST construction time'
           end
 
@@ -158,7 +158,7 @@ module ReVIEW
         def render_inline_fn(_type, _content, node)
           # Footnote reference
           ref_node = node.children.first
-          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+          unless ref_node.reference_node? && ref_node.resolved?
             raise 'BUG: Reference should be resolved at AST construction time'
           end
 
@@ -235,7 +235,7 @@ module ReVIEW
 
         def render_inline_list(_type, _content, node)
           ref_node = node.children.first
-          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+          unless ref_node.reference_node? && ref_node.resolved?
             raise 'BUG: Reference should be resolved at AST construction time'
           end
 
@@ -257,7 +257,7 @@ module ReVIEW
 
         def render_inline_table(_type, _content, node)
           ref_node = node.children.first
-          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+          unless ref_node.reference_node? && ref_node.resolved?
             raise 'BUG: Reference should be resolved at AST construction time'
           end
 
@@ -279,7 +279,7 @@ module ReVIEW
 
         def render_inline_img(_type, _content, node)
           ref_node = node.children.first
-          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+          unless ref_node.reference_node? && ref_node.resolved?
             raise 'BUG: Reference should be resolved at AST construction time'
           end
 
@@ -355,7 +355,7 @@ module ReVIEW
 
         def render_inline_bib(_type, _content, node)
           ref_node = node.children.first
-          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+          unless ref_node.reference_node? && ref_node.resolved?
             raise 'BUG: Reference should be resolved at AST construction time'
           end
 
@@ -368,7 +368,7 @@ module ReVIEW
         def render_inline_endnote(_type, _content, node)
           # Endnote reference
           ref_node = node.children.first
-          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+          unless ref_node.reference_node? && ref_node.resolved?
             raise 'BUG: Reference should be resolved at AST construction time'
           end
 
@@ -414,7 +414,7 @@ module ReVIEW
         def render_inline_sec(_type, _content, node)
           # Section number reference: @<sec>{id} or @<sec>{chapter|id}
           ref_node = node.children.first
-          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+          unless ref_node.reference_node? && ref_node.resolved?
             raise 'BUG: Reference should be resolved at AST construction time'
           end
 
@@ -457,7 +457,7 @@ module ReVIEW
         def render_inline_eq(_type, _content, node)
           # Equation reference
           ref_node = node.children.first
-          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+          unless ref_node.reference_node? && ref_node.resolved?
             raise 'BUG: Reference should be resolved at AST construction time'
           end
 
@@ -480,7 +480,7 @@ module ReVIEW
         def render_inline_hd(_type, _content, node)
           # Headline reference: @<hd>{id} or @<hd>{chapter|id}
           ref_node = node.children.first
-          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+          unless ref_node.reference_node? && ref_node.resolved?
             raise 'BUG: Reference should be resolved at AST construction time'
           end
 
@@ -519,7 +519,7 @@ module ReVIEW
         def render_inline_column(_type, _content, node)
           # Column reference: @<column>{id} or @<column>{chapter|id}
           ref_node = node.children.first
-          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+          unless ref_node.reference_node? && ref_node.resolved?
             raise 'BUG: Reference should be resolved at AST construction time'
           end
 
@@ -546,7 +546,7 @@ module ReVIEW
         def render_inline_sectitle(_type, _content, node)
           # Section title reference
           ref_node = node.children.first
-          unless ref_node.is_a?(ReVIEW::AST::ReferenceNode) && ref_node.resolved?
+          unless ref_node.reference_node? && ref_node.resolved?
             raise 'BUG: Reference should be resolved at AST construction time'
           end
 
