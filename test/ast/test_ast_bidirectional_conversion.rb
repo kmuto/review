@@ -265,26 +265,18 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
       Simple paragraph.
     EOB
 
-    # Test with different serialization options
+    # Test with default serialization options
     original_ast = compile_to_ast(content)
 
-    # Simple mode
-    simple_options = ReVIEW::AST::JSONSerializer::Options.new(simple_mode: true)
-    simple_json = ReVIEW::AST::JSONSerializer.serialize(original_ast, simple_options)
-    simple_ast = ReVIEW::AST::JSONSerializer.deserialize(simple_json)
-    simple_content = @generator.generate(simple_ast)
+    # Serialize and deserialize
+    options = ReVIEW::AST::JSONSerializer::Options.new
+    json = ReVIEW::AST::JSONSerializer.serialize(original_ast, options)
+    regenerated_ast = ReVIEW::AST::JSONSerializer.deserialize(json)
+    regenerated_content = @generator.generate(regenerated_ast)
 
-    # Traditional mode
-    traditional_options = ReVIEW::AST::JSONSerializer::Options.new(simple_mode: false)
-    traditional_json = ReVIEW::AST::JSONSerializer.serialize(original_ast, traditional_options)
-    traditional_ast = ReVIEW::AST::JSONSerializer.deserialize(traditional_json)
-    traditional_content = @generator.generate(traditional_ast)
-
-    # Both should produce similar Re:VIEW output
-    assert_match(/= Structure Test/, simple_content)
-    assert_match(/= Structure Test/, traditional_content)
-    assert_match(/Simple paragraph/, simple_content)
-    assert_match(/Simple paragraph/, traditional_content)
+    # Should produce similar Re:VIEW output
+    assert_match(/= Structure Test/, regenerated_content)
+    assert_match(/Simple paragraph/, regenerated_content)
   end
 
   def test_basic_ast_serialization_works

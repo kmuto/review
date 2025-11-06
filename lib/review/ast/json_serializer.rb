@@ -7,14 +7,13 @@ module ReVIEW
     module JSONSerializer # rubocop:disable Metrics/ModuleLength
       # Options for JSON serialization
       class Options
-        attr_accessor :pretty, :include_location, :include_empty_arrays, :indent, :simple_mode
+        attr_accessor :pretty, :include_location, :include_empty_arrays, :indent
 
-        def initialize(include_empty_arrays: false, pretty: true, simple_mode: false, include_location: true)
+        def initialize(include_empty_arrays: false, pretty: true, include_location: true)
           @pretty = pretty
           @include_empty_arrays = include_empty_arrays
           @include_location = include_location
           @indent = '  '
-          @simple_mode = simple_mode
         end
 
         def to_h
@@ -22,8 +21,7 @@ module ReVIEW
             pretty: pretty,
             include_location: include_location,
             include_empty_arrays: include_empty_arrays,
-            indent: indent,
-            simple_mode: simple_mode
+            indent: indent
           }
         end
       end
@@ -48,115 +46,10 @@ module ReVIEW
         when Hash
           node.transform_values { |value| serialize_to_hash(value, options) }
         when ReVIEW::AST::Node
-          if options.simple_mode
-            # Simple mode: direct serialization without calling node methods
-            simple_serialize_node(node, options)
-          else
-            # Traditional mode: delegate to the node's own serialization method
-            node.serialize_to_hash(options)
-          end
+          # Delegate to the node's own serialization method
+          node.serialize_to_hash(options)
         else
           node
-        end
-      end
-
-      # Simple serialization for nodes (bypasses node's serialize_to_hash method)
-      def simple_serialize_node(node, options) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-        hash = { 'type' => node.class.name.split('::').last }
-
-        # Skip location in simple mode unless explicitly requested
-        if options.include_location && node.location
-          hash['location'] = {
-            'filename' => node.location.filename,
-            'lineno' => node.location.lineno
-          }
-        end
-
-        case node
-        when ReVIEW::AST::DocumentNode
-          hash['content'] = node.children.map { |child| serialize_to_hash(child, options) }
-        when ReVIEW::AST::HeadlineNode
-          hash['level'] = node.level
-          hash['label'] = node.label
-        when ReVIEW::AST::ParagraphNode
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
-        when ReVIEW::AST::CodeBlockNode
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
-          hash['id'] = node.id if node.id
-          hash['lang'] = node.lang if node.lang
-          hash['numbered'] = node.line_numbers
-        when ReVIEW::AST::CodeLineNode
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
-          hash['line_number'] = node.line_number if node.line_number
-        when ReVIEW::AST::TableNode
-          hash['id'] = node.id if node.id
-          hash['header_rows'] = node.header_rows.map { |row| serialize_to_hash(row, options) } if node.header_rows.any?
-          hash['body_rows'] = node.body_rows.map { |row| serialize_to_hash(row, options) } if node.body_rows.any?
-        when ReVIEW::AST::TableRowNode # rubocop:disable Lint/DuplicateBranch
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
-        when ReVIEW::AST::TableCellNode # rubocop:disable Lint/DuplicateBranch
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
-        when ReVIEW::AST::ImageNode
-          hash['id'] = node.id if node.id
-          hash['metric'] = node.metric if node.metric
-        when ReVIEW::AST::ListNode
-          hash['list_type'] = node.list_type
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
-        when ReVIEW::AST::TextNode
-          return node.content.to_s
-        when ReVIEW::AST::InlineNode
-          hash['element'] = node.inline_type
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
-          hash['args'] = node.args if node.args
-        when ReVIEW::AST::CaptionNode # rubocop:disable Lint/DuplicateBranch
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
-        when ReVIEW::AST::BlockNode
-          hash['block_type'] = node.block_type.to_s
-          hash['args'] = node.args if node.args && node.args.any?
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
-        when ReVIEW::AST::ListItemNode
-          hash['level'] = node.level if node.level
-          hash['number'] = node.number if node.number
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
-        when ReVIEW::AST::ColumnNode
-          hash['level'] = node.level
-          hash['label'] = node.label
-          hash['content'] = node.children.map { |child| serialize_to_hash(child, options) }
-        when ReVIEW::AST::MinicolumnNode
-          hash['minicolumn_type'] = node.minicolumn_type.to_s if node.minicolumn_type
-          hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
-        else # rubocop:disable Lint/DuplicateBranch
-          # Generic handling for unknown node types
-          if node.children.any?
-            hash['children'] = node.children.map { |child| serialize_to_hash(child, options) }
-          end
-        end
-
-        assign_caption_fields(hash, node, options)
-
-        hash
-      end
-
-      def extract_text(node)
-        case node
-        when String
-          node
-        when nil
-          ''
-        else
-          if node.children.any?
-            node.children.map { |child| extract_text(child) }.join
-          else
-            node.content.to_s
-          end
-        end
-      end
-
-      def assign_caption_fields(hash, node, options)
-        return unless node.respond_to?(:caption_node)
-
-        if node.respond_to?(:caption_node) && node.caption_node
-          hash['caption_node'] = serialize_to_hash(node.caption_node, options)
         end
       end
 
