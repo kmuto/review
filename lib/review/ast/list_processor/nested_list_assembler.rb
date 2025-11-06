@@ -80,10 +80,7 @@ module ReVIEW
         def build_definition_list(items)
           create_list_node(:dl) do |root_list|
             items.each do |item_data|
-              # For definition lists, process the term inline elements first
-              term_children = process_definition_term_content(item_data.content)
-
-              list = create_list_item_node(item_data, term_children: term_children) do |item_node|
+              list = create_list_item_node(item_data) do |item_node|
                 # Add definition content (additional children) - only definition, not term
                 item_data.continuation_lines.each do |definition_line|
                   add_definition_content(item_node, definition_line)
@@ -218,11 +215,10 @@ module ReVIEW
         # @yield [node] Optional block for node initialization
         # @yieldparam node [ReVIEW::AST::ListItemNode] The created list item node
         # @return [ReVIEW::AST::ListItemNode] New list item node
-        def create_list_item_node(item_data, term_children: [])
+        def create_list_item_node(item_data)
           node_attributes = {
             location: current_location,
-            level: item_data.level,
-            term_children: term_children
+            level: item_data.level
           }
 
           # Add type-specific attributes
@@ -230,8 +226,7 @@ module ReVIEW
           when :ol
             node_attributes[:number] = item_data.metadata[:number]
           when :dl
-            # For definition lists, term content is processed separately via term_children
-            # Definition content is added as children nodes
+            node_attributes[:term_children] = process_definition_term_content(item_data.content)
           end
 
           node = ReVIEW::AST::ListItemNode.new(**node_attributes)
