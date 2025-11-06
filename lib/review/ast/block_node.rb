@@ -9,14 +9,13 @@ module ReVIEW
     # Used for various block-level constructs like quote, read, etc.
     class BlockNode < Node
       attr_accessor :caption_node
-      attr_reader :block_type, :args, :lines
+      attr_reader :block_type, :args
 
-      def initialize(location:, block_type:, args: nil, caption_node: nil, lines: nil, **kwargs)
+      def initialize(location:, block_type:, args: nil, caption_node: nil, **kwargs)
         super(location: location, **kwargs)
         @block_type = block_type # :quote, :read, etc.
         @args = args || []
         @caption_node = caption_node
-        @lines = lines # Optional: original lines for blocks like box, insn
       end
 
       # Get caption text from caption_node
