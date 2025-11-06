@@ -287,34 +287,15 @@ module ReVIEW
         end
       end
 
-      # Build definition term (//dt) for definition lists
-      def build_definition_term_ast(context)
-        # Validate that //dt is inside a //dl block
+      # Build definition items (//dt or //dd) for definition lists
+      def build_definition_item_ast(context)
+        # Validate that //dt or //dd is inside a //dl block
         parent_node = @ast_compiler.current_ast_node
         unless parent_node.is_a?(AST::ListNode) && parent_node.list_type == :dl
-          raise CompileError, "//dt must be inside //dl block#{context.start_location.format_for_error}"
+          raise CompileError, "//#{context.name} must be inside //dl block#{context.start_location.format_for_error}"
         end
 
-        context.append_new_node(AST::ListItemNode, level: 1, item_type: :dt) do |item_node|
-          # Process content
-          if context.content?
-            @ast_compiler.process_structured_content(item_node, context.lines)
-          end
-
-          # Process nested blocks
-          context.process_nested_blocks(item_node)
-        end
-      end
-
-      # Build definition description (//dd) for definition lists
-      def build_definition_desc_ast(context)
-        # Validate that //dd is inside a //dl block
-        parent_node = @ast_compiler.current_ast_node
-        unless parent_node.is_a?(AST::ListNode) && parent_node.list_type == :dl
-          raise CompileError, "//dd must be inside //dl block#{context.start_location.format_for_error}"
-        end
-
-        context.append_new_node(AST::ListItemNode, level: 1, item_type: :dd) do |item_node|
+        context.append_new_node(AST::ListItemNode, level: 1, item_type: context.name) do |item_node|
           # Process content
           if context.content?
             @ast_compiler.process_structured_content(item_node, context.lines)
@@ -538,8 +519,8 @@ module ReVIEW
         li: :build_list_item_ast,
 
         # Definition list blocks (//dt and //dd for use within //dl)
-        dt: :build_definition_term_ast,
-        dd: :build_definition_desc_ast,
+        dt: :build_definition_item_ast,
+        dd: :build_definition_item_ast,
 
         # Minicolumn blocks
         note: :build_minicolumn_ast,
