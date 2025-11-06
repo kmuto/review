@@ -54,7 +54,7 @@ module ReVIEW
           content = node.children.map { |child| render_node_as_text(child) }.join
           "@<#{node.inline_type}>{#{content}}"
         else
-          node.respond_to?(:content) ? node.content.to_s : ''
+          node.leaf_node? ? node.content.to_s : ''
         end
       end
     end

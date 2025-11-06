@@ -43,7 +43,7 @@ module ReVIEW
           # Extract text content from inline elements
           node.children.map { |child| render_node_as_text(child) }.join
         else
-          node.respond_to?(:content) ? node.content.to_s : ''
+          node.leaf_node? ? node.content.to_s : ''
         end
       end
     end

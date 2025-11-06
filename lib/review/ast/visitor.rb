@@ -69,7 +69,7 @@ module ReVIEW
         else
           if node.children&.any?
             node.children.map { |child| extract_text(child) }.join
-          elsif node.respond_to?(:content)
+          elsif node.leaf_node?
             node.content.to_s
           else
             node.to_s

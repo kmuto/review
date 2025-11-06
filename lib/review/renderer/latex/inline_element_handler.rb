@@ -78,7 +78,7 @@ module ReVIEW
             end
           else
             # For single argument href, get raw text from first text child to avoid double escaping
-            raw_url = if node.children.first.respond_to?(:content)
+            raw_url = if node.children.first.leaf_node?
                         node.children.first.content
                       else
                         raise NotImplementedError, "URL is invalid: #{content}"
