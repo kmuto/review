@@ -268,12 +268,10 @@ module ReVIEW
           caption_node: caption_node
         )
       end
-    end
 
-    # Base class for references with chapter number, item number, and caption
-    # This class consolidates the common pattern used by ImageReference, TableReference,
-    # ListReference, EquationReference, and ColumnReference
-    class ResolvedData
+      # Base class for references with chapter number, item number, and caption
+      # This class consolidates the common pattern used by ImageReference, TableReference,
+      # ListReference, EquationReference, and ColumnReference
       class CaptionedItemReference < ResolvedData
         def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
           super()
@@ -308,10 +306,7 @@ module ReVIEW
           raise NotImplementedError, "#{self.class} must implement #formatter_method"
         end
       end
-    end
 
-    # Concrete subclasses representing each reference type
-    class ResolvedData
       class ImageReference < CaptionedItemReference
         def label_key
           'image'
@@ -321,9 +316,7 @@ module ReVIEW
           :format_image_reference
         end
       end
-    end
 
-    class ResolvedData
       class TableReference < CaptionedItemReference
         def label_key
           'table'
@@ -333,9 +326,7 @@ module ReVIEW
           :format_table_reference
         end
       end
-    end
 
-    class ResolvedData
       class ListReference < CaptionedItemReference
         def label_key
           'list'
@@ -345,9 +336,7 @@ module ReVIEW
           :format_list_reference
         end
       end
-    end
 
-    class ResolvedData
       class EquationReference < CaptionedItemReference
         # Equation doesn't have chapter_id parameter, so override initialize
         def initialize(chapter_number:, item_number:, item_id:, caption_node: nil)
@@ -366,9 +355,7 @@ module ReVIEW
           :format_equation_reference
         end
       end
-    end
 
-    class ResolvedData
       class FootnoteReference < ResolvedData
         def initialize(item_number:, item_id:, caption_node: nil)
           super()
@@ -386,9 +373,7 @@ module ReVIEW
           formatter.format_footnote_reference(self)
         end
       end
-    end
 
-    class ResolvedData
       class EndnoteReference < ResolvedData
         def initialize(item_number:, item_id:, caption_node: nil)
           super()
@@ -406,9 +391,7 @@ module ReVIEW
           formatter.format_endnote_reference(self)
         end
       end
-    end
 
-    class ResolvedData
       # ChapterReference - represents chapter references (@<chap>, @<chapref>, @<title>)
       class ChapterReference < ResolvedData
         def initialize(chapter_number:, chapter_id:, item_id:, chapter_title: nil, caption_node: nil)
@@ -453,9 +436,7 @@ module ReVIEW
           formatter.format_chapter_reference(self)
         end
       end
-    end
 
-    class ResolvedData
       class HeadlineReference < ResolvedData
         attr_reader :chapter_number
 
@@ -491,9 +472,7 @@ module ReVIEW
           formatter.format_headline_reference(self)
         end
       end
-    end
 
-    class ResolvedData
       class WordReference < ResolvedData
         def initialize(item_id:, word_content:, caption_node: nil)
           super()
@@ -511,9 +490,7 @@ module ReVIEW
           formatter.format_word_reference(self)
         end
       end
-    end
 
-    class ResolvedData
       class ColumnReference < CaptionedItemReference
         # Column has a different to_text format, so override it
         def to_text
@@ -533,9 +510,7 @@ module ReVIEW
           :format_column_reference
         end
       end
-    end
 
-    class ResolvedData
       class BibpaperReference < ResolvedData
         def initialize(item_number:, item_id:, caption_node: nil)
           super()
