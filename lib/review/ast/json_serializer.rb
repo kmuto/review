@@ -255,16 +255,6 @@ module ReVIEW
                   node.add_child(ReVIEW::AST::TextNode.new(location: restore_location(hash), content: child))
                 end
               end
-            elsif hash['content']
-              # Backward compatibility: handle old content format
-              if hash['content'].is_a?(String)
-                node.add_child(ReVIEW::AST::TextNode.new(location: restore_location(hash), content: hash['content']))
-              elsif hash['content'].is_a?(Array)
-                hash['content'].each do |item|
-                  child = deserialize_from_hash(item)
-                  node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
-                end
-              end
             end
             node
           when 'TextNode'
@@ -293,16 +283,6 @@ module ReVIEW
               hash['children'].each do |child_hash|
                 child = deserialize_from_hash(child_hash)
                 node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
-              end
-            elsif hash['content']
-              # Backward compatibility: handle old content format
-              if hash['content'].is_a?(String)
-                node.add_child(ReVIEW::AST::TextNode.new(location: restore_location(hash), content: hash['content']))
-              elsif hash['content'].is_a?(Array)
-                hash['content'].each do |item|
-                  child = deserialize_from_hash(item)
-                  node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
-                end
               end
             end
             node
