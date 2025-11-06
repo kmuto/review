@@ -82,9 +82,10 @@ module ReVIEW
 
       private
 
-      # Visit caption_node if present on the given node
-      def visit_caption_if_present(node)
+      # Visit caption_node if present, then visit all children
+      def visit_all_with_caption(node)
         visit(node.caption_node) if node.respond_to?(:caption_node) && node.caption_node
+        visit_all(node.children)
       end
 
       def build_indexes_from_ast(ast)
@@ -126,38 +127,32 @@ module ReVIEW
 
       # Visit headline node
       def visit_headline(node)
-        visit_caption_if_present(node)
-        visit_all(node.children)
+        visit_all_with_caption(node)
       end
 
       # Visit column node
       def visit_column(node)
-        visit_caption_if_present(node)
-        visit_all(node.children)
+        visit_all_with_caption(node)
       end
 
       # Visit code block node
       def visit_code_block(node)
-        visit_caption_if_present(node)
-        visit_all(node.children)
+        visit_all_with_caption(node)
       end
 
       # Visit table node
       def visit_table(node)
-        visit_caption_if_present(node)
-        visit_all(node.children)
+        visit_all_with_caption(node)
       end
 
       # Visit image node
       def visit_image(node)
-        visit_caption_if_present(node)
-        visit_all(node.children)
+        visit_all_with_caption(node)
       end
 
       # Visit minicolumn node
       def visit_minicolumn(node)
-        visit_caption_if_present(node)
-        visit_all(node.children)
+        visit_all_with_caption(node)
       end
 
       # Visit embed node
@@ -172,14 +167,12 @@ module ReVIEW
 
       # Visit tex equation node
       def visit_tex_equation(node)
-        visit_caption_if_present(node)
-        visit_all(node.children)
+        visit_all_with_caption(node)
       end
 
       # Visit block node
       def visit_block(node)
-        visit_caption_if_present(node)
-        visit_all(node.children)
+        visit_all_with_caption(node)
       end
 
       # Visit list node
