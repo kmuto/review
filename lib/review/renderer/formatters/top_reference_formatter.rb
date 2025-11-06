@@ -11,8 +11,7 @@ module ReVIEW
     module Formatters
       # Format resolved references for TOP output
       class TopReferenceFormatter
-        def initialize(renderer, config:)
-          @renderer = renderer
+        def initialize(config:)
           @config = config
         end
 
@@ -91,17 +90,35 @@ module ReVIEW
 
         attr_reader :config
 
-        # Delegate helper methods to renderer
+        # Format a numbered reference with label and number
         def compose_numbered_reference(label_key, data)
-          @renderer.send(:compose_numbered_reference, label_key, data)
+          label = I18n.t(label_key)
+          number_text = reference_number_text(data)
+          "#{label}#{number_text || data.item_id || ''}"
         end
 
+        # Generate number text from reference data
         def reference_number_text(data)
-          @renderer.send(:reference_number_text, data)
+          item_number = data.item_number
+          return nil unless item_number
+
+          chapter_number = data.chapter_number
+          if chapter_number && !chapter_number.to_s.empty?
+            I18n.t('format_number', [chapter_number, item_number])
+          else
+            I18n.t('format_number_without_chapter', [item_number])
+          end
+        rescue StandardError
+          nil
         end
 
+        # Format chapter number with appropriate localization
         def formatted_chapter_number(chapter_number)
-          @renderer.send(:formatted_chapter_number, chapter_number)
+          if chapter_number.to_s.match?(/\A-?\d+\z/)
+            I18n.t('chapter', chapter_number.to_i)
+          else
+            chapter_number.to_s
+          end
         end
       end
     end
