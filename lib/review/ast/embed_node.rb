@@ -12,17 +12,11 @@ module ReVIEW
     #            Renderers should use this attribute.
     # - embed_type: :block for //embed{}, :raw for //raw{}, :inline for @<embed>{}/@<raw>{}
     # - target_builders: Array of builder names (e.g., ["html", "latex"]), or nil for all builders
-    #
-    # Legacy attributes (used for serialization/deserialization):
-    # - lines: Original lines from block-level commands (deprecated, use content instead)
-    # - arg: Original argument string (deprecated, target_builders is parsed from this)
     class EmbedNode < LeafNode
-      attr_reader :lines, :arg, :embed_type, :target_builders
+      attr_reader :embed_type, :target_builders
 
-      def initialize(location:, lines: [], arg: nil, embed_type: :block, target_builders: nil, content: nil, **kwargs)
+      def initialize(location:, embed_type: :block, target_builders: nil, content: nil, **kwargs)
         super(location: location, content: content, **kwargs)
-        @lines = lines
-        @arg = arg
         @embed_type = embed_type # :block, :inline, or :raw
         @target_builders = target_builders # Array of builder names, nil means all builders
       end
@@ -38,8 +32,6 @@ module ReVIEW
       def to_h
         result = super
         result.merge!(
-          lines: lines,
-          arg: arg,
           embed_type: embed_type,
           target_builders: target_builders,
           content: content
@@ -73,8 +65,6 @@ module ReVIEW
       private
 
       def serialize_properties(hash, _options)
-        hash[:lines] = lines
-        hash[:arg] = arg
         hash[:embed_type] = embed_type
         hash[:target_builders] = target_builders if target_builders
         hash[:content] = content if content

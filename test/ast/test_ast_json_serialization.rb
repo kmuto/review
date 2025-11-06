@@ -237,8 +237,8 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     node = AST::EmbedNode.new(
       location: @location,
       embed_type: :block,
-      arg: 'html',
-      lines: ['<div>HTML content</div>', '<p>Paragraph</p>']
+      target_builders: ['html'],
+      content: "<div>HTML content</div>\n<p>Paragraph</p>"
     )
 
     json = node.to_json
@@ -246,8 +246,8 @@ class TestASTJSONSerialization < Test::Unit::TestCase
 
     assert_equal 'EmbedNode', parsed['type']
     assert_equal 'block', parsed['embed_type']
-    assert_equal 'html', parsed['arg']
-    assert_equal ['<div>HTML content</div>', '<p>Paragraph</p>'], parsed['lines']
+    assert_equal ['html'], parsed['target_builders']
+    assert_equal "<div>HTML content</div>\n<p>Paragraph</p>", parsed['content']
   end
 
   def test_document_node_serialization

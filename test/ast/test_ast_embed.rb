@@ -22,15 +22,15 @@ class TestASTEmbed < Test::Unit::TestCase
     node = ReVIEW::AST::EmbedNode.new(
       location: ReVIEW::SnapshotLocation.new(nil, 0),
       embed_type: :block,
-      lines: ['content line 1', 'content line 2'],
-      arg: 'html'
+      target_builders: ['html'],
+      content: "content line 1\ncontent line 2"
     )
 
     hash = node.to_h
     assert_equal 'EmbedNode', hash[:type]
     assert_equal :block, hash[:embed_type]
-    assert_equal ['content line 1', 'content line 2'], hash[:lines]
-    assert_equal 'html', hash[:arg]
+    assert_equal ['html'], hash[:target_builders]
+    assert_equal "content line 1\ncontent line 2", hash[:content]
   end
 
   def test_embed_block_ast_processing
@@ -90,10 +90,7 @@ class TestASTEmbed < Test::Unit::TestCase
     embed_node = paragraph_node.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) }
     assert_not_nil(embed_node, 'Should have inline embed node')
     assert_equal :inline, embed_node.embed_type
-    assert_equal 'inline content', embed_node.arg
-
-    # Inline Embed should not have lines
-    assert_equal [], embed_node.lines
+    assert_equal 'inline content', embed_node.content
   end
 
   def test_inline_embed_with_builder_filter
@@ -108,7 +105,8 @@ class TestASTEmbed < Test::Unit::TestCase
 
     assert_not_nil(embed_node)
     assert_equal :inline, embed_node.embed_type
-    assert_equal '|html|<strong>HTML only</strong>', embed_node.arg
+    assert_equal ['html'], embed_node.target_builders
+    assert_equal '<strong>HTML only</strong>', embed_node.content
   end
 
   def test_embed_output_compatibility
@@ -130,7 +128,7 @@ class TestASTEmbed < Test::Unit::TestCase
 
     inline_embed = paragraph_node.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) && n.embed_type == :inline }
     assert_not_nil(inline_embed, 'Should have inline embed in paragraph')
-    assert_equal 'inline embed', inline_embed.arg
+    assert_equal 'inline embed', inline_embed.content
 
     assert_equal ['html'], block_embed_node.target_builders
     assert_equal '<div>Block embed content</div>', block_embed_node.content

@@ -153,7 +153,6 @@ module ReVIEW
         node = AST::EmbedNode.new(
           location: @ast_compiler.location,
           embed_type: :inline,
-          arg: arg,
           target_builders: target_builders,
           content: embed_content
         )
@@ -335,7 +334,6 @@ module ReVIEW
         embed_node = AST::EmbedNode.new(
           location: @ast_compiler.location,
           embed_type: :inline,
-          arg: content,
           target_builders: target_builders,
           content: processed_content
         )
