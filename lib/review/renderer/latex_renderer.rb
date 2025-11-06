@@ -1265,9 +1265,6 @@ module ReVIEW
           term = if item.term_children&.any?
                    # Render term children (which contain inline elements)
                    item.term_children.map { |child| visit(child) }.join
-                 elsif item.content
-                   # Fallback to item content (raw text)
-                   item.content.to_s
                  else
                    ''
                  end
