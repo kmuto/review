@@ -8,7 +8,7 @@
 
 require 'review/ast/node'
 require 'review/ast/list_node'
-require_relative 'base_processor'
+require_relative 'post_processor'
 
 module ReVIEW
   module AST
@@ -21,7 +21,7 @@ module ReVIEW
       #
       # Usage:
       #   ListItemNumberingProcessor.process(ast_root)
-      class ListItemNumberingProcessor < BaseProcessor
+      class ListItemNumberingProcessor < PostProcessor
         private
 
         def process_node(node)

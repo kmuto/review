@@ -12,7 +12,7 @@ require 'review/ast/list_node'
 require 'review/ast/paragraph_node'
 require 'review/ast/text_node'
 require 'review/ast/inline_processor'
-require_relative 'base_processor'
+require_relative 'post_processor'
 
 module ReVIEW
   module AST
@@ -40,7 +40,7 @@ module ReVIEW
       #
       # Usage:
       #   ListStructureNormalizer.process(ast_root)
-      class ListStructureNormalizer < BaseProcessor
+      class ListStructureNormalizer < PostProcessor
         private
 
         def process_node(node)

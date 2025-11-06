@@ -13,8 +13,16 @@ require 'review/ast/table_node'
 module ReVIEW
   module AST
     class Compiler
-      # Abstract class
-      class BaseProcessor
+      # PostProcessor - Base class for AST post-processing
+      #
+      # This abstract class provides the interface for post-processors that
+      # transform or enhance the AST after initial compilation.
+      #
+      # Post-processors are executed in order after AST construction to:
+      # - Apply control commands (tsize, firstlinenum, noindent, olnum)
+      # - Normalize structures (list nesting)
+      # - Generate metadata (auto IDs, item numbers)
+      class PostProcessor
         def self.process(ast_root, chapter:, compiler:)
           new(chapter: chapter, compiler: compiler).process(ast_root)
         end

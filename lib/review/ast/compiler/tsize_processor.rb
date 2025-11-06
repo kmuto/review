@@ -9,7 +9,7 @@
 require 'review/ast/node'
 require 'review/ast/block_node'
 require 'review/ast/table_node'
-require_relative 'base_processor'
+require_relative 'post_processor'
 
 module ReVIEW
   module AST
@@ -22,7 +22,7 @@ module ReVIEW
       #
       # Usage:
       #   TsizeProcessor.process(ast_root, chapter: chapter)
-      class TsizeProcessor < BaseProcessor
+      class TsizeProcessor < PostProcessor
         def initialize(chapter:, compiler:)
           super
           @target_format = determine_target_format(chapter)

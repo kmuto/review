@@ -9,7 +9,7 @@
 require 'review/ast/node'
 require 'review/ast/block_node'
 require 'review/ast/paragraph_node'
-require_relative 'base_processor'
+require_relative 'post_processor'
 
 module ReVIEW
   module AST
@@ -22,7 +22,7 @@ module ReVIEW
       #
       # Usage:
       #   NoindentProcessor.process(ast_root)
-      class NoindentProcessor < BaseProcessor
+      class NoindentProcessor < PostProcessor
         private
 
         def process_node(node)

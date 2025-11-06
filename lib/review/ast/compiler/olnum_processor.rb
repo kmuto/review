@@ -9,7 +9,7 @@
 require 'review/ast/node'
 require 'review/ast/block_node'
 require 'review/ast/list_node'
-require_relative 'base_processor'
+require_relative 'post_processor'
 
 module ReVIEW
   module AST
@@ -22,7 +22,7 @@ module ReVIEW
       #
       # Usage:
       #   OlnumProcessor.process(ast_root)
-      class OlnumProcessor < BaseProcessor
+      class OlnumProcessor < PostProcessor
         def process(ast_root)
           # First pass: process //olnum commands
           process_node(ast_root)

@@ -9,7 +9,7 @@
 require 'review/ast/node'
 require 'review/ast/block_node'
 require 'review/ast/code_block_node'
-require_relative 'base_processor'
+require_relative 'post_processor'
 
 module ReVIEW
   module AST
@@ -22,7 +22,7 @@ module ReVIEW
       #
       # Usage:
       #   FirstLineNumProcessor.process(ast_root)
-      class FirstLineNumProcessor < BaseProcessor
+      class FirstLineNumProcessor < PostProcessor
         private
 
         def process_node(node)

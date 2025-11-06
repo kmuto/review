@@ -7,7 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/ast/node'
-require_relative 'base_processor'
+require_relative 'post_processor'
 
 module ReVIEW
   module AST
@@ -19,7 +19,7 @@ module ReVIEW
       # - ColumnNode (always, used for anchor generation)
       #
       # Auto IDs are generated with sequential counters to ensure uniqueness.
-      class AutoIdProcessor < BaseProcessor
+      class AutoIdProcessor < PostProcessor
         def initialize(chapter:, compiler:)
           super
           @nonum_counter = 0
