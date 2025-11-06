@@ -55,48 +55,44 @@ module ReVIEW
         # @param items [Array<ListParser::ListItemData>] Parsed unordered list items
         # @return [ReVIEW::AST::ListNode] Root unordered list node
         def build_unordered_list(items)
-          root_list = create_list_node(:ul)
-          build_proper_nested_structure(items, root_list, :ul)
-          root_list
+          create_list_node(:ul) do |root_list|
+            build_proper_nested_structure(items, root_list, :ul)
+          end
         end
 
         # Build ordered list with proper nesting
         # @param items [Array<ListParser::ListItemData>] Parsed ordered list items
         # @return [ReVIEW::AST::ListNode] Root ordered list node
         def build_ordered_list(items)
-          root_list = create_list_node(:ol)
+          create_list_node(:ol) do |root_list|
+            # Set start_number based on the first item's number if available
+            if items.first && items.first.metadata[:number]
+              root_list.start_number = items.first.metadata[:number]
+            end
 
-          # Set start_number based on the first item's number if available
-          if items.first && items.first.metadata[:number]
-            root_list.start_number = items.first.metadata[:number]
+            build_proper_nested_structure(items, root_list, :ol)
           end
-
-          build_proper_nested_structure(items, root_list, :ol)
-          root_list
         end
 
         # Build definition list with proper structure
         # @param items [Array<ListParser::ListItemData>] Parsed definition list items
         # @return [ReVIEW::AST::ListNode] Root definition list node
         def build_definition_list(items)
-          root_list = create_list_node(:dl)
+          create_list_node(:dl) do |root_list|
+            items.each do |item_data|
+              # For definition lists, process the term inline elements first
+              term_children = process_definition_term_content(item_data.content)
 
-          items.each do |item_data|
-            # For definition lists, process the term inline elements first
-            term_children = process_definition_term_content(item_data.content)
-
-            # Create list item for term/definition pair with term_children
-            item_node = create_list_item_node(item_data, term_children: term_children)
-
-            # Add definition content (additional children) - only definition, not term
-            item_data.continuation_lines.each do |definition_line|
-              add_definition_content(item_node, definition_line)
+              list = create_list_item_node(item_data, term_children: term_children) do |item_node|
+                # Add definition content (additional children) - only definition, not term
+                item_data.continuation_lines.each do |definition_line|
+                  add_definition_content(item_node, definition_line)
+                end
+              end
+              # Create list item for term/definition pair with term_children
+              root_list.add_child(list)
             end
-
-            root_list.add_child(item_node)
           end
-
-          root_list
         end
 
         private
@@ -117,10 +113,11 @@ module ReVIEW
             end
             previous_level = level
 
-            # 2. Build item node
+            # 2. Build item node with content
             item_data = item_data.with_adjusted_level(level)
-            item_node = create_list_item_node(item_data)
-            add_all_content_to_item(item_node, item_data)
+            item_node = create_list_item_node(item_data) do |node|
+              add_all_content_to_item(node, item_data)
+            end
 
             # 3. Add to structure
             if level == 1
@@ -148,10 +145,9 @@ module ReVIEW
             child.is_a?(ReVIEW::AST::ListNode) && child.list_type == list_type
           end
 
-          unless nested_list
-            nested_list = create_list_node(list_type)
-            last_parent_item.add_child(nested_list)
-          end
+          nested_list ||= create_list_node(list_type) do |list|
+              last_parent_item.add_child(list)
+            end
 
           nested_list.add_child(item_node)
           current_lists[level] = nested_list
@@ -207,14 +203,20 @@ module ReVIEW
 
         # Create a new ListNode
         # @param list_type [Symbol] Type of list (:ul, :ol, :dl, etc.)
+        # @yield [node] Optional block for node initialization
+        # @yieldparam node [ReVIEW::AST::ListNode] The created list node
         # @return [ReVIEW::AST::ListNode] New list node
         def create_list_node(list_type)
-          ReVIEW::AST::ListNode.new(location: current_location, list_type: list_type)
+          node = ReVIEW::AST::ListNode.new(location: current_location, list_type: list_type)
+          yield(node) if block_given?
+          node
         end
 
         # Create a new ListItemNode from parsed data
         # @param item_data [ListParser::ListItemData] Parsed item data
         # @param term_children [Array<Node>] Optional term children for definition lists
+        # @yield [node] Optional block for node initialization
+        # @yieldparam node [ReVIEW::AST::ListItemNode] The created list item node
         # @return [ReVIEW::AST::ListItemNode] New list item node
         def create_list_item_node(item_data, term_children: [])
           node_attributes = {
@@ -232,7 +234,9 @@ module ReVIEW
             # Definition content is added as children nodes
           end
 
-          ReVIEW::AST::ListItemNode.new(**node_attributes)
+          node = ReVIEW::AST::ListItemNode.new(**node_attributes)
+          yield(node) if block_given?
+          node
         end
 
         # Get current location for node creation
