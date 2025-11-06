@@ -860,21 +860,8 @@ module ReVIEW
       end
 
       def visit_embed(node)
-        # Handle different embed types
-        if node.embed_type == :raw || node.embed_type == :inline
-          # Handle //raw command or inline @<raw> command
-          return process_raw_embed(node)
-        end
-
-        # Default embed processing for other types
-        if node.lines
-          node.lines.join("\n") + "\n"
-        elsif node.arg
-          # Single line embed
-          "#{node.arg}\n"
-        else
-          raise NotImplementedError, 'Unknown embed structure or missing argument'
-        end
+        # All embed types now use unified processing
+        process_raw_embed(node)
       end
 
       # Code block type handlers
@@ -1527,11 +1514,18 @@ module ReVIEW
           return ''
         end
 
-        # Get processed content
+        # Get content
         content = node.content || ''
 
-        # Convert \n to actual newlines
-        content.gsub('\\n', "\n")
+        # Process \n based on embed type
+        case node.embed_type
+        when :inline, :raw
+          # For inline and raw embeds, convert \\n to actual newlines
+          content = content.gsub('\\n', "\n")
+        end
+
+        # For block embeds, add trailing newline
+        node.embed_type == :block ? content + "\n" : content
       end
     end
   end

@@ -815,35 +815,8 @@ module ReVIEW
       end
 
       def visit_embed(node)
-        # Handle embed blocks and raw commands
-        case node.embed_type
-        when :raw, :inline
-          # Process raw embed content
-          process_raw_embed(node)
-        else
-          # Handle legacy embed blocks
-          if node.arg
-            # Parse target formats from argument like Builder base class
-            builders = node.arg.gsub(/^\s*\|/, '').gsub(/\|\s*$/, '').gsub(/\s/, '').split(',')
-            target = target_name
-
-            # Only output if this renderer's target is in the list
-            if builders.include?(target)
-              content = node.lines.join("\n")
-              # For HTML output, ensure XHTML compliance for self-closing tags
-              content = ensure_xhtml_compliance(content)
-              return content + "\n"
-            else
-              return ''
-            end
-          else
-            # No format specified, output for all formats
-            content = node.lines.join("\n")
-            # For HTML output, ensure XHTML compliance for self-closing tags
-            content = ensure_xhtml_compliance(content)
-            return content + "\n"
-          end
-        end
+        # All embed types now use unified processing
+        process_raw_embed(node)
       end
 
       def render_inline_element(type, content, node)
@@ -1279,12 +1252,21 @@ module ReVIEW
         # Check if content should be output for this renderer
         return '' unless node.targeted_for?('html')
 
-        # Get processed content and convert \\n to actual newlines
+        # Get content
         content = node.content || ''
-        processed_content = content.gsub('\\n', "\n")
+
+        # Process \n based on embed type
+        case node.embed_type
+        when :inline, :raw
+          # For inline and raw embeds, convert \\n to actual newlines
+          content = content.gsub('\\n', "\n")
+        end
 
         # Apply XHTML compliance for HTML output
-        ensure_xhtml_compliance(processed_content)
+        result = ensure_xhtml_compliance(content)
+
+        # For block embeds, add trailing newline
+        node.embed_type == :block ? result + "\n" : result
       end
 
       def ensure_xhtml_compliance(content)

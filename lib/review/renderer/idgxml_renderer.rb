@@ -794,20 +794,8 @@ module ReVIEW
       end
 
       def visit_embed(node)
-        # Handle raw embed
-        if node.embed_type == :raw || node.embed_type == :inline
-          return process_raw_embed(node)
-        end
-
-        # Default embed processing
-        if node.lines
-          node.lines.join("\n") + "\n"
-        elsif node.arg
-          # Don't add trailing newline for arg-based embed
-          node.arg.to_s
-        else
-          ''
-        end
+        # All embed types now use unified processing
+        process_raw_embed(node)
       end
 
       def visit_footnote(_node)
@@ -1706,12 +1694,21 @@ module ReVIEW
           return ''
         end
 
-        # Get content - for both inline and block raw, content is in node.content
-        # (after target processing by the parser)
+        # Get content
         content = node.content || ''
-        # Convert literal \n (backslash followed by n) to a protected newline marker
-        # The marker will be preserved through paragraph and nolf processing
-        content.gsub('\n', "\x01IDGXML_INLINE_NEWLINE\x01")
+
+        # Process \n based on embed type
+        case node.embed_type
+        when :inline
+          # For inline raw/embed, convert literal \n to protected newline marker
+          content = content.gsub('\n', "\x01IDGXML_INLINE_NEWLINE\x01")
+        when :raw
+          # For raw blocks, convert \\n to actual newlines
+          content = content.gsub('\\n', "\n")
+        end
+
+        # For block embeds, add trailing newline
+        node.embed_type == :block ? content + "\n" : content
       end
 
       # Visit syntaxblock (box, insn) - processes lines with listinfo

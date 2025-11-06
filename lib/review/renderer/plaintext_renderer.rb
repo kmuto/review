@@ -426,9 +426,18 @@ module ReVIEW
         # Check if content should be output for this renderer
         return '' unless node.targeted_for?('plaintext') || node.targeted_for?('text')
 
-        # Get processed content and convert \\n to actual newlines
+        # Get content
         content = node.content || ''
-        content.gsub('\\n', "\n") + "\n"
+
+        # Process \n based on embed type
+        case node.embed_type
+        when :inline, :raw
+          # For inline and raw embeds, convert \\n to actual newlines
+          content = content.gsub('\\n', "\n")
+        end
+
+        # For block embeds, add trailing newline
+        node.embed_type == :block ? content + "\n" : content
       end
 
       # Inline rendering methods

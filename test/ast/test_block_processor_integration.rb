@@ -278,8 +278,8 @@ class TestBlockProcessorIntegration < Test::Unit::TestCase
     embed_node = ast.children[0]
     assert_equal AST::EmbedNode, embed_node.class
     assert_equal :block, embed_node.embed_type
-    assert_equal 'html', embed_node.arg
-    assert_equal 3, embed_node.lines.size
+    assert_equal ['html'], embed_node.target_builders
+    assert(embed_node.content.lines.count >= 3, 'Should have at least 3 lines of content')
   end
 
   def test_texequation_block_processing

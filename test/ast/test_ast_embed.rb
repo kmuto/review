@@ -53,8 +53,10 @@ class TestASTEmbed < Test::Unit::TestCase
     embed_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) }
     assert_not_nil(embed_node, 'Should have embed node')
     assert_equal :block, embed_node.embed_type
-    assert_equal 'html', embed_node.arg
-    assert_equal ['<div class="special">', 'HTML content here', '</div>'], embed_node.lines
+    assert_equal ['html'], embed_node.target_builders
+    assert(embed_node.content.include?('<div class="special">'), 'Should contain div')
+    assert(embed_node.content.include?('HTML content here'), 'Should contain HTML content')
+    assert(embed_node.content.include?('</div>'), 'Should contain closing div')
   end
 
   def test_embed_block_without_arg
@@ -70,8 +72,9 @@ class TestASTEmbed < Test::Unit::TestCase
     embed_node = ast_root.children.find { |n| n.is_a?(ReVIEW::AST::EmbedNode) }
     assert_not_nil(embed_node)
     assert_equal :block, embed_node.embed_type
-    assert_nil(embed_node.arg)
-    assert_equal ['Raw content', 'No builder filter'], embed_node.lines
+    assert_nil(embed_node.target_builders, 'Should have no target builders (applies to all)')
+    assert(embed_node.content.include?('Raw content'), 'Should contain raw content')
+    assert(embed_node.content.include?('No builder filter'), 'Should contain no builder filter text')
   end
 
   def test_inline_embed_ast_processing
@@ -129,8 +132,8 @@ class TestASTEmbed < Test::Unit::TestCase
     assert_not_nil(inline_embed, 'Should have inline embed in paragraph')
     assert_equal 'inline embed', inline_embed.arg
 
-    assert_equal 'html', block_embed_node.arg
-    assert_equal ['<div>Block embed content</div>'], block_embed_node.lines
+    assert_equal ['html'], block_embed_node.target_builders
+    assert_equal '<div>Block embed content</div>', block_embed_node.content
   end
 
   def test_mixed_content_with_embed

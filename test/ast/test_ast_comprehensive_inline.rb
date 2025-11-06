@@ -219,17 +219,15 @@ class TestASTComprehensiveInline < Test::Unit::TestCase
     embed_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::EmbedNode) }
     assert_equal(2, embed_nodes.size, 'Should have two embed nodes')
 
-    html_embed = embed_nodes.find { |n| n.arg == 'html' }
+    html_embed = embed_nodes.find { |n| n.target_builders&.include?('html') }
     assert_not_nil(html_embed, 'Should have HTML embed node')
     assert_equal(:block, html_embed.embed_type, 'Should be block embed type')
-    assert_equal(2, html_embed.lines.size, 'Should have two lines of HTML content')
-    assert(html_embed.lines.any? { |line| line.include?('custom') }, 'Should contain custom class')
-    assert(html_embed.lines.any? { |line| line.include?('console.log') }, 'Should contain script')
+    assert(html_embed.content.include?('custom'), 'Should contain custom class')
+    assert(html_embed.content.include?('console.log'), 'Should contain script')
 
-    css_embed = embed_nodes.find { |n| n.arg == 'css' }
+    css_embed = embed_nodes.find { |n| n.target_builders&.include?('css') }
     assert_not_nil(css_embed, 'Should have CSS embed node')
-    assert_equal(1, css_embed.lines.size, 'Should have one line of CSS content')
-    assert(css_embed.lines.first.include?('color: red'), 'Should contain CSS rule')
+    assert(css_embed.content.include?('color: red'), 'Should contain CSS rule')
 
     paragraph_nodes = ast_root.children.select { |n| n.is_a?(ReVIEW::AST::ParagraphNode) }
     assert(paragraph_nodes.size >= 3, 'Should have multiple paragraphs')

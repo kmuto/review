@@ -463,10 +463,24 @@ module ReVIEW
       end
 
       def build_embed_ast(context)
+        arg = context.arg(0)
+        target_builders = parse_embed_builders(arg)
+        lines = context.lines || []
+
         context.append_new_node(AST::EmbedNode,
                                 embed_type: :block,
-                                arg: context.arg(0),
-                                lines: context.lines || [])
+                                target_builders: target_builders,
+                                content: lines.join("\n"))
+      end
+
+      def parse_embed_builders(arg)
+        return nil if arg.nil? || arg.empty?
+
+        # Parse format like "|html,latex|" or "html,latex"
+        cleaned = arg.gsub(/^\s*\|/, '').gsub(/\|\s*$/, '').gsub(/\s/, '')
+        return nil if cleaned.empty?
+
+        cleaned.split(',')
       end
 
       def build_footnote_ast(context)
