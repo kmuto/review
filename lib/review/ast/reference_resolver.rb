@@ -239,7 +239,7 @@ module ReVIEW
         index_method = :"#{item_type_label}_index"
 
         # Determine target chapter (cross-chapter or current chapter)
-        target_chapter = node.context_id ? find_chapter_by_id(node.context_id) : @chapter
+        target_chapter = target_chapter_for(node)
         raise CompileError, "Chapter not found for #{item_type_label} reference: #{node.context_id}" unless target_chapter
 
         index = target_chapter.send(index_method)
@@ -331,29 +331,17 @@ module ReVIEW
 
       # Resolve column references
       def resolve_column_ref(node)
-        if node.context_id
-          # Cross-chapter reference
-          target_chapter = find_chapter_by_id(node.context_id)
-          raise CompileError, "Chapter not found for column reference: #{node.context_id}" unless target_chapter
+        target_chapter = target_chapter_for(node)
+        raise CompileError, "Chapter not found for column reference: #{node.context_id}" unless target_chapter
 
-          item = safe_column_fetch(target_chapter, node.ref_id)
-          ResolvedData.column(
-            chapter_number: format_chapter_number(target_chapter),
-            item_number: index_item_number(item),
-            chapter_id: node.context_id,
-            item_id: node.ref_id,
-            caption_node: item.caption_node
-          )
-        else
-          # Same-chapter reference
-          item = safe_column_fetch(@chapter, node.ref_id)
-          ResolvedData.column(
-            chapter_number: format_chapter_number(@chapter),
-            item_number: index_item_number(item),
-            item_id: node.ref_id,
-            caption_node: item.caption_node
-          )
-        end
+        item = safe_column_fetch(target_chapter, node.ref_id)
+        ResolvedData.column(
+          chapter_number: format_chapter_number(target_chapter),
+          item_number: index_item_number(item),
+          chapter_id: node.context_id,
+          item_id: node.ref_id,
+          caption_node: item.caption_node
+        )
       end
 
       # Resolve chapter references (for @<chap>, @<chapref>, @<title>)
@@ -386,51 +374,26 @@ module ReVIEW
 
       # Resolve headline references
       def resolve_headline_ref(node)
+        # Cross-chapter reference needs @book
         if node.context_id
-          # Cross-chapter reference
           raise CompileError, "Book not available for cross-chapter headline reference: #{node.full_ref_id}" unless @book
-
-          target_chapter = find_chapter_by_id(node.context_id)
-          raise CompileError, "Chapter not found for headline reference: #{node.context_id}" unless target_chapter
-
-          # Search from headline_index of that chapter
-          headline = nil
-          if target_chapter.headline_index
-            begin
-              headline = target_chapter.headline_index[node.ref_id]
-            rescue ReVIEW::KeyError
-              headline = nil
-            end
-          end
-
-          raise CompileError, "Headline not found: #{node.full_ref_id}" unless headline
-
-          ResolvedData.headline(
-            headline_number: headline.number,
-            chapter_number: format_chapter_number(target_chapter),
-            chapter_id: node.context_id,
-            item_id: node.ref_id,
-            caption_node: headline.caption_node
-          )
-        elsif @chapter.headline_index
-          # Same-chapter reference
-          begin
-            headline = @chapter.headline_index[node.ref_id]
-          rescue ReVIEW::KeyError
-            headline = nil
-          end
-
-          raise CompileError, "Headline not found: #{node.ref_id}" unless headline
-
-          ResolvedData.headline(
-            headline_number: headline.number,
-            chapter_number: format_chapter_number(@chapter),
-            item_id: node.ref_id,
-            caption_node: headline.caption_node
-          )
-        else
-          raise CompileError, "Headline not found: #{node.ref_id}"
         end
+
+        # Determine target chapter (cross-chapter or current chapter)
+        target_chapter = target_chapter_for(node)
+        raise CompileError, "Chapter not found for headline reference: #{node.context_id}" if node.context_id && !target_chapter
+
+        # Search from headline_index
+        headline = find_index_item(target_chapter&.headline_index, node.ref_id)
+        raise CompileError, "Headline not found: #{node.full_ref_id}" unless headline
+
+        ResolvedData.headline(
+          headline_number: headline.number,
+          chapter_number: format_chapter_number(target_chapter),
+          chapter_id: node.context_id,
+          item_id: node.ref_id,
+          caption_node: headline.caption_node
+        )
       end
 
       # Resolve section references
@@ -582,6 +545,14 @@ module ReVIEW
         )
       rescue ReVIEW::KeyError
         raise CompileError, "unknown bib: #{node.ref_id}"
+      end
+
+      # Get target chapter for a reference node
+      # Returns the referenced chapter if context_id is present, otherwise current chapter
+      # @param node [ReferenceNode] The reference node
+      # @return [Chapter] The target chapter
+      def target_chapter_for(node)
+        node.context_id ? find_chapter_by_id(node.context_id) : @chapter
       end
 
       # Find chapter by ID from book's chapter_index
