@@ -469,4 +469,77 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     assert_equal 'puts "Hello, World!"', code_json['original_text']
     assert_equal 1, code_json['children'].size # Check we have 1 code line node
   end
+
+  def test_include_location_option_with_true
+    # Test that location information is included when include_location is true (default)
+    paragraph = AST::ParagraphNode.new(location: @location)
+    text_node = AST::TextNode.new(location: @location, content: 'Test content')
+    paragraph.add_child(text_node)
+
+    options = AST::JSONSerializer::Options.new(include_location: true)
+    json = AST::JSONSerializer.serialize(paragraph, options)
+    parsed = JSON.parse(json)
+
+    # Check that location is included in parent node
+    assert_not_nil(parsed['location'], 'location should be included when include_location is true')
+    assert_equal 'test.re', parsed['location']['filename']
+    assert_equal 42, parsed['location']['lineno']
+
+    # Check that location is included in child nodes
+    assert_equal 1, parsed['children'].size
+    child = parsed['children'][0]
+    assert_not_nil(child['location'], 'location should be included in child nodes when include_location is true')
+    assert_equal 'test.re', child['location']['filename']
+    assert_equal 42, child['location']['lineno']
+  end
+
+  def test_include_location_option_with_false
+    # Test that location information is excluded when include_location is false
+    paragraph = AST::ParagraphNode.new(location: @location)
+    text_node = AST::TextNode.new(location: @location, content: 'Test content')
+    paragraph.add_child(text_node)
+
+    options = AST::JSONSerializer::Options.new(include_location: false)
+    json = AST::JSONSerializer.serialize(paragraph, options)
+    parsed = JSON.parse(json)
+
+    # Check that location is not included in parent node
+    assert_nil(parsed['location'], 'location should not be included when include_location is false')
+
+    # Check that location is not included in child nodes
+    assert_equal 1, parsed['children'].size
+    child = parsed['children'][0]
+    assert_nil(child['location'], 'location should not be included in child nodes when include_location is false')
+  end
+
+  def test_include_location_with_complex_tree
+    # Test include_location with a more complex node tree
+    headline = AST::HeadlineNode.new(
+      location: @location,
+      level: 1,
+      caption_node: CaptionParserHelper.parse('Test Headline', location: @location)
+    )
+
+    # Test with include_location = true
+    options_with_location = AST::JSONSerializer::Options.new(include_location: true)
+    json_with_location = AST::JSONSerializer.serialize(headline, options_with_location)
+    parsed_with_location = JSON.parse(json_with_location)
+
+    assert_not_nil(parsed_with_location['location'])
+    assert_not_nil(parsed_with_location['caption_node']['location'])
+    caption_children = parsed_with_location['caption_node']['children']
+    assert_equal 1, caption_children.size
+    assert_not_nil(caption_children[0]['location'])
+
+    # Test with include_location = false
+    options_without_location = AST::JSONSerializer::Options.new(include_location: false)
+    json_without_location = AST::JSONSerializer.serialize(headline, options_without_location)
+    parsed_without_location = JSON.parse(json_without_location)
+
+    assert_nil(parsed_without_location['location'])
+    assert_nil(parsed_without_location['caption_node']['location'])
+    caption_children = parsed_without_location['caption_node']['children']
+    assert_equal 1, caption_children.size
+    assert_nil(caption_children[0]['location'])
+  end
 end
