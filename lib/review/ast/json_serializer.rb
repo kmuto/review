@@ -4,7 +4,7 @@ require 'json'
 
 module ReVIEW
   module AST
-    module JSONSerializer # rubocop:disable Metrics/ModuleLength
+    module JSONSerializer
       # Options for JSON serialization
       class Options
         attr_accessor :pretty, :include_location, :indent
@@ -13,14 +13,6 @@ module ReVIEW
           @pretty = pretty
           @include_location = include_location
           @indent = '  '
-        end
-
-        def to_h
-          {
-            pretty: pretty,
-            include_location: include_location,
-            indent: indent
-          }
         end
       end
 
