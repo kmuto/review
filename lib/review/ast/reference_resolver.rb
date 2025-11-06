@@ -53,14 +53,11 @@ module ReVIEW
       end
 
       def resolve_references(ast)
-        # First build indexes (using existing mechanism)
         build_indexes_from_ast(ast)
 
-        # Initialize counters
         @resolve_count = 0
         @error_count = 0
 
-        # Traverse AST using Visitor pattern
         visit(ast)
 
         { resolved: @resolve_count, failed: @error_count }
@@ -82,15 +79,12 @@ module ReVIEW
 
       private
 
-      # Visit caption_node if present, then visit all children
       def visit_all_with_caption(node)
         visit(node.caption_node) if node.respond_to?(:caption_node) && node.caption_node
         visit_all(node.children)
       end
 
       def build_indexes_from_ast(ast)
-        # Always build indexes from the current AST
-        # This ensures indexes are up-to-date with the current content
         indexer = Indexer.new(@chapter)
         indexer.build_indexes(ast)
       end
@@ -110,112 +104,89 @@ module ReVIEW
         !resolved_data.nil?
       end
 
-      # Visit document node (root)
       def visit_document(node)
         visit_all(node.children)
       end
 
-      # Visit paragraph node
       def visit_paragraph(node)
         visit_all(node.children)
       end
 
-      # Visit text node (leaf node)
       def visit_text(node)
-        # Text nodes don't need processing
       end
 
-      # Visit headline node
       def visit_headline(node)
         visit_all_with_caption(node)
       end
 
-      # Visit column node
       def visit_column(node)
         visit_all_with_caption(node)
       end
 
-      # Visit code block node
       def visit_code_block(node)
         visit_all_with_caption(node)
       end
 
-      # Visit table node
       def visit_table(node)
         visit_all_with_caption(node)
       end
 
-      # Visit image node
       def visit_image(node)
         visit_all_with_caption(node)
       end
 
-      # Visit minicolumn node
       def visit_minicolumn(node)
         visit_all_with_caption(node)
       end
 
-      # Visit embed node
       def visit_embed(node)
         visit_all(node.children)
       end
 
-      # Visit footnote node
       def visit_footnote(node)
         visit_all(node.children)
       end
 
-      # Visit tex equation node
       def visit_tex_equation(node)
         visit_all_with_caption(node)
       end
 
-      # Visit block node
       def visit_block(node)
         visit_all_with_caption(node)
       end
 
-      # Visit list node
       def visit_list(node)
         visit_all(node.children)
       end
 
-      # Visit list item node
       def visit_list_item(node)
         visit_all(node.term_children) if node.term_children&.any?
         visit_all(node.children)
       end
 
-      # Visit caption node
       def visit_caption(node)
         visit_all(node.children)
       end
 
-      # Visit code line node
       def visit_code_line(node)
         visit_all(node.children)
       end
 
-      # Visit table row node
       def visit_table_row(node)
         visit_all(node.children)
       end
 
-      # Visit table cell node
       def visit_table_cell(node)
         visit_all(node.children)
       end
 
-      # Visit inline node
       def visit_inline(node)
         visit_all(node.children)
       end
 
-      # Visit reference node - main reference resolution logic
       def visit_reference(node)
         return if node.resolved?
 
-        # Get reference type from parent InlineNode
         parent_inline = node.parent
         return unless parent_inline.is_a?(InlineNode)
 
@@ -235,10 +206,8 @@ module ReVIEW
       # @param item_type_label [Symbol] Label for index method, factory method, and error messages (e.g., :image, ]:table, :list)
       # @return [ResolvedData] The resolved reference data
       def resolve_indexed_item_ref(node, item_type_label)
-        # Derive index method from item_type_label (e.g., 'image' -> :image_index)
         index_method = :"#{item_type_label}_index"
 
-        # Determine target chapter (cross-chapter or current chapter)
         target_chapter = target_chapter_for(node)
         raise CompileError, "Chapter not found for #{item_type_label} reference: #{node.context_id}" unless target_chapter
 
@@ -246,7 +215,6 @@ module ReVIEW
         item = find_index_item(index, node.ref_id)
         raise CompileError, "#{item_type_label.to_s.capitalize} reference not found: #{node.full_ref_id}" unless item
 
-        # Create ResolvedData using factory method derived from item_type_label (e.g., 'image' -> ResolvedData.image)
         ResolvedData.send(item_type_label,
                           chapter_number: format_chapter_number(target_chapter),
                           item_number: index_item_number(item),
@@ -257,22 +225,18 @@ module ReVIEW
         raise CompileError, "#{item_type_label.to_s.capitalize} reference not found: #{node.full_ref_id}"
       end
 
-      # Resolve image references
       def resolve_image_ref(node)
         resolve_indexed_item_ref(node, :image)
       end
 
-      # Resolve table references
       def resolve_table_ref(node)
         resolve_indexed_item_ref(node, :table)
       end
 
-      # Resolve list references
       def resolve_list_ref(node)
         resolve_indexed_item_ref(node, :list)
       end
 
-      # Resolve equation references
       def resolve_equation_ref(node)
         item = find_index_item(@chapter.equation_index, node.ref_id)
         unless item
@@ -289,47 +253,44 @@ module ReVIEW
         raise CompileError, "Equation reference not found: #{node.ref_id}"
       end
 
-      # Resolve footnote references
       def resolve_footnote_ref(node)
         item = find_index_item(@chapter.footnote_index, node.ref_id)
-        if item
-          if item.respond_to?(:footnote_node?) && !item.footnote_node?
-            raise CompileError, "Footnote reference not found: #{node.ref_id}"
-          end
-
-          number = item.respond_to?(:number) ? item.number : nil
-          # Get footnote_node (AST node with inline content) if available
-          fn_node = item.respond_to?(:footnote_node) ? item.footnote_node : nil
-          ResolvedData.footnote(
-            item_number: number,
-            item_id: node.ref_id,
-            caption_node: fn_node
-          )
-        else
+        unless item
           raise CompileError, "Footnote reference not found: #{node.ref_id}"
         end
+
+        if item.respond_to?(:footnote_node?) && !item.footnote_node?
+          raise CompileError, "Footnote reference not found: #{node.ref_id}"
+        end
+
+        item_number = item.respond_to?(:number) ? item.number : nil
+        caption_node = item.respond_to?(:footnote_node) ? item.footnote_node : nil
+        ResolvedData.footnote(
+          item_number: item_number,
+          item_id: node.ref_id,
+          caption_node: caption_node
+        )
       end
 
-      # Resolve endnote references
       def resolve_endnote_ref(node)
-        if (item = find_index_item(@chapter.endnote_index, node.ref_id))
-          if item.respond_to?(:footnote_node?) && !item.footnote_node?
-            raise CompileError, "Endnote reference not found: #{node.ref_id}"
-          end
-
-          number = item.respond_to?(:number) ? item.number : nil
-          caption_node = item.respond_to?(:caption_node) ? item.caption_node : nil
-          ResolvedData.endnote(
-            item_number: number,
-            item_id: node.ref_id,
-            caption_node: caption_node
-          )
-        else
+        item = find_index_item(@chapter.endnote_index, node.ref_id)
+        unless item
           raise CompileError, "Endnote reference not found: #{node.ref_id}"
         end
+
+        if item.respond_to?(:footnote_node?) && !item.footnote_node?
+          raise CompileError, "Endnote reference not found: #{node.ref_id}"
+        end
+
+        item_number = item.respond_to?(:number) ? item.number : nil
+        caption_node = item.respond_to?(:caption_node) ? item.caption_node : nil
+        ResolvedData.endnote(
+          item_number: item_number,
+          item_id: node.ref_id,
+          caption_node: caption_node
+        )
       end
 
-      # Resolve column references
       def resolve_column_ref(node)
         target_chapter = target_chapter_for(node)
         raise CompileError, "Chapter not found for column reference: #{node.context_id}" unless target_chapter
@@ -360,8 +321,6 @@ module ReVIEW
       end
 
       def resolve_chapter_ref_common(node)
-        raise CompileError, "Book not available for chapter reference: #{node.ref_id}" unless @book
-
         chapter = find_chapter_by_id(node.ref_id)
         raise CompileError, "Chapter reference not found: #{node.ref_id}" unless chapter
 
@@ -372,18 +331,10 @@ module ReVIEW
         )
       end
 
-      # Resolve headline references
       def resolve_headline_ref(node)
-        # Cross-chapter reference needs @book
-        if node.cross_chapter?
-          raise CompileError, "Book not available for cross-chapter headline reference: #{node.full_ref_id}" unless @book
-        end
-
-        # Determine target chapter (cross-chapter or current chapter)
         target_chapter = target_chapter_for(node)
         raise CompileError, "Chapter not found for headline reference: #{node.context_id}" if node.cross_chapter? && !target_chapter
 
-        # Search from headline_index
         headline = find_index_item(target_chapter&.headline_index, node.ref_id)
         raise CompileError, "Headline not found: #{node.full_ref_id}" unless headline
 
@@ -396,19 +347,15 @@ module ReVIEW
         )
       end
 
-      # Resolve section references
       def resolve_section_ref(node)
         # Section references use the same data structure as headline references
         # Renderers will format appropriately (e.g., adding "節" for secref)
         resolve_headline_ref(node)
       end
 
-      # Resolve label references
+      # Label references search multiple indexes (by priority order)
+      # Try to find the label in various indexes and return appropriate ResolvedData
       def resolve_label_ref(node)
-        # Label references search multiple indexes (by priority order)
-        # Try to find the label in various indexes and return appropriate ResolvedData
-
-        # Search in image index
         if @chapter.image_index
           item = find_index_item(@chapter.image_index, node.ref_id)
           if item
@@ -421,7 +368,6 @@ module ReVIEW
           end
         end
 
-        # Search in table index
         if @chapter.table_index
           item = find_index_item(@chapter.table_index, node.ref_id)
           if item
@@ -434,7 +380,6 @@ module ReVIEW
           end
         end
 
-        # Search in list index
         if @chapter.list_index
           item = find_index_item(@chapter.list_index, node.ref_id)
           if item
@@ -447,7 +392,6 @@ module ReVIEW
           end
         end
 
-        # Search in equation index
         if @chapter.equation_index
           item = find_index_item(@chapter.equation_index, node.ref_id)
           if item
@@ -460,7 +404,6 @@ module ReVIEW
           end
         end
 
-        # Search in headline index
         if @chapter.headline_index
           item = find_index_item(@chapter.headline_index, node.ref_id)
           if item
@@ -473,7 +416,6 @@ module ReVIEW
           end
         end
 
-        # Search in column index
         if @chapter.column_index
           item = find_index_item(@chapter.column_index, node.ref_id)
           if item
@@ -500,7 +442,6 @@ module ReVIEW
         number.nil? ? nil : number.to_s
       end
 
-      # Safely search for items from index
       def find_index_item(index, id)
         return nil unless index
 
@@ -519,7 +460,6 @@ module ReVIEW
         raise CompileError, "Column reference not found: #{column_id}"
       end
 
-      # Resolve word references (dictionary lookup)
       def resolve_word_ref(node)
         dictionary = @book.config['dictionary'] || {}
         unless dictionary.key?(node.ref_id)
@@ -532,7 +472,6 @@ module ReVIEW
         )
       end
 
-      # Resolve bibpaper references
       # Bibpapers are book-wide, so use @book.bibpaper_index instead of chapter index
       def resolve_bib_ref(node)
         item = find_index_item(@book.bibpaper_index, node.ref_id)
@@ -555,7 +494,6 @@ module ReVIEW
         node.cross_chapter? ? find_chapter_by_id(node.context_id) : @chapter
       end
 
-      # Find chapter by ID from book's chapter_index
       def find_chapter_by_id(id)
         begin
           item = @book.chapter_index[id]
