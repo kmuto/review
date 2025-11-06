@@ -20,7 +20,7 @@ module ReVIEW
 
       # Check if caption is empty
       def empty?
-        children.empty? || children.all? { |child| child.respond_to?(:content) && child.content.to_s.strip.empty? }
+        children.empty? || children.all? { |child| child.is_a?(LeafNode) && child.content.to_s.strip.empty? }
       end
 
       # Convert caption to hash representation

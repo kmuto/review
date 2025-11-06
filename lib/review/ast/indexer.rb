@@ -417,7 +417,7 @@ module ReVIEW
 
       # Extract text content from inline nodes
       def extract_inline_text(inline_node)
-        inline_node.children.map { |child| child.respond_to?(:content) ? child.content : child.to_s }.join
+        inline_node.children.map { |child| child.is_a?(AST::LeafNode) ? child.content : child.to_s }.join
       end
 
       # ID validation (same as IndexBuilder)

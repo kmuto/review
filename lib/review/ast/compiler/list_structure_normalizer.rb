@@ -209,7 +209,7 @@ module ReVIEW
 
         def paragraph_text(paragraph)
           paragraph.children.map do |child|
-            if child.respond_to?(:content)
+            if child.is_a?(AST::LeafNode)
               child.content
             else
               ''

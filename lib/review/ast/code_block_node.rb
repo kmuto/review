@@ -51,7 +51,7 @@ module ReVIEW
                           child.args.first
                         elsif child.children&.any?
                           child.children.map do |grandchild|
-                            grandchild.respond_to?(:content) ? grandchild.content : grandchild.to_s
+                            grandchild.is_a?(AST::LeafNode) ? grandchild.content : grandchild.to_s
                           end.join
                         else
                           ''
