@@ -159,7 +159,7 @@ module ReVIEW
 
       # Create ResolvedData for an image reference
       def self.image(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
-        Image.new(
+        ImageReference.new(
           chapter_number: chapter_number,
           item_number: item_number,
           chapter_id: chapter_id,
@@ -170,7 +170,7 @@ module ReVIEW
 
       # Create ResolvedData for a table reference
       def self.table(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
-        Table.new(
+        TableReference.new(
           chapter_number: chapter_number,
           item_number: item_number,
           chapter_id: chapter_id,
@@ -181,7 +181,7 @@ module ReVIEW
 
       # Create ResolvedData for a list reference
       def self.list(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
-        List.new(
+        ListReference.new(
           chapter_number: chapter_number,
           item_number: item_number,
           chapter_id: chapter_id,
@@ -192,7 +192,7 @@ module ReVIEW
 
       # Create ResolvedData for an equation reference
       def self.equation(chapter_number:, item_number:, item_id:, caption_node: nil)
-        Equation.new(
+        EquationReference.new(
           chapter_number: chapter_number,
           item_number: item_number,
           item_id: item_id,
@@ -202,7 +202,7 @@ module ReVIEW
 
       # Create ResolvedData for a footnote reference
       def self.footnote(item_number:, item_id:, caption_node: nil)
-        Footnote.new(
+        FootnoteReference.new(
           item_number: item_number,
           item_id: item_id,
           caption_node: caption_node
@@ -211,7 +211,7 @@ module ReVIEW
 
       # Create ResolvedData for an endnote reference
       def self.endnote(item_number:, item_id:, caption_node: nil)
-        Endnote.new(
+        EndnoteReference.new(
           item_number: item_number,
           item_id: item_id,
           caption_node: caption_node
@@ -220,7 +220,7 @@ module ReVIEW
 
       # Create ResolvedData for a chapter reference
       def self.chapter(chapter_number:, chapter_id:, chapter_title: nil, caption_node: nil)
-        Chapter.new(
+        ChapterReference.new(
           chapter_number: chapter_number,
           chapter_id: chapter_id,
           item_id: chapter_id, # For chapter refs, item_id is same as chapter_id
@@ -231,7 +231,7 @@ module ReVIEW
 
       # Create ResolvedData for a headline/section reference
       def self.headline(headline_number:, item_id:, chapter_id: nil, chapter_number: nil, caption_node: nil)
-        Headline.new(
+        HeadlineReference.new(
           item_id: item_id,
           chapter_id: chapter_id,
           chapter_number: chapter_number,
@@ -242,7 +242,7 @@ module ReVIEW
 
       # Create ResolvedData for a word reference
       def self.word(word_content:, item_id:, caption_node: nil)
-        Word.new(
+        WordReference.new(
           item_id: item_id,
           word_content: word_content,
           caption_node: caption_node
@@ -251,7 +251,7 @@ module ReVIEW
 
       # Create ResolvedData for a column reference
       def self.column(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
-        Column.new(
+        ColumnReference.new(
           chapter_number: chapter_number,
           item_number: item_number,
           chapter_id: chapter_id,
@@ -262,7 +262,7 @@ module ReVIEW
 
       # Create ResolvedData for a bibpaper reference
       def self.bibpaper(item_number:, item_id:, caption_node: nil)
-        Bibpaper.new(
+        BibpaperReference.new(
           item_number: item_number,
           item_id: item_id,
           caption_node: caption_node
@@ -270,96 +270,106 @@ module ReVIEW
       end
     end
 
+    # Base class for references with chapter number, item number, and caption
+    # This class consolidates the common pattern used by ImageReference, TableReference,
+    # ListReference, EquationReference, and ColumnReference
+    class ResolvedData
+      class CaptionedItemReference < ResolvedData
+        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
+          super()
+          @chapter_number = chapter_number
+          @item_number = item_number
+          @chapter_id = chapter_id
+          @item_id = item_id
+          @caption_node = caption_node
+        end
+
+        # Template method for generating text representation
+        # Subclasses should override label_key to specify their I18n label
+        def to_text
+          format_captioned_reference(label_key)
+        end
+
+        # Template method - subclasses must implement this
+        # @return [String] The I18n key for the label (e.g., 'image', 'table', 'list')
+        def label_key
+          raise NotImplementedError, "#{self.class} must implement #label_key"
+        end
+
+        # Template method for double dispatch formatting
+        # Subclasses should override formatter_method to specify their formatter method name
+        def format_with(formatter)
+          formatter.send(formatter_method, self)
+        end
+
+        # Template method - subclasses must implement this
+        # @return [Symbol] The formatter method name (e.g., :format_image_reference)
+        def formatter_method
+          raise NotImplementedError, "#{self.class} must implement #formatter_method"
+        end
+      end
+    end
+
     # Concrete subclasses representing each reference type
     class ResolvedData
-      class Image < ResolvedData
-        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
-          super()
-          @chapter_number = chapter_number
-          @item_number = item_number
-          @chapter_id = chapter_id
-          @item_id = item_id
-          @caption_node = caption_node
+      class ImageReference < CaptionedItemReference
+        def label_key
+          'image'
         end
 
-        def to_text
-          format_captioned_reference('image')
-        end
-
-        # Double dispatch - delegate to formatter
-        def format_with(formatter)
-          formatter.format_image_reference(self)
+        def formatter_method
+          :format_image_reference
         end
       end
     end
 
     class ResolvedData
-      class Table < ResolvedData
-        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
-          super()
-          @chapter_number = chapter_number
-          @item_number = item_number
-          @chapter_id = chapter_id
-          @item_id = item_id
-          @caption_node = caption_node
+      class TableReference < CaptionedItemReference
+        def label_key
+          'table'
         end
 
-        def to_text
-          format_captioned_reference('table')
-        end
-
-        # Double dispatch - delegate to formatter
-        def format_with(formatter)
-          formatter.format_table_reference(self)
+        def formatter_method
+          :format_table_reference
         end
       end
     end
 
     class ResolvedData
-      class List < ResolvedData
-        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
-          super()
-          @chapter_number = chapter_number
-          @item_number = item_number
-          @chapter_id = chapter_id
-          @item_id = item_id
-          @caption_node = caption_node
+      class ListReference < CaptionedItemReference
+        def label_key
+          'list'
         end
 
-        def to_text
-          format_captioned_reference('list')
-        end
-
-        # Double dispatch - delegate to formatter
-        def format_with(formatter)
-          formatter.format_list_reference(self)
+        def formatter_method
+          :format_list_reference
         end
       end
     end
 
     class ResolvedData
-      class Equation < ResolvedData
+      class EquationReference < CaptionedItemReference
+        # Equation doesn't have chapter_id parameter, so override initialize
         def initialize(chapter_number:, item_number:, item_id:, caption_node: nil)
-          super()
-          @chapter_number = chapter_number
-          @item_number = item_number
-          @item_id = item_id
-          @caption_node = caption_node
+          super(chapter_number: chapter_number,
+                item_number: item_number,
+                item_id: item_id,
+                chapter_id: nil,
+                caption_node: caption_node)
         end
 
-        def to_text
-          format_captioned_reference('equation')
+        def label_key
+          'equation'
         end
 
-        # Double dispatch - delegate to formatter
-        def format_with(formatter)
-          formatter.format_equation_reference(self)
+        def formatter_method
+          :format_equation_reference
         end
       end
     end
 
     class ResolvedData
-      class Footnote < ResolvedData
+      class FootnoteReference < ResolvedData
         def initialize(item_number:, item_id:, caption_node: nil)
           super()
           @item_number = item_number
@@ -379,7 +389,7 @@ module ReVIEW
     end
 
     class ResolvedData
-      class Endnote < ResolvedData
+      class EndnoteReference < ResolvedData
         def initialize(item_number:, item_id:, caption_node: nil)
           super()
           @item_number = item_number
@@ -399,8 +409,8 @@ module ReVIEW
     end
 
     class ResolvedData
-      # Chapter - represents chapter references (@<chap>, @<chapref>, @<title>)
-      class Chapter < ResolvedData
+      # ChapterReference - represents chapter references (@<chap>, @<chapref>, @<title>)
+      class ChapterReference < ResolvedData
         def initialize(chapter_number:, chapter_id:, item_id:, chapter_title: nil, caption_node: nil)
           super()
           @chapter_number = chapter_number
@@ -446,7 +456,7 @@ module ReVIEW
     end
 
     class ResolvedData
-      class Headline < ResolvedData
+      class HeadlineReference < ResolvedData
         attr_reader :chapter_number
 
         def initialize(item_id:, headline_number:, chapter_id: nil, chapter_number: nil, caption_node: nil)
@@ -484,7 +494,7 @@ module ReVIEW
     end
 
     class ResolvedData
-      class Word < ResolvedData
+      class WordReference < ResolvedData
         def initialize(item_id:, word_content:, caption_node: nil)
           super()
           @item_id = item_id
@@ -504,16 +514,8 @@ module ReVIEW
     end
 
     class ResolvedData
-      class Column < ResolvedData
-        def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
-          super()
-          @chapter_number = chapter_number
-          @item_number = item_number
-          @chapter_id = chapter_id
-          @item_id = item_id
-          @caption_node = caption_node
-        end
-
+      class ColumnReference < CaptionedItemReference
+        # Column has a different to_text format, so override it
         def to_text
           text = caption_text
           if text.empty?
@@ -523,15 +525,18 @@ module ReVIEW
           end
         end
 
-        # Double dispatch - delegate to formatter
-        def format_with(formatter)
-          formatter.format_column_reference(self)
+        def label_key
+          'column'
+        end
+
+        def formatter_method
+          :format_column_reference
         end
       end
     end
 
     class ResolvedData
-      class Bibpaper < ResolvedData
+      class BibpaperReference < ResolvedData
         def initialize(item_number:, item_id:, caption_node: nil)
           super()
           @item_number = item_number

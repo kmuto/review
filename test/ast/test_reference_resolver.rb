@@ -8,9 +8,12 @@ require 'review/ast/document_node'
 require 'review/ast/paragraph_node'
 require 'review/book'
 require 'review/book/chapter'
+require 'review/i18n'
 
 class ReferenceResolverTest < Test::Unit::TestCase
   def setup
+    ReVIEW::I18n.setup('ja')
+
     @book = ReVIEW::Book::Base.new
     @chapter = ReVIEW::Book::Chapter.new(@book, 1, 'chap01', 'chap01.re')
     @chapter.instance_variable_set(:@number, '1')
@@ -73,7 +76,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_not_nil(resolved_node.resolved_data)
 
     data = resolved_node.resolved_data
-    assert_equal ReVIEW::AST::ResolvedData::Image, data.class
+    assert_equal ReVIEW::AST::ResolvedData::ImageReference, data.class
     assert_equal '第1章', data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'img01', data.item_id
@@ -100,7 +103,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal ReVIEW::AST::ResolvedData::Table, data.class
+    assert_equal ReVIEW::AST::ResolvedData::TableReference, data.class
     assert_equal '第1章', data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'tbl01', data.item_id
@@ -127,7 +130,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal ReVIEW::AST::ResolvedData::List, data.class
+    assert_equal ReVIEW::AST::ResolvedData::ListReference, data.class
     assert_equal '第1章', data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'list01', data.item_id
@@ -155,7 +158,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal ReVIEW::AST::ResolvedData::Footnote, data.class
+    assert_equal ReVIEW::AST::ResolvedData::FootnoteReference, data.class
     assert_equal 1, data.item_number
     assert_equal 'fn01', data.item_id
   end
@@ -181,7 +184,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal ReVIEW::AST::ResolvedData::Equation, data.class
+    assert_equal ReVIEW::AST::ResolvedData::EquationReference, data.class
     assert_equal '第1章', data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'eq01', data.item_id
@@ -209,7 +212,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal ReVIEW::AST::ResolvedData::Word, data.class
+    assert_equal ReVIEW::AST::ResolvedData::WordReference, data.class
     assert_equal 'Ruby on Rails', data.word_content
     assert_equal 'rails', data.item_id
   end
@@ -249,7 +252,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal ReVIEW::AST::ResolvedData::Image, data.class
+    assert_equal ReVIEW::AST::ResolvedData::ImageReference, data.class
     assert_equal '第1章', data.chapter_number
     assert_equal '1', data.item_number
   end
@@ -275,7 +278,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal ReVIEW::AST::ResolvedData::Table, data.class
+    assert_equal ReVIEW::AST::ResolvedData::TableReference, data.class
     assert_equal '第1章', data.chapter_number
     assert_equal '1', data.item_number
   end
@@ -341,7 +344,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal ReVIEW::AST::ResolvedData::Endnote, data.class
+    assert_equal ReVIEW::AST::ResolvedData::EndnoteReference, data.class
     assert_equal 'en01', data.item_id
   end
 
@@ -366,7 +369,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal ReVIEW::AST::ResolvedData::Column, data.class
+    assert_equal ReVIEW::AST::ResolvedData::ColumnReference, data.class
     assert_equal 'col01', data.item_id
   end
 
@@ -391,7 +394,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal ReVIEW::AST::ResolvedData::Headline, data.class
+    assert_equal ReVIEW::AST::ResolvedData::HeadlineReference, data.class
     assert_equal 'sec01', data.item_id
   end
 
@@ -416,7 +419,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal ReVIEW::AST::ResolvedData::Headline, data.class
+    assert_equal ReVIEW::AST::ResolvedData::HeadlineReference, data.class
     assert_equal 'sec01', data.item_id
   end
 
@@ -442,7 +445,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal ReVIEW::AST::ResolvedData::Chapter, data.class
+    assert_equal ReVIEW::AST::ResolvedData::ChapterReference, data.class
     assert_equal 'chap01', data.chapter_id
   end
 
@@ -486,7 +489,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal ReVIEW::AST::ResolvedData::Image, data.class
+    assert_equal ReVIEW::AST::ResolvedData::ImageReference, data.class
     assert_equal '第2章', data.chapter_number
     assert_equal 'chap02', data.chapter_id
     assert_equal 'img01', data.item_id
@@ -626,7 +629,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     assert_true(resolved_node.resolved?)
 
     data = resolved_node.resolved_data
-    assert_equal ReVIEW::AST::ResolvedData::Word, data.class
+    assert_equal ReVIEW::AST::ResolvedData::WordReference, data.class
     assert_equal 'Application Programming Interface', data.word_content
   end
 
