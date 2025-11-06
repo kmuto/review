@@ -507,11 +507,8 @@ module ReVIEW
 
       # Format chapter number in long form (for all reference types)
       # Returns formatted chapter number like "第1章", "付録A", "第II部", etc.
-      # This mimics ChapterIndex#number behavior
       def format_chapter_number(chapter)
-        chapter.format_number # true (default) = long form with heading
-      rescue StandardError # part
-        ReVIEW::I18n.t('part', chapter.number)
+        chapter.format_number
       end
     end
   end
