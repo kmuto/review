@@ -331,18 +331,20 @@ module ReVIEW
       def visit_embed(node)
         case node.embed_type
         when :block
-          text = "//embed[#{node.arg || ''}]{\n"
-          text += (node.lines || []).join("\n")
+          target = node.target_builders&.join(',') || ''
+          text = "//embed[#{target}]{\n"
+          text += node.content || ''
           text += "\n" unless text.end_with?("\n")
           text + "//}\n\n"
         when :raw
-          text = "//raw[#{node.arg || ''}]{\n"
-          text += (node.lines || []).join("\n")
+          target = node.target_builders&.join(',') || ''
+          text = "//raw[#{target}]{\n"
+          text += node.content || ''
           text += "\n" unless text.end_with?("\n")
           text + "//}\n\n"
         else
           # Inline embed should be handled in inline context
-          "@<embed>{#{node.arg || ''}}"
+          "@<embed>{#{node.content || ''}}"
         end
       end
 

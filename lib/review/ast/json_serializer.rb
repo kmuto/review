@@ -113,19 +113,6 @@ module ReVIEW
         when ReVIEW::AST::BlockNode
           hash['block_type'] = node.block_type.to_s
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
-        when ReVIEW::AST::EmbedNode
-          case node.embed_type
-          when :block
-            hash['embed_type'] = 'block'
-            hash['arg'] = node.arg
-            hash['lines'] = node.lines || []
-          when :inline
-            hash['embed_type'] = 'inline'
-            hash['arg'] = node.arg
-          when :raw
-            hash['embed_type'] = 'raw'
-            hash['content'] = node.arg.to_s
-          end
         when ReVIEW::AST::ListItemNode
           hash['level'] = node.level if node.level
           hash['number'] = node.number if node.number

@@ -607,9 +607,9 @@ module ReVIEW
         id = node.args[0]
         command = node.args[1]
 
-        # Get graph content from lines
-        lines = node.lines || []
-        content = lines.join("\n") + "\n"
+        # Get graph content from child TextNodes
+        content = node.children.map { |child| child.is_a?(ReVIEW::AST::TextNode) ? child.content : '' }.join("\n")
+        content += "\n" unless content.empty?
 
         # Initialize ImgGraph if needed and command is mermaid
         if command == 'mermaid'
@@ -1650,7 +1650,8 @@ module ReVIEW
         result = []
         no = 1
 
-        lines = node.lines || []
+        # Get lines from child TextNodes
+        lines = node.children.map { |child| child.is_a?(ReVIEW::AST::TextNode) ? child.content : '' }
         lines.each do |line|
           # Unescape HTML entities
           unescaped = line.gsub('&lt;', '<').gsub('&gt;', '>').gsub('&quot;', '"').gsub('&amp;', '&')
