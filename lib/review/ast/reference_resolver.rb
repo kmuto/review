@@ -375,13 +375,13 @@ module ReVIEW
       # Resolve headline references
       def resolve_headline_ref(node)
         # Cross-chapter reference needs @book
-        if node.context_id
+        if node.cross_chapter?
           raise CompileError, "Book not available for cross-chapter headline reference: #{node.full_ref_id}" unless @book
         end
 
         # Determine target chapter (cross-chapter or current chapter)
         target_chapter = target_chapter_for(node)
-        raise CompileError, "Chapter not found for headline reference: #{node.context_id}" if node.context_id && !target_chapter
+        raise CompileError, "Chapter not found for headline reference: #{node.context_id}" if node.cross_chapter? && !target_chapter
 
         # Search from headline_index
         headline = find_index_item(target_chapter&.headline_index, node.ref_id)
@@ -552,7 +552,7 @@ module ReVIEW
       # @param node [ReferenceNode] The reference node
       # @return [Chapter] The target chapter
       def target_chapter_for(node)
-        node.context_id ? find_chapter_by_id(node.context_id) : @chapter
+        node.cross_chapter? ? find_chapter_by_id(node.context_id) : @chapter
       end
 
       # Find chapter by ID from book's chapter_index

@@ -43,6 +43,12 @@ module ReVIEW
         !!@resolved_data
       end
 
+      # Check if this is a cross-chapter reference
+      # @return [Boolean] true if referencing another chapter
+      def cross_chapter?
+        !@context_id.nil?
+      end
+
       # Return the full reference ID (concatenated with context_id if present)
       # @return [String] full reference ID
       def full_ref_id
