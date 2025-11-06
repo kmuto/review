@@ -382,8 +382,8 @@ module ReVIEW
             ReVIEW::AST::EmbedNode.new(
               location: restore_location(hash),
               embed_type: hash['embed_type']&.to_sym || :inline,
-              arg: hash['arg'],
-              lines: hash['lines']
+              target_builders: hash['target_builders'],
+              content: hash['content']
             )
           when 'CodeLineNode'
             node = ReVIEW::AST::CodeLineNode.new(

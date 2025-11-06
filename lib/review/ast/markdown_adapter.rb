@@ -340,7 +340,7 @@ module ReVIEW
           embed_node = EmbedNode.new(
             location: current_location(cm_node),
             embed_type: :html,
-            lines: html_content.lines.map(&:chomp)
+            content: html_content
           )
           add_node_to_current_context(embed_node)
         end
