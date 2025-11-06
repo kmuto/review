@@ -112,6 +112,7 @@ module ReVIEW
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
         when ReVIEW::AST::BlockNode
           hash['block_type'] = node.block_type.to_s
+          hash['args'] = node.args if node.args && node.args.any?
           hash['children'] = node.children.map { |child| serialize_to_hash(child, options) } if node.children.any?
         when ReVIEW::AST::ListItemNode
           hash['level'] = node.level if node.level
@@ -157,14 +158,6 @@ module ReVIEW
         if node.respond_to?(:caption_node) && node.caption_node
           hash['caption_node'] = serialize_to_hash(node.caption_node, options)
         end
-      end
-
-      def process_list_items(node, _list_type, options)
-        return [] if node.children.empty?
-
-        # For all list types, just serialize the children normally
-        # The ListItemNode structure will be preserved
-        node.children.map { |item| serialize_to_hash(item, options) }
       end
 
       # Deserialize JSON string to AST nodes
@@ -357,7 +350,13 @@ module ReVIEW
             node
           when 'BlockNode'
             block_type = hash['block_type'] ? hash['block_type'].to_sym : :quote
-            node = ReVIEW::AST::BlockNode.new(location: restore_location(hash), block_type: block_type)
+            _, caption_node = deserialize_caption_fields(hash)
+            node = ReVIEW::AST::BlockNode.new(
+              location: restore_location(hash),
+              block_type: block_type,
+              args: hash['args'],
+              caption_node: caption_node
+            )
             if hash['children']
               hash['children'].each do |child_hash|
                 child = deserialize_from_hash(child_hash)
@@ -409,13 +408,18 @@ module ReVIEW
             node
           when 'ColumnNode'
             _, caption_node = deserialize_caption_fields(hash)
-            ReVIEW::AST::ColumnNode.new(
+            node = ReVIEW::AST::ColumnNode.new(
               location: restore_location(hash),
               level: hash['level'],
               label: hash['label'],
               caption_node: caption_node,
               column_type: hash['column_type']
             )
+            if hash['children'] || hash['content']
+              children = (hash['children'] || hash['content'] || []).map { |child| deserialize_from_hash(child) }
+              children.each { |child| node.add_child(child) if child.is_a?(ReVIEW::AST::Node) }
+            end
+            node
           else
             # Unknown node type - raise an error as this indicates a deserialization problem
             raise StandardError, "Unknown node type: #{node_type}. Cannot deserialize JSON with unknown node type."
