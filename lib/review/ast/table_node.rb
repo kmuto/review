@@ -127,6 +127,29 @@ module ReVIEW
 
         hash
       end
+
+      # Deserialize from hash
+      def self.deserialize_from_hash(hash)
+        _, caption_node = ReVIEW::AST::JSONSerializer.deserialize_caption_fields(hash)
+        node = new(
+          location: ReVIEW::AST::JSONSerializer.restore_location(hash),
+          id: hash['id'],
+          caption_node: caption_node,
+          table_type: hash['table_type'] || :table,
+          metric: hash['metric']
+        )
+        # Process header and body rows
+        (hash['header_rows'] || []).each do |row_hash|
+          row = ReVIEW::AST::JSONSerializer.deserialize_from_hash(row_hash)
+          node.add_header_row(row) if row.is_a?(ReVIEW::AST::TableRowNode)
+        end
+        (hash['body_rows'] || []).each do |row_hash|
+          row = ReVIEW::AST::JSONSerializer.deserialize_from_hash(row_hash)
+          node.add_body_row(row) if row.is_a?(ReVIEW::AST::TableRowNode)
+        end
+
+        node
+      end
     end
   end
 end

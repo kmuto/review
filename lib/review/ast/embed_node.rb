@@ -68,6 +68,16 @@ module ReVIEW
         hash[:content] = content if content
         hash
       end
+
+      # Deserialize from hash
+      def self.deserialize_from_hash(hash)
+        new(
+          location: ReVIEW::AST::JSONSerializer.restore_location(hash),
+          embed_type: hash['embed_type']&.to_sym || :inline,
+          target_builders: hash['target_builders'],
+          content: hash['content'] || ''
+        )
+      end
     end
   end
 end

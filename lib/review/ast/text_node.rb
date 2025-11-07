@@ -53,6 +53,14 @@ module ReVIEW
           lineno: location.lineno
         }
       end
+
+      # Deserialize from hash
+      def self.deserialize_from_hash(hash)
+        new(
+          location: ReVIEW::AST::JSONSerializer.restore_location(hash),
+          content: hash['content'] || ''
+        )
+      end
     end
   end
 end

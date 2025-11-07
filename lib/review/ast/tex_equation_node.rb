@@ -82,6 +82,17 @@ module ReVIEW
         hash[:content] = content if content && !content.empty?
         hash
       end
+
+      # Deserialize from hash
+      def self.deserialize_from_hash(hash)
+        _, caption_node = ReVIEW::AST::JSONSerializer.deserialize_caption_fields(hash)
+        new(
+          location: ReVIEW::AST::JSONSerializer.restore_location(hash),
+          id: hash['id'],
+          caption_node: caption_node,
+          content: hash['content'] || ''
+        )
+      end
     end
   end
 end

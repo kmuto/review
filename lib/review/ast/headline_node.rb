@@ -57,6 +57,17 @@ module ReVIEW
         result
       end
 
+      # Deserialize from hash
+      def self.deserialize_from_hash(hash)
+        _, caption_node = ReVIEW::AST::JSONSerializer.deserialize_caption_fields(hash)
+        new(
+          location: ReVIEW::AST::JSONSerializer.restore_location(hash),
+          level: hash['level'],
+          label: hash['label'],
+          caption_node: caption_node
+        )
+      end
+
       private
 
       def serialize_properties(hash, options)

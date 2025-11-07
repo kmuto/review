@@ -46,6 +46,20 @@ module ReVIEW
         end
         hash
       end
+
+      # Deserialize from hash
+      def self.deserialize_from_hash(hash)
+        node = new(location: ReVIEW::AST::JSONSerializer.restore_location(hash), list_type: hash['list_type'].to_sym)
+
+        # Process children (should be ListItemNode objects)
+        if hash['children']
+          hash['children'].each do |child_hash|
+            child = ReVIEW::AST::JSONSerializer.deserialize_from_hash(child_hash)
+            node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
+          end
+        end
+        node
+      end
     end
 
     class ListItemNode < Node
@@ -89,6 +103,22 @@ module ReVIEW
         hash[:number] = number if number
         hash[:item_type] = item_type if item_type
         hash
+      end
+
+      # Deserialize from hash
+      def self.deserialize_from_hash(hash)
+        node = new(
+          location: ReVIEW::AST::JSONSerializer.restore_location(hash),
+          level: hash['level'] || 1,
+          number: hash['number']
+        )
+        if hash['children']
+          hash['children'].each do |child_hash|
+            child = ReVIEW::AST::JSONSerializer.deserialize_from_hash(child_hash)
+            node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
+          end
+        end
+        node
       end
     end
   end

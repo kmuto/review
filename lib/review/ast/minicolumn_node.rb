@@ -34,6 +34,21 @@ module ReVIEW
         result
       end
 
+      # Deserialize from hash
+      def self.deserialize_from_hash(hash)
+        _, caption_node = ReVIEW::AST::JSONSerializer.deserialize_caption_fields(hash)
+        node = new(
+          location: ReVIEW::AST::JSONSerializer.restore_location(hash),
+          minicolumn_type: hash['minicolumn_type'] || hash['column_type'],
+          caption_node: caption_node
+        )
+        if hash['children'] || hash['content']
+          children = (hash['children'] || hash['content'] || []).map { |child| ReVIEW::AST::JSONSerializer.deserialize_from_hash(child) }
+          children.each { |child| node.add_child(child) if child.is_a?(ReVIEW::AST::Node) }
+        end
+        node
+      end
+
       private
 
       def serialize_properties(hash, options)
