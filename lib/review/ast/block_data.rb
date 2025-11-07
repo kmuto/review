@@ -10,7 +10,7 @@ module ReVIEW
   module AST
     # Block command data structure for separating IO reading from block processing
     #
-    # This struct encapsulates all information about a block command that has been
+    # This class encapsulates all information about a block command that has been
     # read from input, including any nested block commands. It serves as the interface
     # between Compiler (IO responsibility) and BlockProcessor (processing responsibility).
     #
@@ -19,9 +19,9 @@ module ReVIEW
     # @param lines [Array<String>] Content lines within the block
     # @param nested_blocks [Array<BlockData>] Any nested block commands found within this block
     # @param location [SnapshotLocation] Source location information for error reporting
-    BlockData = Struct.new(:name, :args, :lines, :nested_blocks, :location, keyword_init: true) do
+    BlockData = Data.define(:name, :args, :lines, :nested_blocks, :location) do
       def initialize(name:, location:, args: [], lines: [], nested_blocks: [])
-        super
+        super(name: name, args: args, lines: lines, nested_blocks: nested_blocks, location: location)
       end
 
       def nested_blocks?

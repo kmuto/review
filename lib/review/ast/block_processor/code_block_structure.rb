@@ -10,9 +10,7 @@ module ReVIEW
   module AST
     class BlockProcessor
       # Data structure representing code block structure (intermediate representation)
-      class CodeBlockStructure
-        attr_reader :id, :caption_node, :lang, :line_numbers, :code_type, :lines, :original_text
-
+      CodeBlockStructure = Data.define(:id, :caption_node, :lang, :line_numbers, :code_type, :lines, :original_text) do
         # @param context [BlockContext] Block context
         # @param config [Hash] Code block configuration
         # @return [CodeBlockStructure] Parsed code block structure
@@ -33,16 +31,6 @@ module ReVIEW
             lines: lines,
             original_text: original_text
           )
-        end
-
-        def initialize(id:, caption_node:, lang:, line_numbers:, code_type:, lines:, original_text:)
-          @id = id
-          @caption_node = caption_node
-          @lang = lang
-          @line_numbers = line_numbers
-          @code_type = code_type
-          @lines = lines
-          @original_text = original_text
         end
 
         def numbered?
