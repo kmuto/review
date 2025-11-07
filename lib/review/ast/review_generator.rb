@@ -28,6 +28,31 @@ module ReVIEW
         visit_all(node.children).join
       end
 
+      # Convert CaptionNode to Re:VIEW markup format
+      # @param caption_node [CaptionNode, nil] The caption node to convert
+      # @return [String] Re:VIEW markup string
+      def caption_to_review_markup(caption_node)
+        return '' if caption_node.nil? || caption_node.children.empty?
+
+        caption_node.children.map { |child| render_node_as_review_markup(child) }.join
+      end
+
+      # Recursively render AST nodes as Re:VIEW markup text
+      # @param node [Node] The node to render
+      # @return [String] Re:VIEW markup representation
+      def render_node_as_review_markup(node)
+        case node
+        when ReVIEW::AST::TextNode
+          node.content
+        when ReVIEW::AST::InlineNode
+          # Convert back to Re:VIEW markup
+          content = node.children.map { |child| render_node_as_review_markup(child) }.join
+          "@<#{node.inline_type}>{#{content}}"
+        else
+          node.leaf_node? ? node.content : ''
+        end
+      end
+
       def visit_document(node)
         visit_children(node)
       end
@@ -36,7 +61,7 @@ module ReVIEW
         text = '=' * (node.level || 1)
         text += "[#{node.label}]" if node.label && !node.label.empty?
 
-        caption_text = node.caption_text
+        caption_text = caption_to_review_markup(node.caption_node)
         text += ' ' + caption_text unless caption_text.empty?
 
         text + "\n\n" + visit_children(node)
@@ -100,7 +125,7 @@ module ReVIEW
         text = '//' + block_type
         text += "[#{node.id}]" if node.id?
 
-        caption_text = node.caption_text
+        caption_text = caption_to_review_markup(node.caption_node)
         text += "[#{caption_text}]" unless caption_text.empty?
         text += "{\n"
 
@@ -158,7 +183,7 @@ module ReVIEW
         text = "//#{table_type}"
         text += "[#{node.id}]" if node.id?
 
-        caption_text = node.caption_text
+        caption_text = caption_to_review_markup(node.caption_node)
         text += "[#{caption_text}]" unless caption_text.empty?
         text += "{\n"
 
@@ -190,7 +215,7 @@ module ReVIEW
       def visit_image(node)
         text = "//image[#{node.id || ''}]"
 
-        caption_text = node.caption_text
+        caption_text = caption_to_review_markup(node.caption_node)
         text += "[#{caption_text}]" unless caption_text.empty?
         text += "[#{node.metric}]" if node.metric && !node.metric.empty?
         text + "\n\n"
@@ -199,7 +224,7 @@ module ReVIEW
       def visit_minicolumn(node)
         text = "//#{node.minicolumn_type}"
 
-        caption_text = node.caption_text
+        caption_text = caption_to_review_markup(node.caption_node)
         text += "[#{caption_text}]" unless caption_text.empty?
         text += "{\n"
 
@@ -266,7 +291,7 @@ module ReVIEW
         when :texequation
           # Math equation blocks
           text = '//texequation'
-          caption_text = node.caption_text
+          caption_text = caption_to_review_markup(node.caption_node)
           if node.id || !caption_text.empty?
             text += "[#{node.id}]" if node.id
             text += "[#{caption_text}]" unless caption_text.empty?
@@ -355,7 +380,7 @@ module ReVIEW
       def visit_column(node)
         text = '=' * (node.level || 1)
         text += '[column]'
-        caption_text = node.caption_text
+        caption_text = caption_to_review_markup(node.caption_node)
         text += " #{caption_text}" unless caption_text.empty?
         text + "\n\n" + visit_children(node)
       end

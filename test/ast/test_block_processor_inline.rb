@@ -10,10 +10,13 @@ require 'review/ast/caption_node'
 require 'review/ast/table_node'
 require 'review/ast/image_node'
 require 'review/ast/code_line_node'
+require 'review/ast/compiler'
 
 class TestBlockProcessorInline < Test::Unit::TestCase
   def setup
     @location = ReVIEW::SnapshotLocation.new('test.re', 10)
+    compiler = ReVIEW::AST::Compiler.new
+    @inline_processor = compiler.inline_processor
   end
 
   def test_code_block_node_original_text_attribute
@@ -100,24 +103,17 @@ class TestBlockProcessorInline < Test::Unit::TestCase
     )
 
     assert_not_nil(code_block.caption_text)
-    assert_equal 'Simple Caption', code_block.caption_text
     assert_instance_of(ReVIEW::AST::CaptionNode, code_block.caption_node)
     assert_equal 'Simple Caption', code_block.caption_text
   end
 
   def test_code_block_with_inline_caption
-    # Test CodeBlockNode with inline markup in caption
     caption_markup_text = 'Code with @<b>{bold} text'
-
-    # Create CaptionNode with inline content
-    caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
-    text1 = ReVIEW::AST::TextNode.new(location: @location, content: 'Code with ')
-    inline = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b)
-    inline.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'bold'))
-    text2 = ReVIEW::AST::TextNode.new(location: @location, content: ' text')
-    caption_node.add_child(text1)
-    caption_node.add_child(inline)
-    caption_node.add_child(text2)
+    caption_node = CaptionParserHelper.parse(
+      caption_markup_text,
+      location: @location,
+      inline_processor: @inline_processor
+    )
 
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
@@ -126,9 +122,9 @@ class TestBlockProcessorInline < Test::Unit::TestCase
     )
 
     assert_not_nil(code_block.caption_text)
-    assert_equal caption_markup_text, code_block.caption_text
     assert_instance_of(ReVIEW::AST::CaptionNode, code_block.caption_node)
-    assert_equal caption_markup_text, code_block.caption_text
+    assert_equal true, code_block.caption_node.contains_inline?
+    assert_equal 'Code with bold text', code_block.caption_text
   end
 
   def test_table_node_with_caption
@@ -141,23 +137,27 @@ class TestBlockProcessorInline < Test::Unit::TestCase
     )
 
     assert_not_nil(table.caption_text)
-    assert_equal 'Table Caption', table.caption_text
     assert_instance_of(ReVIEW::AST::CaptionNode, table.caption_node)
     assert_equal 'Table Caption', table.caption_text
   end
 
   def test_image_node_with_caption
     caption = 'Figure @<i>{1}: Sample'
+    caption_node = CaptionParserHelper.parse(
+      caption,
+      location: @location,
+      inline_processor: @inline_processor
+    )
+
     image = ReVIEW::AST::ImageNode.new(
       location: @location,
       id: 'fig1',
-      caption_node: CaptionParserHelper.parse(caption)
+      caption_node: caption_node
     )
 
-    assert_not_nil(image.caption_text)
-    assert_equal 'Figure @<i>{1}: Sample', image.caption_text
     assert_instance_of(ReVIEW::AST::CaptionNode, image.caption_node)
-    assert_equal 'Figure @<i>{1}: Sample', image.caption_text
+    assert_equal true, image.caption_node.contains_inline?
+    assert_equal 'Figure 1: Sample', image.caption_text
   end
 
   def test_caption_node_creation_directly
@@ -184,20 +184,17 @@ class TestBlockProcessorInline < Test::Unit::TestCase
   end
 
   def test_caption_with_multiple_nodes
-    caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
-    text_node = ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Text with ')
-    inline_node = ReVIEW::AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :b)
-    inline_node.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'bold'))
-    text_node2 = ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: ' content')
-    caption_node.add_child(text_node)
-    caption_node.add_child(inline_node)
-    caption_node.add_child(text_node2)
-
-    caption_node = CaptionParserHelper.parse(caption_node, location: @location)
+    caption = 'Text with @<b>{bold} content'
+    caption_node = CaptionParserHelper.parse(
+      caption,
+      location: @location,
+      inline_processor: @inline_processor
+    )
 
     assert_instance_of(ReVIEW::AST::CaptionNode, caption_node)
-    assert_equal 3, caption_node.children.size
-    assert_equal 'Text with @<b>{bold} content', caption_node.to_text
+    assert_operator(caption_node.children.size, :>=, 1)
+    assert_equal true, caption_node.contains_inline?
+    assert_equal 'Text with bold content', caption_node.to_text
   end
 
   def test_empty_caption_handling
@@ -219,19 +216,11 @@ class TestBlockProcessorInline < Test::Unit::TestCase
 
   def test_caption_markup_text_compatibility
     caption_with_markup = 'Caption with @<b>{bold} and @<i>{italic}'
-
-    # Create CaptionNode with inline content
-    caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
-    text1 = ReVIEW::AST::TextNode.new(location: @location, content: 'Caption with ')
-    bold = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :b)
-    bold.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'bold'))
-    text2 = ReVIEW::AST::TextNode.new(location: @location, content: ' and ')
-    italic = ReVIEW::AST::InlineNode.new(location: @location, inline_type: :i)
-    italic.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'italic'))
-    caption_node.add_child(text1)
-    caption_node.add_child(bold)
-    caption_node.add_child(text2)
-    caption_node.add_child(italic)
+    caption_node = CaptionParserHelper.parse(
+      caption_with_markup,
+      location: @location,
+      inline_processor: @inline_processor
+    )
 
     code_block = ReVIEW::AST::CodeBlockNode.new(
       location: @location,
@@ -239,11 +228,9 @@ class TestBlockProcessorInline < Test::Unit::TestCase
       original_text: 'code'
     )
 
-    # caption_markup_text should return the raw text with markup
-    assert_equal caption_with_markup, code_block.caption_text
-
-    # to_text on the caption should also return the same
-    assert_equal caption_with_markup, code_block.caption_text
+    assert_instance_of(ReVIEW::AST::CaptionNode, code_block.caption_node)
+    assert_equal true, code_block.caption_node.contains_inline?
+    assert_equal 'Caption with bold and italic', code_block.caption_text
   end
 
   private
