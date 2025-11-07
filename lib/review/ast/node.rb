@@ -87,14 +87,6 @@ module ReVIEW
         @attributes.key?(key)
       end
 
-      def fetch_attribute(key, default = nil)
-        @attributes.fetch(key, default)
-      end
-
-      def attributes
-        @attributes.dup
-      end
-
       # Return the visit method name for this node as a symbol.
       # This is used by the Visitor pattern for method dispatch.
       #
