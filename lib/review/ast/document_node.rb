@@ -5,13 +5,6 @@ require_relative 'node'
 module ReVIEW
   module AST
     class DocumentNode < Node
-      attr_reader :chapter
-
-      def initialize(location:, chapter: nil, **kwargs)
-        super(location: location, **kwargs)
-        @chapter = chapter
-      end
-
       def self.deserialize_from_hash(hash)
         node = new(location: ReVIEW::AST::JSONSerializer.restore_location(hash))
         if hash['children']

@@ -113,8 +113,7 @@ module ReVIEW
         f = LineInput.from_string(@chapter.content)
 
         @ast_root = AST::DocumentNode.new(
-          location: SnapshotLocation.new(@chapter.basename, f.lineno + 1),
-          chapter: @chapter
+          location: SnapshotLocation.new(@chapter.basename, f.lineno + 1)
         )
         @current_ast_node = @ast_root
 

@@ -31,8 +31,7 @@ module ReVIEW
 
         # Create AST root
         @ast_root = AST::DocumentNode.new(
-          location: SnapshotLocation.new(@chapter.basename, 1),
-          chapter: @chapter
+          location: SnapshotLocation.new(@chapter.basename, 1)
         )
         @current_ast_node = @ast_root
 
