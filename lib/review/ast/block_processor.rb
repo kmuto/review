@@ -238,11 +238,19 @@ module ReVIEW
       def build_image_ast(context)
         caption_node = context.process_caption(context.args, 1)
 
+        # Collect block content if present, otherwise use empty string
+        content = if context.content?
+                    (context.lines.join("\n") + "\n").chomp
+                  else
+                    ''
+                  end
+
         context.append_new_node(AST::ImageNode,
                                 id: context.arg(0),
                                 caption_node: caption_node,
                                 metric: context.arg(2),
-                                image_type: context.name)
+                                image_type: context.name,
+                                content: content)
       end
 
       def build_table_ast(context)

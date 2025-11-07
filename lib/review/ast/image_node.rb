@@ -9,8 +9,8 @@ module ReVIEW
       attr_accessor :caption_node
       attr_reader :metric, :image_type
 
-      def initialize(location:, id: nil, caption_node: nil, metric: nil, image_type: :image, **kwargs)
-        super(location: location, id: id, content: nil, **kwargs)
+      def initialize(location:, id: nil, caption_node: nil, metric: nil, image_type: :image, content: '', **kwargs)
+        super(location: location, id: id, content: content, **kwargs)
         @caption_node = caption_node
         @metric = metric
         @image_type = image_type
@@ -69,6 +69,7 @@ module ReVIEW
         hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
         hash[:metric] = metric if metric
         hash[:image_type] = image_type
+        hash[:content] = content if content && !content.empty?
         hash
       end
     end

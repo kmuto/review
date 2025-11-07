@@ -629,6 +629,7 @@ module ReVIEW
           location: current_location(image_node),
           id: image_id,
           caption_node: caption_node,
+          content: '',
           image_type: :image
         )
 

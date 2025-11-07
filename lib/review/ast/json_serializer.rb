@@ -193,7 +193,17 @@ module ReVIEW
               location: restore_location(hash),
               id: hash['id'],
               caption_node: caption_node,
-              metric: hash['metric']
+              metric: hash['metric'],
+              image_type: hash['image_type']&.to_sym || :image,
+              content: hash['content'] || ''
+            )
+          when 'TexEquationNode'
+            _, caption_node = deserialize_caption_fields(hash)
+            ReVIEW::AST::TexEquationNode.new(
+              location: restore_location(hash),
+              id: hash['id'],
+              caption_node: caption_node,
+              content: hash['content'] || ''
             )
           when 'ListNode'
             node = ReVIEW::AST::ListNode.new(location: restore_location(hash), list_type: hash['list_type'].to_sym)
