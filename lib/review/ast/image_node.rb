@@ -7,11 +7,10 @@ module ReVIEW
   module AST
     class ImageNode < LeafNode
       attr_accessor :caption_node
-      attr_reader :id, :metric, :image_type
+      attr_reader :metric, :image_type
 
       def initialize(location:, id: nil, caption_node: nil, metric: nil, image_type: :image, **kwargs)
-        super(location: location, content: nil, **kwargs)
-        @id = id
+        super(location: location, id: id, content: nil, **kwargs)
         @caption_node = caption_node
         @metric = metric
         @image_type = image_type

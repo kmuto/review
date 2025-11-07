@@ -23,11 +23,9 @@ module ReVIEW
     # //}
     class TexEquationNode < LeafNode
       attr_accessor :caption_node
-      attr_reader :id
 
-      def initialize(location:, id: nil, caption_node: nil, content: nil)
-        super(location: location, content: content || '')
-        @id = id
+      def initialize(location:, content:, id: nil, caption_node: nil)
+        super(location: location, id: id, content: content)
         @caption_node = caption_node
       end
 

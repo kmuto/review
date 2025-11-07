@@ -16,12 +16,15 @@ module ReVIEW
     # in the syntax tree. These nodes contain content but cannot have child nodes.
     #
     # Design principles:
-    # - Leaf nodes have content (text, data, etc.)
     # - Leaf nodes cannot have children
+    # - Leaf nodes may have a content attribute (optional)
+    # - Leaf nodes can have other attributes (id, caption_node, etc.) inherited from Node
     # - Attempting to add children raises an error
     #
     # Examples of leaf nodes:
     # - TextNode: contains plain text content
+    # - ImageNode: contains id, caption_node, metric (no content)
+    # - TexEquationNode: contains id, caption_node, and LaTeX content
     # - EmbedNode: contains embedded content (raw commands, etc.)
     # - ReferenceNode: contains resolved reference text
     class LeafNode < Node
