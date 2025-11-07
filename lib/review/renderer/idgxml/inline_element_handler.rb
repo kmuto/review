@@ -535,7 +535,6 @@ module ReVIEW
 
         # Raw
         def render_inline_raw(_type, _content, node)
-          # EmbedNode has target_builders and content parsed at AST construction time
           if node.targeted_for?('idgxml')
             # Convert \\n to actual newlines
             (node.content || '').gsub('\\n', "\n")
@@ -545,7 +544,6 @@ module ReVIEW
         end
 
         def render_inline_embed(_type, _content, node)
-          # EmbedNode has target_builders and content parsed at AST construction time
           if node.targeted_for?('idgxml')
             # Convert \\n to actual newlines
             (node.content || '').gsub('\\n', "\n")

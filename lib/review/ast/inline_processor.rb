@@ -154,7 +154,7 @@ module ReVIEW
           location: @ast_compiler.location,
           embed_type: :inline,
           target_builders: target_builders,
-          content: embed_content
+          content: embed_content || ''
         )
         parent_node.add_child(node)
       end
@@ -335,7 +335,7 @@ module ReVIEW
           location: @ast_compiler.location,
           embed_type: :inline,
           target_builders: target_builders,
-          content: processed_content
+          content: processed_content || ''
         )
 
         parent_node.add_child(embed_node)

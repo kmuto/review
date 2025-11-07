@@ -15,7 +15,7 @@ module ReVIEW
     class EmbedNode < LeafNode
       attr_reader :embed_type, :target_builders
 
-      def initialize(location:, embed_type: :block, target_builders: nil, content: nil, **kwargs)
+      def initialize(location:, embed_type: :block, target_builders: nil, content: '', **kwargs)
         super(location: location, content: content, **kwargs)
         @embed_type = embed_type # :block, :inline, or :raw
         @target_builders = target_builders # Array of builder names, nil means all builders
@@ -36,8 +36,7 @@ module ReVIEW
           target_builders: target_builders,
           content: content
         )
-        # EmbedNode is a leaf node - remove children array if present
-        result.delete(:children)
+
         result
       end
 
@@ -58,7 +57,6 @@ module ReVIEW
         # Call node-specific serialization
         serialize_properties(hash, options)
 
-        # EmbedNode is a leaf node - do not include children array
         hash
       end
 

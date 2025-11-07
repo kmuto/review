@@ -262,7 +262,7 @@ module ReVIEW
               location: restore_location(hash),
               embed_type: hash['embed_type']&.to_sym || :inline,
               target_builders: hash['target_builders'],
-              content: hash['content']
+              content: hash['content'] || ''
             )
           when 'CodeLineNode'
             node = ReVIEW::AST::CodeLineNode.new(

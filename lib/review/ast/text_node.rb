@@ -5,10 +5,6 @@ require_relative 'leaf_node'
 module ReVIEW
   module AST
     class TextNode < LeafNode
-      def initialize(location:, content: '', **kwargs)
-        super
-      end
-
       # Override to_h to exclude children array for TextNode
       def to_h
         result = {

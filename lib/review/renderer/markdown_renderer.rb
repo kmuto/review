@@ -393,12 +393,10 @@ module ReVIEW
       end
 
       def render_inline_raw(_type, _content, node)
-        # EmbedNode has target_builders and content parsed at AST construction time
         node.targeted_for?('markdown') ? (node.content || '') : ''
       end
 
       def render_inline_embed(_type, _content, node)
-        # EmbedNode has target_builders and content parsed at AST construction time
         node.targeted_for?('markdown') ? (node.content || '') : ''
       end
 

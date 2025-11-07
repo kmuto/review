@@ -727,13 +727,11 @@ module ReVIEW
 
         # Render raw content
         def render_inline_raw(_type, _content, node)
-          # EmbedNode has target_builders and content parsed at AST construction time
           node.targeted_for?('latex') ? (node.content || '') : ''
         end
 
         # Render embedded content
         def render_inline_embed(_type, _content, node)
-          # EmbedNode has target_builders and content parsed at AST construction time
           node.targeted_for?('latex') ? (node.content || '') : ''
         end
 

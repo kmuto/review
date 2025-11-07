@@ -465,7 +465,7 @@ module ReVIEW
         context.append_new_node(AST::EmbedNode,
                                 embed_type: :raw,
                                 target_builders: target_builders,
-                                content: content)
+                                content: content || '')
       end
 
       def build_embed_ast(context)
