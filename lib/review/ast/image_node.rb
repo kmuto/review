@@ -18,11 +18,6 @@ module ReVIEW
         @image_type = image_type
       end
 
-      # Check if this image has an ID
-      def id?
-        !@id.nil? && !@id.empty?
-      end
-
       # Override to_h to include ImageNode-specific attributes
       def to_h
         result = super

@@ -30,10 +30,6 @@ module ReVIEW
         @caption_node = caption_node
       end
 
-      def id?
-        !@id.nil? && !@id.empty?
-      end
-
       def to_s
         "TexEquationNode(id: #{@id.inspect}, caption_node: #{@caption_node.inspect})"
       end

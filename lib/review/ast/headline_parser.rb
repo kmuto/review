@@ -46,11 +46,6 @@ module ReVIEW
 
           @tag[1..-1]
         end
-
-        # Check if caption text exists
-        def caption?
-          !@caption.nil? && !@caption.empty?
-        end
       end
 
       # Parse headline line and return components
