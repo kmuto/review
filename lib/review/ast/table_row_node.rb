@@ -6,7 +6,7 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require 'review/ast/node'
+require_relative 'node'
 
 module ReVIEW
   module AST

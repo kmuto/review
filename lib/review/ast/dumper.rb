@@ -6,10 +6,10 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require 'review/ast/compiler'
 require 'review/book'
-require 'review/ast/json_serializer'
 require 'json'
+require_relative 'compiler'
+require_relative 'json_serializer'
 
 module ReVIEW
   module AST

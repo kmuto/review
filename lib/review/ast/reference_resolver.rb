@@ -6,11 +6,11 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require 'review/ast/reference_node'
-require 'review/ast/resolved_data'
-require 'review/ast/inline_node'
-require 'review/ast/indexer'
-require 'review/ast/visitor'
+require_relative 'reference_node'
+require_relative 'resolved_data'
+require_relative 'inline_node'
+require_relative 'indexer'
+require_relative 'visitor'
 require 'review/exception'
 
 module ReVIEW

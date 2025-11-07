@@ -6,17 +6,17 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require 'review/renderer/base'
-require 'review/renderer/rendering_context'
-require 'review/renderer/formatters/latex_reference_formatter'
-require 'review/renderer/latex/inline_context'
-require 'review/renderer/latex/inline_element_handler'
 require 'review/ast/caption_node'
 require 'review/ast/table_column_width_parser'
 require 'review/latexutils'
 require 'review/sec_counter'
 require 'review/i18n'
 require 'review/textutils'
+require_relative 'base'
+require_relative 'rendering_context'
+require_relative 'formatters/latex_reference_formatter'
+require_relative 'latex/inline_context'
+require_relative 'latex/inline_element_handler'
 
 module ReVIEW
   module Renderer

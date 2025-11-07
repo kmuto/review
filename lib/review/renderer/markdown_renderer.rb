@@ -6,10 +6,10 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require 'review/renderer/base'
 require 'review/htmlutils'
 require 'review/textutils'
 require 'review/loggable'
+require_relative 'base'
 
 module ReVIEW
   module Renderer

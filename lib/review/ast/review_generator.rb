@@ -7,7 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/ast'
-require 'review/ast/visitor'
+require_relative 'visitor'
 
 module ReVIEW
   module AST

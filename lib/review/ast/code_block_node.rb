@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'review/ast/node'
-require 'review/ast/caption_node'
+require_relative 'node'
+require_relative 'caption_node'
 
 module ReVIEW
   module AST

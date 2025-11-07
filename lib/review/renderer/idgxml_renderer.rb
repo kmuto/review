@@ -22,19 +22,19 @@
 # - IDGXML_ENDNOTE_NEWLINE: Protects newlines inside <endnotes> blocks
 #
 # The markers are restored to actual newlines at the end of visit_document.
-require 'review/renderer/base'
-require 'review/renderer/rendering_context'
 require 'review/htmlutils'
 require 'review/textutils'
 require 'review/sec_counter'
 require 'review/ast/caption_node'
 require 'review/ast/paragraph_node'
-require 'review/renderer/formatters/idgxml_reference_formatter'
-require 'review/renderer/idgxml/inline_context'
-require 'review/renderer/idgxml/inline_element_handler'
 require 'review/i18n'
 require 'review/loggable'
 require 'digest/sha2'
+require_relative 'base'
+require_relative 'rendering_context'
+require_relative 'formatters/idgxml_reference_formatter'
+require_relative 'idgxml/inline_context'
+require_relative 'idgxml/inline_element_handler'
 
 module ReVIEW
   module Renderer

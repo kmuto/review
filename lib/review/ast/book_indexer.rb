@@ -7,8 +7,8 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/book/index'
-require 'review/ast/indexer'
-require 'review/ast/compiler'
+require_relative 'indexer'
+require_relative 'compiler'
 
 module ReVIEW
   module AST

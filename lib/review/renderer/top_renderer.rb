@@ -6,11 +6,11 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require 'review/renderer/base'
-require 'review/renderer/formatters/top_reference_formatter'
 require 'review/textutils'
 require 'review/loggable'
 require 'review/i18n'
+require_relative 'base'
+require_relative 'formatters/top_reference_formatter'
 
 module ReVIEW
   module Renderer

@@ -6,13 +6,13 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require 'review/ast'
-require 'review/ast/block_data'
-require 'review/ast/block_processor/code_block_structure'
-require 'review/ast/block_processor/table_processor'
-require 'review/ast/raw_content_parser'
 require 'review/lineinput'
 require 'stringio'
+require 'review/ast'
+require_relative 'block_data'
+require_relative 'block_processor/code_block_structure'
+require_relative 'block_processor/table_processor'
+require_relative 'raw_content_parser'
 
 module ReVIEW
   module AST
@@ -433,7 +433,7 @@ module ReVIEW
       end
 
       def build_tex_equation_ast(context)
-        require 'review/ast/tex_equation_node'
+        require_relative('tex_equation_node')
 
         # Collect all LaTeX content lines
         latex_content = if context.content?

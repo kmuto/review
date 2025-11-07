@@ -10,23 +10,23 @@ require 'review/ast'
 require 'review/exception'
 require 'review/loggable'
 require 'review/lineinput'
-require 'review/ast/inline_processor'
-require 'review/ast/block_processor'
-require 'review/ast/block_data'
-require 'review/ast/block_context'
-require 'review/ast/compiler/block_reader'
 require 'review/snapshot_location'
-require 'review/ast/list_processor'
-require 'review/ast/footnote_node'
-require 'review/ast/reference_resolver'
-require 'review/ast/compiler/tsize_processor'
-require 'review/ast/compiler/firstlinenum_processor'
-require 'review/ast/compiler/noindent_processor'
-require 'review/ast/compiler/olnum_processor'
-require 'review/ast/compiler/list_structure_normalizer'
-require 'review/ast/compiler/list_item_numbering_processor'
-require 'review/ast/compiler/auto_id_processor'
-require 'review/ast/headline_parser'
+require_relative 'inline_processor'
+require_relative 'block_processor'
+require_relative 'block_data'
+require_relative 'block_context'
+require_relative 'compiler/block_reader'
+require_relative 'list_processor'
+require_relative 'footnote_node'
+require_relative 'reference_resolver'
+require_relative 'compiler/tsize_processor'
+require_relative 'compiler/firstlinenum_processor'
+require_relative 'compiler/noindent_processor'
+require_relative 'compiler/olnum_processor'
+require_relative 'compiler/list_structure_normalizer'
+require_relative 'compiler/list_item_numbering_processor'
+require_relative 'compiler/auto_id_processor'
+require_relative 'headline_parser'
 
 module ReVIEW
   module AST
@@ -49,7 +49,7 @@ module ReVIEW
 
         # Check file extension for format detection
         if filename&.end_with?('.md', '.markdown')
-          require 'review/ast/markdown_compiler'
+          require_relative('markdown_compiler')
           MarkdownCompiler.new
         else
           # Default to Re:VIEW format

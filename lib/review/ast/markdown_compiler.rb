@@ -6,8 +6,8 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require 'review/ast/compiler'
-require 'review/ast/markdown_adapter'
+require_relative 'compiler'
+require_relative 'markdown_adapter'
 require 'markly'
 
 module ReVIEW

@@ -6,8 +6,8 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require 'review/ast/list_parser'
-require 'review/ast/list_processor/nested_list_assembler'
+require_relative 'list_parser'
+require_relative 'list_processor/nested_list_assembler'
 
 module ReVIEW
   module AST

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'review/ast/node'
-require 'review/ast/caption_node'
-require 'review/ast/json_serializer'
+require_relative 'node'
+require_relative 'caption_node'
+require_relative 'json_serializer'
 
 module ReVIEW
   module AST

@@ -9,7 +9,7 @@
 require 'review/ast'
 require_relative 'inline_tokenizer'
 require_relative 'reference_node'
-require 'review/ast/raw_content_parser'
+require_relative 'raw_content_parser'
 
 module ReVIEW
   module AST

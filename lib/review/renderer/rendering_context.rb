@@ -6,7 +6,7 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require 'review/renderer/footnote_collector'
+require_relative 'footnote_collector'
 
 module ReVIEW
   module Renderer

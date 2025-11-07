@@ -8,7 +8,7 @@
 
 require 'review/ast'
 require 'review/snapshot_location'
-require 'review/ast/markdown_html_node'
+require_relative 'markdown_html_node'
 
 module ReVIEW
   module AST

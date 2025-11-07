@@ -8,10 +8,6 @@
 
 require 'review/renderer/base'
 require 'review/ast/caption_node'
-require 'review/renderer/rendering_context'
-require 'review/renderer/formatters/html_reference_formatter'
-require 'review/renderer/html/inline_context'
-require 'review/renderer/html/inline_element_handler'
 require 'review/htmlutils'
 require 'review/textutils'
 require 'review/html_escape_utils'
@@ -24,6 +20,10 @@ require 'review/ast/compiler'
 require 'review/template'
 require 'review/img_math'
 require 'digest'
+require_relative 'rendering_context'
+require_relative 'formatters/html_reference_formatter'
+require_relative 'html/inline_context'
+require_relative 'html/inline_element_handler'
 
 module ReVIEW
   module Renderer
