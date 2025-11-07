@@ -34,9 +34,11 @@ module ReVIEW
           minicolumn_type: hash['minicolumn_type'] || hash['column_type'],
           caption_node: deserialize_caption_from_hash(hash)
         )
-        if hash['children'] || hash['content']
-          children = (hash['children'] || hash['content'] || []).map { |child| ReVIEW::AST::JSONSerializer.deserialize_from_hash(child) }
-          children.each { |child| node.add_child(child) if child.is_a?(ReVIEW::AST::Node) }
+        if hash['children']
+          hash['children'].each do |child_hash|
+            child = ReVIEW::AST::JSONSerializer.deserialize_from_hash(child_hash)
+            node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
+          end
         end
         node
       end

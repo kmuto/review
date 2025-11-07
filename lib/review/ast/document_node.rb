@@ -14,9 +14,11 @@ module ReVIEW
 
       def self.deserialize_from_hash(hash)
         node = new(location: ReVIEW::AST::JSONSerializer.restore_location(hash))
-        if hash['content'] || hash['children']
-          children = (hash['content'] || hash['children'] || []).map { |child| ReVIEW::AST::JSONSerializer.deserialize_from_hash(child) }
-          children.each { |child| node.add_child(child) if child.is_a?(ReVIEW::AST::Node) }
+        if hash['children']
+          hash['children'].each do |child_hash|
+            child = ReVIEW::AST::JSONSerializer.deserialize_from_hash(child_hash)
+            node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
+          end
         end
         node
       end
