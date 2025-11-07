@@ -9,7 +9,7 @@ module ReVIEW
     class HeadlineNode < Node
       include Captionable
 
-      attr_accessor :caption_node, :auto_id
+      attr_accessor :auto_id
       attr_reader :level, :label, :tag
 
       def initialize(location:, level: nil, label: nil, caption_node: nil, tag: nil, auto_id: nil, **kwargs)

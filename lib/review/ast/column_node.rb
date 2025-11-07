@@ -9,7 +9,7 @@ module ReVIEW
     class ColumnNode < Node
       include Captionable
 
-      attr_accessor :caption_node, :auto_id, :column_number
+      attr_accessor :auto_id, :column_number
       attr_reader :level, :label, :column_type
 
       def initialize(location:, level: nil, label: nil, caption_node: nil, column_type: :column, auto_id: nil, column_number: nil, **kwargs)

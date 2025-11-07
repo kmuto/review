@@ -10,7 +10,6 @@ module ReVIEW
     class MinicolumnNode < Node
       include Captionable
 
-      attr_reader :caption_node
       attr_reader :minicolumn_type
 
       def initialize(location:, minicolumn_type: nil, caption_node: nil, **kwargs)

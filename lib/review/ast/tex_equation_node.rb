@@ -25,8 +25,6 @@ module ReVIEW
     class TexEquationNode < LeafNode
       include Captionable
 
-      attr_accessor :caption_node
-
       def initialize(location:, content:, id: nil, caption_node: nil)
         super(location: location, id: id, content: content)
         @caption_node = caption_node

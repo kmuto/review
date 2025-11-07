@@ -9,7 +9,7 @@ module ReVIEW
     class CodeBlockNode < Node
       include Captionable
 
-      attr_accessor :caption_node, :first_line_num
+      attr_accessor :first_line_num
       attr_reader :lang, :line_numbers, :code_type
 
       def initialize(location:, lang: nil, id: nil, caption_node: nil, line_numbers: false, code_type: nil, first_line_num: nil, **kwargs)

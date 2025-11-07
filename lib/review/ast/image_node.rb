@@ -9,7 +9,6 @@ module ReVIEW
     class ImageNode < LeafNode
       include Captionable
 
-      attr_accessor :caption_node
       attr_reader :metric, :image_type
 
       def initialize(location:, id: nil, caption_node: nil, metric: nil, image_type: :image, content: '', **kwargs)

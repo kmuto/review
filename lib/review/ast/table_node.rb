@@ -10,7 +10,7 @@ module ReVIEW
     class TableNode < Node
       include Captionable
 
-      attr_accessor :caption_node, :col_spec, :cellwidth
+      attr_accessor :col_spec, :cellwidth
       attr_reader :table_type, :metric
 
       def initialize(location:, id: nil, caption_node: nil, table_type: :table, metric: nil, col_spec: nil, cellwidth: nil, **kwargs)
