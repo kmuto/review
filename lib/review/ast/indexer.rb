@@ -408,11 +408,7 @@ module ReVIEW
       def extract_caption_text(caption_node)
         return nil if caption_node.nil?
 
-        if caption_node.respond_to?(:to_text)
-          caption_node.to_text
-        else
-          caption_node.to_s
-        end
+        caption_node.to_text
       end
 
       # Extract text content from inline nodes

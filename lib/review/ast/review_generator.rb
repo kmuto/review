@@ -424,11 +424,7 @@ module ReVIEW
       def caption_to_text(caption_node)
         return '' if caption_node.nil?
 
-        if caption_node.respond_to?(:to_text)
-          caption_node.to_text
-        else
-          caption_node.children.map { |child| visit(child) }.join
-        end
+        caption_node.to_text
       end
 
       # Helper to render table cell content
