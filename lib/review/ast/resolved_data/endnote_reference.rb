@@ -21,8 +21,8 @@ module ReVIEW
           @item_number.to_s
         end
 
-        def format_with(formatter)
-          formatter.format_endnote_reference(self)
+        def formatter_method
+          :format_endnote_reference
         end
 
         def self.deserialize_from_hash(hash)

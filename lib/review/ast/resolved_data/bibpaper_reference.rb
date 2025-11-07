@@ -21,8 +21,8 @@ module ReVIEW
           "[#{@item_number}]"
         end
 
-        def format_with(formatter)
-          formatter.format_bibpaper_reference(self)
+        def formatter_method
+          :format_bibpaper_reference
         end
 
         def self.deserialize_from_hash(hash)

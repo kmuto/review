@@ -21,8 +21,8 @@ module ReVIEW
           @word_content
         end
 
-        def format_with(formatter)
-          formatter.format_word_reference(self)
+        def formatter_method
+          :format_word_reference
         end
 
         def self.deserialize_from_hash(hash)

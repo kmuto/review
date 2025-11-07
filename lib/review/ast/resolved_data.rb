@@ -130,6 +130,20 @@ module ReVIEW
         @item_id || ''
       end
 
+      # Double dispatch pattern for formatting
+      # Subclasses should implement formatter_method to specify the formatter method name
+      # @param formatter [Object] The formatter object
+      # @return [String] Formatted output
+      def format_with(formatter)
+        formatter.send(formatter_method, self)
+      end
+
+      # Template method - subclasses must implement this
+      # @return [Symbol] The formatter method name (e.g., :format_image_reference)
+      def formatter_method
+        raise NotImplementedError, "#{self.class}#formatter_method must be implemented"
+      end
+
       # Get short-form chapter number from long form
       # @return [String] Short chapter number ("1", "A", "II"), empty string if no chapter_number
       # @example

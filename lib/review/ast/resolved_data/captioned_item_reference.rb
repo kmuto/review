@@ -32,17 +32,6 @@ module ReVIEW
         def label_key
           raise NotImplementedError, "#{self.class} must implement #label_key"
         end
-
-        # Template method for double dispatch formatting
-        def format_with(formatter)
-          formatter.send(formatter_method, self)
-        end
-
-        # Template method - subclasses must implement this
-        # @return [Symbol] The formatter method name (e.g., :format_image_reference)
-        def formatter_method
-          raise NotImplementedError, "#{self.class} must implement #formatter_method"
-        end
       end
     end
   end

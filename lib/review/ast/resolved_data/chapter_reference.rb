@@ -48,8 +48,8 @@ module ReVIEW
           end
         end
 
-        def format_with(formatter)
-          formatter.format_chapter_reference(self)
+        def formatter_method
+          :format_chapter_reference
         end
 
         def self.deserialize_from_hash(hash)

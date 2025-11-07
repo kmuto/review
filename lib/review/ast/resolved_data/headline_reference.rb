@@ -39,8 +39,8 @@ module ReVIEW
           end
         end
 
-        def format_with(formatter)
-          formatter.format_headline_reference(self)
+        def formatter_method
+          :format_headline_reference
         end
 
         def self.deserialize_from_hash(hash)
