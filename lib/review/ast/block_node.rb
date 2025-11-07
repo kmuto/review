@@ -37,7 +37,6 @@ module ReVIEW
         result
       end
 
-      # Deserialize from hash
       def self.deserialize_from_hash(hash)
         block_type = hash['block_type'] ? hash['block_type'].to_sym : :quote
         _, caption_node = ReVIEW::AST::JSONSerializer.deserialize_caption_fields(hash)

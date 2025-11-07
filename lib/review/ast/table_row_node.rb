@@ -31,7 +31,6 @@ module ReVIEW
         visitor.visit_table_row(self)
       end
 
-      # Deserialize from hash
       def self.deserialize_from_hash(hash)
         row_type = hash['row_type']&.to_sym || :body
         node = new(

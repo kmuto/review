@@ -48,7 +48,7 @@ module ReVIEW
           level: hash['level'],
           label: hash['label'],
           caption_node: caption_node,
-          column_type: hash['column_type']
+          column_type: hash['column_type']&.to_sym
         )
         if hash['children'] || hash['content']
           children = (hash['children'] || hash['content'] || []).map { |child| ReVIEW::AST::JSONSerializer.deserialize_from_hash(child) }
@@ -64,7 +64,7 @@ module ReVIEW
         hash[:level] = level
         hash[:label] = label
         hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
-        hash[:column_type] = column_type
+        hash[:column_type] = column_type.to_s if column_type
         hash[:auto_id] = auto_id if auto_id
         hash[:column_number] = column_number if column_number
         hash

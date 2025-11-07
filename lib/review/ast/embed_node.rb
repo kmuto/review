@@ -60,16 +60,6 @@ module ReVIEW
         hash
       end
 
-      private
-
-      def serialize_properties(hash, _options)
-        hash[:embed_type] = embed_type
-        hash[:target_builders] = target_builders if target_builders
-        hash[:content] = content if content
-        hash
-      end
-
-      # Deserialize from hash
       def self.deserialize_from_hash(hash)
         new(
           location: ReVIEW::AST::JSONSerializer.restore_location(hash),
@@ -77,6 +67,15 @@ module ReVIEW
           target_builders: hash['target_builders'],
           content: hash['content'] || ''
         )
+      end
+
+      private
+
+      def serialize_properties(hash, _options)
+        hash[:embed_type] = embed_type
+        hash[:target_builders] = target_builders if target_builders
+        hash[:content] = content if content
+        hash
       end
     end
   end

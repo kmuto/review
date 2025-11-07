@@ -57,7 +57,6 @@ module ReVIEW
         result
       end
 
-      # Deserialize from hash
       def self.deserialize_from_hash(hash)
         _, caption_node = ReVIEW::AST::JSONSerializer.deserialize_caption_fields(hash)
         new(

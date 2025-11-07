@@ -30,7 +30,6 @@ module ReVIEW
         visitor.visit_table_cell(self)
       end
 
-      # Deserialize from hash
       def self.deserialize_from_hash(hash)
         node = new(location: ReVIEW::AST::JSONSerializer.restore_location(hash))
         if hash['children']

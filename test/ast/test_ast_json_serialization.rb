@@ -542,4 +542,313 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     assert_equal 1, caption_children.size
     assert_nil(caption_children[0]['location'])
   end
+
+  def test_footnote_node_serialization
+    # Create a footnote node with children
+    footnote = AST::FootnoteNode.new(
+      location: @location,
+      id: 'fn1',
+      footnote_type: :footnote
+    )
+
+    text = AST::TextNode.new(
+      location: @location,
+      content: 'This is a footnote text.'
+    )
+    footnote.add_child(text)
+
+    # Serialize to JSON
+    json = footnote.to_json
+    parsed = JSON.parse(json)
+
+    # Verify serialization
+    assert_equal 'FootnoteNode', parsed['type']
+    assert_equal 'fn1', parsed['id']
+    # footnote_type is omitted when it's :footnote (default)
+    assert_nil(parsed['footnote_type'])
+    assert_equal 1, parsed['children'].size
+    assert_equal 'TextNode', parsed['children'][0]['type']
+    assert_equal 'This is a footnote text.', parsed['children'][0]['content']
+
+    # Test deserialization
+    deserialized = AST::JSONSerializer.deserialize(json)
+    assert_instance_of(AST::FootnoteNode, deserialized)
+    assert_equal 'fn1', deserialized.id
+    assert_equal :footnote, deserialized.footnote_type
+    assert_equal 1, deserialized.children.size
+    assert_equal 'This is a footnote text.', deserialized.children[0].content
+  end
+
+  def test_footnote_node_endnote_serialization
+    # Create an endnote node
+    endnote = AST::FootnoteNode.new(
+      location: @location,
+      id: 'en1',
+      footnote_type: :endnote
+    )
+
+    text = AST::TextNode.new(
+      location: @location,
+      content: 'This is an endnote.'
+    )
+    endnote.add_child(text)
+
+    # Serialize to JSON
+    json = endnote.to_json
+    parsed = JSON.parse(json)
+
+    # Verify serialization - endnote type should be included
+    assert_equal 'FootnoteNode', parsed['type']
+    assert_equal 'en1', parsed['id']
+    assert_equal 'endnote', parsed['footnote_type']
+
+    # Test deserialization
+    deserialized = AST::JSONSerializer.deserialize(json)
+    assert_instance_of(AST::FootnoteNode, deserialized)
+    assert_equal 'en1', deserialized.id
+    assert_equal :endnote, deserialized.footnote_type
+  end
+
+  def test_reference_node_unresolved_serialization
+    # Create an unresolved reference node
+    ref = AST::ReferenceNode.new(
+      'img1',
+      nil,
+      location: @location
+    )
+
+    # Serialize to JSON
+    json = ref.to_json
+    parsed = JSON.parse(json)
+
+    # Verify serialization
+    assert_equal 'ReferenceNode', parsed['type']
+    assert_equal 'img1', parsed['content']
+    assert_equal 'img1', parsed['ref_id']
+    assert_nil(parsed['context_id'])
+    assert_nil(parsed['resolved_data'])
+
+    # Test deserialization
+    deserialized = AST::JSONSerializer.deserialize(json)
+    assert_instance_of(AST::ReferenceNode, deserialized)
+    assert_equal 'img1', deserialized.ref_id
+    assert_nil(deserialized.context_id)
+    assert_nil(deserialized.resolved_data)
+    assert_equal false, deserialized.resolved?
+  end
+
+  def test_reference_node_with_context_serialization
+    # Create a cross-chapter reference node
+    ref = AST::ReferenceNode.new(
+      'img1',
+      'chapter2',
+      location: @location
+    )
+
+    # Serialize to JSON
+    json = ref.to_json
+    parsed = JSON.parse(json)
+
+    # Verify serialization
+    assert_equal 'ReferenceNode', parsed['type']
+    assert_equal 'chapter2|img1', parsed['content']
+    assert_equal 'img1', parsed['ref_id']
+    assert_equal 'chapter2', parsed['context_id']
+
+    # Test deserialization
+    deserialized = AST::JSONSerializer.deserialize(json)
+    assert_instance_of(AST::ReferenceNode, deserialized)
+    assert_equal 'img1', deserialized.ref_id
+    assert_equal 'chapter2', deserialized.context_id
+    assert_equal true, deserialized.cross_chapter?
+  end
+
+  def test_reference_node_with_image_reference_serialization
+    # Create resolved image reference
+    caption_node = CaptionParserHelper.parse('Sample Image', location: @location)
+    resolved_data = AST::ResolvedData.image(
+      chapter_number: '1',
+      item_number: '2',
+      item_id: 'img1',
+      caption_node: caption_node
+    )
+
+    ref = AST::ReferenceNode.new(
+      'img1',
+      nil,
+      location: @location,
+      resolved_data: resolved_data
+    )
+
+    # Serialize to JSON
+    json = ref.to_json
+    parsed = JSON.parse(json)
+
+    # Verify serialization
+    assert_equal 'ReferenceNode', parsed['type']
+    assert_equal 'img1', parsed['ref_id']
+    assert_not_nil(parsed['resolved_data'])
+    assert_equal 'ImageReference', parsed['resolved_data']['type']
+    assert_equal '1', parsed['resolved_data']['chapter_number']
+    assert_equal '2', parsed['resolved_data']['item_number']
+    assert_equal 'img1', parsed['resolved_data']['item_id']
+    assert_equal 'CaptionNode', parsed['resolved_data']['caption_node']['type']
+
+    # Test deserialization
+    deserialized = AST::JSONSerializer.deserialize(json)
+    assert_instance_of(AST::ReferenceNode, deserialized)
+    assert_equal true, deserialized.resolved?
+    assert_instance_of(AST::ResolvedData::ImageReference, deserialized.resolved_data)
+    assert_equal '1', deserialized.resolved_data.chapter_number
+    assert_equal '2', deserialized.resolved_data.item_number
+    assert_equal 'img1', deserialized.resolved_data.item_id
+    assert_instance_of(AST::CaptionNode, deserialized.resolved_data.caption_node)
+  end
+
+  def test_reference_node_with_table_reference_serialization
+    # Create resolved table reference
+    resolved_data = AST::ResolvedData.table(
+      chapter_number: '2',
+      item_number: '1',
+      item_id: 'table1',
+      chapter_id: 'ch2'
+    )
+
+    ref = AST::ReferenceNode.new(
+      'table1',
+      'ch2',
+      location: @location,
+      resolved_data: resolved_data
+    )
+
+    json = ref.to_json
+    parsed = JSON.parse(json)
+
+    assert_equal 'TableReference', parsed['resolved_data']['type']
+    assert_equal '2', parsed['resolved_data']['chapter_number']
+    assert_equal '1', parsed['resolved_data']['item_number']
+    assert_equal 'ch2', parsed['resolved_data']['chapter_id']
+
+    # Test deserialization
+    deserialized = AST::JSONSerializer.deserialize(json)
+    assert_instance_of(AST::ResolvedData::TableReference, deserialized.resolved_data)
+    assert_equal '2', deserialized.resolved_data.chapter_number
+  end
+
+  def test_reference_node_with_chapter_reference_serialization
+    # Create resolved chapter reference
+    resolved_data = AST::ResolvedData.chapter(
+      chapter_number: '第3章',
+      chapter_id: 'ch3',
+      chapter_title: 'Advanced Topics'
+    )
+
+    ref = AST::ReferenceNode.new(
+      'ch3',
+      nil,
+      location: @location,
+      resolved_data: resolved_data
+    )
+
+    json = ref.to_json
+    parsed = JSON.parse(json)
+
+    assert_equal 'ChapterReference', parsed['resolved_data']['type']
+    assert_equal '第3章', parsed['resolved_data']['chapter_number']
+    assert_equal 'ch3', parsed['resolved_data']['chapter_id']
+    assert_equal 'Advanced Topics', parsed['resolved_data']['chapter_title']
+
+    # Test deserialization
+    deserialized = AST::JSONSerializer.deserialize(json)
+    assert_instance_of(AST::ResolvedData::ChapterReference, deserialized.resolved_data)
+    assert_equal '第3章', deserialized.resolved_data.chapter_number
+    assert_equal 'Advanced Topics', deserialized.resolved_data.chapter_title
+  end
+
+  def test_reference_node_with_headline_reference_serialization
+    # Create resolved headline reference
+    caption_node = CaptionParserHelper.parse('Section Title', location: @location)
+    resolved_data = AST::ResolvedData.headline(
+      headline_number: [1, 2, 3],
+      item_id: 'sec123',
+      chapter_id: 'ch1',
+      chapter_number: '1',
+      caption_node: caption_node
+    )
+
+    ref = AST::ReferenceNode.new(
+      'sec123',
+      nil,
+      location: @location,
+      resolved_data: resolved_data
+    )
+
+    json = ref.to_json
+    parsed = JSON.parse(json)
+
+    assert_equal 'HeadlineReference', parsed['resolved_data']['type']
+    assert_equal [1, 2, 3], parsed['resolved_data']['headline_number']
+    assert_equal 'sec123', parsed['resolved_data']['item_id']
+    assert_equal 'ch1', parsed['resolved_data']['chapter_id']
+    assert_equal '1', parsed['resolved_data']['chapter_number']
+
+    # Test deserialization
+    deserialized = AST::JSONSerializer.deserialize(json)
+    assert_instance_of(AST::ResolvedData::HeadlineReference, deserialized.resolved_data)
+    assert_equal [1, 2, 3], deserialized.resolved_data.headline_number
+  end
+
+  def test_reference_node_with_footnote_reference_serialization
+    # Create resolved footnote reference
+    resolved_data = AST::ResolvedData.footnote(
+      item_number: 5,
+      item_id: 'fn5'
+    )
+
+    ref = AST::ReferenceNode.new(
+      'fn5',
+      nil,
+      location: @location,
+      resolved_data: resolved_data
+    )
+
+    json = ref.to_json
+    parsed = JSON.parse(json)
+
+    assert_equal 'FootnoteReference', parsed['resolved_data']['type']
+    assert_equal 5, parsed['resolved_data']['item_number']
+    assert_equal 'fn5', parsed['resolved_data']['item_id']
+
+    # Test deserialization
+    deserialized = AST::JSONSerializer.deserialize(json)
+    assert_instance_of(AST::ResolvedData::FootnoteReference, deserialized.resolved_data)
+    assert_equal 5, deserialized.resolved_data.item_number
+  end
+
+  def test_reference_node_with_word_reference_serialization
+    # Create resolved word reference
+    resolved_data = AST::ResolvedData.word(
+      word_content: 'important term',
+      item_id: 'term1'
+    )
+
+    ref = AST::ReferenceNode.new(
+      'term1',
+      nil,
+      location: @location,
+      resolved_data: resolved_data
+    )
+
+    json = ref.to_json
+    parsed = JSON.parse(json)
+
+    assert_equal 'WordReference', parsed['resolved_data']['type']
+    assert_equal 'important term', parsed['resolved_data']['word_content']
+    assert_equal 'term1', parsed['resolved_data']['item_id']
+
+    # Test deserialization
+    deserialized = AST::JSONSerializer.deserialize(json)
+    assert_instance_of(AST::ResolvedData::WordReference, deserialized.resolved_data)
+    assert_equal 'important term', deserialized.resolved_data.word_content
+  end
 end

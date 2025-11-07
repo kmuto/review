@@ -62,18 +62,6 @@ module ReVIEW
         hash
       end
 
-      private
-
-      def serialize_properties(hash, options)
-        hash[:id] = id if id?
-        hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
-        hash[:metric] = metric if metric
-        hash[:image_type] = image_type
-        hash[:content] = content if content && !content.empty?
-        hash
-      end
-
-      # Deserialize from hash
       def self.deserialize_from_hash(hash)
         _, caption_node = ReVIEW::AST::JSONSerializer.deserialize_caption_fields(hash)
         new(
@@ -84,6 +72,17 @@ module ReVIEW
           image_type: hash['image_type']&.to_sym || :image,
           content: hash['content'] || ''
         )
+      end
+
+      private
+
+      def serialize_properties(hash, options)
+        hash[:id] = id if id?
+        hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
+        hash[:metric] = metric if metric
+        hash[:image_type] = image_type
+        hash[:content] = content if content && !content.empty?
+        hash
       end
     end
   end

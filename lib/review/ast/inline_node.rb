@@ -25,12 +25,10 @@ module ReVIEW
         )
       end
 
-      # Check if this is a cross-chapter reference
       def cross_chapter_reference?
         !target_chapter_id.nil?
       end
 
-      # Deserialize from hash
       def self.deserialize_from_hash(hash)
         node = new(
           location: ReVIEW::AST::JSONSerializer.restore_location(hash),

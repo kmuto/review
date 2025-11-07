@@ -44,7 +44,6 @@ module ReVIEW
         hash
       end
 
-      # Deserialize from hash
       def self.deserialize_from_hash(hash)
         node = new(
           location: ReVIEW::AST::JSONSerializer.restore_location(hash),

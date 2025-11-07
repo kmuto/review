@@ -174,7 +174,8 @@ class TestCodeBlockDebug < Test::Unit::TestCase
                           "filename": "debug_chapter.re",
                           "lineno": 3
                         },
-                        "content": "code-fn"
+                        "content": "code-fn",
+                        "ref_id": "code-fn"
                       }
                     ],
                     "inline_type": "fn",
@@ -268,7 +269,8 @@ class TestCodeBlockDebug < Test::Unit::TestCase
                     "filename": "debug_chapter.re",
                     "lineno": 3
                   },
-                  "content": "code-fn"
+                  "content": "code-fn",
+                  "ref_id": "code-fn"
                 }
               ],
               "inline_type": "fn",

@@ -36,18 +36,6 @@ module ReVIEW
         result
       end
 
-      private
-
-      def serialize_properties(hash, options)
-        hash[:list_type] = list_type
-        hash[:start_number] = start_number if start_number && start_number != 1
-        if children.any?
-          hash[:children] = children.map { |child| child.serialize_to_hash(options) }
-        end
-        hash
-      end
-
-      # Deserialize from hash
       def self.deserialize_from_hash(hash)
         node = new(location: ReVIEW::AST::JSONSerializer.restore_location(hash), list_type: hash['list_type'].to_sym)
 
@@ -59,6 +47,17 @@ module ReVIEW
           end
         end
         node
+      end
+
+      private
+
+      def serialize_properties(hash, options)
+        hash[:list_type] = list_type
+        hash[:start_number] = start_number if start_number && start_number != 1
+        if children.any?
+          hash[:children] = children.map { |child| child.serialize_to_hash(options) }
+        end
+        hash
       end
     end
 
@@ -94,18 +93,6 @@ module ReVIEW
         item_type == :dd
       end
 
-      private
-
-      def serialize_properties(hash, options)
-        hash[:children] = children.map { |child| child.serialize_to_hash(options) } if children.any?
-        hash[:term_children] = term_children.map { |child| child.serialize_to_hash(options) } if term_children.any?
-        hash[:level] = level
-        hash[:number] = number if number
-        hash[:item_type] = item_type if item_type
-        hash
-      end
-
-      # Deserialize from hash
       def self.deserialize_from_hash(hash)
         node = new(
           location: ReVIEW::AST::JSONSerializer.restore_location(hash),
@@ -119,6 +106,17 @@ module ReVIEW
           end
         end
         node
+      end
+
+      private
+
+      def serialize_properties(hash, options)
+        hash[:children] = children.map { |child| child.serialize_to_hash(options) } if children.any?
+        hash[:term_children] = term_children.map { |child| child.serialize_to_hash(options) } if term_children.any?
+        hash[:level] = level
+        hash[:number] = number if number
+        hash[:item_type] = item_type if item_type
+        hash
       end
     end
   end

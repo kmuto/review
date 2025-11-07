@@ -68,6 +68,61 @@ module ReVIEW
         parts.join(' ') + '>'
       end
 
+      # Serialize to hash
+      # @param options [JSONSerializer::Options, nil] Serialization options
+      # @return [Hash] Serialized hash representation
+      def serialize_to_hash(options = nil)
+        options ||= ReVIEW::AST::JSONSerializer::Options.new
+        hash = { type: self.class.name.split('::').last }
+        serialize_properties(hash, options)
+        hash
+      end
+
+      # Serialize properties - to be overridden by subclasses
+      # @param hash [Hash] Hash to populate with properties
+      # @param options [JSONSerializer::Options] Serialization options
+      # @return [Hash] Populated hash
+      def serialize_properties(hash, options)
+        hash[:chapter_number] = @chapter_number if @chapter_number
+        hash[:item_number] = @item_number if @item_number
+        hash[:chapter_id] = @chapter_id if @chapter_id
+        hash[:item_id] = @item_id if @item_id
+        hash[:chapter_title] = @chapter_title if @chapter_title
+        hash[:headline_number] = @headline_number if @headline_number
+        hash[:word_content] = @word_content if @word_content
+        hash[:caption_node] = @caption_node.serialize_to_hash(options) if @caption_node
+        hash
+      end
+
+      # Deserialize from hash
+      # @param hash [Hash] Hash to deserialize from
+      # @return [ResolvedData] Deserialized ResolvedData instance
+      def self.deserialize_from_hash(hash)
+        return nil unless hash
+
+        type = hash['type']
+        return nil unless type
+
+        # Map type to class
+        klass = case type
+                when 'ImageReference' then ImageReference
+                when 'TableReference' then TableReference
+                when 'ListReference' then ListReference
+                when 'EquationReference' then EquationReference
+                when 'ColumnReference' then ColumnReference
+                when 'FootnoteReference' then FootnoteReference
+                when 'EndnoteReference' then EndnoteReference
+                when 'ChapterReference' then ChapterReference
+                when 'HeadlineReference' then HeadlineReference
+                when 'WordReference' then WordReference
+                when 'BibpaperReference' then BibpaperReference
+                else
+                  raise StandardError, "Unknown ResolvedData type: #{type}"
+                end
+
+        klass.deserialize_from_hash(hash)
+      end
+
       # Convert resolved data to human-readable text representation
       # This method should be implemented by each subclass
       # @return [String] Text representation
@@ -315,6 +370,19 @@ module ReVIEW
         def formatter_method
           :format_image_reference
         end
+
+        def self.deserialize_from_hash(hash)
+          caption_node = if hash['caption_node']
+                           ReVIEW::AST::JSONSerializer.deserialize_from_hash(hash['caption_node'])
+                         end
+          new(
+            chapter_number: hash['chapter_number'],
+            item_number: hash['item_number'],
+            item_id: hash['item_id'],
+            chapter_id: hash['chapter_id'],
+            caption_node: caption_node
+          )
+        end
       end
 
       class TableReference < CaptionedItemReference
@@ -325,6 +393,19 @@ module ReVIEW
         def formatter_method
           :format_table_reference
         end
+
+        def self.deserialize_from_hash(hash)
+          caption_node = if hash['caption_node']
+                           ReVIEW::AST::JSONSerializer.deserialize_from_hash(hash['caption_node'])
+                         end
+          new(
+            chapter_number: hash['chapter_number'],
+            item_number: hash['item_number'],
+            item_id: hash['item_id'],
+            chapter_id: hash['chapter_id'],
+            caption_node: caption_node
+          )
+        end
       end
 
       class ListReference < CaptionedItemReference
@@ -334,6 +415,19 @@ module ReVIEW
 
         def formatter_method
           :format_list_reference
+        end
+
+        def self.deserialize_from_hash(hash)
+          caption_node = if hash['caption_node']
+                           ReVIEW::AST::JSONSerializer.deserialize_from_hash(hash['caption_node'])
+                         end
+          new(
+            chapter_number: hash['chapter_number'],
+            item_number: hash['item_number'],
+            item_id: hash['item_id'],
+            chapter_id: hash['chapter_id'],
+            caption_node: caption_node
+          )
         end
       end
 
@@ -354,6 +448,18 @@ module ReVIEW
         def formatter_method
           :format_equation_reference
         end
+
+        def self.deserialize_from_hash(hash)
+          caption_node = if hash['caption_node']
+                           ReVIEW::AST::JSONSerializer.deserialize_from_hash(hash['caption_node'])
+                         end
+          new(
+            chapter_number: hash['chapter_number'],
+            item_number: hash['item_number'],
+            item_id: hash['item_id'],
+            caption_node: caption_node
+          )
+        end
       end
 
       class FootnoteReference < ResolvedData
@@ -372,6 +478,17 @@ module ReVIEW
         def format_with(formatter)
           formatter.format_footnote_reference(self)
         end
+
+        def self.deserialize_from_hash(hash)
+          caption_node = if hash['caption_node']
+                           ReVIEW::AST::JSONSerializer.deserialize_from_hash(hash['caption_node'])
+                         end
+          new(
+            item_number: hash['item_number'],
+            item_id: hash['item_id'],
+            caption_node: caption_node
+          )
+        end
       end
 
       class EndnoteReference < ResolvedData
@@ -389,6 +506,17 @@ module ReVIEW
         # Double dispatch - delegate to formatter
         def format_with(formatter)
           formatter.format_endnote_reference(self)
+        end
+
+        def self.deserialize_from_hash(hash)
+          caption_node = if hash['caption_node']
+                           ReVIEW::AST::JSONSerializer.deserialize_from_hash(hash['caption_node'])
+                         end
+          new(
+            item_number: hash['item_number'],
+            item_id: hash['item_id'],
+            caption_node: caption_node
+          )
         end
       end
 
@@ -435,6 +563,19 @@ module ReVIEW
         def format_with(formatter)
           formatter.format_chapter_reference(self)
         end
+
+        def self.deserialize_from_hash(hash)
+          caption_node = if hash['caption_node']
+                           ReVIEW::AST::JSONSerializer.deserialize_from_hash(hash['caption_node'])
+                         end
+          new(
+            chapter_number: hash['chapter_number'],
+            chapter_id: hash['chapter_id'],
+            item_id: hash['item_id'],
+            chapter_title: hash['chapter_title'],
+            caption_node: caption_node
+          )
+        end
       end
 
       class HeadlineReference < ResolvedData
@@ -471,6 +612,19 @@ module ReVIEW
         def format_with(formatter)
           formatter.format_headline_reference(self)
         end
+
+        def self.deserialize_from_hash(hash)
+          caption_node = if hash['caption_node']
+                           ReVIEW::AST::JSONSerializer.deserialize_from_hash(hash['caption_node'])
+                         end
+          new(
+            item_id: hash['item_id'],
+            headline_number: hash['headline_number'],
+            chapter_id: hash['chapter_id'],
+            chapter_number: hash['chapter_number'],
+            caption_node: caption_node
+          )
+        end
       end
 
       class WordReference < ResolvedData
@@ -488,6 +642,17 @@ module ReVIEW
         # Double dispatch - delegate to formatter
         def format_with(formatter)
           formatter.format_word_reference(self)
+        end
+
+        def self.deserialize_from_hash(hash)
+          caption_node = if hash['caption_node']
+                           ReVIEW::AST::JSONSerializer.deserialize_from_hash(hash['caption_node'])
+                         end
+          new(
+            item_id: hash['item_id'],
+            word_content: hash['word_content'],
+            caption_node: caption_node
+          )
         end
       end
 
@@ -509,6 +674,19 @@ module ReVIEW
         def formatter_method
           :format_column_reference
         end
+
+        def self.deserialize_from_hash(hash)
+          caption_node = if hash['caption_node']
+                           ReVIEW::AST::JSONSerializer.deserialize_from_hash(hash['caption_node'])
+                         end
+          new(
+            chapter_number: hash['chapter_number'],
+            item_number: hash['item_number'],
+            item_id: hash['item_id'],
+            chapter_id: hash['chapter_id'],
+            caption_node: caption_node
+          )
+        end
       end
 
       class BibpaperReference < ResolvedData
@@ -526,6 +704,17 @@ module ReVIEW
         # Double dispatch - delegate to formatter
         def format_with(formatter)
           formatter.format_bibpaper_reference(self)
+        end
+
+        def self.deserialize_from_hash(hash)
+          caption_node = if hash['caption_node']
+                           ReVIEW::AST::JSONSerializer.deserialize_from_hash(hash['caption_node'])
+                         end
+          new(
+            item_number: hash['item_number'],
+            item_id: hash['item_id'],
+            caption_node: caption_node
+          )
         end
       end
     end

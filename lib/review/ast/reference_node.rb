@@ -77,6 +77,73 @@ module ReVIEW
         status = resolved? ? "resolved: #{@content}" : 'unresolved'
         "#<ReferenceNode {#{full_ref_id}} #{status}>"
       end
+
+      # Override to_h to include ReferenceNode-specific attributes
+      def to_h
+        result = {
+          type: self.class.name.split('::').last,
+          location: location_to_h
+        }
+        result[:content] = content if content
+        result[:ref_id] = @ref_id
+        result[:context_id] = @context_id if @context_id
+        if @resolved_data
+          # Pass default options to serialize_to_hash
+          options = ReVIEW::AST::JSONSerializer::Options.new
+          result[:resolved_data] = @resolved_data.serialize_to_hash(options)
+        end
+        result
+      end
+
+      # Override serialize_to_hash to include ReferenceNode-specific attributes
+      def serialize_to_hash(options = nil)
+        options ||= ReVIEW::AST::JSONSerializer::Options.new
+
+        # Start with type
+        hash = {
+          type: self.class.name.split('::').last
+        }
+
+        # Include location information
+        if options.include_location
+          hash[:location] = location_to_h
+        end
+
+        # Add TextNode's content (inherited from TextNode)
+        hash[:content] = content if content
+
+        # Add ReferenceNode-specific attributes
+        hash[:ref_id] = @ref_id
+        hash[:context_id] = @context_id if @context_id
+        if @resolved_data
+          hash[:resolved_data] = @resolved_data.serialize_to_hash
+        end
+
+        hash
+      end
+
+      def self.deserialize_from_hash(hash)
+        resolved_data = if hash['resolved_data']
+                          ReVIEW::AST::ResolvedData.deserialize_from_hash(hash['resolved_data'])
+                        end
+        new(
+          hash['ref_id'],
+          hash['context_id'],
+          location: ReVIEW::AST::JSONSerializer.restore_location(hash),
+          resolved_data: resolved_data
+        )
+      end
+
+      private
+
+      def location_to_h
+        return nil unless location
+
+        {
+          filename: location.filename,
+          lineno: location.lineno
+        }
+      end
     end
   end
 end
