@@ -17,7 +17,7 @@ module ReVIEW
     #
     # Design principles:
     # - Leaf nodes cannot have children
-    # - Leaf nodes may have a content attribute (optional)
+    # - Leaf nodes should have a content attribute (always a string, never nil - defaults to empty string)
     # - Leaf nodes can have other attributes (id, caption_node, etc.) inherited from Node
     # - Attempting to add children raises an error
     #
@@ -32,7 +32,7 @@ module ReVIEW
 
       def initialize(location:, content: '', **kwargs)
         super(location: location, **kwargs)
-        @content = content
+        @content = content || ''
       end
 
       # LeafNode is a leaf node
