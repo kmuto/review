@@ -112,6 +112,19 @@ module ReVIEW
         :"visit_#{method_name}"
       end
 
+      # Convert node to inline text representation (text without markup).
+      # This is used in inline contexts such as captions, headings, and footnotes.
+      #
+      # Default implementation for branch nodes (block elements):
+      # Block elements cannot be used in inline contexts, so this raises an error.
+      # Subclasses that can produce inline text should override this method.
+      #
+      # @return [String] The text content without markup
+      # @raise [ArgumentError] If block element is used in inline context
+      def to_inline_text
+        raise ArgumentError, "Block element #{self.class} cannot be used in inline context"
+      end
+
       # Basic JSON serialization for compatibility
       def to_h
         result = {

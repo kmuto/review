@@ -23,7 +23,7 @@ module ReVIEW
       # Get caption text from caption_node
       # @return [String] Caption text, empty string if no caption_node
       def caption_text
-        caption_node&.to_text || ''
+        caption_node&.to_inline_text || ''
       end
 
       # Check if this is a cross-chapter reference

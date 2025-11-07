@@ -29,6 +29,14 @@ module ReVIEW
         !target_chapter_id.nil?
       end
 
+      # Convert inline node to inline text representation (text without markup).
+      # InlineNode recursively processes all child nodes and joins their text.
+      #
+      # @return [String] The text content without markup
+      def to_inline_text
+        children.map(&:to_inline_text).join
+      end
+
       def self.deserialize_from_hash(hash)
         node = new(
           location: ReVIEW::AST::JSONSerializer.restore_location(hash),

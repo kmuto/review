@@ -126,7 +126,7 @@ module ReVIEW
 
       # Extract footnote content from FootnoteNode
       def extract_footnote_content(node)
-        node.to_text
+        node.to_inline_text
       end
 
       def initialize_indexes
@@ -406,7 +406,7 @@ module ReVIEW
 
       # Extract plain text from caption node
       def extract_caption_text(caption_node)
-        caption_node&.to_text || ''
+        caption_node&.to_inline_text || ''
       end
 
       # Extract text content from inline nodes

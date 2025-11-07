@@ -164,7 +164,7 @@ class TestBlockProcessorInline < Test::Unit::TestCase
     # Simple string
     caption_node1 = CaptionParserHelper.parse('Simple text', location: @location)
     assert_instance_of(ReVIEW::AST::CaptionNode, caption_node1)
-    assert_equal 'Simple text', caption_node1.to_text
+    assert_equal 'Simple text', caption_node1.to_inline_text
     assert_equal 1, caption_node1.children.size
     assert_instance_of(ReVIEW::AST::TextNode, caption_node1.children.first)
 
@@ -194,7 +194,7 @@ class TestBlockProcessorInline < Test::Unit::TestCase
     assert_instance_of(ReVIEW::AST::CaptionNode, caption_node)
     assert_operator(caption_node.children.size, :>=, 1)
     assert_equal true, caption_node.contains_inline?
-    assert_equal 'Text with bold content', caption_node.to_text
+    assert_equal 'Text with bold content', caption_node.to_inline_text
   end
 
   def test_empty_caption_handling

@@ -1188,7 +1188,7 @@ module ReVIEW
         # Render image tag
         begin
           image_path = @chapter.image(id).path.sub(%r{\A\./}, '')
-          alt_text = escape(caption_node&.to_text || '')
+          alt_text = escape(node.caption_text)
           img_html = %Q(<img src="#{image_path}" alt="#{alt_text}" />\n)
 
           # Check caption positioning like HTMLBuilder (uses 'table' type for imgtable)

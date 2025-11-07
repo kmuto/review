@@ -16,7 +16,7 @@ module ReVIEW
       # Get caption text from caption_node
       # @return [String] caption text or empty string if no caption
       def caption_text
-        caption_node&.to_text || ''
+        caption_node&.to_inline_text || ''
       end
 
       # Check if this node has a caption

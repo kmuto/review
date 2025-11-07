@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
+require 'review/snapshot_location'
 require 'review/ast/reference_node'
+require 'review/ast/caption_node'
 
 class TestReferenceNode < Test::Unit::TestCase
   def setup

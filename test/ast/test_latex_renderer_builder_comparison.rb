@@ -200,11 +200,11 @@ class TestLatexRendererBuilderComparison < Test::Unit::TestCase
     latex2 = '\\chapter{Test} \\label{chap:test}'
 
     # Whitespace sensitive comparison
-    whitespace_sensitive_comparator = AST::Diff::Latex.new(ignore_whitespace: false)
+    whitespace_sensitive_comparator = ReVIEW::AST::Diff::Latex.new(ignore_whitespace: false)
     result1 = whitespace_sensitive_comparator.compare(latex1, latex2)
 
     # Whitespace insensitive comparison
-    whitespace_insensitive_comparator = AST::Diff::Latex.new(ignore_whitespace: true)
+    whitespace_insensitive_comparator = ReVIEW::AST::Diff::Latex.new(ignore_whitespace: true)
     result2 = whitespace_insensitive_comparator.compare(latex1, latex2)
 
     assert result1.different?, 'Whitespace sensitive comparison should detect differences'

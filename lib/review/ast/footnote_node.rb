@@ -24,12 +24,11 @@ module ReVIEW
         @footnote_type = footnote_type # :footnote or :endnote
       end
 
-      # Convert footnote content to plain text
-      # This extracts text from children nodes for indexing purposes
-      def to_text
-        return '' if children.empty?
-
-        children.map { |child| render_node_as_text(child) }.join
+      # Convert footnote content to plain text (with markup removed)
+      #
+      # @return [String] The plain text content without markup
+      def to_inline_text
+        children.map(&:to_inline_text).join
       end
 
       # Override to_h to include FootnoteNode-specific attributes
@@ -60,19 +59,6 @@ module ReVIEW
       end
 
       private
-
-      # Recursively render AST nodes as plain text
-      def render_node_as_text(node)
-        case node
-        when TextNode
-          node.content
-        when InlineNode
-          # Extract text content from inline elements
-          node.children.map { |child| render_node_as_text(child) }.join
-        else
-          node.leaf_node? ? node.content : ''
-        end
-      end
 
       def serialize_properties(hash, options)
         hash[:id] = @id

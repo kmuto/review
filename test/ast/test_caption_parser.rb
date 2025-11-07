@@ -43,7 +43,7 @@ class TestCaptionParser < Test::Unit::TestCase
     assert_equal 1, result.children.size
     assert_instance_of(ReVIEW::AST::TextNode, result.children.first)
     assert_equal 'Simple Caption', result.children.first.content
-    assert_equal 'Simple Caption', result.to_text
+    assert_equal 'Simple Caption', result.to_inline_text
   end
 
   def test_parse_string_with_inline_markup_without_processor
@@ -54,7 +54,7 @@ class TestCaptionParser < Test::Unit::TestCase
     assert_equal 1, result.children.size
     assert_instance_of(ReVIEW::AST::TextNode, result.children.first)
     assert_equal 'Caption with @<b>{bold}', result.children.first.content
-    assert_equal 'Caption with @<b>{bold}', result.to_text
+    assert_equal 'Caption with @<b>{bold}', result.to_inline_text
     assert_equal false, result.contains_inline?
   end
 
@@ -73,13 +73,13 @@ class TestCaptionParser < Test::Unit::TestCase
     assert_operator(result.children.size, :>=, 1)
     assert_equal true, result.contains_inline?
     # Real inline processor parses the markup, so to_text extracts text content
-    assert_match(/Caption with.*bold/, result.to_text)
+    assert_match(/Caption with.*bold/, result.to_inline_text)
   end
 
   def test_factory_method_delegates_to_parser
     result = CaptionParserHelper.parse('Test Caption', location: @location)
 
     assert_instance_of(ReVIEW::AST::CaptionNode, result)
-    assert_equal 'Test Caption', result.to_text
+    assert_equal 'Test Caption', result.to_inline_text
   end
 end

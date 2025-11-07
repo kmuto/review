@@ -162,7 +162,7 @@ class TestCaptionNode < Test::Unit::TestCase
     text_node = ReVIEW::AST::TextNode.new(location: @location, content: 'Simple caption')
     caption.add_child(text_node)
 
-    assert_equal 'Simple caption', caption.to_text
+    assert_equal 'Simple caption', caption.to_inline_text
   end
 
   def test_to_text_with_inline
@@ -176,7 +176,7 @@ class TestCaptionNode < Test::Unit::TestCase
     caption.add_child(ReVIEW::AST::TextNode.new(location: @location, content: ' content'))
 
     # Markup should be removed: "Caption with @<b>{bold text} content" -> "Caption with bold text content"
-    assert_equal 'Caption with bold text content', caption.to_text
+    assert_equal 'Caption with bold text content', caption.to_inline_text
   end
 
   def test_to_text_with_nested_inline
@@ -197,11 +197,11 @@ class TestCaptionNode < Test::Unit::TestCase
     caption.add_child(ReVIEW::AST::TextNode.new(location: @location, content: ' more'))
 
     # Nested markup should be removed: "Text @<i>{italic @<b>{bold}} more" -> "Text italic bold more"
-    assert_equal 'Text italic bold more', caption.to_text
+    assert_equal 'Text italic bold more', caption.to_inline_text
   end
 
   def test_to_text_empty
     caption = ReVIEW::AST::CaptionNode.new(location: @location)
-    assert_equal '', caption.to_text
+    assert_equal '', caption.to_inline_text
   end
 end

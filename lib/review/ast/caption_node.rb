@@ -6,11 +6,13 @@ module ReVIEW
   module AST
     # Represents a caption that can contain both text and inline elements
     class CaptionNode < Node
-      # Convert caption to plain text (with markup removed)
-      def to_text
-        return '' if children.empty?
-
-        children.map { |child| render_node_as_text(child) }.join
+      # Convert caption to inline text representation (with markup removed).
+      # This method extracts plain text from the caption by recursively processing
+      # all child nodes (text and inline elements) and joining their text content.
+      #
+      # @return [String] The plain text content without markup
+      def to_inline_text
+        children.map(&:to_inline_text).join
       end
 
       # Check if caption contains any inline elements
@@ -56,20 +58,6 @@ module ReVIEW
           end
         end
         node
-      end
-
-      private
-
-      def render_node_as_text(node)
-        case node
-        when TextNode
-          node.content
-        when InlineNode
-          # For inline nodes, extract just the text content, ignoring markup
-          node.children.map { |child| render_node_as_text(child) }.join
-        else
-          node.leaf_node? ? node.content : ''
-        end
       end
     end
   end
