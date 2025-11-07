@@ -1188,7 +1188,7 @@ module ReVIEW
         # Render image tag
         begin
           image_path = @chapter.image(id).path.sub(%r{\A\./}, '')
-          alt_text = escape(caption_plain_text(caption_node))
+          alt_text = escape(caption_node&.to_text || '')
           img_html = %Q(<img src="#{image_path}" alt="#{alt_text}" />\n)
 
           # Check caption positioning like HTMLBuilder (uses 'table' type for imgtable)
@@ -1241,10 +1241,6 @@ module ReVIEW
         return '' unless caption_node
 
         render_children_with_context(caption_node, caption_context)
-      end
-
-      def caption_plain_text(caption_node)
-        caption_node&.to_text.to_s
       end
 
       # Process raw embed content (//raw and @<raw>)

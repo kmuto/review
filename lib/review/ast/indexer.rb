@@ -323,7 +323,7 @@ module ReVIEW
       def visit_tex_equation(node)
         if node.id?
           check_id(node.id)
-          caption_text = extract_caption_text(node.caption_node) || ''
+          caption_text = extract_caption_text(node.caption_node)
           item = ReVIEW::Book::Index::Item.new(node.id, @equation_index.size + 1, caption_text, caption_node: node.caption_node)
           @equation_index.add_item(item)
         end
@@ -406,9 +406,7 @@ module ReVIEW
 
       # Extract plain text from caption node
       def extract_caption_text(caption_node)
-        return nil if caption_node.nil?
-
-        caption_node.to_text
+        caption_node&.to_text || ''
       end
 
       # Extract text content from inline nodes
