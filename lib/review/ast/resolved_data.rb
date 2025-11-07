@@ -103,24 +103,11 @@ module ReVIEW
         type = hash['type']
         return nil unless type
 
-        # Map type to class
-        klass = case type
-                when 'ImageReference' then ImageReference
-                when 'TableReference' then TableReference
-                when 'ListReference' then ListReference
-                when 'EquationReference' then EquationReference
-                when 'ColumnReference' then ColumnReference
-                when 'FootnoteReference' then FootnoteReference
-                when 'EndnoteReference' then EndnoteReference
-                when 'ChapterReference' then ChapterReference
-                when 'HeadlineReference' then HeadlineReference
-                when 'WordReference' then WordReference
-                when 'BibpaperReference' then BibpaperReference
-                else
-                  raise StandardError, "Unknown ResolvedData type: #{type}"
-                end
-
+        # Get nested class by name using const_get
+        klass = const_get(type)
         klass.deserialize_from_hash(hash)
+      rescue NameError
+        raise StandardError, "Unknown ResolvedData type: #{type}"
       end
 
       # Convert resolved data to human-readable text representation
