@@ -426,10 +426,8 @@ module ReVIEW
 
         if caption_node.respond_to?(:to_text)
           caption_node.to_text
-        elsif caption_node.respond_to?(:children)
-          caption_node.children.map { |child| visit(child) }.join
         else
-          ''
+          caption_node.children.map { |child| visit(child) }.join
         end
       end
 

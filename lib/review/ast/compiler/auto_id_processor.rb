@@ -72,7 +72,7 @@ module ReVIEW
             visit_document(node)
           else
             # For other nodes, just visit children
-            visit_children(node) if node.respond_to?(:children)
+            visit_children(node)
             node
           end
         end
@@ -82,8 +82,6 @@ module ReVIEW
         end
 
         def visit_children(node)
-          return unless node.respond_to?(:children)
-
           node.children.each { |child| visit(child) }
         end
       end
