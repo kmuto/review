@@ -23,16 +23,16 @@ module ReVIEW
       # Usage:
       #   OlnumProcessor.process(ast_root)
       class OlnumProcessor < PostProcessor
-        def process(ast_root)
-          # First pass: process //olnum commands
-          process_node(ast_root)
-          # Second pass: set olnum_start for all ordered lists
-          add_olnum_starts(ast_root)
-        end
-
         private
 
         def process_node(node)
+          # First pass: process //olnum commands
+          process_olnum(node)
+          # Second pass: set olnum_start for all ordered lists
+          add_olnum_starts(node)
+        end
+
+        def process_olnum(node)
           # Collect indices to delete (process in reverse to avoid index shifting)
           indices_to_delete = []
 
@@ -50,7 +50,7 @@ module ReVIEW
               indices_to_delete << idx
             else
               # Recursively process child nodes
-              process_node(child)
+              process_olnum(child)
             end
           end
 

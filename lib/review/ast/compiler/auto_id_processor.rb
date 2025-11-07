@@ -20,15 +20,11 @@ module ReVIEW
       #
       # Auto IDs are generated with sequential counters to ensure uniqueness.
       class AutoIdProcessor < PostProcessor
-        def initialize(chapter:, compiler:)
-          super
-          @nonum_counter = 0
-          @column_counter = 0
-        end
-
         private
 
         def process_node(node)
+          @nonum_counter = 0
+          @column_counter = 0
           @ast_root = node
           visit(@ast_root)
           @ast_root

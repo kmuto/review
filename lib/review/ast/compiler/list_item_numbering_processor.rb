@@ -29,7 +29,7 @@ module ReVIEW
             assign_item_numbers(node)
           end
 
-          node.children.each { |child| process(child) }
+          node.children.each { |child| process_node(child) }
         end
 
         def ordered_list_node?(node)

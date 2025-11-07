@@ -79,7 +79,8 @@ module ReVIEW
             raise CompileError, "Invalid table row: empty line or no tab-separated cells#{location_info}"
           end
 
-          row_node = create_node(AST::TableRowNode, row_type: is_header ? :header : :body)
+          row_type = is_header ? :header : :body
+          row_node = create_node(AST::TableRowNode, row_type: row_type)
 
           cells.each_with_index do |cell_content, index|
             cell_type = if is_header
