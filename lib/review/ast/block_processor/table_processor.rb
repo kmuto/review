@@ -150,7 +150,7 @@ module ReVIEW
         # @return [Regexp] Separator pattern
         def row_separator_regexp
           chapter = @ast_compiler.chapter
-          config = if chapter && chapter.respond_to?(:book) && chapter.book
+          config = if chapter && chapter.book
                      chapter.book.config || {}
                    else
                      {}
