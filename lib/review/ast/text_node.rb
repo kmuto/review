@@ -37,6 +37,13 @@ module ReVIEW
         hash
       end
 
+      def self.deserialize_from_hash(hash)
+        new(
+          location: ReVIEW::AST::JSONSerializer.restore_location(hash),
+          content: hash['content'] || ''
+        )
+      end
+
       private
 
       def serialize_properties(hash, _options)
