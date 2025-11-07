@@ -137,52 +137,6 @@ module ReVIEW
         @ast_root
       end
 
-      def execute_post_processes
-        @post_processors.each do |processor_name|
-          processor_klass = Object.const_get(processor_name)
-          processor_klass.process(@ast_root, chapter: @chapter, compiler: self)
-        end
-      end
-
-      def build_ast_from_chapter
-        f = LineInput.from_string(@chapter.content)
-
-        # Build the complete AST structure
-        while f.next?
-          # Create a snapshot location that captures the current line number
-          @current_location = SnapshotLocation.new(@chapter.basename, f.lineno + 1)
-          line_content = f.peek
-          case line_content
-          when /\A\#@/
-            f.gets # skip preprocessor directives
-          when /\A=+[\[\s{]/
-            compile_headline_to_ast(f.gets)
-          when /\A\s*\z/ # rubocop:disable Lint/DuplicateBranch -- blank lines separate elements
-            f.gets # consume blank line but don't create node
-          when %r{\A//}
-            compile_block_command_to_ast(f)
-          when /\A\s+\*+\s/ # unordered list (must start with space, supports nesting with **)
-            compile_ul_to_ast(f)
-          when /\A\s+\d+\.\s/ # ordered list (must start with space)
-            compile_ol_to_ast(f)
-          when /\A\s*:\s/ # definition list (may start with optional space)
-            compile_dl_to_ast(f)
-          else
-            compile_paragraph_to_ast(f)
-          end
-        end
-      end
-
-      def compile_headline_to_ast(line)
-        parse_result = HeadlineParser.parse(line, location: location)
-        return nil unless parse_result
-
-        caption_node = build_caption_node(parse_result.caption, caption_location: location)
-        current_node = find_appropriate_parent_for_level(parse_result.level)
-
-        create_headline_node(parse_result, caption_node, current_node)
-      end
-
       def build_caption_node(raw_caption_text, caption_location:)
         return nil if raw_caption_text.nil? || raw_caption_text.empty?
 
@@ -197,96 +151,6 @@ module ReVIEW
         end
 
         caption_node
-      end
-
-      def create_headline_node(parse_result, caption_node, current_node)
-        if parse_result.column?
-          create_column_node(parse_result, caption_node, current_node)
-        elsif parse_result.closing_tag?
-          handle_closing_tag(parse_result)
-        else
-          create_regular_headline(parse_result, caption_node, current_node)
-        end
-      end
-
-      def create_column_node(parse_result, caption_node, current_node)
-        node = AST::ColumnNode.new(
-          location: location,
-          level: parse_result.level,
-          label: parse_result.label,
-          caption_node: caption_node,
-          column_type: :column,
-          inline_processor: inline_processor
-        )
-        current_node.add_child(node)
-        @current_ast_node = node
-      end
-
-      def handle_closing_tag(parse_result)
-        open_tag = parse_result.closing_tag_name
-
-        # Validate that we're closing the correct tag by checking current AST node
-        if open_tag == 'column'
-          unless @current_ast_node.is_a?(AST::ColumnNode)
-            raise ReVIEW::ApplicationError, "column is not opened#{@current_location.format_for_error}"
-          end
-        else
-          raise ReVIEW::ApplicationError, "Unknown closing tag: /#{open_tag}#{@current_location.format_for_error}"
-        end
-
-        @current_ast_node = @current_ast_node.parent || @ast_root
-      end
-
-      def create_regular_headline(parse_result, caption_node, current_node)
-        node = AST::HeadlineNode.new(
-          location: location,
-          level: parse_result.level,
-          label: parse_result.label,
-          caption_node: caption_node,
-          tag: parse_result.tag
-        )
-        current_node.add_child(node)
-        @current_ast_node = @ast_root
-      end
-
-      def compile_paragraph_to_ast(f)
-        raw_lines = []
-        f.until_match(%r{\A//|\A\#@}) do |line|
-          break if line.strip.empty?
-
-          # Match ReVIEW::Compiler behavior: preserve tabs, strip other whitespace
-          processed_line = strip_preserving_leading_tabs(line)
-          raw_lines.push(processed_line)
-        end
-
-        return if raw_lines.empty?
-
-        # Create single paragraph node with multiple lines joined by \n
-        # AST preserves line breaks; HTMLRenderer removes them for Builder compatibility
-        node = AST::ParagraphNode.new(location: location)
-        combined_text = raw_lines.join("\n") # Join lines with newline (AST preserves structure)
-        inline_processor.parse_inline_elements(combined_text, node)
-        @current_ast_node.add_child(node)
-      end
-
-      def compile_block_command_to_ast(f)
-        block_data = read_block_command(f)
-        block_processor.process_block_command(block_data)
-      end
-
-      # Compile unordered list to AST (delegates to list processor)
-      def compile_ul_to_ast(f)
-        list_processor.process_unordered_list(f)
-      end
-
-      # Compile ordered list to AST (delegates to list processor)
-      def compile_ol_to_ast(f)
-        list_processor.process_ordered_list(f)
-      end
-
-      # Compile definition list to AST (delegates to list processor)
-      def compile_dl_to_ast(f)
-        list_processor.process_definition_list(f)
       end
 
       # Helper methods that need to be accessible from processors
@@ -315,31 +179,6 @@ module ReVIEW
 
       def add_child_to_current_node(node)
         @current_ast_node.add_child(node)
-      end
-
-      # Find appropriate parent node for a given headline level
-      # This handles section nesting by traversing up the current node hierarchy
-      def find_appropriate_parent_for_level(level)
-        node = @current_ast_node
-
-        # Traverse up to find a node at the appropriate level
-        while node != @ast_root
-          # If current node is a ColumnNode or HeadlineNode, check its level
-          if node.respond_to?(:level) && node.level
-            # If we find a node at same or higher level, go to its parent
-            if node.level >= level
-              node = node.parent || @ast_root
-            else
-              # Current node level is lower, this is the right parent
-              break
-            end
-          else
-            # Move up one level
-            node = node.parent || @ast_root
-          end
-        end
-
-        node
       end
 
       # Block-Scoped Compilation Support
@@ -492,6 +331,167 @@ module ReVIEW
       end
 
       private
+
+      def build_ast_from_chapter
+        f = LineInput.from_string(@chapter.content)
+
+        # Build the complete AST structure
+        while f.next?
+          # Create a snapshot location that captures the current line number
+          @current_location = SnapshotLocation.new(@chapter.basename, f.lineno + 1)
+          line_content = f.peek
+          case line_content
+          when /\A\#@/
+            f.gets # skip preprocessor directives
+          when /\A=+[\[\s{]/
+            compile_headline_to_ast(f.gets)
+          when /\A\s*\z/ # rubocop:disable Lint/DuplicateBranch -- blank lines separate elements
+            f.gets # consume blank line but don't create node
+          when %r{\A//}
+            compile_block_command_to_ast(f)
+          when /\A\s+\*+\s/ # unordered list (must start with space, supports nesting with **)
+            compile_ul_to_ast(f)
+          when /\A\s+\d+\.\s/ # ordered list (must start with space)
+            compile_ol_to_ast(f)
+          when /\A\s*:\s/ # definition list (may start with optional space)
+            compile_dl_to_ast(f)
+          else
+            compile_paragraph_to_ast(f)
+          end
+        end
+      end
+
+      def compile_paragraph_to_ast(f)
+        raw_lines = []
+        f.until_match(%r{\A//|\A\#@}) do |line|
+          break if line.strip.empty?
+
+          # Match ReVIEW::Compiler behavior: preserve tabs, strip other whitespace
+          processed_line = strip_preserving_leading_tabs(line)
+          raw_lines.push(processed_line)
+        end
+
+        return if raw_lines.empty?
+
+        # Create single paragraph node with multiple lines joined by \n
+        # AST preserves line breaks; HTMLRenderer removes them for Builder compatibility
+        node = AST::ParagraphNode.new(location: location)
+        combined_text = raw_lines.join("\n") # Join lines with newline (AST preserves structure)
+        inline_processor.parse_inline_elements(combined_text, node)
+        @current_ast_node.add_child(node)
+      end
+
+      def compile_headline_to_ast(line)
+        parse_result = HeadlineParser.parse(line, location: location)
+        return nil unless parse_result
+
+        caption_node = build_caption_node(parse_result.caption, caption_location: location)
+        current_node = find_appropriate_parent_for_level(parse_result.level)
+
+        create_headline_node(parse_result, caption_node, current_node)
+      end
+
+      def create_column_node(parse_result, caption_node, current_node)
+        node = AST::ColumnNode.new(
+          location: location,
+          level: parse_result.level,
+          label: parse_result.label,
+          caption_node: caption_node,
+          column_type: :column,
+          inline_processor: inline_processor
+        )
+        current_node.add_child(node)
+        @current_ast_node = node
+      end
+
+      def create_headline_node(parse_result, caption_node, current_node)
+        if parse_result.column?
+          create_column_node(parse_result, caption_node, current_node)
+        elsif parse_result.closing_tag?
+          handle_closing_tag(parse_result)
+        else
+          create_regular_headline(parse_result, caption_node, current_node)
+        end
+      end
+
+      def handle_closing_tag(parse_result)
+        open_tag = parse_result.closing_tag_name
+
+        # Validate that we're closing the correct tag by checking current AST node
+        if open_tag == 'column'
+          unless @current_ast_node.is_a?(AST::ColumnNode)
+            raise ReVIEW::ApplicationError, "column is not opened#{@current_location.format_for_error}"
+          end
+        else
+          raise ReVIEW::ApplicationError, "Unknown closing tag: /#{open_tag}#{@current_location.format_for_error}"
+        end
+
+        @current_ast_node = @current_ast_node.parent || @ast_root
+      end
+
+      def create_regular_headline(parse_result, caption_node, current_node)
+        node = AST::HeadlineNode.new(
+          location: location,
+          level: parse_result.level,
+          label: parse_result.label,
+          caption_node: caption_node,
+          tag: parse_result.tag
+        )
+        current_node.add_child(node)
+        @current_ast_node = @ast_root
+      end
+
+      def compile_block_command_to_ast(f)
+        block_data = read_block_command(f)
+        block_processor.process_block_command(block_data)
+      end
+
+      # Compile unordered list to AST (delegates to list processor)
+      def compile_ul_to_ast(f)
+        list_processor.process_unordered_list(f)
+      end
+
+      # Compile ordered list to AST (delegates to list processor)
+      def compile_ol_to_ast(f)
+        list_processor.process_ordered_list(f)
+      end
+
+      # Compile definition list to AST (delegates to list processor)
+      def compile_dl_to_ast(f)
+        list_processor.process_definition_list(f)
+      end
+
+      # Find appropriate parent node for a given headline level
+      # This handles section nesting by traversing up the current node hierarchy
+      def find_appropriate_parent_for_level(level)
+        node = @current_ast_node
+
+        # Traverse up to find a node at the appropriate level
+        while node != @ast_root
+          # If current node is a ColumnNode or HeadlineNode, check its level
+          if node.respond_to?(:level) && node.level
+            # If we find a node at same or higher level, go to its parent
+            if node.level >= level
+              node = node.parent || @ast_root
+            else
+              # Current node level is lower, this is the right parent
+              break
+            end
+          else
+            # Move up one level
+            node = node.parent || @ast_root
+          end
+        end
+
+        node
+      end
+
+      def execute_post_processes
+        @post_processors.each do |processor_name|
+          processor_klass = Object.const_get(processor_name)
+          processor_klass.process(@ast_root, chapter: @chapter, compiler: self)
+        end
+      end
 
       # Strip leading and trailing whitespace while preserving leading tabs
       # @param line [String] The line to process
