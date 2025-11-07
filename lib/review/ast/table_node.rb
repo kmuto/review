@@ -2,11 +2,14 @@
 
 require_relative 'node'
 require_relative 'caption_node'
+require_relative 'captionable'
 require_relative 'json_serializer'
 
 module ReVIEW
   module AST
     class TableNode < Node
+      include Captionable
+
       attr_accessor :caption_node, :col_spec, :cellwidth
       attr_reader :table_type, :metric
 
@@ -19,16 +22,6 @@ module ReVIEW
         @cellwidth = cellwidth # Array of column width specifications
         @header_rows = []
         @body_rows = []
-      end
-
-      # Get caption text from caption_node
-      def caption_text
-        caption_node&.to_text || ''
-      end
-
-      # Check if this table has a caption
-      def caption?
-        !caption_node.nil?
       end
 
       def header_rows
@@ -118,7 +111,7 @@ module ReVIEW
         # Add TableNode-specific properties (no children field)
         hash[:id] = id if id && !id.empty?
         hash[:table_type] = table_type
-        hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
+        serialize_caption_to_hash(hash, options)
         hash[:header_rows] = header_rows.map { |row| row.serialize_to_hash(options) }
         hash[:body_rows] = body_rows.map { |row| row.serialize_to_hash(options) }
         hash[:metric] = metric if metric
@@ -129,11 +122,10 @@ module ReVIEW
       end
 
       def self.deserialize_from_hash(hash)
-        _, caption_node = ReVIEW::AST::JSONSerializer.deserialize_caption_fields(hash)
         node = new(
           location: ReVIEW::AST::JSONSerializer.restore_location(hash),
           id: hash['id'],
-          caption_node: caption_node,
+          caption_node: deserialize_caption_from_hash(hash),
           table_type: hash['table_type'] || :table,
           metric: hash['metric']
         )

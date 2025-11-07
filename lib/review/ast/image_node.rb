@@ -2,10 +2,13 @@
 
 require_relative 'leaf_node'
 require_relative 'caption_node'
+require_relative 'captionable'
 
 module ReVIEW
   module AST
     class ImageNode < LeafNode
+      include Captionable
+
       attr_accessor :caption_node
       attr_reader :metric, :image_type
 
@@ -14,16 +17,6 @@ module ReVIEW
         @caption_node = caption_node
         @metric = metric
         @image_type = image_type
-      end
-
-      # Get caption text from caption_node
-      def caption_text
-        caption_node&.to_text || ''
-      end
-
-      # Check if this image has a caption
-      def caption?
-        !caption_node.nil?
       end
 
       # Check if this image has an ID
@@ -63,11 +56,10 @@ module ReVIEW
       end
 
       def self.deserialize_from_hash(hash)
-        _, caption_node = ReVIEW::AST::JSONSerializer.deserialize_caption_fields(hash)
         new(
           location: ReVIEW::AST::JSONSerializer.restore_location(hash),
           id: hash['id'],
-          caption_node: caption_node,
+          caption_node: deserialize_caption_from_hash(hash),
           metric: hash['metric'],
           image_type: hash['image_type']&.to_sym || :image,
           content: hash['content'] || ''
@@ -78,7 +70,7 @@ module ReVIEW
 
       def serialize_properties(hash, options)
         hash[:id] = id if id?
-        hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
+        serialize_caption_to_hash(hash, options)
         hash[:metric] = metric if metric
         hash[:image_type] = image_type
         hash[:content] = content if content && !content.empty?

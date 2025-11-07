@@ -2,10 +2,13 @@
 
 require_relative 'node'
 require_relative 'caption_node'
+require_relative 'captionable'
 
 module ReVIEW
   module AST
     class HeadlineNode < Node
+      include Captionable
+
       attr_accessor :caption_node, :auto_id
       attr_reader :level, :label, :tag
 
@@ -16,16 +19,6 @@ module ReVIEW
         @caption_node = caption_node
         @tag = tag
         @auto_id = auto_id
-      end
-
-      # Get caption text from caption_node
-      def caption_text
-        caption_node&.to_text || ''
-      end
-
-      # Check if this headline has a caption
-      def caption?
-        !caption_node.nil?
       end
 
       # Check if headline has specific tag option
@@ -58,12 +51,11 @@ module ReVIEW
       end
 
       def self.deserialize_from_hash(hash)
-        _, caption_node = ReVIEW::AST::JSONSerializer.deserialize_caption_fields(hash)
         new(
           location: ReVIEW::AST::JSONSerializer.restore_location(hash),
           level: hash['level'],
           label: hash['label'],
-          caption_node: caption_node
+          caption_node: deserialize_caption_from_hash(hash)
         )
       end
 
@@ -72,7 +64,7 @@ module ReVIEW
       def serialize_properties(hash, options)
         hash[:level] = level
         hash[:label] = label
-        hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
+        serialize_caption_to_hash(hash, options)
         hash[:tag] = tag if tag
         hash[:auto_id] = auto_id if auto_id
         hash

@@ -2,12 +2,15 @@
 
 require_relative 'node'
 require_relative 'caption_node'
+require_relative 'captionable'
 
 module ReVIEW
   module AST
     # BlockNode - Generic block container node
     # Used for various block-level constructs like quote, read, etc.
     class BlockNode < Node
+      include Captionable
+
       attr_accessor :caption_node
       attr_reader :block_type, :args
 
@@ -16,16 +19,6 @@ module ReVIEW
         @block_type = block_type # :quote, :read, etc.
         @args = args || []
         @caption_node = caption_node
-      end
-
-      # Get caption text from caption_node
-      def caption_text
-        caption_node&.to_text || ''
-      end
-
-      # Check if this block has a caption
-      def caption?
-        !caption_node.nil?
       end
 
       def to_h
@@ -39,12 +32,11 @@ module ReVIEW
 
       def self.deserialize_from_hash(hash)
         block_type = hash['block_type'] ? hash['block_type'].to_sym : :quote
-        _, caption_node = ReVIEW::AST::JSONSerializer.deserialize_caption_fields(hash)
         node = new(
           location: ReVIEW::AST::JSONSerializer.restore_location(hash),
           block_type: block_type,
           args: hash['args'],
-          caption_node: caption_node
+          caption_node: deserialize_caption_from_hash(hash)
         )
         if hash['children']
           hash['children'].each do |child_hash|
@@ -60,7 +52,7 @@ module ReVIEW
       def serialize_properties(hash, options)
         hash[:block_type] = block_type
         hash[:args] = args if args
-        hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
+        serialize_caption_to_hash(hash, options)
         if children.any?
           hash[:children] = children.map { |child| child.serialize_to_hash(options) }
         end

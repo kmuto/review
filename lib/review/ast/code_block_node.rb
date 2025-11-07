@@ -2,10 +2,13 @@
 
 require_relative 'node'
 require_relative 'caption_node'
+require_relative 'captionable'
 
 module ReVIEW
   module AST
     class CodeBlockNode < Node
+      include Captionable
+
       attr_accessor :caption_node, :first_line_num
       attr_reader :lang, :line_numbers, :code_type
 
@@ -20,16 +23,6 @@ module ReVIEW
       end
 
       attr_reader :children
-
-      # Get caption text from caption_node
-      def caption_text
-        caption_node&.to_text || ''
-      end
-
-      # Check if this code block has a caption
-      def caption?
-        !caption_node.nil?
-      end
 
       # Get original lines as array (for builders that don't need inline processing)
       def original_lines
@@ -66,7 +59,8 @@ module ReVIEW
 
       def to_h
         result = super.merge(
-          lang: lang, caption_node: caption_node&.to_h,
+          lang: lang,
+          caption_node: caption_node&.to_h,
           line_numbers: line_numbers,
           children: children.map(&:to_h)
         )
@@ -77,11 +71,10 @@ module ReVIEW
       end
 
       def self.deserialize_from_hash(hash)
-        _, caption_node = ReVIEW::AST::JSONSerializer.deserialize_caption_fields(hash)
         node = new(
           location: ReVIEW::AST::JSONSerializer.restore_location(hash),
           id: hash['id'],
-          caption_node: caption_node,
+          caption_node: deserialize_caption_from_hash(hash),
           lang: hash['lang'],
           line_numbers: hash['numbered'] || hash['line_numbers'] || false,
           code_type: hash['code_type'],
@@ -101,7 +94,7 @@ module ReVIEW
       def serialize_properties(hash, options)
         hash[:id] = id if id && !id.empty?
         hash[:lang] = lang
-        hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
+        serialize_caption_to_hash(hash, options)
         hash[:line_numbers] = line_numbers
         hash[:code_type] = code_type if code_type
         hash[:first_line_num] = first_line_num if first_line_num

@@ -8,6 +8,7 @@
 
 require_relative 'leaf_node'
 require_relative 'caption_node'
+require_relative 'captionable'
 
 module ReVIEW
   module AST
@@ -22,6 +23,8 @@ module ReVIEW
     # E = mc^2
     # //}
     class TexEquationNode < LeafNode
+      include Captionable
+
       attr_accessor :caption_node
 
       def initialize(location:, content:, id: nil, caption_node: nil)
@@ -29,16 +32,8 @@ module ReVIEW
         @caption_node = caption_node
       end
 
-      def caption_text
-        caption_node&.to_text || ''
-      end
-
       def id?
         !@id.nil? && !@id.empty?
-      end
-
-      def caption?
-        !caption_node.nil?
       end
 
       def to_s
@@ -75,11 +70,10 @@ module ReVIEW
       end
 
       def self.deserialize_from_hash(hash)
-        _, caption_node = ReVIEW::AST::JSONSerializer.deserialize_caption_fields(hash)
         new(
           location: ReVIEW::AST::JSONSerializer.restore_location(hash),
           id: hash['id'],
-          caption_node: caption_node,
+          caption_node: deserialize_caption_from_hash(hash),
           content: hash['content'] || ''
         )
       end
@@ -88,7 +82,7 @@ module ReVIEW
 
       def serialize_properties(hash, options)
         hash[:id] = id if id?
-        hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
+        serialize_caption_to_hash(hash, options)
         hash[:content] = content if content && !content.empty?
         hash
       end

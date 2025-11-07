@@ -2,10 +2,13 @@
 
 require_relative 'node'
 require_relative 'caption_node'
+require_relative 'captionable'
 
 module ReVIEW
   module AST
     class ColumnNode < Node
+      include Captionable
+
       attr_accessor :caption_node, :auto_id, :column_number
       attr_reader :level, :label, :column_type
 
@@ -17,16 +20,6 @@ module ReVIEW
         @column_type = column_type
         @auto_id = auto_id
         @column_number = column_number
-      end
-
-      # Get caption text from caption_node
-      def caption_text
-        caption_node&.to_text || ''
-      end
-
-      # Check if this column has a caption
-      def caption?
-        !caption_node.nil?
       end
 
       def to_h
@@ -42,12 +35,11 @@ module ReVIEW
 
       # Deserialize from hash
       def self.deserialize_from_hash(hash)
-        _, caption_node = ReVIEW::AST::JSONSerializer.deserialize_caption_fields(hash)
         node = new(
           location: ReVIEW::AST::JSONSerializer.restore_location(hash),
           level: hash['level'],
           label: hash['label'],
-          caption_node: caption_node,
+          caption_node: deserialize_caption_from_hash(hash),
           column_type: hash['column_type']&.to_sym
         )
         if hash['children'] || hash['content']
@@ -63,7 +55,7 @@ module ReVIEW
         hash[:children] = children.map { |child| child.serialize_to_hash(options) }
         hash[:level] = level
         hash[:label] = label
-        hash[:caption_node] = caption_node&.serialize_to_hash(options) if caption_node
+        serialize_caption_to_hash(hash, options)
         hash[:column_type] = column_type.to_s if column_type
         hash[:auto_id] = auto_id if auto_id
         hash[:column_number] = column_number if column_number
