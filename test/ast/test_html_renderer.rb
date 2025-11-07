@@ -368,7 +368,7 @@ class TestHtmlRenderer < Test::Unit::TestCase
     equation = ReVIEW::AST::TexEquationNode.new(
       location: nil,
       id: nil,
-      latex_content: 'E = mc^2'
+      content: 'E = mc^2'
     )
 
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(''))
@@ -390,7 +390,7 @@ class TestHtmlRenderer < Test::Unit::TestCase
     equation = ReVIEW::AST::TexEquationNode.new(
       location: nil,
       id: nil,
-      latex_content: 'E = mc^2'
+      content: 'E = mc^2'
     )
 
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(''))

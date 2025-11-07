@@ -435,19 +435,19 @@ module ReVIEW
       def build_tex_equation_ast(context)
         require_relative('tex_equation_node')
 
-        # Collect all LaTeX content lines
-        latex_content = if context.content?
-                          context.lines.join("\n") + "\n"
-                        else
-                          ''
-                        end
+        # Collect all LaTeX content lines and normalize (remove trailing newline)
+        content = if context.content?
+                    (context.lines.join("\n") + "\n").chomp
+                  else
+                    ''
+                  end
 
         caption_node = context.process_caption(context.args, 1)
 
         context.append_new_node(AST::TexEquationNode,
                                 id: context.arg(0),
                                 caption_node: caption_node,
-                                latex_content: latex_content)
+                                content: content)
       end
 
       def build_raw_ast(context)

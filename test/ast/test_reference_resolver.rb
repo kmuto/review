@@ -167,7 +167,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
     doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
 
     # Add actual TexEquationNode to generate index
-    eq_node = ReVIEW::AST::TexEquationNode.new(location: nil, id: 'eq01', latex_content: 'E=mc^2')
+    eq_node = ReVIEW::AST::TexEquationNode.new(location: nil, id: 'eq01', content: 'E=mc^2')
     doc.add_child(eq_node)
 
     # Add inline reference to the equation

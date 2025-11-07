@@ -15,8 +15,9 @@ module ReVIEW
     # This class should not be instantiated directly - use specific subclasses instead
     #
     # Design principles:
-    # - Branch nodes (like ParagraphNode, InlineNode) inherit from Node and use children
-    # - Leaf nodes (like TextNode, EmbedNode) inherit from LeafNode and use content
+    # - Branch nodes (like ParagraphNode, InlineNode) inherit from Node and have children
+    # - Leaf nodes (like TextNode, ImageNode) inherit from LeafNode and cannot have children
+    # - LeafNode may have a content attribute, but subclasses can define their own data attributes
     # - Never mix content and children in the same node
     class Node
       attr_reader :location, :type, :id, :original_text, :children
