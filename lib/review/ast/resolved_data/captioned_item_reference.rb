@@ -22,9 +22,10 @@ module ReVIEW
           @caption_node = caption_node
         end
 
-        # Subclasses should override label_key to specify their I18n label
+        # Format this reference as plain text
+        # Uses TextFormatter for consistent I18n handling
         def to_text
-          format_captioned_reference(label_key)
+          format_as_text
         end
 
         # Template method - subclasses must implement this

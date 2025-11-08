@@ -240,19 +240,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          short_num = data.short_chapter_number
-          list_number = if short_num && !short_num.empty?
-                          "#{I18n.t('list')}#{I18n.t('format_number', [short_num, data.item_number])}"
-                        else
-                          "#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [data.item_number])}"
-                        end
-
-          if @ctx.chapter_link_enabled?
-            chapter_id = data.chapter_id || @ctx.chapter.id
-            %Q(<span class="listref"><a href="./#{chapter_id}#{@ctx.extname}##{normalize_id(data.item_id)}">#{list_number}</a></span>)
-          else
-            %Q(<span class="listref">#{list_number}</span>)
-          end
+          @ctx.text_formatter.format_reference(:list, data)
         end
 
         def render_inline_table(_type, _content, node)
@@ -262,19 +250,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          short_num = data.short_chapter_number
-          table_number = if short_num && !short_num.empty?
-                           "#{I18n.t('table')}#{I18n.t('format_number', [short_num, data.item_number])}"
-                         else
-                           "#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [data.item_number])}"
-                         end
-
-          if @ctx.chapter_link_enabled?
-            chapter_id = data.chapter_id || @ctx.chapter.id
-            %Q(<span class="tableref"><a href="./#{chapter_id}#{@ctx.extname}##{normalize_id(data.item_id)}">#{table_number}</a></span>)
-          else
-            %Q(<span class="tableref">#{table_number}</span>)
-          end
+          @ctx.text_formatter.format_reference(:table, data)
         end
 
         def render_inline_img(_type, _content, node)
@@ -284,19 +260,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          short_num = data.short_chapter_number
-          image_number = if short_num && !short_num.empty?
-                           "#{I18n.t('image')}#{I18n.t('format_number', [short_num, data.item_number])}"
-                         else
-                           "#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [data.item_number])}"
-                         end
-
-          if @ctx.chapter_link_enabled?
-            chapter_id = data.chapter_id || @ctx.chapter.id
-            %Q(<span class="imgref"><a href="./#{chapter_id}#{@ctx.extname}##{normalize_id(data.item_id)}">#{image_number}</a></span>)
-          else
-            %Q(<span class="imgref">#{image_number}</span>)
-          end
+          @ctx.text_formatter.format_reference(:image, data)
         end
 
         def render_inline_comment(_type, content, _node)
@@ -447,7 +411,8 @@ module ReVIEW
           # Label reference: @<labelref>{id}
           # This should match HTMLBuilder's inline_labelref behavior
           idref = node.target_item_id || content
-          %Q(<a target='#{escape_content(idref)}'>「#{ReVIEW::I18n.t('label_marker')}#{escape_content(idref)}」</a>)
+          marker = @ctx.text_formatter.format_label_marker(idref)
+          %Q(<a target='#{escape_content(idref)}'>「#{marker}」</a>)
         end
 
         def render_inline_ref(type, content, node)
@@ -462,19 +427,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          short_num = data.short_chapter_number
-          equation_number = if short_num && !short_num.empty?
-                              %Q(#{ReVIEW::I18n.t('equation')}#{ReVIEW::I18n.t('format_number', [short_num, data.item_number])})
-                            else
-                              %Q(#{ReVIEW::I18n.t('equation')}#{ReVIEW::I18n.t('format_number_without_chapter', [data.item_number])})
-                            end
-
-          if @ctx.config['chapterlink']
-            chapter_id = data.chapter_id || @ctx.chapter.id
-            %Q(<span class="eqref"><a href="./#{chapter_id}#{@ctx.extname}##{normalize_id(data.item_id)}">#{equation_number}</a></span>)
-          else
-            %Q(<span class="eqref">#{equation_number}</span>)
-          end
+          @ctx.text_formatter.format_reference(:equation, data)
         end
 
         def render_inline_hd(_type, _content, node)
@@ -500,11 +453,7 @@ module ReVIEW
                           ([short_num] + n).join('.')
                         end
 
-          str = if full_number
-                  ReVIEW::I18n.t('hd_quote', [full_number, caption_html])
-                else
-                  ReVIEW::I18n.t('hd_quote_without_number', caption_html)
-                end
+          str = @ctx.text_formatter.format_headline_quote(full_number, caption_html)
 
           if @ctx.config['chapterlink'] && full_number
             # Get target chapter ID for link
@@ -533,7 +482,7 @@ module ReVIEW
                          end
 
           anchor = "column-#{data.item_number}"
-          column_text = ReVIEW::I18n.t('column', caption_html)
+          column_text = @ctx.text_formatter.format_column_label(caption_html)
 
           if @ctx.config['chapterlink']
             chapter_id = data.chapter_id || @ctx.chapter.id
@@ -610,7 +559,7 @@ module ReVIEW
 
         def build_footnote_link(fn_id, number)
           if @ctx.epub3?
-            %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref" epub:type="noteref">#{I18n.t('html_footnote_refmark', number)}</a>)
+            %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref" epub:type="noteref">#{@ctx.text_formatter.format_footnote_mark(number)}</a>)
           else
             %Q(<a id="fnb-#{normalize_id(fn_id)}" href="#fn-#{normalize_id(fn_id)}" class="noteref">*#{number}</a>)
           end
@@ -626,7 +575,7 @@ module ReVIEW
 
         def build_endnote_link(endnote_id, number)
           if @ctx.epub3?
-            %Q(<a id="endnoteb-#{normalize_id(endnote_id)}" href="#endnote-#{normalize_id(endnote_id)}" class="noteref" epub:type="noteref">#{I18n.t('html_endnote_refmark', number)}</a>)
+            %Q(<a id="endnoteb-#{normalize_id(endnote_id)}" href="#endnote-#{normalize_id(endnote_id)}" class="noteref" epub:type="noteref">#{@ctx.text_formatter.format_endnote_mark(number)}</a>)
           else
             %Q(<a id="endnoteb-#{normalize_id(endnote_id)}" href="#endnote-#{normalize_id(endnote_id)}" class="noteref">#{number}</a>)
           end

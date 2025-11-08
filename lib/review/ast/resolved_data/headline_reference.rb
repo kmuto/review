@@ -22,25 +22,11 @@ module ReVIEW
         end
 
         def to_text
-          caption = caption_text
-          if @headline_number && !@headline_number.empty?
-            # Build full number with chapter number if available
-            number_text = if @chapter_number
-                            short_num = short_chapter_number
-                            ([short_num] + @headline_number).join('.')
-                          else
-                            @headline_number.join('.')
-                          end
-            safe_i18n('hd_quote', [number_text, caption])
-          elsif !caption.empty?
-            safe_i18n('hd_quote_without_number', caption)
-          else
-            @item_id || ''
-          end
+          format_as_text
         end
 
-        def formatter_method
-          :format_headline_reference
+        def reference_type
+          :headline
         end
 
         def self.deserialize_from_hash(hash)

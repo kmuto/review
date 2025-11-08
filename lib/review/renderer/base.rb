@@ -8,6 +8,7 @@
 
 require 'review/ast/visitor'
 require 'review/exception'
+require 'review/renderer/text_formatter'
 
 module ReVIEW
   module Renderer
@@ -71,6 +72,26 @@ module ReVIEW
       # @return [String] The joined rendered output of all children
       def render_children(node)
         node.children.map { |child| visit(child) }.join
+      end
+
+      # Get TextFormatter instance for this renderer.
+      # TextFormatter centralizes all I18n and text formatting logic.
+      #
+      # @return [ReVIEW::Renderer::TextFormatter] Text formatter instance
+      def text_formatter
+        @text_formatter ||= ReVIEW::Renderer::TextFormatter.new(
+          format_type: format_type,
+          config: @config,
+          chapter: @chapter
+        )
+      end
+
+      # Get the format type for this renderer.
+      # Subclasses must override this method to specify their format.
+      #
+      # @return [Symbol] Format type (:html, :latex, :idgxml, :text, :top)
+      def format_type
+        raise NotImplementedError, "#{self.class} must implement #format_type"
       end
 
       private

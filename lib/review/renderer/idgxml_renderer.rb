@@ -32,7 +32,7 @@ require 'review/loggable'
 require 'digest/sha2'
 require_relative 'base'
 require_relative 'rendering_context'
-require_relative 'formatters/idgxml_reference_formatter'
+require_relative 'text_formatter'
 require_relative 'idgxml/inline_context'
 require_relative 'idgxml/inline_element_handler'
 
@@ -99,6 +99,12 @@ module ReVIEW
           img_math: @img_math
         )
         @inline_element_handler = Idgxml::InlineElementHandler.new(@inline_context)
+      end
+
+      # Format type for this renderer
+      # @return [Symbol] Format type :idgxml
+      def format_type
+        :idgxml
       end
 
       # Increment texinlineequation counter and return new value
@@ -268,10 +274,9 @@ module ReVIEW
       end
 
       # Format resolved reference based on ResolvedData
-      # Uses double dispatch pattern with a dedicated formatter object
+      # Uses TextFormatter for centralized text formatting
       def format_resolved_reference(data)
-        @reference_formatter ||= Formatters::IdgxmlReferenceFormatter.new(config: config)
-        data.format_with(@reference_formatter)
+        text_formatter.format_reference(data.reference_type, data)
       end
 
       def visit_list(node)
@@ -756,11 +761,7 @@ module ReVIEW
           rendered_caption = caption_node ? render_children(caption_node) : ''
 
           # Generate caption
-          caption_str = if get_chap.nil?
-                          %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number_without_chapter', [@chapter.equation(node.id).number])}#{I18n.t('caption_prefix_idgxml')}#{rendered_caption}</caption>)
-                        else
-                          %Q(<caption>#{I18n.t('equation')}#{I18n.t('format_number', [get_chap, @chapter.equation(node.id).number])}#{I18n.t('caption_prefix_idgxml')}#{rendered_caption}</caption>)
-                        end
+          caption_str = %Q(<caption>#{text_formatter.format_caption('equation', get_chap, @chapter.equation(node.id).number, rendered_caption)}</caption>)
 
           result << caption_str if caption_top?('equation')
         end
@@ -959,7 +960,7 @@ module ReVIEW
         if config['secnolevel'] && config['secnolevel'] > 0 &&
            !chapter.number.nil? && !chapter.number.to_s.empty?
           if chapter.is_a?(ReVIEW::Book::Part)
-            return I18n.t('part_short', chapter.number)
+            return text_formatter.format_part_short(chapter)
           else
             return chapter.format_number(nil)
           end
@@ -1244,11 +1245,7 @@ module ReVIEW
       def generate_list_header(id, caption)
         return '' unless caption && !caption.empty?
 
-        if get_chap.nil?
-          %Q(<caption>#{I18n.t('list')}#{I18n.t('format_number_without_chapter', [@chapter.list(id).number])}#{I18n.t('caption_prefix_idgxml')}#{caption}</caption>)
-        else
-          %Q(<caption>#{I18n.t('list')}#{I18n.t('format_number', [get_chap, @chapter.list(id).number])}#{I18n.t('caption_prefix_idgxml')}#{caption}</caption>)
-        end
+        %Q(<caption>#{text_formatter.format_caption('list', get_chap, @chapter.list(id).number, caption)}</caption>)
       end
 
       # Generate code lines body like IDGXMLBuilder
@@ -1443,10 +1440,8 @@ module ReVIEW
 
         if id.nil?
           %Q(<caption>#{caption}</caption>)
-        elsif get_chap
-          %Q(<caption>#{I18n.t('table')}#{I18n.t('format_number', [get_chap, @chapter.table(id).number])}#{I18n.t('caption_prefix_idgxml')}#{caption}</caption>)
         else
-          %Q(<caption>#{I18n.t('table')}#{I18n.t('format_number_without_chapter', [@chapter.table(id).number])}#{I18n.t('caption_prefix_idgxml')}#{caption}</caption>)
+          %Q(<caption>#{text_formatter.format_caption('table', get_chap, @chapter.table(id).number, caption)}</caption>)
         end
       end
 
@@ -1638,11 +1633,7 @@ module ReVIEW
       def generate_image_header(id, caption)
         return '' unless caption && !caption.empty?
 
-        if get_chap.nil?
-          %Q(<caption>#{I18n.t('image')}#{I18n.t('format_number_without_chapter', [@chapter.image(id).number])}#{I18n.t('caption_prefix_idgxml')}#{caption}</caption>)
-        else
-          %Q(<caption>#{I18n.t('image')}#{I18n.t('format_number', [get_chap, @chapter.image(id).number])}#{I18n.t('caption_prefix_idgxml')}#{caption}</caption>)
-        end
+        %Q(<caption>#{text_formatter.format_caption('image', get_chap, @chapter.image(id).number, caption)}</caption>)
       end
 
       # Visit rawblock

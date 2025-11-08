@@ -781,7 +781,7 @@ module ReVIEW
                              else
                                data.caption_text
                              end
-          column_text = I18n.t('column', compiled_caption)
+          column_text = @ctx.text_formatter.format_column_label(compiled_caption)
           "\\reviewcolumnref{#{column_text}}{#{column_label}}"
         end
 

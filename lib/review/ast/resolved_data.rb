@@ -6,7 +6,7 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require 'review/i18n'
+require_relative '../renderer/text_formatter'
 
 module ReVIEW
   module AST
@@ -117,18 +117,18 @@ module ReVIEW
         @item_id || ''
       end
 
-      # Double dispatch pattern for formatting
-      # Subclasses should implement formatter_method to specify the formatter method name
-      # @param formatter [Object] The formatter object
-      # @return [String] Formatted output
-      def format_with(formatter)
-        formatter.send(formatter_method, self)
+      # Get the reference type for this resolved data
+      # @return [Symbol] Reference type (e.g., :image, :table, :list)
+      def reference_type
+        raise NotImplementedError, "#{self.class}#reference_type must be implemented"
       end
 
-      # Template method - subclasses must implement this
-      # @return [Symbol] The formatter method name (e.g., :format_image_reference)
-      def formatter_method
-        raise NotImplementedError, "#{self.class}#formatter_method must be implemented"
+      # Format this reference as plain text using TextFormatter
+      # Uses lazy initialization to avoid circular dependency issues
+      # @return [String] Plain text representation of the reference
+      def format_as_text
+        @text_formatter ||= ReVIEW::Renderer::TextFormatter.new(format_type: :text, config: {})
+        @text_formatter.format_reference(reference_type, self)
       end
 
       # Get short-form chapter number from long form
@@ -143,72 +143,10 @@ module ReVIEW
         extract_short_chapter_number(@chapter_number)
       end
 
-      # Helper methods for text formatting
-
-      def safe_i18n(key, args = nil)
-        ReVIEW::I18n.t(key, args)
-      rescue StandardError
-        key
-      end
-
-      def format_reference_number
-        if @chapter_number && !@chapter_number.to_s.empty?
-          # Extract short chapter number from long form (e.g., "第1章" -> "1", "付録A" -> "A")
-          short_num = extract_short_chapter_number(@chapter_number)
-          safe_i18n('format_number', [short_num, @item_number])
-        else
-          safe_i18n('format_number_without_chapter', [@item_number])
-        end
-      end
-
+      # Extract short chapter number from formatted chapter number
+      # "第1章" -> "1", "付録A" -> "A", "第II部" -> "II"
       def extract_short_chapter_number(long_num)
-        # Extract number/letter from formatted chapter number
-        # "第1章" -> "1", "付録A" -> "A", "第II部" -> "II"
         long_num.to_s.gsub(/[^0-9A-Z]+/, '')
-      end
-
-      def caption_separator
-        separator = safe_i18n('caption_prefix_idgxml')
-        if separator == 'caption_prefix_idgxml'
-          fallback = safe_i18n('caption_prefix')
-          fallback == 'caption_prefix' ? ' ' : fallback
-        else
-          separator
-        end
-      end
-
-      def format_captioned_reference(label_key)
-        label = safe_i18n(label_key)
-        number_text = format_reference_number
-        base = "#{label}#{number_text}"
-        text = caption_text
-        if text.empty?
-          base
-        else
-          "#{base}#{caption_separator}#{text}"
-        end
-      end
-
-      def chapter_number_text(chapter_num)
-        return chapter_num.to_s if chapter_num.to_s.empty?
-
-        # Numeric chapter (e.g., "1", "2")
-        if numeric_string?(chapter_num)
-          safe_i18n('chapter', chapter_num.to_i)
-        # Single uppercase letter (appendix, e.g., "A", "B")
-        elsif chapter_num.to_s.match?(/\A[A-Z]\z/)
-          safe_i18n('appendix', chapter_num.to_s)
-        # Roman numerals (part, e.g., "I", "II", "III")
-        elsif chapter_num.to_s.match?(/\A[IVX]+\z/)
-          safe_i18n('part', chapter_num.to_s)
-        else
-          # For other formats, return as-is
-          chapter_num.to_s
-        end
-      end
-
-      def numeric_string?(value)
-        value.to_s.match?(/\A-?\d+\z/)
       end
 
       # Factory methods for common reference types

@@ -10,7 +10,7 @@ require 'review/textutils'
 require 'review/loggable'
 require 'review/i18n'
 require_relative 'base'
-require_relative 'formatters/top_reference_formatter'
+require_relative 'text_formatter'
 
 module ReVIEW
   module Renderer
@@ -53,6 +53,12 @@ module ReVIEW
 
         # Ensure locale strings are available
         I18n.setup(config['language'] || 'ja')
+      end
+
+      # Format type for this renderer
+      # @return [Symbol] Format type :top
+      def format_type
+        :top
       end
 
       def target_name
@@ -556,10 +562,9 @@ module ReVIEW
       end
 
       # Format resolved reference based on ResolvedData
-      # Uses double dispatch pattern with a dedicated formatter object
+      # Uses TextFormatter for centralized text formatting
       def format_resolved_reference(data)
-        @reference_formatter ||= Formatters::TopReferenceFormatter.new(config: config)
-        data.format_with(@reference_formatter)
+        text_formatter.format_reference(data.reference_type, data)
       end
 
       def get_footnote_number(footnote_id)

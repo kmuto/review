@@ -33,6 +33,10 @@ module ReVIEW
           def rendering_context
             @renderer.rendering_context
           end
+
+          def text_formatter
+            @renderer.text_formatter
+          end
         end
         private_constant :InlineRenderProxy
 
@@ -76,6 +80,10 @@ module ReVIEW
 
         def render_caption_inline(caption_node)
           @render_proxy.render_caption_inline(caption_node)
+        end
+
+        def text_formatter
+          @render_proxy.text_formatter
         end
 
         def bibpaper_number(bib_id)

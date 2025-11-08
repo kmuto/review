@@ -16,8 +16,8 @@ module ReVIEW
           'list'
         end
 
-        def formatter_method
-          :format_list_reference
+        def reference_type
+          :list
         end
 
         def self.deserialize_from_hash(hash)

@@ -14,7 +14,7 @@ require 'review/i18n'
 require 'review/textutils'
 require_relative 'base'
 require_relative 'rendering_context'
-require_relative 'formatters/latex_reference_formatter'
+require_relative 'text_formatter'
 require_relative 'latex/inline_context'
 require_relative 'latex/inline_element_handler'
 
@@ -54,6 +54,12 @@ module ReVIEW
           renderer: self
         )
         @inline_element_handler = Latex::InlineElementHandler.new(@inline_context)
+      end
+
+      # Format type for this renderer
+      # @return [Symbol] Format type :latex
+      def format_type
+        :latex
       end
 
       def visit_document(node)
@@ -877,11 +883,7 @@ module ReVIEW
               list_item = @chapter.list(node.id)
               list_num = list_item.number
               chapter_num = @chapter.number
-              captionstr = if chapter_num
-                             "\\reviewlistcaption{#{I18n.t('list')}#{I18n.t('format_number_header', [chapter_num, list_num])}#{I18n.t('caption_prefix')}#{caption}}"
-                           else
-                             "\\reviewlistcaption{#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [list_num])}#{I18n.t('caption_prefix')}#{caption}}"
-                           end
+              captionstr = "\\reviewlistcaption{#{text_formatter.format_caption('list', chapter_num, list_num, caption)}}"
               result << captionstr
             rescue ReVIEW::KeyError
               raise NotImplementedError, "no such list: #{node.id}"
@@ -1130,7 +1132,7 @@ module ReVIEW
         result << "\\begin{reviewimage}%%#{node.id}"
 
         if caption_top?('image') && caption && !caption.empty?
-          caption_str = "\\reviewindepimagecaption{#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{caption}}"
+          caption_str = "\\reviewindepimagecaption{#{text_formatter.format_numberless_image}#{text_formatter.format_caption_prefix}#{caption}}"
           result << caption_str
         end
 
@@ -1144,7 +1146,7 @@ module ReVIEW
                   end
 
         if !caption_top?('image') && caption && !caption.empty?
-          caption_str = "\\reviewindepimagecaption{#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{caption}}"
+          caption_str = "\\reviewindepimagecaption{#{text_formatter.format_numberless_image}#{text_formatter.format_caption_prefix}#{caption}}"
           result << caption_str
         end
 
@@ -1177,7 +1179,7 @@ module ReVIEW
         if caption && !caption.empty?
           result << if double_escape_id
                       # indepimage uses reviewindepimagecaption
-                      "\\reviewindepimagecaption{#{I18n.t('numberless_image')}#{I18n.t('caption_prefix')}#{caption}}"
+                      "\\reviewindepimagecaption{#{text_formatter.format_numberless_image}#{text_formatter.format_caption_prefix}#{caption}}"
                     else
                       # regular image uses reviewimagecaption
                       "\\reviewimagecaption{#{caption}}"
@@ -1345,10 +1347,9 @@ module ReVIEW
       end
 
       # Format resolved reference based on ResolvedData
-      # Uses double dispatch pattern with a dedicated formatter object
+      # Uses TextFormatter for centralized text formatting
       def format_resolved_reference(data)
-        @reference_formatter ||= Formatters::LaTeXReferenceFormatter.new(config: config)
-        data.format_with(@reference_formatter)
+        text_formatter.format_reference(data.reference_type, data)
       end
 
       # Render document children with proper separation

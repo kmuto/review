@@ -16,8 +16,8 @@ module ReVIEW
           'image'
         end
 
-        def formatter_method
-          :format_image_reference
+        def reference_type
+          :image
         end
 
         def self.deserialize_from_hash(hash)

@@ -26,6 +26,10 @@ module ReVIEW
           def render_children(node)
             @renderer.render_children(node)
           end
+
+          def text_formatter
+            @renderer.text_formatter
+          end
         end
         private_constant :InlineRenderProxy
 
@@ -109,6 +113,10 @@ module ReVIEW
 
         def render_children(node)
           @render_proxy.render_children(node)
+        end
+
+        def text_formatter
+          @render_proxy.text_formatter
         end
       end
     end

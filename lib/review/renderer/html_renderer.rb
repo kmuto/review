@@ -21,7 +21,7 @@ require 'review/template'
 require 'review/img_math'
 require 'digest'
 require_relative 'rendering_context'
-require_relative 'formatters/html_reference_formatter'
+require_relative 'text_formatter'
 require_relative 'html/inline_context'
 require_relative 'html/inline_element_handler'
 
@@ -58,7 +58,12 @@ module ReVIEW
         # Initialize HTML-specific inline context and inline element handler
         @inline_context = Html::InlineContext.new(config: config, book: book, chapter: chapter, renderer: self, img_math: @img_math)
         @inline_element_handler = Html::InlineElementHandler.new(@inline_context)
-        @reference_formatter = Formatters::HtmlReferenceFormatter.new(config: config)
+      end
+
+      # Format type for this renderer
+      # @return [Symbol] Format type :html
+      def format_type
+        :html
       end
 
       def visit_document(node)
@@ -416,17 +421,8 @@ module ReVIEW
 
         id_attr = %Q( id="#{normalize_id(node.id)}")
         caption_content = render_caption_markup(node.caption_node)
-        caption_html = if get_chap
-                         if caption_content.empty?
-                           %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(node.id).number])}</p>\n)
-                         else
-                           %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header', [get_chap, @chapter.equation(node.id).number])}#{I18n.t('caption_prefix')}#{caption_content}</p>\n)
-                         end
-                       elsif caption_content.empty?
-                         %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(node.id).number])}</p>\n)
-                       else
-                         %Q(<p class="caption">#{I18n.t('equation')}#{I18n.t('format_number_header_without_chapter', [@chapter.equation(node.id).number])}#{I18n.t('caption_prefix')}#{caption_content}</p>\n)
-                       end
+        caption_text = caption_content.empty? ? nil : caption_content
+        caption_html = %Q(<p class="caption">#{text_formatter.format_caption('equation', get_chap, @chapter.equation(node.id).number, caption_text)}</p>\n)
 
         caption_top_html = caption_top?('equation') ? caption_html : ''
         caption_bottom_html = caption_top?('equation') ? '' : caption_html
@@ -537,7 +533,7 @@ module ReVIEW
         if config['secnolevel'] && config['secnolevel'] > 0 &&
            !chapter.number.nil? && !chapter.number.to_s.empty?
           if chapter.is_a?(ReVIEW::Book::Part)
-            return I18n.t('part_short', chapter.number)
+            return text_formatter.format_part_short(chapter)
           else
             return chapter.format_number(nil)
           end
@@ -760,11 +756,7 @@ module ReVIEW
         list_num = list_item.number
         chapter_num = @chapter&.number
 
-        if chapter_num
-          "#{I18n.t('list')}#{I18n.t('format_number_header', [chapter_num, list_num])}#{I18n.t('caption_prefix')}#{caption}"
-        else
-          "#{I18n.t('list')}#{I18n.t('format_number_header_without_chapter', [list_num])}#{I18n.t('caption_prefix')}#{caption}"
-        end
+        text_formatter.format_caption('list', chapter_num, list_num, caption)
       end
 
       def visit_reference(node)
@@ -778,9 +770,9 @@ module ReVIEW
       end
 
       # Format resolved reference based on ResolvedData
-      # Uses double dispatch pattern with a dedicated formatter object
+      # Uses TextFormatter for centralized text formatting
       def format_resolved_reference(data)
-        data.format_with(@reference_formatter)
+        text_formatter.format_reference(data.reference_type, data)
       end
 
       def visit_footnote(node)
@@ -804,9 +796,9 @@ module ReVIEW
           # Only add back link if epubmaker/back_footnote is configured (like HTMLBuilder)
           back_link = ''
           if config['epubmaker'] && config['epubmaker']['back_footnote']
-            back_link = %Q(<a href="#fnb-#{normalize_id(node.id)}">#{I18n.t('html_footnote_backmark')}</a>)
+            back_link = %Q(<a href="#fnb-#{normalize_id(node.id)}">#{text_formatter.format_footnote_backmark}</a>)
           end
-          %Q(<div class="footnote" epub:type="footnote" id="fn-#{normalize_id(node.id)}"><p class="footnote">#{back_link}#{I18n.t('html_footnote_textmark', footnote_number)}#{footnote_content}</p></div>)
+          %Q(<div class="footnote" epub:type="footnote" id="fn-#{normalize_id(node.id)}"><p class="footnote">#{back_link}#{text_formatter.format_footnote_textmark(footnote_number)}#{footnote_content}</p></div>)
         else
           # Non-EPUB version
           footnote_back_link = %Q(<a href="#fnb-#{normalize_id(node.id)}">*#{footnote_number}</a>)
@@ -942,11 +934,11 @@ module ReVIEW
         @chapter.endnotes.each do |en|
           back = ''
           if config['epubmaker'] && config['epubmaker']['back_footnote']
-            back = %Q(<a href="#endnoteb-#{normalize_id(en.id)}">#{I18n.t('html_footnote_backmark')}</a>)
+            back = %Q(<a href="#endnoteb-#{normalize_id(en.id)}">#{text_formatter.format_footnote_backmark}</a>)
           end
           # Render endnote content from footnote_node
           endnote_content = render_children(en.footnote_node)
-          result += %Q(<div class="endnote" id="endnote-#{normalize_id(en.id)}"><p class="endnote">#{back}#{I18n.t('html_endnote_textmark', @chapter.endnote(en.id).number)}#{endnote_content}</p></div>\n)
+          result += %Q(<div class="endnote" id="endnote-#{normalize_id(en.id)}"><p class="endnote">#{back}#{text_formatter.format_endnote_textmark(@chapter.endnote(en.id).number)}#{endnote_content}</p></div>\n)
         end
 
         # End endnotes block
@@ -1107,7 +1099,8 @@ module ReVIEW
 
         # For indepimage (numberless image), use numberless_image label like HTMLBuilder
         if image_type == :indepimage || image_type == :numberlessimage
-          image_number = I18n.t('numberless_image')
+          image_number = text_formatter.format_numberless_image
+          caption_text = "#{image_number}#{text_formatter.format_caption_prefix}#{caption_content}"
         else
           # Generate image number like HTMLBuilder using chapter image index
           image_item = @chapter&.image(id)
@@ -1115,14 +1108,10 @@ module ReVIEW
             raise ReVIEW::KeyError, "image '#{id}' not found"
           end
 
-          image_number = if get_chap
-                           %Q(#{I18n.t('image')}#{I18n.t('format_number_header', [get_chap, image_item.number])})
-                         else
-                           %Q(#{I18n.t('image')}#{I18n.t('format_number_header_without_chapter', [image_item.number])})
-                         end
+          caption_text = text_formatter.format_caption('image', get_chap, image_item.number, caption_content)
         end
 
-        %Q(<p class="caption">\n#{image_number}#{I18n.t('caption_prefix')}#{caption_content}\n</p>\n)
+        %Q(<p class="caption">\n#{caption_text}\n</p>\n)
       end
 
       def image_header_html_with_context(id, caption_node, caption_context, image_type = :image)
@@ -1131,7 +1120,8 @@ module ReVIEW
 
         # For indepimage (numberless image), use numberless_image label like HTMLBuilder
         if image_type == :indepimage || image_type == :numberlessimage
-          image_number = I18n.t('numberless_image')
+          image_number = text_formatter.format_numberless_image
+          caption_text = "#{image_number}#{text_formatter.format_caption_prefix}#{caption_content}"
         else
           # Generate image number like HTMLBuilder using chapter image index
           image_item = @chapter&.image(id)
@@ -1139,14 +1129,10 @@ module ReVIEW
             raise ReVIEW::KeyError, "image '#{id}' not found"
           end
 
-          image_number = if get_chap
-                           %Q(#{I18n.t('image')}#{I18n.t('format_number_header', [get_chap, image_item.number])})
-                         else
-                           %Q(#{I18n.t('image')}#{I18n.t('format_number_header_without_chapter', [image_item.number])})
-                         end
+          caption_text = text_formatter.format_caption('image', get_chap, image_item.number, caption_content)
         end
 
-        %Q(<p class="caption">\n#{image_number}#{I18n.t('caption_prefix')}#{caption_content}\n</p>\n)
+        %Q(<p class="caption">\n#{caption_text}\n</p>\n)
       end
 
       def generate_table_header(id, caption)
@@ -1154,11 +1140,7 @@ module ReVIEW
         table_num = table_item.number
         chapter_num = @chapter.number
 
-        if chapter_num
-          "#{I18n.t('table')}#{I18n.t('format_number_header', [chapter_num, table_num])}#{I18n.t('caption_prefix')}#{caption}"
-        else
-          "#{I18n.t('table')}#{I18n.t('format_number_header_without_chapter', [table_num])}#{I18n.t('caption_prefix')}#{caption}"
-        end
+        text_formatter.format_caption('table', chapter_num, table_num, caption)
       rescue ReVIEW::KeyError
         raise NotImplementedError, "no such table: #{id}"
       end

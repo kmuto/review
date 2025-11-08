@@ -18,11 +18,11 @@ module ReVIEW
         end
 
         def to_text
-          "[#{@item_number}]"
+          format_as_text
         end
 
-        def formatter_method
-          :format_bibpaper_reference
+        def reference_type
+          :bibpaper
         end
 
         def self.deserialize_from_hash(hash)

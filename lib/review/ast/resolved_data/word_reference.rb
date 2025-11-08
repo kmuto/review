@@ -18,11 +18,11 @@ module ReVIEW
         end
 
         def to_text
-          @word_content
+          format_as_text
         end
 
-        def formatter_method
-          :format_word_reference
+        def reference_type
+          :word
         end
 
         def self.deserialize_from_hash(hash)

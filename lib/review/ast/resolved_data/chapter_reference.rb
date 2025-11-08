@@ -35,21 +35,13 @@ module ReVIEW
 
         # Return full chapter reference (for @<chapref>)
         # Example: "第1章「章見出し」"
+        # Uses TextFormatter for consistent I18n handling
         def to_text
-          if @chapter_number && @chapter_title
-            number_text = chapter_number_text(@chapter_number)
-            safe_i18n('chapter_quote', [number_text, @chapter_title])
-          elsif @chapter_title
-            safe_i18n('chapter_quote_without_number', @chapter_title)
-          elsif @chapter_number
-            chapter_number_text(@chapter_number)
-          else
-            @item_id || ''
-          end
+          format_as_text
         end
 
-        def formatter_method
-          :format_chapter_reference
+        def reference_type
+          :chapter
         end
 
         def self.deserialize_from_hash(hash)

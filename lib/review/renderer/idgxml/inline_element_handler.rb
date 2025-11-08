@@ -205,12 +205,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          short_num = data.short_chapter_number
-          base_ref = if short_num && !short_num.empty?
-                       I18n.t('list') + I18n.t('format_number', [short_num, data.item_number])
-                     else
-                       I18n.t('list') + I18n.t('format_number_without_chapter', [data.item_number])
-                     end
+          base_ref = @ctx.text_formatter.format_reference(:list, data)
           "<span type='list'>#{base_ref}</span>"
         end
 
@@ -221,12 +216,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          short_num = data.short_chapter_number
-          base_ref = if short_num && !short_num.empty?
-                       I18n.t('table') + I18n.t('format_number', [short_num, data.item_number])
-                     else
-                       I18n.t('table') + I18n.t('format_number_without_chapter', [data.item_number])
-                     end
+          base_ref = @ctx.text_formatter.format_reference(:table, data)
           "<span type='table'>#{base_ref}</span>"
         end
 
@@ -237,12 +227,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          short_num = data.short_chapter_number
-          base_ref = if short_num && !short_num.empty?
-                       I18n.t('image') + I18n.t('format_number', [short_num, data.item_number])
-                     else
-                       I18n.t('image') + I18n.t('format_number_without_chapter', [data.item_number])
-                     end
+          base_ref = @ctx.text_formatter.format_reference(:image, data)
           "<span type='image'>#{base_ref}</span>"
         end
 
@@ -253,12 +238,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          short_num = data.short_chapter_number
-          base_ref = if short_num && !short_num.empty?
-                       I18n.t('equation') + I18n.t('format_number', [short_num, data.item_number])
-                     else
-                       I18n.t('equation') + I18n.t('format_number_without_chapter', [data.item_number])
-                     end
+          base_ref = @ctx.text_formatter.format_reference(:equation, data)
           "<span type='eq'>#{base_ref}</span>"
         end
 
@@ -276,13 +256,8 @@ module ReVIEW
           end
 
           # Build reference with caption
-          short_num = data.short_chapter_number
-          base_ref = if short_num && !short_num.empty?
-                       I18n.t('image') + I18n.t('format_number', [short_num, data.item_number])
-                     else
-                       I18n.t('image') + I18n.t('format_number_without_chapter', [data.item_number])
-                     end
-          caption = I18n.t('image_quote', data.caption_text)
+          base_ref = @ctx.text_formatter.format_reference(:image, data)
+          caption = @ctx.text_formatter.format_image_quote(data.caption_text)
           "<span type='image'>#{base_ref}#{caption}</span>"
         end
 
@@ -303,10 +278,12 @@ module ReVIEW
                                escape(data.caption_text)
                              end
 
+          column_text = @ctx.text_formatter.format_column_label(compiled_caption)
+
           if @ctx.chapter_link_enabled?
-            %Q(<link href="column-#{data.item_number}">#{I18n.t('column', compiled_caption)}</link>)
+            %Q(<link href="column-#{data.item_number}">#{column_text}</link>)
           else
-            I18n.t('column', compiled_caption)
+            column_text
           end
         end
 
@@ -358,17 +335,8 @@ module ReVIEW
           ref_node = node.children.first
           return content unless ref_node.reference_node? && ref_node.resolved?
 
-          n = ref_node.resolved_data.headline_number
-          short_num = ref_node.resolved_data.short_chapter_number
-          caption = ref_node.resolved_data.caption_node ? @ctx.render_caption_inline(ref_node.resolved_data.caption_node) : ref_node.resolved_data.caption_text
-
-          if n.present? && short_num && !short_num.empty? && @ctx.over_secnolevel?(n)
-            # Build full section number including chapter number
-            full_number = ([short_num] + n).join('.')
-            I18n.t('hd_quote', [full_number, caption])
-          else
-            I18n.t('hd_quote_without_number', caption)
-          end
+          data = ref_node.resolved_data
+          @ctx.text_formatter.format_reference(:headline, data)
         end
 
         # Section number reference
@@ -448,7 +416,8 @@ module ReVIEW
         def render_inline_labelref(_type, content, node)
           # Get idref from node.args (raw, not escaped)
           idref = node.args.first || content
-          %Q(<ref idref='#{escape(idref)}'>「#{I18n.t('label_marker')}#{escape(idref)}」</ref>)
+          marker = @ctx.text_formatter.format_label_marker(idref)
+          %Q(<ref idref='#{escape(idref)}'>「#{marker}」</ref>)
         end
 
         def render_inline_ref(type, content, node)

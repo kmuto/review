@@ -33,6 +33,10 @@ module ReVIEW
           def increment_texinlineequation
             @renderer.increment_texinlineequation
           end
+
+          def text_formatter
+            @renderer.text_formatter
+          end
         end
         private_constant :InlineRenderProxy
 
@@ -83,7 +87,7 @@ module ReVIEW
           if config['secnolevel'] && config['secnolevel'] > 0 &&
              !chapter.number.nil? && !chapter.number.to_s.empty?
             if chapter.is_a?(ReVIEW::Book::Part)
-              return I18n.t('part_short', chapter.number)
+              return text_formatter.format_part_short(chapter)
             else
               return chapter.format_number(nil)
             end
@@ -105,6 +109,10 @@ module ReVIEW
 
         def render_caption_inline(caption_node)
           @render_proxy.render_caption_inline(caption_node)
+        end
+
+        def text_formatter
+          @render_proxy.text_formatter
         end
       end
     end

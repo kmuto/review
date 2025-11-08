@@ -12,22 +12,17 @@ module ReVIEW
   module AST
     class ResolvedData
       class ColumnReference < CaptionedItemReference
-        # Column has a different to_text format, so override it
+        # Column uses standard format_as_text via TextFormatter
         def to_text
-          text = caption_text
-          if text.empty?
-            @item_id || ''
-          else
-            safe_i18n('column', text)
-          end
+          format_as_text
         end
 
         def label_key
           'column'
         end
 
-        def formatter_method
-          :format_column_reference
+        def reference_type
+          :column
         end
 
         def self.deserialize_from_hash(hash)

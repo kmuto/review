@@ -16,8 +16,8 @@ module ReVIEW
           'table'
         end
 
-        def formatter_method
-          :format_table_reference
+        def reference_type
+          :table
         end
 
         def self.deserialize_from_hash(hash)

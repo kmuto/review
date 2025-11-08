@@ -25,8 +25,8 @@ module ReVIEW
           'equation'
         end
 
-        def formatter_method
-          :format_equation_reference
+        def reference_type
+          :equation
         end
 
         def self.deserialize_from_hash(hash)

@@ -18,11 +18,11 @@ module ReVIEW
         end
 
         def to_text
-          @item_number.to_s
+          format_as_text
         end
 
-        def formatter_method
-          :format_footnote_reference
+        def reference_type
+          :footnote
         end
 
         def self.deserialize_from_hash(hash)
