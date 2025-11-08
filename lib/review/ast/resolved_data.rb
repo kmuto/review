@@ -123,24 +123,6 @@ module ReVIEW
         @text_formatter.format_reference(reference_type, self)
       end
 
-      # Get short-form chapter number from long form
-      # @return [String] Short chapter number ("1", "A", "II"), empty string if no chapter_number
-      # @example
-      #   "第1章" -> "1"
-      #   "付録A" -> "A"
-      #   "第II部" -> "II"
-      def short_chapter_number
-        return '' unless @chapter_number && !@chapter_number.to_s.empty?
-
-        extract_short_chapter_number(@chapter_number)
-      end
-
-      # Extract short chapter number from formatted chapter number
-      # "第1章" -> "1", "付録A" -> "A", "第II部" -> "II"
-      def extract_short_chapter_number(long_num)
-        long_num.to_s.gsub(/[^0-9A-Z]+/, '')
-      end
-
       # Factory methods for common reference types
 
       def self.image(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)

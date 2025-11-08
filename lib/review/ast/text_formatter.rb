@@ -79,8 +79,7 @@ module ReVIEW
       # @return [String] Formatted number
       def format_number(chapter_number, item_number)
         if chapter_number && !chapter_number.to_s.empty?
-          short_num = extract_short_chapter_number(chapter_number)
-          I18n.t('format_number', [short_num, item_number])
+          I18n.t('format_number', [chapter_number, item_number])
         else
           I18n.t('format_number_without_chapter', [item_number])
         end
@@ -93,8 +92,7 @@ module ReVIEW
       # @return [String] Formatted number for header
       def format_number_header(chapter_number, item_number)
         if chapter_number && !chapter_number.to_s.empty?
-          short_num = extract_short_chapter_number(chapter_number)
-          I18n.t('format_number_header', [short_num, item_number])
+          I18n.t('format_number_header', [chapter_number, item_number])
         else
           I18n.t('format_number_header_without_chapter', [item_number])
         end
@@ -359,8 +357,7 @@ module ReVIEW
         if !headline_numbers.empty?
           # Build full number with chapter number if available
           number_str = if data.chapter_number && !data.chapter_number.to_s.empty?
-                         short_num = extract_short_chapter_number(data.chapter_number)
-                         ([short_num] + headline_numbers).join('.')
+                         ([data.chapter_number] + headline_numbers).join('.')
                        else
                          headline_numbers.join('.')
                        end
@@ -420,12 +417,6 @@ module ReVIEW
         else
           separator
         end
-      end
-
-      # Extract short chapter number from formatted chapter number
-      # "第1章" -> "1", "付録A" -> "A", "第II部" -> "II"
-      def extract_short_chapter_number(long_num)
-        long_num.to_s.gsub(/[^0-9A-Z]+/, '')
       end
 
       # Check if string is numeric

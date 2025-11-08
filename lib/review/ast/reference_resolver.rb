@@ -505,10 +505,10 @@ module ReVIEW
         Array(@book.contents).find { |chap| chap.id == id }
       end
 
-      # Format chapter number in long form (for all reference types)
-      # Returns formatted chapter number like "第1章", "付録A", "第II部", etc.
+      # Get chapter number in short form (for all reference types)
+      # Returns short chapter number like "1", "A", "II", etc.
       def format_chapter_number(chapter)
-        chapter.format_number
+        chapter.number.to_s
       end
     end
   end

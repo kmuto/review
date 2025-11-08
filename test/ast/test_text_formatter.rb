@@ -80,7 +80,7 @@ class TestTextFormatter < Test::Unit::TestCase
   # Test format_number
   def test_format_number_with_chapter
     formatter = AST::TextFormatter.new(format_type: :html, config: @config)
-    result = formatter.format_number('第1章', 3)
+    result = formatter.format_number('1', 3)
     # Expected: "1.3"
     assert_match(/1\.3/, result)
   end
@@ -93,7 +93,7 @@ class TestTextFormatter < Test::Unit::TestCase
 
   def test_format_number_with_appendix
     formatter = AST::TextFormatter.new(format_type: :html, config: @config)
-    result = formatter.format_number('付録A', 2)
+    result = formatter.format_number('A', 2)
     # Expected: "A.2"
     assert_match(/A\.2/, result)
   end
@@ -101,7 +101,7 @@ class TestTextFormatter < Test::Unit::TestCase
   # Test format_number_header
   def test_format_number_header_html
     formatter = AST::TextFormatter.new(format_type: :html, config: @config)
-    result = formatter.format_number_header('第1章', 1)
+    result = formatter.format_number_header('1', 1)
     # Should include colon in HTML format
     assert_match(/1\.1/, result)
   end
@@ -165,7 +165,7 @@ class TestTextFormatter < Test::Unit::TestCase
   def test_format_reference_image_html
     formatter = AST::TextFormatter.new(format_type: :html, config: @config, chapter: @chapter)
     data = ResolvedData.image(
-      chapter_number: '第1章',
+      chapter_number: '1',
       item_number: 1,
       item_id: 'sample-image'
     )
@@ -177,7 +177,7 @@ class TestTextFormatter < Test::Unit::TestCase
   def test_format_reference_image_latex
     formatter = AST::TextFormatter.new(format_type: :latex, config: @config)
     data = ResolvedData.image(
-      chapter_number: '第1章',
+      chapter_number: '1',
       item_number: 2,
       item_id: 'test-img'
     )
@@ -190,7 +190,7 @@ class TestTextFormatter < Test::Unit::TestCase
   def test_format_reference_image_cross_chapter
     formatter = AST::TextFormatter.new(format_type: :latex, config: @config)
     data = ResolvedData.image(
-      chapter_number: '第2章',
+      chapter_number: '2',
       item_number: 3,
       item_id: 'other-img',
       chapter_id: 'chapter2'
@@ -205,7 +205,7 @@ class TestTextFormatter < Test::Unit::TestCase
   def test_format_reference_table_html
     formatter = AST::TextFormatter.new(format_type: :html, config: @config, chapter: @chapter)
     data = ResolvedData.table(
-      chapter_number: '第1章',
+      chapter_number: '1',
       item_number: 1,
       item_id: 'sample-table'
     )
@@ -216,7 +216,7 @@ class TestTextFormatter < Test::Unit::TestCase
   def test_format_reference_table_idgxml
     formatter = AST::TextFormatter.new(format_type: :idgxml, config: @config)
     data = ResolvedData.table(
-      chapter_number: '第1章',
+      chapter_number: '1',
       item_number: 2,
       item_id: 'test-table'
     )
@@ -228,7 +228,7 @@ class TestTextFormatter < Test::Unit::TestCase
   def test_format_reference_list_html
     formatter = AST::TextFormatter.new(format_type: :html, config: @config, chapter: @chapter)
     data = ResolvedData.list(
-      chapter_number: '第1章',
+      chapter_number: '1',
       item_number: 3,
       item_id: 'code-example'
     )
@@ -240,7 +240,7 @@ class TestTextFormatter < Test::Unit::TestCase
   def test_format_reference_equation_latex
     formatter = AST::TextFormatter.new(format_type: :latex, config: @config)
     data = ResolvedData.equation(
-      chapter_number: '第1章',
+      chapter_number: '1',
       item_number: 1,
       item_id: 'pythagorean'
     )
@@ -252,7 +252,7 @@ class TestTextFormatter < Test::Unit::TestCase
   def test_format_reference_equation_html
     formatter = AST::TextFormatter.new(format_type: :html, config: @config, chapter: @chapter)
     data = ResolvedData.equation(
-      chapter_number: '第1章',
+      chapter_number: '1',
       item_number: 2,
       item_id: 'einstein'
     )
@@ -334,7 +334,7 @@ class TestTextFormatter < Test::Unit::TestCase
     data = ResolvedData.headline(
       headline_number: [1, 2],
       item_id: 'sec-1-2',
-      chapter_number: '第1章',
+      chapter_number: '1',
       caption_node: caption_node
     )
     result = formatter.format_reference(:headline, data)
@@ -359,7 +359,7 @@ class TestTextFormatter < Test::Unit::TestCase
     formatter = AST::TextFormatter.new(format_type: :html, config: @config)
     caption_node = TextNode.new(content: 'Column Title', location: nil)
     data = ResolvedData.column(
-      chapter_number: '第1章',
+      chapter_number: '1',
       item_number: 1,
       item_id: 'col1',
       caption_node: caption_node
@@ -467,7 +467,7 @@ class TestTextFormatter < Test::Unit::TestCase
     formatter = AST::TextFormatter.new(format_type: :html, config: config, chapter: @chapter)
 
     data = ResolvedData.image(
-      chapter_number: '第1章',
+      chapter_number: '1',
       item_number: 1,
       item_id: 'sample-image',
       chapter_id: 'chapter1'
@@ -487,7 +487,7 @@ class TestTextFormatter < Test::Unit::TestCase
     formatter = AST::TextFormatter.new(format_type: :html, config: config, chapter: @chapter)
 
     data = ResolvedData.image(
-      chapter_number: '第1章',
+      chapter_number: '1',
       item_number: 1,
       item_id: 'sample-image'
     )
@@ -503,7 +503,7 @@ class TestTextFormatter < Test::Unit::TestCase
     formatter = AST::TextFormatter.new(format_type: :text, config: @config)
     caption_node = TextNode.new(content: 'Sample Caption', location: nil)
     data = ResolvedData.image(
-      chapter_number: '第1章',
+      chapter_number: '1',
       item_number: 1,
       item_id: 'img1',
       caption_node: caption_node
@@ -519,7 +519,7 @@ class TestTextFormatter < Test::Unit::TestCase
   def test_format_reference_unknown_type
     formatter = AST::TextFormatter.new(format_type: :html, config: @config)
     data = ResolvedData.image(
-      chapter_number: '第1章',
+      chapter_number: '1',
       item_number: 1,
       item_id: 'img1'
     )
