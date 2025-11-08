@@ -1,51 +1,64 @@
-# AST List Processing Architecture
+# Re:VIEW ASTでのリスト処理アーキテクチャ
 
-## Overview
+## 概要
 
 Re:VIEWのASTにおけるリスト処理は、複数のコンポーネントが協調して動作する洗練されたアーキテクチャを採用しています。このドキュメントでは、リスト処理に関わる主要なクラスとその相互関係について詳しく説明します。
 
 ## 主要コンポーネント
 
-### 1. AST Node Classes
+### 1. リスト用ASTノードクラス
 
 #### ListNode
 `ListNode`は、すべてのリスト型（番号なしリスト、番号付きリスト、定義リスト）を表現する汎用的なノードクラスです。
 
-**主な属性:**
+##### 主な属性
 - `list_type`: リストの種類（`:ul`, `:ol`, `:dl`）
+- `start_number`: 番号付きリストの開始番号（デフォルト: `nil`）
+- `olnum_start`: InDesignのolnum開始値（IDGXML用、デフォルト: `nil`）
 - `children`: 子ノード（`ListItemNode`）を格納（標準的なノード構造）
 
-**特徴:**
+##### 便利メソッド
+- `ol?()`: 番号付きリストかどうかを判定
+- `ul?()`: 番号なしリストかどうかを判定
+- `dl?()`: 定義リストかどうかを判定
+
+##### 特徴
 - 異なるリスト型を統一的に扱える設計
 - 標準的なAST構造（`children`）による統一的な処理
 
 #### ListItemNode
 `ListItemNode`は、個々のリスト項目を表現します。
 
-**主な属性:**
+##### 主な属性
 - `level`: ネストレベル（1から始まる）
 - `number`: 番号付きリストにおける項目番号（元の入力に由来）
+- `item_number`: 番号付きリストの絶対番号（`ListItemNumberingProcessor`によって設定される）
+- `item_type`: 定義リストでの`:dt`（用語）/`:dd`（定義）識別子（通常のリストでは`nil`）
 - `children`: 定義内容や入れ子のリストを保持する子ノード
 - `term_children`: 定義リストの用語部分を保持するための子ノード配列
-- `item_type`: 定義リストでの`:dt`/`:dd`識別子（通常のリストでは`nil`）
 
-**特徴:**
+##### 便利メソッド
+- `definition_term?()`: 定義リストの用語項目（`:dt`）かどうかを判定
+- `definition_desc?()`: 定義リストの定義項目（`:dd`）かどうかを判定
+
+##### 特徴
 - ネストされたリスト構造をサポート
 - インライン要素（強調、リンクなど）を子ノードとして保持可能
-- 定義リストでは用語（term_children）と定義（children）を明確に分離
+- 定義リストでは用語（`term_children`）と定義（`children`）を明確に分離
+- 番号付きリストでは`item_number`が後処理で自動的に設定される
 
-### 2. Parser Component
+### 2. 構文解析コンポーネント
 
 #### ListParser
 `ListParser`は、Re:VIEW記法のリストを解析し、構造化されたデータに変換します。
 
-**責務:**
+##### 責務
 - 生のテキスト行からリスト項目を抽出
 - ネストレベルの判定
 - 継続行の収集
 - 各リスト型（ul/ol/dl）に特化した解析ロジック
 
-**主なメソッド:**
+##### 主なメソッド
 ```ruby
 def parse_unordered_list(f)
   #   * item
@@ -66,51 +79,52 @@ def parse_definition_list(f)
 end
 ```
 
-**データ構造:**
+##### データ構造
 ```ruby
 ListItemData = Struct.new(
-  :type,              # :ul, :ol, :dl
-  :level,             # ネストレベル
+  :type,              # :ul_item, :ol_item, :dt, :dd
+  :level,             # ネストレベル（デフォルト: 1）
   :content,           # 項目のテキスト
-  :continuation_lines,# 継続行
-  :metadata,          # 追加情報（番号、インデントなど）
+  :continuation_lines,# 継続行（デフォルト: []）
+  :metadata,          # 追加情報（番号、インデントなど、デフォルト: {}）
   keyword_init: true
 )
 ```
 
-**補足:**
+#### ListItemDataのメソッド
+- `with_adjusted_level(new_level)`: レベルを調整した新しいインスタンスを返す（イミュータブル操作）
+
+##### 補足
 - すべてのリスト記法は先頭に空白を含む行としてパーサーに渡される想定です（`lib/review/ast/compiler.rb`でそのような行のみリストとして扱う）。
 - 番号付きリストは桁数によるネストをサポートせず、`level`は常に1として解釈されます。
 
-### 3. Assembler Component
+### 3. 組み立てコンポーネント
 
 #### NestedListAssembler
 `NestedListAssembler`は、`ListParser`が生成したデータから実際のASTノード構造を組み立てます。
 
-**責務:**
+##### 責務
 - フラットなリスト項目データをネストされたAST構造に変換
 - インライン要素の解析と組み込み
 - 親子関係の適切な設定
 
-**主な処理フロー:**
+##### 主な処理フロー
 1. `ListItemData`の配列を受け取る
 2. レベルに基づいてネスト構造を構築
 3. 各項目のコンテンツをインライン解析
 4. 完成したAST構造を返す
 
-**ファイル位置:** `lib/review/ast/list_processor/nested_list_assembler.rb`
-
-### 4. Coordinator Component
+### 4. 協調コンポーネント
 
 #### ListProcessor
 `ListProcessor`は、リスト処理全体を調整する高レベルのインターフェースです。
 
-**責務:**
+##### 責務
 - `ListParser`と`NestedListAssembler`の協調
 - コンパイラーへの統一的なインターフェース提供
 - 生成したリストノードをASTに追加
 
-**主なメソッド:**
+##### 主なメソッド
 ```ruby
 def process_unordered_list(f)
   items = @parser.parse_unordered_list(f)
@@ -121,31 +135,38 @@ def process_unordered_list(f)
 end
 ```
 
-**ファイル位置:** `lib/review/ast/list_processor.rb`
+##### 公開アクセサー
+- `parser`: `ListParser`インスタンスへの読み取り専用アクセス（テストやカスタム用途向け）
+- `nested_list_assembler`: `NestedListAssembler`インスタンスへの読み取り専用アクセス（テストやカスタム用途向け）
 
-`ListProcessor`はテストやカスタム用途向けに`parser`および`builder`アクセサを公開しています。
+##### 追加メソッド
+- `process_list(f, list_type)`: リスト型を指定した汎用処理メソッド
+- `build_list_from_items(items, list_type)`: 事前に解析された項目からリストを構築（テストや特殊用途向け）
+- `parse_list_items(f, list_type)`: ASTを構築せずにリスト項目のみを解析（テスト用）
 
-### 5. Post-Processing Components
+### 5. 後処理コンポーネント
 
 #### ListStructureNormalizer
+
 `//beginchild`と`//endchild`で構成された一時的なリスト要素を正規化し、AST上に正しい入れ子構造を作ります。
 
-**責務:**
+##### 責務
 - `//beginchild`/`//endchild`ブロックを検出してリスト項目へ再配置
 - 同じ型の連続したリストを統合
 - 定義リストの段落から用語と定義を分離
 
-**ファイル位置:** `lib/review/ast/compiler/list_structure_normalizer.rb`
-
 #### ListItemNumberingProcessor
 番号付きリストの各項目に絶対番号を割り当てます。
 
-**責務:**
+##### 責務
 - `start_number`から始まる連番の割り当て
-- 各`ListItemNode`の`item_number`フィールド更新
+- 各`ListItemNode`の`item_number`属性の更新（`attr_accessor`で定義）
 - 入れ子構造の有無にかかわらずリスト内の順序に基づく番号付け
 
-**ファイル位置:** `lib/review/ast/compiler/list_item_numbering_processor.rb`
+##### 処理の詳細
+- `ListNode.start_number`を基準に連番を生成
+- `start_number`が指定されていない場合は1から開始
+- ネストされたリストについても、親リスト内の順序に基づいて番号を付与
 
 これらの後処理は`AST::Compiler`内で常に順番に呼び出され、生成済みのリスト構造を最終形に整えます。
 
@@ -208,8 +229,8 @@ end
 ## 重要な設計上の決定
 
 ### 1. 責務の分離
-- **解析**（ListParser）と**組み立て**（NestedListAssembler）を明確に分離
-- **後処理**（ListStructureNormalizer, ListItemNumberingProcessor）を独立したコンポーネントに分離
+- 解析（ListParser）と組み立て（NestedListAssembler）を明確に分離
+- 後処理（ListStructureNormalizer, ListItemNumberingProcessor）を独立したコンポーネントに分離
 - 各コンポーネントが単一の責任を持つ
 - テスト可能性と保守性の向上
 
@@ -239,8 +260,8 @@ end
                    使用 /      |      \ 使用
                       v       v       v
                 ListParser  Nested   InlineProcessor
-                            List
-                           Assembler
+                           List
+                          Assembler
                       |       |         |
                       |       |         |
                   生成 |   使用 |     生成 |
@@ -280,7 +301,7 @@ end
 processor = ListProcessor.new(ast_compiler)
 items = processor.parser.parse_unordered_list(input)
 # カスタム処理...
-list_node = processor.builder.build_nested_structure(items, :ul)
+list_node = processor.nested_list_assembler.build_nested_structure(items, :ul)
 ```
 
 ## まとめ
