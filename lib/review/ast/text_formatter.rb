@@ -213,14 +213,8 @@ module ReVIEW
       # @param data [ResolvedData] Resolved column reference data
       # @return [String] Formatted column reference
       def format_column_reference(data)
-        caption_text = if data.caption_node
-                         # Caption with inline elements - don't escape
-                         data.caption_text
-                       else
-                         escape_text(data.caption_text)
-                       end
-
-        I18n.t('column', caption_text)
+        # caption_text is always plain text from caption_node.to_inline_text
+        I18n.t('column', data.caption_text)
       end
 
       # Format column label with I18n
@@ -260,82 +254,56 @@ module ReVIEW
 
       private
 
-      # Format image reference
-      def format_image_reference(data)
+      # Format numbered reference (image, table, list) using common logic
+      # @param label_key [String] I18n key for the label (e.g., 'image', 'table', 'list')
+      # @param data [ResolvedData] Resolved reference data
+      # @param html_css_class [String] CSS class for HTML output (e.g., 'imgref', 'tableref')
+      # @return [String] Formatted reference
+      def format_numbered_reference(label_key, data, html_css_class)
         case format_type
         when :html
           # For HTML references, use format_number (no colon) instead of format_caption
-          label = I18n.t('image')
+          label = I18n.t(label_key)
           number_text = "#{label}#{format_number(data.chapter_number, data.item_number)}"
-          format_html_reference(number_text, data, 'imgref')
+          format_html_reference(number_text, data, html_css_class)
         when :latex
           format_latex_reference(data)
-        when :idgxml
-          format_caption('image', data.chapter_number, data.item_number)
         when :text
           # For :text format, include caption if available
-          format_caption('image', data.chapter_number, data.item_number, data.caption_text)
-        else # rubocop:disable Lint/DuplicateBranch
-          format_caption('image', data.chapter_number, data.item_number)
+          format_caption(label_key, data.chapter_number, data.item_number, data.caption_text)
+        else # For :idgxml and others
+          format_caption(label_key, data.chapter_number, data.item_number)
         end
+      end
+
+      # Format image reference
+      def format_image_reference(data)
+        format_numbered_reference('image', data, 'imgref')
       end
 
       # Format table reference
       def format_table_reference(data)
-        case format_type
-        when :html
-          # For HTML references, use format_number (no colon) instead of format_caption
-          label = I18n.t('table')
-          number_text = "#{label}#{format_number(data.chapter_number, data.item_number)}"
-          format_html_reference(number_text, data, 'tableref')
-        when :latex
-          format_latex_reference(data)
-        when :idgxml
-          format_caption('table', data.chapter_number, data.item_number)
-        when :text
-          # For :text format, include caption if available
-          format_caption('table', data.chapter_number, data.item_number, data.caption_text)
-        else # rubocop:disable Lint/DuplicateBranch
-          format_caption('table', data.chapter_number, data.item_number)
-        end
+        format_numbered_reference('table', data, 'tableref')
       end
 
       # Format list reference
       def format_list_reference(data)
-        case format_type
-        when :html
-          # For HTML references, use format_number (no colon) instead of format_caption
-          label = I18n.t('list')
-          number_text = "#{label}#{format_number(data.chapter_number, data.item_number)}"
-          format_html_reference(number_text, data, 'listref')
-        when :latex
-          format_latex_reference(data)
-        when :idgxml
-          format_caption('list', data.chapter_number, data.item_number)
-        when :text
-          # For :text format, include caption if available
-          format_caption('list', data.chapter_number, data.item_number, data.caption_text)
-        else # rubocop:disable Lint/DuplicateBranch
-          format_caption('list', data.chapter_number, data.item_number)
-        end
+        format_numbered_reference('list', data, 'listref')
       end
 
       # Format equation reference
       def format_equation_reference(data)
         case format_type
         when :html
-          # For HTML references, use format_number (no colon) instead of format_caption
           label = I18n.t('equation')
           number_text = "#{label}#{format_number(data.chapter_number, data.item_number)}"
           format_html_reference(number_text, data, 'eqref')
         when :latex
+          # Equation uses direct \ref instead of format_latex_reference
           "\\ref{#{data.item_id}}"
-        when :idgxml
-          format_caption('equation', data.chapter_number, data.item_number)
         when :text
-          # For :text format, include caption if available
           format_caption('equation', data.chapter_number, data.item_number, data.caption_text)
-        else # rubocop:disable Lint/DuplicateBranch
+        else # For :idgxml and others
           format_caption('equation', data.chapter_number, data.item_number)
         end
       end
@@ -343,14 +311,13 @@ module ReVIEW
       # Format footnote reference
       def format_footnote_reference(data)
         case format_type
-        when :html, :idgxml
-          data.item_number.to_s
         when :latex
           "\\footnotemark[#{data.item_number}]"
         when :top
           number = data.item_number || data.item_id
           "【注#{number}】"
-        else # rubocop:disable Lint/DuplicateBranch
+        else
+          # For :html, :idgxml, :text and others
           data.item_number.to_s
         end
       end
@@ -362,6 +329,7 @@ module ReVIEW
           number = data.item_number || data.item_id
           "【後注#{number}】"
         else
+          # For :html, :idgxml, :text, :latex and others
           data.item_number.to_s
         end
       end
@@ -411,9 +379,8 @@ module ReVIEW
           %Q(<span class="bibref">[#{data.item_number}]</span>)
         when :latex
           "\\reviewbibref{[#{data.item_number}]}{bib:#{data.item_id}}"
-        when :idgxml
-          "[#{data.item_number}]"
-        else # rubocop:disable Lint/DuplicateBranch
+        else
+          # For :idgxml, :text and others
           "[#{data.item_number}]"
         end
       end
@@ -478,10 +445,7 @@ module ReVIEW
           escape_html(text.to_s)
         when :latex
           escape(text.to_s)
-        when :text, :top
-          # Format-independent plain text, TOP format - no escaping
-          text.to_s
-        else # rubocop:disable Lint/DuplicateBranch
+        else # For :text, :top and others
           text.to_s
         end
       end
