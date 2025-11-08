@@ -78,7 +78,7 @@ flowchart TB
     B --> C[AST構築]
     C --> D[参照解決]
     D --> E[後処理]
-    E --> F[AST完成]
+    E --> F[AST生成完了]
 
     F --> G[HTMLRenderer]
     F --> H[LaTeXRenderer]
@@ -380,8 +380,8 @@ AST/Rendererは以下の出力フォーマットに対応しています：
 | IDGXML | `IdgxmlRenderer` | InDesign組版 |
 | Markdown | `MarkdownRenderer` | Markdown形式への変換 |
 | Plaintext | `PlaintextRenderer` | プレーンテキスト |
-| TOP | `TopRenderer` | 原稿用紙形式 |
-| JSON | `JSONSerializer` | AST構造の出力 |
+| TOP | `TopRenderer` | 独自編集記法つきテキスト |
+| JSON | `JSONSerializer` | AST構造のJSON出力 |
 
 ### 拡張機能
 
@@ -480,11 +480,11 @@ A: 現時点では両方とも使用可能です。
 - AST/Renderer方式: 新機能（JSON出力、双方向変換等）が必要な場合、カスタムツールを開発する場合
 - 従来のBuilder方式: 既存のプロジェクトやワークフローを維持する場合
 
-将来的にはAST/Renderer方式が標準となる予定です。
+将来的にはAST/Renderer方式を標準とすることを目指しています。
 
 ### Q2: 既存のプロジェクトをAST方式に移行する必要はありますか？
 
-A: 必須ではありません。従来の方式も引き続きサポートされます。ただし、新しい機能や拡張を利用したい場合は、AST方式の使用を推奨します。
+A: 必須ではありません。従来の方式もしばらくは引き続きサポートされます。ただし、新しい機能や拡張を利用したい場合は、AST方式の使用を推奨します。
 
 ### Q3: カスタムRendererを作成するには？
 

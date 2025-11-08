@@ -58,6 +58,7 @@ module ReVIEW
           node
         end
 
+        # Override `Visitor#visit` to avoid NotImplementedError
         def visit(node)
           case node
           when HeadlineNode

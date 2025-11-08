@@ -7,7 +7,7 @@
 1. 各章（`ReVIEW::Book::Chapter`）の本文を `AST::Compiler` が読み取り、`DocumentNode` をルートに持つ AST を構築します（`lib/review/ast/compiler.rb`）。
 2. AST 生成後に参照解決 (`ReferenceResolver`) と各種後処理（`TsizeProcessor` / `FirstLineNumProcessor` / `NoindentProcessor` / `OlnumProcessor` / `ListStructureNormalizer` / `ListItemNumberingProcessor` / `AutoIdProcessor`）を適用し、構造とメタ情報を整備します。
 3. Renderer は 構築された AST を Visitor パターンで走査し、HTML・LaTeX・IDGXML などのフォーマット固有の出力へ変換します（`lib/review/renderer`）。
-4. 既存の EPUBMaker / PDFMaker / IDGXMLMaker などを継承する AST::EpubMaker / AST::PdfMaker / AST::IdgxmlMaker が Compiler と Renderer からなる AST 版パイプラインを作ります。
+4. 既存の `EPUBMaker` / `PDFMaker` / `IDGXMLMaker` などを継承する `AST::EpubMaker` / `AST::PdfMaker` / `AST::IdgxmlMaker` が Compiler と Renderer からなる AST 版パイプラインを作ります。
 
 ## `AST::Compiler` の詳細
 
