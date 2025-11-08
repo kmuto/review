@@ -8,7 +8,7 @@
 
 require 'review/ast/visitor'
 require 'review/exception'
-require 'review/renderer/text_formatter'
+require 'review/ast/text_formatter'
 
 module ReVIEW
   module Renderer
@@ -77,9 +77,9 @@ module ReVIEW
       # Get TextFormatter instance for this renderer.
       # TextFormatter centralizes all I18n and text formatting logic.
       #
-      # @return [ReVIEW::Renderer::TextFormatter] Text formatter instance
+      # @return [ReVIEW::AST::TextFormatter] Text formatter instance
       def text_formatter
-        @text_formatter ||= ReVIEW::Renderer::TextFormatter.new(
+        @text_formatter ||= ReVIEW::AST::TextFormatter.new(
           format_type: format_type,
           config: @config,
           chapter: @chapter

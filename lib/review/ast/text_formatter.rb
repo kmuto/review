@@ -11,7 +11,7 @@ require 'review/htmlutils'
 require 'review/latexutils'
 
 module ReVIEW
-  module Renderer
+  module AST
     # TextFormatter - Centralized text formatting and I18n service
     #
     # This class consolidates all text formatting and internationalization logic

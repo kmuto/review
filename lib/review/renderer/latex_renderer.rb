@@ -14,7 +14,7 @@ require 'review/i18n'
 require 'review/textutils'
 require_relative 'base'
 require_relative 'rendering_context'
-require_relative 'text_formatter'
+require 'review/ast/text_formatter'
 require_relative 'latex/inline_context'
 require_relative 'latex/inline_element_handler'
 

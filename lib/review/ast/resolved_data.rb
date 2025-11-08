@@ -6,7 +6,7 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require_relative '../renderer/text_formatter'
+require_relative 'text_formatter'
 
 module ReVIEW
   module AST
@@ -26,8 +26,6 @@ module ReVIEW
         caption_node&.to_inline_text || ''
       end
 
-      # Check if this is a cross-chapter reference
-      # @return [Boolean] true if referencing an item in another chapter
       def cross_chapter?
         # If chapter_id is set and different from current context, it's cross-chapter
         !@chapter_id.nil?
@@ -40,9 +38,6 @@ module ReVIEW
         !@item_number.nil?
       end
 
-      # Check equality with another ResolvedData
-      # @param other [Object] Object to compare with
-      # @return [Boolean] true if equal
       def ==(other)
         other.instance_of?(self.class) &&
           @chapter_number == other.chapter_number &&
@@ -57,8 +52,6 @@ module ReVIEW
 
       alias_method :eql?, :==
 
-      # Create a string representation for debugging
-      # @return [String] Debug string representation
       def to_s
         parts = ['#<ResolvedData']
         parts << "chapter=#{@chapter_number}" if @chapter_number
@@ -94,7 +87,6 @@ module ReVIEW
         hash
       end
 
-      # Deserialize from hash
       # @param hash [Hash] Hash to deserialize from
       # @return [ResolvedData] Deserialized ResolvedData instance
       def self.deserialize_from_hash(hash)
@@ -127,7 +119,7 @@ module ReVIEW
       # Uses lazy initialization to avoid circular dependency issues
       # @return [String] Plain text representation of the reference
       def format_as_text
-        @text_formatter ||= ReVIEW::Renderer::TextFormatter.new(format_type: :text, config: {})
+        @text_formatter ||= ReVIEW::AST::TextFormatter.new(format_type: :text, config: {})
         @text_formatter.format_reference(reference_type, self)
       end
 
@@ -151,7 +143,6 @@ module ReVIEW
 
       # Factory methods for common reference types
 
-      # Create ResolvedData for an image reference
       def self.image(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
         ImageReference.new(
           chapter_number: chapter_number,
@@ -162,7 +153,6 @@ module ReVIEW
         )
       end
 
-      # Create ResolvedData for a table reference
       def self.table(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
         TableReference.new(
           chapter_number: chapter_number,
@@ -173,7 +163,6 @@ module ReVIEW
         )
       end
 
-      # Create ResolvedData for a list reference
       def self.list(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
         ListReference.new(
           chapter_number: chapter_number,
@@ -184,7 +173,6 @@ module ReVIEW
         )
       end
 
-      # Create ResolvedData for an equation reference
       def self.equation(chapter_number:, item_number:, item_id:, caption_node: nil)
         EquationReference.new(
           chapter_number: chapter_number,
@@ -194,7 +182,6 @@ module ReVIEW
         )
       end
 
-      # Create ResolvedData for a footnote reference
       def self.footnote(item_number:, item_id:, caption_node: nil)
         FootnoteReference.new(
           item_number: item_number,
@@ -203,7 +190,6 @@ module ReVIEW
         )
       end
 
-      # Create ResolvedData for an endnote reference
       def self.endnote(item_number:, item_id:, caption_node: nil)
         EndnoteReference.new(
           item_number: item_number,
@@ -212,7 +198,6 @@ module ReVIEW
         )
       end
 
-      # Create ResolvedData for a chapter reference
       def self.chapter(chapter_number:, chapter_id:, chapter_title: nil, caption_node: nil)
         ChapterReference.new(
           chapter_number: chapter_number,
@@ -223,7 +208,6 @@ module ReVIEW
         )
       end
 
-      # Create ResolvedData for a headline/section reference
       def self.headline(headline_number:, item_id:, chapter_id: nil, chapter_number: nil, caption_node: nil)
         HeadlineReference.new(
           item_id: item_id,
@@ -234,7 +218,6 @@ module ReVIEW
         )
       end
 
-      # Create ResolvedData for a word reference
       def self.word(word_content:, item_id:, caption_node: nil)
         WordReference.new(
           item_id: item_id,
@@ -243,7 +226,6 @@ module ReVIEW
         )
       end
 
-      # Create ResolvedData for a column reference
       def self.column(chapter_number:, item_number:, item_id:, chapter_id: nil, caption_node: nil)
         ColumnReference.new(
           chapter_number: chapter_number,
@@ -254,7 +236,6 @@ module ReVIEW
         )
       end
 
-      # Create ResolvedData for a bibpaper reference
       def self.bibpaper(item_number:, item_id:, caption_node: nil)
         BibpaperReference.new(
           item_number: item_number,
