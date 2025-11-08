@@ -194,6 +194,44 @@ module ReVIEW
       def result_metric(array)
         array.join(',')
       end
+
+      # Extract text content from a node, handling various node types.
+      # This is useful for extracting plain text from caption nodes or
+      # inline content.
+      #
+      # @param node [Object] The node to extract text from
+      # @return [String] The extracted text content
+      def extract_text(node)
+        case node
+        when String
+          node
+        when nil
+          ''
+        else
+          if node.children&.any?
+            node.children.map { |child| extract_text(child) }.join
+          elsif node.leaf_node?
+            node.content.to_s
+          else
+            node.to_s
+          end
+        end
+      end
+
+      # Process inline content within a node.
+      # This method visits all children of a node and returns the processed content.
+      #
+      # @param node [Object] The node containing inline content
+      # @return [String] The processed inline content
+      def process_inline_content(node)
+        return '' unless node
+
+        if node.children
+          node.children.map { |child| visit(child) }.join
+        else
+          extract_text(node)
+        end
+      end
     end
   end
 end
