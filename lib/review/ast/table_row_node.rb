@@ -27,10 +27,6 @@ module ReVIEW
 
       attr_reader :children, :row_type
 
-      def accept(visitor)
-        visitor.visit_table_row(self)
-      end
-
       def self.deserialize_from_hash(hash)
         row_type = hash['row_type']&.to_sym || :body
         node = new(

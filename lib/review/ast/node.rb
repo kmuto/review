@@ -46,10 +46,6 @@ module ReVIEW
         false
       end
 
-      def accept(visitor)
-        visitor.visit(self)
-      end
-
       def add_child(child)
         child.parent = self
         @children << child

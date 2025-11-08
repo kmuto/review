@@ -26,10 +26,6 @@ module ReVIEW
         @cell_type = cell_type # :th or :td
       end
 
-      def accept(visitor)
-        visitor.visit_table_cell(self)
-      end
-
       def self.deserialize_from_hash(hash)
         node = new(location: ReVIEW::AST::JSONSerializer.restore_location(hash))
         if hash['children']

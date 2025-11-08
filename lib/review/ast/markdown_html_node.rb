@@ -94,10 +94,6 @@ module ReVIEW
           content.split(':', 2).last.strip
         end
       end
-
-      def accept(visitor)
-        visitor.visit_markdown_html(self)
-      end
     end
   end
 end

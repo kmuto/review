@@ -24,11 +24,6 @@ module ReVIEW
 
       attr_reader :line_number, :original_text, :children
 
-      def accept(visitor)
-        visitor.visit_code_line(self)
-      end
-
-      # Override to_h to include original_text
       def to_h
         result = super
         result[:line_number] = line_number
@@ -36,7 +31,6 @@ module ReVIEW
         result
       end
 
-      # Override serialize_to_hash to include original_text
       def serialize_to_hash(options = nil)
         hash = super
         hash[:line_number] = line_number if line_number
