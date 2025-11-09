@@ -21,7 +21,7 @@ require 'review/template'
 require 'review/img_math'
 require 'digest'
 require_relative 'rendering_context'
-require 'review/ast/text_formatter'
+require 'review/renderer/text_formatter'
 require_relative 'html/inline_context'
 require_relative 'html/inline_element_handler'
 

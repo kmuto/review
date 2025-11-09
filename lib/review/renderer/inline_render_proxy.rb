@@ -35,7 +35,7 @@ module ReVIEW
       end
 
       # Get TextFormatter instance from the renderer
-      # @return [ReVIEW::AST::TextFormatter] Text formatter instance
+      # @return [ReVIEW::Renderer::TextFormatter] Text formatter instance
       def text_formatter
         @renderer.text_formatter
       end

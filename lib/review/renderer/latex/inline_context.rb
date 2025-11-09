@@ -15,7 +15,6 @@ module ReVIEW
       # Context for inline element rendering with business logic
       # Used by InlineElementHandler
       class InlineContext
-
         include ReVIEW::LaTeXUtils
 
         attr_reader :config, :book, :chapter, :index_db, :index_mecab

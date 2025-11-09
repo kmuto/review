@@ -9,7 +9,7 @@
 require 'review/i18n'
 
 module ReVIEW
-  module AST
+  module Renderer
     # TextFormatter - Centralized text formatting and I18n service
     #
     # This class consolidates all text formatting and internationalization logic
