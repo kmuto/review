@@ -375,7 +375,7 @@ module ReVIEW
       end
 
       def visit_block_blankline(_node)
-        ''
+        '<p><br /></p>'
       end
 
       def visit_block_pagebreak(_node)

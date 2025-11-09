@@ -682,7 +682,7 @@ module ReVIEW
 
       # Visit blankline block (control command)
       def visit_block_blankline(_node)
-        ''
+        "\\par\\vspace{\\baselineskip}\\par\n\n"
       end
 
       # Visit noindent block (control command)
