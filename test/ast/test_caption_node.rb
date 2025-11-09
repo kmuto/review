@@ -157,7 +157,7 @@ class TestCaptionNode < Test::Unit::TestCase
     assert_equal true, caption.empty?
   end
 
-  def test_to_text_simple
+  def test_to_inline_text_simple
     caption = ReVIEW::AST::CaptionNode.new(location: @location)
     text_node = ReVIEW::AST::TextNode.new(location: @location, content: 'Simple caption')
     caption.add_child(text_node)
@@ -165,7 +165,7 @@ class TestCaptionNode < Test::Unit::TestCase
     assert_equal 'Simple caption', caption.to_inline_text
   end
 
-  def test_to_text_with_inline
+  def test_to_inline_text_with_inline
     caption = ReVIEW::AST::CaptionNode.new(location: @location)
     caption.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Caption with '))
 
@@ -179,7 +179,7 @@ class TestCaptionNode < Test::Unit::TestCase
     assert_equal 'Caption with bold text content', caption.to_inline_text
   end
 
-  def test_to_text_with_nested_inline
+  def test_to_inline_text_with_nested_inline
     caption = ReVIEW::AST::CaptionNode.new(location: @location)
     caption.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Text '))
 
@@ -200,7 +200,7 @@ class TestCaptionNode < Test::Unit::TestCase
     assert_equal 'Text italic bold more', caption.to_inline_text
   end
 
-  def test_to_text_empty
+  def test_to_inline_text_empty
     caption = ReVIEW::AST::CaptionNode.new(location: @location)
     assert_equal '', caption.to_inline_text
   end

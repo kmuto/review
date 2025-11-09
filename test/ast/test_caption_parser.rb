@@ -72,7 +72,7 @@ class TestCaptionParser < Test::Unit::TestCase
     assert_instance_of(ReVIEW::AST::CaptionNode, result)
     assert_operator(result.children.size, :>=, 1)
     assert_equal true, result.contains_inline?
-    # Real inline processor parses the markup, so to_text extracts text content
+    # Real inline processor parses the markup, so to_inline_text extracts text content
     assert_match(/Caption with.*bold/, result.to_inline_text)
   end
 

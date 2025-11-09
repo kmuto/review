@@ -73,8 +73,8 @@ module ReVIEW
           numbers: numbers,
           footnotes: @footnotes.map do |entry|
             # Get text preview from footnote node children
-            preview_text = if entry.node.respond_to?(:to_text)
-                             entry.node.to_text
+            preview_text = if entry.node.respond_to?(:to_inline_text)
+                             entry.node.to_inline_text
                            else
                              ''
                            end

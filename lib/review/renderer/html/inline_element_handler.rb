@@ -129,7 +129,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          chapter_num = data.to_number_text
+          chapter_num = @ctx.text_formatter.format_chapter_number_full(data.chapter_number, data.chapter_type)
           build_chapter_link(data.item_id, chapter_num)
         end
 
@@ -140,7 +140,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          display_str = data.to_text
+          display_str = @ctx.text_formatter.format_reference(:chapter, data)
           build_chapter_link(data.item_id, display_str)
         end
 
@@ -151,7 +151,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          title = data.to_title_text
+          title = data.chapter_title || ''
           build_chapter_link(data.item_id, title)
         end
 

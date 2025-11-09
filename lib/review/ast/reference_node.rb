@@ -23,9 +23,10 @@ module ReVIEW
       # @param resolved_data [ResolvedData, nil] structured resolved data
       # @param location [SnapshotLocation, nil] location in source code
       def initialize(ref_id, context_id = nil, location:, resolved_data: nil)
-        # Display resolved_data if resolved, otherwise display original reference ID
+        # Display resolved_data's item_id if resolved, otherwise display original reference ID
+        # This content is used for debugging/display purposes in the AST
         content = if resolved_data
-                    resolved_data.to_text
+                    resolved_data.item_id || ref_id
                   else
                     context_id ? "#{context_id}|#{ref_id}" : ref_id
                   end

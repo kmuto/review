@@ -411,7 +411,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          display_str = data.to_text
+          display_str = @ctx.text_formatter.format_reference(:chapter, data)
           "\\reviewchapref{#{escape(display_str)}}{chap:#{data.item_id}}"
         end
 
@@ -806,7 +806,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          title = data.to_title_text
+          title = data.chapter_title || ''
           if @ctx.chapter_link_enabled?
             "\\reviewchapref{#{escape(title)}}{chap:#{data.item_id}}"
           else

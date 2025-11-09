@@ -30,7 +30,6 @@ module ReVIEW
 
         # Get caption_node for compatibility with other index items
         # For footnotes/endnotes, returns the footnote_node which contains the content nodes
-        # This allows uniform access to content via caption_node.to_text
         def caption_node
           footnote_node
         end

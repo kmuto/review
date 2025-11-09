@@ -21,30 +21,6 @@ module ReVIEW
           @chapter_type = chapter_type
         end
 
-        # Return chapter number only (for @<chap>)
-        # Example: "第1章", "付録A", "第II部"
-        # Format using TextFormatter for proper I18n handling
-        # Returns empty string if chapter has no number (e.g., bib)
-        def to_number_text
-          return '' unless @chapter_number
-
-          @text_formatter ||= ReVIEW::AST::TextFormatter.new(config: {})
-          @text_formatter.format_chapter_number_full(@chapter_number, @chapter_type)
-        end
-
-        # Return chapter title only (for @<title>)
-        # Example: "章見出し", "付録の見出し"
-        def to_title_text
-          @chapter_title || @item_id || ''
-        end
-
-        # Return full chapter reference (for @<chapref>)
-        # Example: "第1章「章見出し」"
-        # Uses TextFormatter for consistent I18n handling
-        def to_text
-          format_as_text
-        end
-
         def reference_type
           :chapter
         end

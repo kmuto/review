@@ -17,10 +17,6 @@ module ReVIEW
           @caption_node = caption_node
         end
 
-        def to_text
-          format_as_text
-        end
-
         def reference_type
           :bibpaper
         end

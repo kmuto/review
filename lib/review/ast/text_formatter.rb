@@ -260,7 +260,6 @@ module ReVIEW
       end
 
       # Format column reference from ResolvedData
-      # Used by ResolvedData#to_text for :text format
       # @param data [ResolvedData] Resolved column reference data
       # @return [String] Formatted column reference
       def format_column_reference(data)
@@ -314,7 +313,6 @@ module ReVIEW
         # Use short form of chapter number for figure/table/list references
         chapter_number_short = format_chapter_number_short(data.chapter_number, data.chapter_type)
 
-        # Format without caption - caption is handled separately by renderers or in to_text
         format_caption_plain(label_key, chapter_number_short, data.item_number, nil)
       end
 

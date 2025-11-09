@@ -42,7 +42,7 @@ module ReVIEW
         end
 
         def caption_text
-          caption_node&.to_text || ''
+          caption_node&.to_inline_text || ''
         end
       end
     end

@@ -6,8 +6,6 @@
 # You can distribute or modify this program under the terms of
 # the GNU LGPL, Lesser General Public License version 2.1.
 
-require_relative 'text_formatter'
-
 module ReVIEW
   module AST
     # ResolvedData - Immutable data structure holding resolved reference information
@@ -121,25 +119,10 @@ module ReVIEW
         raise StandardError, "Unknown ResolvedData type: #{type}"
       end
 
-      # Convert resolved data to human-readable text representation
-      # This method should be implemented by each subclass
-      # @return [String] Text representation
-      def to_text
-        @item_id || ''
-      end
-
       # Get the reference type for this resolved data
       # @return [Symbol] Reference type (e.g., :image, :table, :list)
       def reference_type
         raise NotImplementedError, "#{self.class}#reference_type must be implemented"
-      end
-
-      # Format this reference as plain text using TextFormatter
-      # Uses lazy initialization to avoid circular dependency issues
-      # @return [String] Plain text representation of the reference
-      def format_as_text
-        @text_formatter ||= ReVIEW::AST::TextFormatter.new(config: {})
-        @text_formatter.format_reference(reference_type, self)
       end
 
       # Factory methods for common reference types

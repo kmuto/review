@@ -391,7 +391,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          display_str = data.to_text
+          display_str = @ctx.text_formatter.format_reference(:chapter, data)
           if @ctx.chapter_link_enabled?
             %Q(<link href="#{data.item_id}">#{display_str}</link>)
           else
@@ -406,7 +406,7 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          title = data.to_title_text
+          title = data.chapter_title || ''
           if @ctx.chapter_link_enabled?
             %Q(<link href="#{data.item_id}">#{title}</link>)
           else

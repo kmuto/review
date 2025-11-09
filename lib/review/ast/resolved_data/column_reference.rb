@@ -12,11 +12,6 @@ module ReVIEW
   module AST
     class ResolvedData
       class ColumnReference < CaptionedItemReference
-        # Column uses standard format_as_text via TextFormatter
-        def to_text
-          format_as_text
-        end
-
         def label_key
           'column'
         end
