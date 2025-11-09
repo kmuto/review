@@ -47,7 +47,13 @@ module ReVIEW
         @book = chapter&.book
         @config = @book&.config || {}
         super()
+        @text_formatter = ReVIEW::Renderer::TextFormatter.new(
+          config: @config,
+          chapter: @chapter
+        )
       end
+
+      attr_reader :text_formatter
 
       # Render an AST node to the target format.
       #
@@ -72,17 +78,6 @@ module ReVIEW
       # @return [String] The joined rendered output of all children
       def render_children(node)
         node.children.map { |child| visit(child) }.join
-      end
-
-      # Get TextFormatter instance for this renderer.
-      # TextFormatter centralizes all I18n and text formatting logic.
-      #
-      # @return [ReVIEW::Renderer::TextFormatter] Text formatter instance
-      def text_formatter
-        @text_formatter ||= ReVIEW::Renderer::TextFormatter.new(
-          config: @config,
-          chapter: @chapter
-        )
       end
 
       # Get the format type for this renderer.
