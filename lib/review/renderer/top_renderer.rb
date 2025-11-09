@@ -562,9 +562,25 @@ module ReVIEW
       end
 
       # Format resolved reference based on ResolvedData
-      # Uses TextFormatter for centralized text formatting
+      # Gets plain text from TextFormatter and wraps it with TOP-specific markup
       def format_resolved_reference(data)
-        text_formatter.format_reference(data.reference_type, data)
+        # Get plain text from TextFormatter (no TOP markup)
+        plain_text = text_formatter.format_reference(data.reference_type, data)
+
+        # Wrap with TOP-specific markup based on reference type
+        case data.reference_type
+        when :footnote
+          # For footnote, use 【注】 markup
+          number = data.item_number || data.item_id
+          "【注#{number}】"
+        when :endnote
+          # For endnote, use 【後注】 markup
+          number = data.item_number || data.item_id
+          "【後注#{number}】"
+        else
+          # For other types, return plain text as-is
+          plain_text
+        end
       end
 
       def get_footnote_number(footnote_id)

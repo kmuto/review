@@ -247,7 +247,7 @@ module ReVIEW
 
         result += "\n"
         if node.id && @chapter
-          result += "#{text_formatter.format_caption('image', get_chap, @chapter.image(node.id).number, caption)}\n"
+          result += "#{text_formatter.format_caption_plain('image', get_chap, @chapter.image(node.id).number, caption)}\n"
         else
           result += "図　#{caption}\n" unless caption.empty?
         end
@@ -372,14 +372,14 @@ module ReVIEW
 
         if node.id? && @chapter
           caption = render_caption_inline(node.caption_node)
-          result += "#{text_formatter.format_caption('equation', get_chap, @chapter.equation(node.id).number, caption)}\n" if caption_top?('equation')
+          result += "#{text_formatter.format_caption_plain('equation', get_chap, @chapter.equation(node.id).number, caption)}\n" if caption_top?('equation')
         end
 
         result += "#{content}\n"
 
         if node.id? && @chapter
           caption = render_caption_inline(node.caption_node)
-          result += "#{text_formatter.format_caption('equation', get_chap, @chapter.equation(node.id).number, caption)}\n" unless caption_top?('equation')
+          result += "#{text_formatter.format_caption_plain('equation', get_chap, @chapter.equation(node.id).number, caption)}\n" unless caption_top?('equation')
         end
 
         result += "\n"
@@ -624,7 +624,7 @@ module ReVIEW
         return caption unless id && @chapter
 
         list_item = @chapter.list(id)
-        text_formatter.format_caption('list', get_chap, list_item.number, caption)
+        text_formatter.format_caption_plain('list', get_chap, list_item.number, caption)
       rescue ReVIEW::KeyError
         caption
       end
@@ -633,7 +633,7 @@ module ReVIEW
         return caption unless id && @chapter
 
         table_item = @chapter.table(id)
-        text_formatter.format_caption('table', get_chap, table_item.number, caption)
+        text_formatter.format_caption_plain('table', get_chap, table_item.number, caption)
       rescue ReVIEW::KeyError
         caption
       end

@@ -54,9 +54,10 @@ class TestReferenceNode < Test::Unit::TestCase
     assert_false(node.resolved?)
     assert_equal 'figure1', node.content
 
-    # Resolved node should have new content
+    # Resolved node should have new content (now returns item_id for debugging)
+    # Actual formatting is done by TextFormatter and Renderer
     assert_true(resolved_node.resolved?)
-    assert_equal '図1.1　サンプル図', resolved_node.content
+    assert_equal 'figure1', resolved_node.content
     assert_equal 'figure1', resolved_node.ref_id
   end
 
@@ -75,7 +76,7 @@ class TestReferenceNode < Test::Unit::TestCase
         chapter_type: :chapter
       )
     )
-    assert_include(resolved_node.to_s, 'resolved: 図1.1')
+    assert_include(resolved_node.to_s, 'resolved: figure1')
   end
 
   def test_reference_node_with_context_to_s
@@ -103,7 +104,7 @@ class TestReferenceNode < Test::Unit::TestCase
     # Resolved node should be different instance
     refute_same(node, resolved_node)
     assert_true(resolved_node.resolved?)
-    assert_equal '図1.1', resolved_node.content
+    assert_equal 'figure1', resolved_node.content
 
     # Both should have same ref_id
     assert_equal node.ref_id, resolved_node.ref_id

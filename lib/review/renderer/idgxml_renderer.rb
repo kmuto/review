@@ -276,7 +276,9 @@ module ReVIEW
       # Format resolved reference based on ResolvedData
       # Uses TextFormatter for centralized text formatting
       def format_resolved_reference(data)
-        text_formatter.format_reference(data.reference_type, data)
+        plain_text = text_formatter.format_reference(data.reference_type, data)
+        # IDGXML is XML-based, so escape all text content
+        escape_html(plain_text)
       end
 
       def visit_list(node)
@@ -761,7 +763,7 @@ module ReVIEW
           rendered_caption = caption_node ? render_children(caption_node) : ''
 
           # Generate caption
-          caption_str = %Q(<caption>#{text_formatter.format_caption('equation', get_chap, @chapter.equation(node.id).number, rendered_caption)}</caption>)
+          caption_str = %Q(<caption>#{text_formatter.format_caption_plain('equation', get_chap, @chapter.equation(node.id).number, rendered_caption)}</caption>)
 
           result << caption_str if caption_top?('equation')
         end
@@ -1245,7 +1247,7 @@ module ReVIEW
       def generate_list_header(id, caption)
         return '' unless caption && !caption.empty?
 
-        %Q(<caption>#{text_formatter.format_caption('list', get_chap, @chapter.list(id).number, caption)}</caption>)
+        %Q(<caption>#{text_formatter.format_caption_plain('list', get_chap, @chapter.list(id).number, caption)}</caption>)
       end
 
       # Generate code lines body like IDGXMLBuilder
@@ -1441,7 +1443,7 @@ module ReVIEW
         if id.nil?
           %Q(<caption>#{caption}</caption>)
         else
-          %Q(<caption>#{text_formatter.format_caption('table', get_chap, @chapter.table(id).number, caption)}</caption>)
+          %Q(<caption>#{text_formatter.format_caption_plain('table', get_chap, @chapter.table(id).number, caption)}</caption>)
         end
       end
 
@@ -1633,7 +1635,7 @@ module ReVIEW
       def generate_image_header(id, caption)
         return '' unless caption && !caption.empty?
 
-        %Q(<caption>#{text_formatter.format_caption('image', get_chap, @chapter.image(id).number, caption)}</caption>)
+        %Q(<caption>#{text_formatter.format_caption_plain('image', get_chap, @chapter.image(id).number, caption)}</caption>)
       end
 
       # Visit rawblock

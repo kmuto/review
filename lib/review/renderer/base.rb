@@ -80,7 +80,6 @@ module ReVIEW
       # @return [ReVIEW::AST::TextFormatter] Text formatter instance
       def text_formatter
         @text_formatter ||= ReVIEW::AST::TextFormatter.new(
-          format_type: format_type,
           config: @config,
           chapter: @chapter
         )

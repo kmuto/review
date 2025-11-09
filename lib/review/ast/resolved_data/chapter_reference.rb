@@ -28,7 +28,7 @@ module ReVIEW
         def to_number_text
           return '' unless @chapter_number
 
-          @text_formatter ||= ReVIEW::AST::TextFormatter.new(format_type: :text, config: {})
+          @text_formatter ||= ReVIEW::AST::TextFormatter.new(config: {})
           @text_formatter.format_chapter_number_full(@chapter_number, @chapter_type)
         end
 

@@ -12,6 +12,9 @@ module ReVIEW
       # Base class for references with chapter number, item number, and caption
       # This class consolidates the common pattern used by ImageReference, TableReference,
       # ListReference, EquationReference, and ColumnReference
+      #
+      # Note: This class does not perform any formatting. All formatting is handled by
+      # TextFormatter and Renderer classes to maintain proper separation of concerns.
       class CaptionedItemReference < ResolvedData
         def initialize(chapter_number:, item_number:, item_id:, chapter_id: nil, chapter_type: nil, caption_node: nil)
           super()
@@ -21,12 +24,6 @@ module ReVIEW
           @item_id = item_id
           @chapter_type = chapter_type
           @caption_node = caption_node
-        end
-
-        # Format this reference as plain text
-        # Uses TextFormatter for consistent I18n handling
-        def to_text
-          format_as_text
         end
 
         # Template method - subclasses must implement this

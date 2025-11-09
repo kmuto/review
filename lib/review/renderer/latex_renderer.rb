@@ -1347,9 +1347,33 @@ module ReVIEW
       end
 
       # Format resolved reference based on ResolvedData
-      # Uses TextFormatter for centralized text formatting
+      # Gets plain text from TextFormatter and wraps it with LaTeX markup
       def format_resolved_reference(data)
-        text_formatter.format_reference(data.reference_type, data)
+        # Get plain text from TextFormatter (no LaTeX markup)
+        plain_text = text_formatter.format_reference(data.reference_type, data)
+
+        # Wrap with LaTeX-specific markup based on reference type
+        case data.reference_type
+        when :image, :table, :list
+          # For image/table/list, use \ref command
+          if data.cross_chapter?
+            "\\ref{#{data.chapter_id}:#{data.item_id}}"
+          else
+            "\\ref{#{data.item_id}}"
+          end
+        when :equation
+          # For equation, use \ref command
+          "\\ref{#{data.item_id}}"
+        when :footnote
+          # For footnote, use \footnotemark command
+          "\\footnotemark[#{data.item_number}]"
+        when :bibpaper
+          # For bibliography, use \reviewbibref command
+          "\\reviewbibref{[#{data.item_number}]}{bib:#{data.item_id}}"
+        else
+          # For other types (chapter, headline, column, word, endnote), return escaped plain text
+          escape(plain_text)
+        end
       end
 
       # Render document children with proper separation

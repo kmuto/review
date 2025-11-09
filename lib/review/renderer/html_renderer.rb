@@ -770,9 +770,51 @@ module ReVIEW
       end
 
       # Format resolved reference based on ResolvedData
-      # Uses TextFormatter for centralized text formatting
+      # Gets plain text from TextFormatter and wraps it with HTML markup
       def format_resolved_reference(data)
-        text_formatter.format_reference(data.reference_type, data)
+        # Get plain text from TextFormatter (no HTML markup)
+        plain_text = text_formatter.format_reference(data.reference_type, data)
+
+        # Wrap with HTML-specific markup based on reference type
+        case data.reference_type
+        when :image, :table, :list, :equation
+          # For image/table/list/equation, wrap with span and optional link
+          css_class = case data.reference_type # rubocop:disable Style/HashLikeCase
+                      when :image then 'imgref'
+                      when :table then 'tableref'
+                      when :list then 'listref'
+                      when :equation then 'eqref'
+                      end
+          format_html_reference(plain_text, data, css_class)
+        when :bibpaper
+          # For bibliography, wrap with span class="bibref"
+          %Q(<span class="bibref">#{plain_text}</span>)
+        when :chapter, :headline, :column, :word
+          # For chapter/headline/column/word, escape HTML entities
+          escape_html(plain_text)
+        else
+          # For other types (footnote, endnote), return plain text as-is
+          plain_text
+        end
+      end
+
+      # Format HTML reference with link support
+      # @param text [String] Plain text to wrap
+      # @param data [ResolvedData] Resolved reference data
+      # @param css_class [String] CSS class name
+      # @return [String] HTML markup
+      def format_html_reference(text, data, css_class)
+        return %Q(<span class="#{css_class}">#{text}</span>) unless config['chapterlink']
+
+        # Use chapter_id from data, or fall back to current chapter's id
+        chapter_id = data.chapter_id || @chapter&.id
+        extname = ".#{config['htmlext'] || 'html'}"
+        %Q(<span class="#{css_class}"><a href="./#{chapter_id}#{extname}##{normalize_id(data.item_id)}">#{text}</a></span>)
+      end
+
+      # Normalize ID for HTML/XML attributes
+      def normalize_id(id)
+        id.to_s.gsub(/[^a-zA-Z0-9_-]/, '_')
       end
 
       def visit_footnote(node)

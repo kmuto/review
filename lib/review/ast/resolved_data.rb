@@ -138,7 +138,7 @@ module ReVIEW
       # Uses lazy initialization to avoid circular dependency issues
       # @return [String] Plain text representation of the reference
       def format_as_text
-        @text_formatter ||= ReVIEW::AST::TextFormatter.new(format_type: :text, config: {})
+        @text_formatter ||= ReVIEW::AST::TextFormatter.new(config: {})
         @text_formatter.format_reference(reference_type, self)
       end
 

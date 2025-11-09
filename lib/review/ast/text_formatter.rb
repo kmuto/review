@@ -7,8 +7,6 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/i18n'
-require 'review/htmlutils'
-require 'review/latexutils'
 
 module ReVIEW
   module AST
@@ -23,25 +21,18 @@ module ReVIEW
     # - Format-agnostic core with format-specific decorations
     # - Reusable from Renderer, InlineElementHandler, and ResolvedData
     class TextFormatter
-      include ReVIEW::HTMLUtils
-      include ReVIEW::LaTeXUtils
-
-      attr_reader :format_type, :config, :chapter
+      attr_reader :config, :chapter
 
       # Initialize formatter
-      # @param format_type [Symbol] Output format (:html, :latex, :idgxml, :top)
       # @param config [Hash] Configuration hash
       # @param chapter [Chapter, nil] Current chapter (optional, used for HTML reference links)
-      def initialize(format_type:, config:, chapter: nil)
-        @format_type = format_type
+      def initialize(config:, chapter: nil)
         @config = config
         @chapter = chapter
-
-        # Initialize LaTeX character escaping if format is LaTeX
-        initialize_metachars(config['texcommand']) if format_type == :latex
       end
 
-      # Format a numbered item's caption (e.g., "図1.1 キャプション")
+      # Format a numbered item's caption for HTML/LaTeX (e.g., "図1.1: キャプション")
+      # Uses format_number_header (with colon) + caption_prefix
       # @param label_key [String] I18n key for the label (e.g., 'image', 'table', 'list')
       # @param chapter_number [String, nil] Chapter number (e.g., "第1章")
       # @param item_number [Integer] Item number within chapter
@@ -49,25 +40,28 @@ module ReVIEW
       # @return [String] Formatted caption
       def format_caption(label_key, chapter_number, item_number, caption_text = nil)
         label = I18n.t(label_key)
-
-        # Different formats use different number formats and separators
-        case format_type
-        when :latex, :html
-          # HTML/LaTeX use format_number_header (with colon) + caption_prefix
-          number_text = format_number_header(chapter_number, item_number)
-          separator = I18n.t('caption_prefix')
-        when :idgxml
-          # IDGXML uses format_number (without colon) + caption_prefix_idgxml
-          number_text = format_number(chapter_number, item_number)
-          separator = I18n.t('caption_prefix_idgxml')
-        else
-          # For other formats (text, etc.), use generic logic
-          number_text = format_number(chapter_number, item_number)
-          separator = caption_separator
-        end
+        number_text = format_number_header(chapter_number, item_number)
+        separator = I18n.t('caption_prefix')
 
         base = "#{label}#{number_text}"
+        return base if caption_text.nil? || caption_text.empty?
 
+        "#{base}#{separator}#{caption_text}"
+      end
+
+      # Format a numbered item's caption for IDGXML/TOP/TEXT (e.g., "図1.1 キャプション")
+      # Uses format_number (without colon) + caption_separator
+      # @param label_key [String] I18n key for the label (e.g., 'image', 'table', 'list')
+      # @param chapter_number [String, nil] Chapter number (e.g., "第1章")
+      # @param item_number [Integer] Item number within chapter
+      # @param caption_text [String, nil] Caption text
+      # @return [String] Formatted caption
+      def format_caption_plain(label_key, chapter_number, item_number, caption_text = nil)
+        label = I18n.t(label_key)
+        number_text = format_number(chapter_number, item_number)
+        separator = caption_separator
+
+        base = "#{label}#{number_text}"
         return base if caption_text.nil? || caption_text.empty?
 
         "#{base}#{separator}#{caption_text}"
@@ -287,7 +281,7 @@ module ReVIEW
       # @param idref [String] Reference ID
       # @return [String] Formatted label marker
       def format_label_marker(idref)
-        I18n.t('label_marker') + escape_text(idref)
+        I18n.t('label_marker') + idref.to_s
       end
 
       # Format headline quote
@@ -314,26 +308,14 @@ module ReVIEW
       # Format numbered reference (image, table, list) using common logic
       # @param label_key [String] I18n key for the label (e.g., 'image', 'table', 'list')
       # @param data [ResolvedData] Resolved reference data
-      # @param html_css_class [String] CSS class for HTML output (e.g., 'imgref', 'tableref')
-      # @return [String] Formatted reference
-      def format_numbered_reference(label_key, data, html_css_class)
+      # @param html_css_class [String] CSS class for HTML output (unused, kept for compatibility)
+      # @return [String] Formatted reference without caption (e.g., "図1.1")
+      def format_numbered_reference(label_key, data, _html_css_class)
         # Use short form of chapter number for figure/table/list references
         chapter_number_short = format_chapter_number_short(data.chapter_number, data.chapter_type)
 
-        case format_type
-        when :html
-          # For HTML references, use format_number (no colon) instead of format_caption
-          label = I18n.t(label_key)
-          number_text = "#{label}#{format_number(chapter_number_short, data.item_number)}"
-          format_html_reference(number_text, data, html_css_class)
-        when :latex
-          format_latex_reference(data)
-        when :text
-          # For :text format, include caption if available
-          format_caption(label_key, chapter_number_short, data.item_number, data.caption_text)
-        else # For :idgxml and others
-          format_caption(label_key, chapter_number_short, data.item_number)
-        end
+        # Format without caption - caption is handled separately by renderers or in to_text
+        format_caption_plain(label_key, chapter_number_short, data.item_number, nil)
       end
 
       # Format image reference
@@ -352,49 +334,26 @@ module ReVIEW
       end
 
       # Format equation reference
+      # @param data [ResolvedData] Resolved reference data
+      # @return [String] Formatted reference without caption (e.g., "式3.1")
       def format_equation_reference(data)
         # Use short form of chapter number for equation references
         chapter_number_short = format_chapter_number_short(data.chapter_number, data.chapter_type)
 
-        case format_type
-        when :html
-          label = I18n.t('equation')
-          number_text = "#{label}#{format_number(chapter_number_short, data.item_number)}"
-          format_html_reference(number_text, data, 'eqref')
-        when :latex
-          # Equation uses direct \\ref instead of format_latex_reference
-          "\\\\ref{#{data.item_id}}"
-        when :text
-          format_caption('equation', chapter_number_short, data.item_number, data.caption_text)
-        else # For :idgxml and others
-          format_caption('equation', chapter_number_short, data.item_number)
-        end
+        # Return reference without caption text
+        format_caption_plain('equation', chapter_number_short, data.item_number)
       end
 
       # Format footnote reference
       def format_footnote_reference(data)
-        case format_type
-        when :latex
-          "\\\\footnotemark[#{data.item_number}]"
-        when :top
-          number = data.item_number || data.item_id
-          "【注#{number}】"
-        else
-          # For :html, :idgxml, :text and others
-          data.item_number.to_s
-        end
+        # For all formats - return plain number without markup
+        data.item_number.to_s
       end
 
       # Format endnote reference
       def format_endnote_reference(data)
-        case format_type
-        when :top
-          number = data.item_number || data.item_id
-          "【後注#{number}】"
-        else
-          # For :html, :idgxml, :text, :latex and others
-          data.item_number.to_s
-        end
+        # For all formats - return plain number without markup
+        data.item_number.to_s
       end
 
       # Format chapter reference
@@ -405,13 +364,13 @@ module ReVIEW
         chapter_number_full = format_chapter_number_full(data.chapter_number, data.chapter_type)
 
         if chapter_title && !chapter_number_full.empty?
-          escape_text(I18n.t('chapter_quote', [chapter_number_full, chapter_title]))
+          I18n.t('chapter_quote', [chapter_number_full, chapter_title])
         elsif chapter_title
-          escape_text(I18n.t('chapter_quote_without_number', chapter_title))
+          I18n.t('chapter_quote_without_number', chapter_title)
         elsif !chapter_number_full.empty?
-          escape_text(chapter_number_full)
+          chapter_number_full
         else
-          escape_text(data.item_id || '')
+          data.item_id || ''
         end
       end
 
@@ -430,50 +389,23 @@ module ReVIEW
                        else
                          ([chapter_number_short] + headline_numbers).join('.')
                        end
-          escape_text(I18n.t('hd_quote', [number_str, caption]))
+          I18n.t('hd_quote', [number_str, caption])
         elsif !caption.empty?
-          escape_text(I18n.t('hd_quote_without_number', caption))
+          I18n.t('hd_quote_without_number', caption)
         else
-          escape_text(data.item_id || '')
+          data.item_id || ''
         end
       end
 
       # Format bibpaper reference
       def format_bibpaper_reference(data)
-        case format_type
-        when :html
-          %Q(<span class="bibref">[#{data.item_number}]</span>)
-        when :latex
-          "\\\\reviewbibref{[#{data.item_number}]}{bib:#{data.item_id}}"
-        else
-          # For :idgxml, :text and others
-          "[#{data.item_number}]"
-        end
+        # For all formats - return plain reference without markup
+        "[#{data.item_number}]"
       end
 
       # Format word reference
       def format_word_reference(data)
-        escape_text(data.word_content)
-      end
-
-      # Format HTML reference with link support
-      # Matches the original HTML InlineElementHandler behavior: always use ./chapter_id#id format
-      def format_html_reference(text, data, css_class)
-        return %Q(<span class="#{css_class}">#{text}</span>) unless config['chapterlink']
-
-        # Use chapter_id from data, or fall back to current chapter's id
-        chapter_id = data.chapter_id || @chapter&.id
-        extname = ".#{config['htmlext'] || 'html'}"
-        %Q(<span class="#{css_class}"><a href="./#{chapter_id}#{extname}##{normalize_id(data.item_id)}">#{text}</a></span>)
-      end
-
-      # Format LaTeX reference
-      def format_latex_reference(data)
-        if data.cross_chapter?
-          "\\\\ref{#{data.chapter_id}:#{data.item_id}}"
-        else
-          "\\\\ref{#{data.item_id}}"
-        end
+        data.word_content.to_s
       end
 
       # Get caption separator
@@ -491,23 +423,6 @@ module ReVIEW
       # Check if string is numeric
       def numeric_string?(value)
         value.to_s.match?(/\A-?\d+\z/)
-      end
-
-      # Normalize ID for HTML/XML attributes
-      def normalize_id(id)
-        id.to_s.gsub(/[^a-zA-Z0-9_-]/, '_')
-      end
-
-      # Escape text based on format type
-      def escape_text(text)
-        case format_type
-        when :html, :idgxml
-          escape_html(text.to_s)
-        when :latex
-          escape(text.to_s)
-        else # For :text, :top and others
-          text.to_s
-        end
       end
 
       # Format numbered reference as plain text (image, table, list, equation)

@@ -415,7 +415,7 @@ module ReVIEW
           # This should match HTMLBuilder's inline_labelref behavior
           idref = node.target_item_id || content
           marker = @ctx.text_formatter.format_label_marker(idref)
-          %Q(<a target='#{escape_content(idref)}'>「#{marker}」</a>)
+          %Q(<a target='#{escape_content(idref)}'>「#{escape_content(marker)}」</a>)
         end
 
         def render_inline_ref(type, content, node)

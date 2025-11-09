@@ -419,7 +419,7 @@ module ReVIEW
           # Get idref from node.args (raw, not escaped)
           idref = node.args.first || content
           marker = @ctx.text_formatter.format_label_marker(idref)
-          %Q(<ref idref='#{escape(idref)}'>「#{marker}」</ref>)
+          %Q(<ref idref='#{escape(idref)}'>「#{escape(marker)}」</ref>)
         end
 
         def render_inline_ref(type, content, node)
