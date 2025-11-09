@@ -16,7 +16,6 @@ module ReVIEW
       # Context for inline element rendering with business logic
       # Used by InlineElementHandler
       class InlineContext
-
         include ReVIEW::HTMLUtils
         include ReVIEW::HtmlEscapeUtils
 

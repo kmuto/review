@@ -10,6 +10,7 @@
 #
 require 'nkf'
 require 'digest'
+require 'unicode/eaw'
 
 module ReVIEW
   module TextUtils
