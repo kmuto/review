@@ -294,17 +294,12 @@ module ReVIEW
         result
       end
 
-      def visit_inline(node)
-        type = node.inline_type
-        content = render_children(node)
-
-        # Call inline rendering methods directly
+      def render_inline_element(type, content, node)
         method_name = "render_inline_#{type}"
         if respond_to?(method_name, true)
           send(method_name, type, content, node)
         else
-          # Fallback for unknown elements
-          content
+          raise NotImplementedError, "Unknown inline element: #{type}"
         end
       end
 

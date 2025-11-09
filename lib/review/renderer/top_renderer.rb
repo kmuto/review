@@ -403,10 +403,7 @@ module ReVIEW
         result
       end
 
-      def visit_inline(node)
-        type = node.inline_type
-        content = render_children(node)
-
+      def render_inline_element(type, content, node)
         case type
         when :b, :strong
           "★#{content}☆"

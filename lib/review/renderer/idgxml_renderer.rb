@@ -257,11 +257,6 @@ module ReVIEW
         escape(node.content.to_s)
       end
 
-      def visit_inline(node)
-        content = render_children(node)
-        render_inline_element(node.inline_type, content, node)
-      end
-
       def visit_reference(node)
         if node.resolved?
           format_resolved_reference(node.resolved_data)

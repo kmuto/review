@@ -386,17 +386,12 @@ module ReVIEW
         result
       end
 
-      def visit_inline(node)
-        type = node.inline_type
-        content = render_children(node)
-
-        # Most inline elements just return content (like PLAINTEXTBuilder's nofunc_text)
+      def render_inline_element(type, content, node)
         method_name = "render_inline_#{type}"
         if respond_to?(method_name, true)
           send(method_name, type, content, node)
         else
-          # Default: return content as-is
-          content
+          raise NotImplementedError, "Unknown inline element: #{type}"
         end
       end
 
@@ -564,30 +559,34 @@ module ReVIEW
         text_formatter.format_reference(:chapter, data)
       end
 
+      def render_inline_default(_type, content, _node)
+        content
+      end
+
       # Default inline rendering - just return content
-      alias_method :render_inline_b, :render_inline_element
-      alias_method :render_inline_strong, :render_inline_element
-      alias_method :render_inline_i, :render_inline_element
-      alias_method :render_inline_em, :render_inline_element
-      alias_method :render_inline_tt, :render_inline_element
-      alias_method :render_inline_code, :render_inline_element
-      alias_method :render_inline_ttb, :render_inline_element
-      alias_method :render_inline_ttbold, :render_inline_element
-      alias_method :render_inline_tti, :render_inline_element
-      alias_method :render_inline_ttibold, :render_inline_element
-      alias_method :render_inline_u, :render_inline_element
-      alias_method :render_inline_bou, :render_inline_element
-      alias_method :render_inline_keytop, :render_inline_element
-      alias_method :render_inline_m, :render_inline_element
-      alias_method :render_inline_ami, :render_inline_element
-      alias_method :render_inline_sup, :render_inline_element
-      alias_method :render_inline_sub, :render_inline_element
-      alias_method :render_inline_hint, :render_inline_element
-      alias_method :render_inline_maru, :render_inline_element
-      alias_method :render_inline_idx, :render_inline_element
-      alias_method :render_inline_ins, :render_inline_element
-      alias_method :render_inline_del, :render_inline_element
-      alias_method :render_inline_tcy, :render_inline_element
+      alias_method :render_inline_b, :render_inline_default
+      alias_method :render_inline_strong, :render_inline_default
+      alias_method :render_inline_i, :render_inline_default
+      alias_method :render_inline_em, :render_inline_default
+      alias_method :render_inline_tt, :render_inline_default
+      alias_method :render_inline_code, :render_inline_default
+      alias_method :render_inline_ttb, :render_inline_default
+      alias_method :render_inline_ttbold, :render_inline_default
+      alias_method :render_inline_tti, :render_inline_default
+      alias_method :render_inline_ttibold, :render_inline_default
+      alias_method :render_inline_u, :render_inline_default
+      alias_method :render_inline_bou, :render_inline_default
+      alias_method :render_inline_keytop, :render_inline_default
+      alias_method :render_inline_m, :render_inline_default
+      alias_method :render_inline_ami, :render_inline_default
+      alias_method :render_inline_sup, :render_inline_default
+      alias_method :render_inline_sub, :render_inline_default
+      alias_method :render_inline_hint, :render_inline_default
+      alias_method :render_inline_maru, :render_inline_default
+      alias_method :render_inline_idx, :render_inline_default
+      alias_method :render_inline_ins, :render_inline_default
+      alias_method :render_inline_del, :render_inline_default
+      alias_method :render_inline_tcy, :render_inline_default
 
       # Helper methods
       def render_caption_inline(caption_node)
