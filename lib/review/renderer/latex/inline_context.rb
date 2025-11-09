@@ -7,6 +7,7 @@
 # the GNU LGPL, Lesser General Public License version 2.1.
 
 require 'review/latexutils'
+require_relative '../inline_render_proxy'
 
 module ReVIEW
   module Renderer
@@ -14,31 +15,6 @@ module ReVIEW
       # Context for inline element rendering with business logic
       # Used by InlineElementHandler
       class InlineContext
-        # Proxy that provides minimal interface to renderer
-        # Only exposes necessary methods to InlineContext
-        # This class is private and should not be used directly outside InlineContext
-        class InlineRenderProxy
-          def initialize(renderer)
-            @renderer = renderer
-          end
-
-          def render_children(node)
-            @renderer.render_children(node)
-          end
-
-          def render_caption_inline(caption_node)
-            @renderer.render_caption_inline(caption_node)
-          end
-
-          def rendering_context
-            @renderer.rendering_context
-          end
-
-          def text_formatter
-            @renderer.text_formatter
-          end
-        end
-        private_constant :InlineRenderProxy
 
         include ReVIEW::LaTeXUtils
 
