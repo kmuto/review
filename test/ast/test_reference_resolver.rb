@@ -16,7 +16,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     @book = ReVIEW::Book::Base.new
     @chapter = ReVIEW::Book::Chapter.new(@book, 1, 'chap01', 'chap01.re')
-    @chapter.instance_variable_set(:@number, '1')
+    @chapter.instance_variable_set(:@number, 1)
     @chapter.instance_variable_set(:@title, 'Chapter 1')
 
     # Setup image index
@@ -77,7 +77,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     data = resolved_node.resolved_data
     assert_equal ReVIEW::AST::ResolvedData::ImageReference, data.class
-    assert_equal '第1章', data.chapter_number
+    assert_equal 1, data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'img01', data.item_id
   end
@@ -104,7 +104,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     data = resolved_node.resolved_data
     assert_equal ReVIEW::AST::ResolvedData::TableReference, data.class
-    assert_equal '第1章', data.chapter_number
+    assert_equal 1, data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'tbl01', data.item_id
   end
@@ -131,7 +131,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     data = resolved_node.resolved_data
     assert_equal ReVIEW::AST::ResolvedData::ListReference, data.class
-    assert_equal '第1章', data.chapter_number
+    assert_equal 1, data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'list01', data.item_id
   end
@@ -185,7 +185,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     data = resolved_node.resolved_data
     assert_equal ReVIEW::AST::ResolvedData::EquationReference, data.class
-    assert_equal '第1章', data.chapter_number
+    assert_equal 1, data.chapter_number
     assert_equal '1', data.item_number
     assert_equal 'eq01', data.item_id
   end
@@ -253,7 +253,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     data = resolved_node.resolved_data
     assert_equal ReVIEW::AST::ResolvedData::ImageReference, data.class
-    assert_equal '第1章', data.chapter_number
+    assert_equal 1, data.chapter_number
     assert_equal '1', data.item_number
   end
 
@@ -279,7 +279,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     data = resolved_node.resolved_data
     assert_equal ReVIEW::AST::ResolvedData::TableReference, data.class
-    assert_equal '第1章', data.chapter_number
+    assert_equal 1, data.chapter_number
     assert_equal '1', data.item_number
   end
 
@@ -452,7 +452,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
   def test_resolve_cross_chapter_image_reference
     # Setup second chapter with proper ID
     chapter2 = ReVIEW::Book::Chapter.new(@book, 2, 'chap02', 'chap02.re')
-    chapter2.instance_variable_set(:@number, '2')
+    chapter2.instance_variable_set(:@number, 2)
 
     # Create AST with image node for chapter2
     doc2 = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
@@ -490,7 +490,7 @@ class ReferenceResolverTest < Test::Unit::TestCase
 
     data = resolved_node.resolved_data
     assert_equal ReVIEW::AST::ResolvedData::ImageReference, data.class
-    assert_equal '第2章', data.chapter_number
+    assert_equal 2, data.chapter_number
     assert_equal 'chap02', data.chapter_id
     assert_equal 'img01', data.item_id
   end

@@ -11,20 +11,25 @@ module ReVIEW
     class ResolvedData
       # ChapterReference - represents chapter references (@<chap>, @<chapref>, @<title>)
       class ChapterReference < ResolvedData
-        def initialize(chapter_number:, chapter_id:, item_id:, chapter_title: nil, caption_node: nil)
+        def initialize(chapter_number:, chapter_id:, item_id:, chapter_title: nil, caption_node: nil, chapter_type: nil)
           super()
           @chapter_number = chapter_number
           @chapter_id = chapter_id
           @item_id = item_id
           @chapter_title = chapter_title
           @caption_node = caption_node
+          @chapter_type = chapter_type
         end
 
         # Return chapter number only (for @<chap>)
         # Example: "第1章", "付録A", "第II部"
-        # chapter_number already contains the long form
+        # Format using TextFormatter for proper I18n handling
+        # Returns empty string if chapter has no number (e.g., bib)
         def to_number_text
-          @chapter_number || @item_id || ''
+          return '' unless @chapter_number
+
+          @text_formatter ||= ReVIEW::AST::TextFormatter.new(format_type: :text, config: {})
+          @text_formatter.format_chapter_number_full(@chapter_number, @chapter_type)
         end
 
         # Return chapter title only (for @<title>)
@@ -53,7 +58,8 @@ module ReVIEW
             chapter_id: hash['chapter_id'],
             item_id: hash['item_id'],
             chapter_title: hash['chapter_title'],
-            caption_node: caption_node
+            caption_node: caption_node,
+            chapter_type: hash['chapter_type']&.to_sym
           )
         end
       end

@@ -1388,7 +1388,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     # Create InlineNode with ReferenceNode child containing resolved_data
     inline = AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :column, args: ['column1'])
     resolved_data = AST::ResolvedData.column(
-      chapter_number: '第1章',
+      chapter_number: 1, chapter_type: :chapter,
       item_number: 1,
       item_id: 'column1',
       chapter_id: nil, # Same chapter
@@ -1425,7 +1425,7 @@ class TestLatexRenderer < Test::Unit::TestCase
     # Create InlineNode with ReferenceNode child containing resolved_data for cross-chapter reference
     inline = AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :column, args: ['ch03', 'column2'])
     resolved_data = AST::ResolvedData.column(
-      chapter_number: '第3章',
+      chapter_number: 3, chapter_type: :chapter,
       item_number: 1,
       item_id: 'column2',
       chapter_id: 'ch03', # Cross-chapter reference

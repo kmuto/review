@@ -41,10 +41,11 @@ class TestReferenceNode < Test::Unit::TestCase
 
     resolved_node = node.with_resolved_data(
       ReVIEW::AST::ResolvedData.image(
-        chapter_number: '1',
+        chapter_number: 1,
         item_number: '1',
         chapter_id: 'chap01',
         item_id: 'figure1',
+        chapter_type: :chapter,
         caption_node: caption_node
       )
     )
@@ -67,10 +68,11 @@ class TestReferenceNode < Test::Unit::TestCase
 
     resolved_node = node.with_resolved_data(
       ReVIEW::AST::ResolvedData.image(
-        chapter_number: '1',
+        chapter_number: 1,
         item_number: '1',
         chapter_id: 'chap01',
-        item_id: 'figure1'
+        item_id: 'figure1',
+        chapter_type: :chapter
       )
     )
     assert_include(resolved_node.to_s, 'resolved: 図1.1')
@@ -86,10 +88,11 @@ class TestReferenceNode < Test::Unit::TestCase
     node = ReVIEW::AST::ReferenceNode.new('figure1', location: ReVIEW::SnapshotLocation.new(nil, 0))
     resolved_node = node.with_resolved_data(
       ReVIEW::AST::ResolvedData.image(
-        chapter_number: '1',
+        chapter_number: 1,
         item_number: '1',
         chapter_id: 'chap01',
-        item_id: 'figure1'
+        item_id: 'figure1',
+        chapter_type: :chapter
       )
     )
 

@@ -10,14 +10,13 @@ module ReVIEW
   module AST
     class ResolvedData
       class HeadlineReference < ResolvedData
-        attr_reader :chapter_number
-
-        def initialize(item_id:, headline_number:, chapter_id: nil, chapter_number: nil, caption_node: nil)
+        def initialize(item_id:, headline_number:, chapter_id: nil, chapter_number: nil, chapter_type: nil, caption_node: nil)
           super()
           @item_id = item_id
           @chapter_id = chapter_id
           @chapter_number = chapter_number
           @headline_number = headline_number
+          @chapter_type = chapter_type
           @caption_node = caption_node
         end
 
@@ -38,6 +37,7 @@ module ReVIEW
             headline_number: hash['headline_number'],
             chapter_id: hash['chapter_id'],
             chapter_number: hash['chapter_number'],
+            chapter_type: hash['chapter_type']&.to_sym,
             caption_node: caption_node
           )
         end

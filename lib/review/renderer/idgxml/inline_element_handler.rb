@@ -344,11 +344,12 @@ module ReVIEW
           ref_node = node.children.first
           return '' unless ref_node.reference_node? && ref_node.resolved?
 
-          n = ref_node.resolved_data.headline_number
-          short_num = ref_node.resolved_data.short_chapter_number
+          data = ref_node.resolved_data
+          n = data.headline_number
+          chapter_num = @ctx.text_formatter.format_chapter_number_short(data.chapter_number, data.chapter_type)
           # Get section number like Builder does (including chapter number)
-          if n.present? && short_num && !short_num.empty? && @ctx.over_secnolevel?(n)
-            ([short_num] + n).join('.')
+          if n.present? && chapter_num && !chapter_num.empty? && @ctx.over_secnolevel?(n)
+            ([chapter_num] + n).join('.')
           else
             ''
           end
@@ -374,7 +375,8 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          chapter_num = data.to_number_text
+          # Format chapter number to full form (e.g., "第1章", "付録A", "第II部")
+          chapter_num = @ctx.text_formatter.format_chapter_number_full(data.chapter_number, data.chapter_type)
           if @ctx.chapter_link_enabled?
             %Q(<link href="#{data.item_id}">#{chapter_num}</link>)
           else

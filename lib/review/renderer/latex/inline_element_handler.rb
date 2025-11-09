@@ -135,9 +135,9 @@ module ReVIEW
           data = ref_node.resolved_data
           list_number = data.item_number
 
-          short_num = data.short_chapter_number
-          if short_num && !short_num.empty?
-            "\\reviewlistref{#{short_num}.#{list_number}}"
+          chapter_num = @ctx.text_formatter.format_chapter_number_short(data.chapter_number, data.chapter_type)
+          if chapter_num && !chapter_num.empty?
+            "\\reviewlistref{#{chapter_num}.#{list_number}}"
           else
             "\\reviewlistref{#{list_number}}"
           end
@@ -161,7 +161,7 @@ module ReVIEW
           chapter_id = data.chapter_id || @chapter&.id
           table_label = "table:#{chapter_id}:#{data.item_id}"
 
-          short_num = data.short_chapter_number
+          short_num = @ctx.text_formatter.format_chapter_number_short(data.chapter_number, data.chapter_type)
           if short_num && !short_num.empty?
             "\\reviewtableref{#{short_num}.#{table_number}}{#{table_label}}"
           else
@@ -187,7 +187,7 @@ module ReVIEW
           chapter_id = data.chapter_id || @chapter&.id
           image_label = "image:#{chapter_id}:#{data.item_id}"
 
-          short_num = data.short_chapter_number
+          short_num = @ctx.text_formatter.format_chapter_number_short(data.chapter_number, data.chapter_type)
           if short_num && !short_num.empty?
             "\\reviewimageref{#{short_num}.#{image_number}}{#{image_label}}"
           else
@@ -210,7 +210,7 @@ module ReVIEW
           data = ref_node.resolved_data
           equation_number = data.item_number
 
-          short_num = data.short_chapter_number
+          short_num = @ctx.text_formatter.format_chapter_number_short(data.chapter_number, data.chapter_type)
           if short_num && !short_num.empty?
             "\\reviewequationref{#{short_num}.#{equation_number}}"
           else
@@ -398,8 +398,9 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          chapter_number = data.to_number_text
-          "\\reviewchapref{#{chapter_number}}{chap:#{data.item_id}}"
+          # Format chapter number to full form (e.g., "第1章", "付録A", "第II部")
+          chapter_num = @ctx.text_formatter.format_chapter_number_full(data.chapter_number, data.chapter_type)
+          "\\reviewchapref{#{chapter_num}}{chap:#{data.item_id}}"
         end
 
         # Render chapter title reference
@@ -429,7 +430,7 @@ module ReVIEW
           # Determine chapter context
           if data.chapter_id && data.chapter_number
             # Cross-chapter reference
-            short_chapter = data.short_chapter_number
+            short_chapter = @ctx.text_formatter.format_chapter_number_short(data.chapter_number, data.chapter_type)
             chapter_prefix = short_chapter
           elsif @chapter && @ctx.chapter.number
             # Same chapter reference

@@ -240,7 +240,8 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          @ctx.text_formatter.format_reference(:list, data)
+          text = @ctx.text_formatter.format_reference_text(:list, data)
+          wrap_reference_with_html(text, data, 'listref')
         end
 
         def render_inline_table(_type, _content, node)
@@ -250,7 +251,8 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          @ctx.text_formatter.format_reference(:table, data)
+          text = @ctx.text_formatter.format_reference_text(:table, data)
+          wrap_reference_with_html(text, data, 'tableref')
         end
 
         def render_inline_img(_type, _content, node)
@@ -260,7 +262,8 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          @ctx.text_formatter.format_reference(:image, data)
+          text = @ctx.text_formatter.format_reference_text(:image, data)
+          wrap_reference_with_html(text, data, 'imgref')
         end
 
         def render_inline_comment(_type, content, _node)
@@ -384,11 +387,11 @@ module ReVIEW
 
           data = ref_node.resolved_data
           n = data.headline_number
-          short_num = data.short_chapter_number
+          chapter_num = @ctx.text_formatter.format_chapter_number_short(data.chapter_number, data.chapter_type)
 
           # Build full section number including chapter number
-          full_number = if n.present? && short_num && !short_num.empty? && @ctx.over_secnolevel?(n)
-                          ([short_num] + n).join('.')
+          full_number = if n.present? && chapter_num && !chapter_num.to_s.empty? && @ctx.over_secnolevel?(n)
+                          ([chapter_num] + n).join('.')
                         else
                           ''
                         end
@@ -427,7 +430,8 @@ module ReVIEW
           end
 
           data = ref_node.resolved_data
-          @ctx.text_formatter.format_reference(:equation, data)
+          text = @ctx.text_formatter.format_reference_text(:equation, data)
+          wrap_reference_with_html(text, data, 'eqref')
         end
 
         def render_inline_hd(_type, _content, node)
@@ -439,7 +443,7 @@ module ReVIEW
 
           data = ref_node.resolved_data
           n = data.headline_number
-          short_num = data.short_chapter_number
+          chapter_num = @ctx.text_formatter.format_chapter_number_short(data.chapter_number, data.chapter_type)
 
           # Render caption with inline markup
           caption_html = if data.caption_node
@@ -449,8 +453,8 @@ module ReVIEW
                          end
 
           # Build full section number including chapter number
-          full_number = if n.present? && short_num && !short_num.empty? && @ctx.over_secnolevel?(n)
-                          ([short_num] + n).join('.')
+          full_number = if n.present? && chapter_num && !chapter_num.to_s.empty? && @ctx.over_secnolevel?(n)
+                          ([chapter_num] + n).join('.')
                         end
 
           str = @ctx.text_formatter.format_headline_quote(full_number, caption_html)
@@ -510,8 +514,8 @@ module ReVIEW
 
           if @ctx.config['chapterlink']
             n = data.headline_number
-            short_num = data.short_chapter_number
-            full_number = ([short_num] + n).join('.')
+            chapter_num = @ctx.text_formatter.format_chapter_number_short(data.chapter_number, data.chapter_type)
+            full_number = ([chapter_num] + n).join('.')
             anchor = 'h' + full_number.tr('.', '-')
 
             # Get target chapter ID for link
@@ -579,6 +583,22 @@ module ReVIEW
           else
             %Q(<a id="endnoteb-#{normalize_id(endnote_id)}" href="#endnote-#{normalize_id(endnote_id)}" class="noteref">#{number}</a>)
           end
+        end
+
+        # Wrap reference text with HTML decoration (span and optional link)
+        # @param text [String] Plain text reference (e.g., "図1.1")
+        # @param data [ResolvedData] Resolved reference data
+        # @param css_class [String] CSS class name (e.g., 'imgref', 'tableref', 'listref', 'eqref')
+        # @return [String] HTML with span and optional link
+        def wrap_reference_with_html(text, data, css_class)
+          escaped_text = escape_content(text)
+
+          return %Q(<span class="#{css_class}">#{escaped_text}</span>) unless @ctx.config['chapterlink']
+
+          # Build link with chapter_id and item_id
+          chapter_id = data.chapter_id || @ctx.chapter&.id
+          extname = ".#{@ctx.config['htmlext'] || 'html'}"
+          %Q(<span class="#{css_class}"><a href="./#{chapter_id}#{extname}##{normalize_id(data.item_id)}">#{escaped_text}</a></span>)
         end
       end
     end

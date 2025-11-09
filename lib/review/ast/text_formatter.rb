@@ -98,7 +98,42 @@ module ReVIEW
         end
       end
 
-      # Format a reference to an item
+      # Format a reference as plain text (without format-specific decorations)
+      # This method returns pure text suitable for wrapping with HTML tags, LaTeX commands, etc.
+      # @param type [Symbol] Reference type (:image, :table, :list, :equation, etc.)
+      # @param data [ResolvedData] Resolved reference data
+      # @return [String] Plain text reference (e.g., "図1.1", "表2.3")
+      def format_reference_text(type, data)
+        case type
+        when :image
+          format_numbered_reference_text('image', data)
+        when :table
+          format_numbered_reference_text('table', data)
+        when :list
+          format_numbered_reference_text('list', data)
+        when :equation
+          format_numbered_reference_text('equation', data)
+        when :footnote
+          format_footnote_reference_text(data)
+        when :endnote
+          format_endnote_reference_text(data)
+        when :chapter
+          format_chapter_reference_text(data)
+        when :headline
+          format_headline_reference_text(data)
+        when :column
+          format_column_reference_text(data)
+        when :bibpaper
+          format_bibpaper_reference_text(data)
+        when :word
+          data.word_content.to_s
+        else
+          raise ArgumentError, "Unknown reference type: #{type}"
+        end
+      end
+
+      # Format a reference to an item (with format-specific decorations)
+      # Used by LaTeX, IDGXML, TOP, and TEXT renderers
       # @param type [Symbol] Reference type (:image, :table, :list, :equation, etc.)
       # @param data [ResolvedData] Resolved reference data
       # @return [String] Formatted reference
@@ -131,24 +166,48 @@ module ReVIEW
         end
       end
 
-      # Format chapter number with I18n (e.g., "第1章", "Appendix A")
-      # @param chapter_number [String, Integer] Chapter number
+      # Format chapter number with I18n (long form, e.g., "第1章", "Appendix A", "Part I")
+      # Used for @<chap>, @<chapref>, @<title> references
+      # @param raw_number [Integer, nil] Raw chapter number from chapter.number
+      # @param chapter_type [Symbol, nil] Chapter type (:chapter, :appendix, :part, :predef)
       # @return [String] Formatted chapter number
-      def format_chapter_number(chapter_number)
-        return chapter_number.to_s if chapter_number.to_s.empty?
+      def format_chapter_number_full(raw_number, chapter_type)
+        return '' unless raw_number
 
-        # Numeric chapter (e.g., "1", "2")
-        if numeric_string?(chapter_number)
-          I18n.t('chapter', chapter_number.to_i)
-        # Single uppercase letter (appendix, e.g., "A", "B")
-        elsif chapter_number.to_s.match?(/\A[A-Z]\z/)
-          I18n.t('appendix', chapter_number.to_s)
-        # Roman numerals (part, e.g., "I", "II", "III")
-        elsif chapter_number.to_s.match?(/\A[IVX]+\z/)
-          I18n.t('part', chapter_number.to_s)
-        else
-          # For other formats, return as-is
-          chapter_number.to_s
+        case chapter_type
+        when :chapter
+          I18n.t('chapter', raw_number)
+        when :appendix
+          I18n.t('appendix', raw_number)
+        when :part
+          I18n.t('part', raw_number)
+        else # :predef and others
+          raw_number.to_s
+        end
+      end
+
+      # Format chapter number without heading (short form, e.g., "1", "A", "I")
+      # Used for figure/table/list references where format is "図2.1" not "図第2章.1"
+      # Matches Chapter#format_number(false) behavior
+      # @param raw_number [Integer, nil] Raw chapter number from chapter.number
+      # @param chapter_type [Symbol, nil] Chapter type (:chapter, :appendix, :part, :predef)
+      # @return [String] Short form chapter number
+      def format_chapter_number_short(raw_number, chapter_type)
+        return '' unless raw_number
+
+        case chapter_type
+        when :chapter, :part, :predef
+          # For chapters, parts, and predef: just return the number as-is
+          raw_number.to_s
+        when :appendix
+          # For appendix: extract format from 'appendix' I18n key and create 'appendix_without_heading'
+          # This replicates the logic from Chapter#format_number(false)
+          i18n_appendix = I18n.get('appendix')
+          fmt = i18n_appendix.scan(/%\w{1,3}/).first || '%s'
+          I18n.update('appendix_without_heading' => fmt)
+          I18n.t('appendix_without_heading', raw_number)
+        else # rubocop:disable Lint/DuplicateBranch
+          raw_number.to_s
         end
       end
 
@@ -258,19 +317,22 @@ module ReVIEW
       # @param html_css_class [String] CSS class for HTML output (e.g., 'imgref', 'tableref')
       # @return [String] Formatted reference
       def format_numbered_reference(label_key, data, html_css_class)
+        # Use short form of chapter number for figure/table/list references
+        chapter_number_short = format_chapter_number_short(data.chapter_number, data.chapter_type)
+
         case format_type
         when :html
           # For HTML references, use format_number (no colon) instead of format_caption
           label = I18n.t(label_key)
-          number_text = "#{label}#{format_number(data.chapter_number, data.item_number)}"
+          number_text = "#{label}#{format_number(chapter_number_short, data.item_number)}"
           format_html_reference(number_text, data, html_css_class)
         when :latex
           format_latex_reference(data)
         when :text
           # For :text format, include caption if available
-          format_caption(label_key, data.chapter_number, data.item_number, data.caption_text)
+          format_caption(label_key, chapter_number_short, data.item_number, data.caption_text)
         else # For :idgxml and others
-          format_caption(label_key, data.chapter_number, data.item_number)
+          format_caption(label_key, chapter_number_short, data.item_number)
         end
       end
 
@@ -291,18 +353,21 @@ module ReVIEW
 
       # Format equation reference
       def format_equation_reference(data)
+        # Use short form of chapter number for equation references
+        chapter_number_short = format_chapter_number_short(data.chapter_number, data.chapter_type)
+
         case format_type
         when :html
           label = I18n.t('equation')
-          number_text = "#{label}#{format_number(data.chapter_number, data.item_number)}"
+          number_text = "#{label}#{format_number(chapter_number_short, data.item_number)}"
           format_html_reference(number_text, data, 'eqref')
         when :latex
-          # Equation uses direct \ref instead of format_latex_reference
-          "\\ref{#{data.item_id}}"
+          # Equation uses direct \\ref instead of format_latex_reference
+          "\\\\ref{#{data.item_id}}"
         when :text
-          format_caption('equation', data.chapter_number, data.item_number, data.caption_text)
+          format_caption('equation', chapter_number_short, data.item_number, data.caption_text)
         else # For :idgxml and others
-          format_caption('equation', data.chapter_number, data.item_number)
+          format_caption('equation', chapter_number_short, data.item_number)
         end
       end
 
@@ -310,7 +375,7 @@ module ReVIEW
       def format_footnote_reference(data)
         case format_type
         when :latex
-          "\\footnotemark[#{data.item_number}]"
+          "\\\\footnotemark[#{data.item_number}]"
         when :top
           number = data.item_number || data.item_id
           "【注#{number}】"
@@ -334,16 +399,17 @@ module ReVIEW
 
       # Format chapter reference
       def format_chapter_reference(data)
-        chapter_number = data.chapter_number
         chapter_title = data.chapter_title
 
-        if chapter_title && chapter_number
-          number_text = format_chapter_number(chapter_number)
-          escape_text(I18n.t('chapter_quote', [number_text, chapter_title]))
+        # Use full form of chapter number for chapter references
+        chapter_number_full = format_chapter_number_full(data.chapter_number, data.chapter_type)
+
+        if chapter_title && !chapter_number_full.empty?
+          escape_text(I18n.t('chapter_quote', [chapter_number_full, chapter_title]))
         elsif chapter_title
           escape_text(I18n.t('chapter_quote_without_number', chapter_title))
-        elsif chapter_number
-          escape_text(format_chapter_number(chapter_number))
+        elsif !chapter_number_full.empty?
+          escape_text(chapter_number_full)
         else
           escape_text(data.item_id || '')
         end
@@ -355,11 +421,14 @@ module ReVIEW
         headline_numbers = Array(data.headline_number).compact
 
         if !headline_numbers.empty?
+          # Use short form of chapter number for headline references
+          chapter_number_short = format_chapter_number_short(data.chapter_number, data.chapter_type)
+
           # Build full number with chapter number if available
-          number_str = if data.chapter_number && !data.chapter_number.to_s.empty?
-                         ([data.chapter_number] + headline_numbers).join('.')
-                       else
+          number_str = if chapter_number_short.empty?
                          headline_numbers.join('.')
+                       else
+                         ([chapter_number_short] + headline_numbers).join('.')
                        end
           escape_text(I18n.t('hd_quote', [number_str, caption]))
         elsif !caption.empty?
@@ -375,7 +444,7 @@ module ReVIEW
         when :html
           %Q(<span class="bibref">[#{data.item_number}]</span>)
         when :latex
-          "\\reviewbibref{[#{data.item_number}]}{bib:#{data.item_id}}"
+          "\\\\reviewbibref{[#{data.item_number}]}{bib:#{data.item_id}}"
         else
           # For :idgxml, :text and others
           "[#{data.item_number}]"
@@ -401,9 +470,9 @@ module ReVIEW
       # Format LaTeX reference
       def format_latex_reference(data)
         if data.cross_chapter?
-          "\\ref{#{data.chapter_id}:#{data.item_id}}"
+          "\\\\ref{#{data.chapter_id}:#{data.item_id}}"
         else
-          "\\ref{#{data.item_id}}"
+          "\\\\ref{#{data.item_id}}"
         end
       end
 
@@ -439,6 +508,91 @@ module ReVIEW
         else # For :text, :top and others
           text.to_s
         end
+      end
+
+      # Format numbered reference as plain text (image, table, list, equation)
+      # @param label_key [String] I18n key for the label (e.g., 'image', 'table', 'list')
+      # @param data [ResolvedData] Resolved reference data
+      # @return [String] Plain text reference (e.g., "図1.1", "表2.3")
+      def format_numbered_reference_text(label_key, data)
+        # Use short form of chapter number for figure/table/list references
+        chapter_number_short = format_chapter_number_short(data.chapter_number, data.chapter_type)
+        label = I18n.t(label_key)
+        number_text = format_number(chapter_number_short, data.item_number)
+        "#{label}#{number_text}"
+      end
+
+      # Format footnote reference as plain text
+      # @param data [ResolvedData] Resolved reference data
+      # @return [String] Plain text reference
+      def format_footnote_reference_text(data)
+        data.item_number.to_s
+      end
+
+      # Format endnote reference as plain text
+      # @param data [ResolvedData] Resolved reference data
+      # @return [String] Plain text reference
+      def format_endnote_reference_text(data)
+        data.item_number.to_s
+      end
+
+      # Format chapter reference as plain text
+      # @param data [ResolvedData] Resolved reference data
+      # @return [String] Plain text reference
+      def format_chapter_reference_text(data)
+        chapter_title = data.chapter_title
+
+        # Use full form of chapter number for chapter references
+        chapter_number_full = format_chapter_number_full(data.chapter_number, data.chapter_type)
+
+        if chapter_title && !chapter_number_full.empty?
+          I18n.t('chapter_quote', [chapter_number_full, chapter_title])
+        elsif chapter_title
+          I18n.t('chapter_quote_without_number', chapter_title)
+        elsif !chapter_number_full.empty?
+          chapter_number_full
+        else
+          data.item_id || ''
+        end
+      end
+
+      # Format headline reference as plain text
+      # @param data [ResolvedData] Resolved reference data
+      # @return [String] Plain text reference
+      def format_headline_reference_text(data)
+        caption = data.caption_text
+        headline_numbers = Array(data.headline_number).compact
+
+        if !headline_numbers.empty?
+          # Use short form of chapter number for headline references
+          chapter_number_short = format_chapter_number_short(data.chapter_number, data.chapter_type)
+
+          # Build full number with chapter number if available
+          number_str = if chapter_number_short.empty?
+                         headline_numbers.join('.')
+                       else
+                         ([chapter_number_short] + headline_numbers).join('.')
+                       end
+          I18n.t('hd_quote', [number_str, caption])
+        elsif !caption.empty?
+          I18n.t('hd_quote_without_number', caption)
+        else
+          data.item_id || ''
+        end
+      end
+
+      # Format column reference as plain text
+      # @param data [ResolvedData] Resolved reference data
+      # @return [String] Plain text reference
+      def format_column_reference_text(data)
+        I18n.t('column', data.caption_text)
+      end
+
+      # Format bibpaper reference as plain text
+      # @param data [ResolvedData] Resolved reference data
+      # @return [String] Plain text reference
+      def format_bibpaper_reference_text(data)
+        "[#{data.item_number}]"
       end
     end
   end

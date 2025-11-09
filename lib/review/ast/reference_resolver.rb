@@ -216,10 +216,11 @@ module ReVIEW
         raise CompileError, "#{item_type_label.to_s.capitalize} reference not found: #{node.full_ref_id}" unless item
 
         ResolvedData.send(item_type_label,
-                          chapter_number: format_chapter_number(target_chapter),
+                          chapter_number: target_chapter.number,
                           item_number: index_item_number(item),
                           chapter_id: node.context_id,
                           item_id: node.ref_id,
+                          chapter_type: chapter_type(target_chapter),
                           caption_node: item.caption_node)
       rescue ReVIEW::KeyError
         raise CompileError, "#{item_type_label.to_s.capitalize} reference not found: #{node.full_ref_id}"
@@ -244,9 +245,10 @@ module ReVIEW
         end
 
         ResolvedData.equation(
-          chapter_number: format_chapter_number(@chapter),
+          chapter_number: @chapter.number,
           item_number: index_item_number(item),
           item_id: node.ref_id,
+          chapter_type: chapter_type(@chapter),
           caption_node: item.caption_node
         )
       rescue ReVIEW::KeyError
@@ -297,10 +299,11 @@ module ReVIEW
 
         item = safe_column_fetch(target_chapter, node.ref_id)
         ResolvedData.column(
-          chapter_number: format_chapter_number(target_chapter),
+          chapter_number: target_chapter.number,
           item_number: index_item_number(item),
           chapter_id: node.context_id,
           item_id: node.ref_id,
+          chapter_type: chapter_type(target_chapter),
           caption_node: item.caption_node
         )
       end
@@ -325,9 +328,11 @@ module ReVIEW
         raise CompileError, "Chapter reference not found: #{node.ref_id}" unless chapter
 
         ResolvedData.chapter(
-          chapter_number: format_chapter_number(chapter),
+          chapter_number: chapter.number,
           chapter_id: node.ref_id,
-          chapter_title: chapter.title
+          item_id: node.ref_id,
+          chapter_title: chapter.title,
+          chapter_type: chapter_type(chapter)
         )
       end
 
@@ -340,9 +345,10 @@ module ReVIEW
 
         ResolvedData.headline(
           headline_number: headline.number,
-          chapter_number: format_chapter_number(target_chapter),
+          chapter_number: target_chapter&.number,
           chapter_id: node.context_id,
           item_id: node.ref_id,
+          chapter_type: chapter_type(target_chapter),
           caption_node: headline.caption_node
         )
       end
@@ -360,9 +366,10 @@ module ReVIEW
           item = find_index_item(@chapter.image_index, node.ref_id)
           if item
             return ResolvedData.image(
-              chapter_number: format_chapter_number(@chapter),
+              chapter_number: @chapter.number,
               item_number: index_item_number(item),
               item_id: node.ref_id,
+              chapter_type: chapter_type(@chapter),
               caption_node: item.caption_node
             )
           end
@@ -372,9 +379,10 @@ module ReVIEW
           item = find_index_item(@chapter.table_index, node.ref_id)
           if item
             return ResolvedData.table(
-              chapter_number: format_chapter_number(@chapter),
+              chapter_number: @chapter.number,
               item_number: index_item_number(item),
               item_id: node.ref_id,
+              chapter_type: chapter_type(@chapter),
               caption_node: item.caption_node
             )
           end
@@ -384,9 +392,10 @@ module ReVIEW
           item = find_index_item(@chapter.list_index, node.ref_id)
           if item
             return ResolvedData.list(
-              chapter_number: format_chapter_number(@chapter),
+              chapter_number: @chapter.number,
               item_number: index_item_number(item),
               item_id: node.ref_id,
+              chapter_type: chapter_type(@chapter),
               caption_node: item.caption_node
             )
           end
@@ -396,9 +405,10 @@ module ReVIEW
           item = find_index_item(@chapter.equation_index, node.ref_id)
           if item
             return ResolvedData.equation(
-              chapter_number: format_chapter_number(@chapter),
+              chapter_number: @chapter.number,
               item_number: index_item_number(item),
               item_id: node.ref_id,
+              chapter_type: chapter_type(@chapter),
               caption_node: item.caption_node
             )
           end
@@ -409,8 +419,9 @@ module ReVIEW
           if item
             return ResolvedData.headline(
               headline_number: item.number,
-              chapter_number: format_chapter_number(@chapter),
+              chapter_number: @chapter.number,
               item_id: node.ref_id,
+              chapter_type: chapter_type(@chapter),
               caption_node: item.caption_node
             )
           end
@@ -420,9 +431,10 @@ module ReVIEW
           item = find_index_item(@chapter.column_index, node.ref_id)
           if item
             return ResolvedData.column(
-              chapter_number: format_chapter_number(@chapter),
+              chapter_number: @chapter.number,
               item_number: index_item_number(item),
               item_id: node.ref_id,
+              chapter_type: chapter_type(@chapter),
               caption_node: item.caption_node
             )
           end
@@ -505,10 +517,21 @@ module ReVIEW
         Array(@book.contents).find { |chap| chap.id == id }
       end
 
-      # Get chapter number in short form (for all reference types)
-      # Returns short chapter number like "1", "A", "II", etc.
-      def format_chapter_number(chapter)
-        chapter.number.to_s
+      # Determine chapter type based on chapter attributes
+      # @param chapter [Chapter] The chapter to check
+      # @return [Symbol] One of :chapter, :appendix, :part, :predef
+      def chapter_type(chapter)
+        return nil unless chapter
+
+        if chapter.is_a?(ReVIEW::Book::Part)
+          :part
+        elsif chapter.on_predef?
+          :predef
+        elsif chapter.on_appendix?
+          :appendix
+        else
+          :chapter
+        end
       end
     end
   end

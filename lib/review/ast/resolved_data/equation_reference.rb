@@ -13,11 +13,12 @@ module ReVIEW
     class ResolvedData
       class EquationReference < CaptionedItemReference
         # Equation doesn't have chapter_id parameter, so override initialize
-        def initialize(chapter_number:, item_number:, item_id:, caption_node: nil)
+        def initialize(chapter_number:, item_number:, item_id:, chapter_type: nil, caption_node: nil)
           super(chapter_number: chapter_number,
                 item_number: item_number,
                 item_id: item_id,
                 chapter_id: nil,
+                chapter_type: chapter_type,
                 caption_node: caption_node)
         end
 
@@ -37,6 +38,7 @@ module ReVIEW
             chapter_number: hash['chapter_number'],
             item_number: hash['item_number'],
             item_id: hash['item_id'],
+            chapter_type: hash['chapter_type']&.to_sym,
             caption_node: caption_node
           )
         end

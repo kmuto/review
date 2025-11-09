@@ -667,7 +667,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     # Create resolved image reference
     caption_node = CaptionParserHelper.parse('Sample Image', location: @location)
     resolved_data = AST::ResolvedData.image(
-      chapter_number: '1',
+      chapter_number: 1, chapter_type: :chapter,
       item_number: '2',
       item_id: 'img1',
       caption_node: caption_node
@@ -689,7 +689,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     assert_equal 'img1', parsed['ref_id']
     assert_not_nil(parsed['resolved_data'])
     assert_equal 'ImageReference', parsed['resolved_data']['type']
-    assert_equal '1', parsed['resolved_data']['chapter_number']
+    assert_equal 1, parsed['resolved_data']['chapter_number']
     assert_equal '2', parsed['resolved_data']['item_number']
     assert_equal 'img1', parsed['resolved_data']['item_id']
     assert_equal 'CaptionNode', parsed['resolved_data']['caption_node']['type']
@@ -699,7 +699,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     assert_instance_of(AST::ReferenceNode, deserialized)
     assert_equal true, deserialized.resolved?
     assert_instance_of(AST::ResolvedData::ImageReference, deserialized.resolved_data)
-    assert_equal '1', deserialized.resolved_data.chapter_number
+    assert_equal 1, deserialized.resolved_data.chapter_number
     assert_equal '2', deserialized.resolved_data.item_number
     assert_equal 'img1', deserialized.resolved_data.item_id
     assert_instance_of(AST::CaptionNode, deserialized.resolved_data.caption_node)
@@ -708,7 +708,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
   def test_reference_node_with_table_reference_serialization
     # Create resolved table reference
     resolved_data = AST::ResolvedData.table(
-      chapter_number: '2',
+      chapter_number: 2, chapter_type: :chapter,
       item_number: '1',
       item_id: 'table1',
       chapter_id: 'ch2'
@@ -725,21 +725,22 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     parsed = JSON.parse(json)
 
     assert_equal 'TableReference', parsed['resolved_data']['type']
-    assert_equal '2', parsed['resolved_data']['chapter_number']
+    assert_equal 2, parsed['resolved_data']['chapter_number']
     assert_equal '1', parsed['resolved_data']['item_number']
     assert_equal 'ch2', parsed['resolved_data']['chapter_id']
 
     # Test deserialization
     deserialized = AST::JSONSerializer.deserialize(json)
     assert_instance_of(AST::ResolvedData::TableReference, deserialized.resolved_data)
-    assert_equal '2', deserialized.resolved_data.chapter_number
+    assert_equal 2, deserialized.resolved_data.chapter_number
   end
 
   def test_reference_node_with_chapter_reference_serialization
     # Create resolved chapter reference
     resolved_data = AST::ResolvedData.chapter(
-      chapter_number: '第3章',
+      chapter_number: 3, chapter_type: :chapter,
       chapter_id: 'ch3',
+      item_id: 'ch3',
       chapter_title: 'Advanced Topics'
     )
 
@@ -754,14 +755,14 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     parsed = JSON.parse(json)
 
     assert_equal 'ChapterReference', parsed['resolved_data']['type']
-    assert_equal '第3章', parsed['resolved_data']['chapter_number']
+    assert_equal 3, parsed['resolved_data']['chapter_number']
     assert_equal 'ch3', parsed['resolved_data']['chapter_id']
     assert_equal 'Advanced Topics', parsed['resolved_data']['chapter_title']
 
     # Test deserialization
     deserialized = AST::JSONSerializer.deserialize(json)
     assert_instance_of(AST::ResolvedData::ChapterReference, deserialized.resolved_data)
-    assert_equal '第3章', deserialized.resolved_data.chapter_number
+    assert_equal 3, deserialized.resolved_data.chapter_number
     assert_equal 'Advanced Topics', deserialized.resolved_data.chapter_title
   end
 
@@ -772,7 +773,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
       headline_number: [1, 2, 3],
       item_id: 'sec123',
       chapter_id: 'ch1',
-      chapter_number: '1',
+      chapter_number: 1, chapter_type: :chapter,
       caption_node: caption_node
     )
 
@@ -790,7 +791,7 @@ class TestASTJSONSerialization < Test::Unit::TestCase
     assert_equal [1, 2, 3], parsed['resolved_data']['headline_number']
     assert_equal 'sec123', parsed['resolved_data']['item_id']
     assert_equal 'ch1', parsed['resolved_data']['chapter_id']
-    assert_equal '1', parsed['resolved_data']['chapter_number']
+    assert_equal 1, parsed['resolved_data']['chapter_number']
 
     # Test deserialization
     deserialized = AST::JSONSerializer.deserialize(json)

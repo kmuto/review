@@ -34,6 +34,7 @@ module ReVIEW
             item_number: hash['item_number'],
             item_id: hash['item_id'],
             chapter_id: hash['chapter_id'],
+            chapter_type: hash['chapter_type']&.to_sym,
             caption_node: caption_node
           )
         end
