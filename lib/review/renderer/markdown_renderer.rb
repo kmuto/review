@@ -407,7 +407,7 @@ module ReVIEW
         end
 
         data = ref_node.resolved_data
-        chapter_num = @ctx.text_formatter.format_chapter_number_full(data.chapter_number, data.chapter_type)
+        chapter_num = text_formatter.format_chapter_number_full(data.chapter_number, data.chapter_type)
         escape_content(chapter_num.to_s)
       end
 
@@ -429,7 +429,7 @@ module ReVIEW
         end
 
         data = ref_node.resolved_data
-        display_str = @ctx.text_formatter.format_reference(:chapter, data)
+        display_str = text_formatter.format_reference(:chapter, data)
         escape_content(display_str)
       end
 

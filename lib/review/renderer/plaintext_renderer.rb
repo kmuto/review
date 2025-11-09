@@ -531,7 +531,7 @@ module ReVIEW
         end
 
         data = ref_node.resolved_data
-        @ctx.text_formatter.format_reference(:headline, data)
+        text_formatter.format_reference(:headline, data)
       end
 
       def render_inline_labelref(_type, _content, _node)
@@ -551,7 +551,7 @@ module ReVIEW
         end
 
         data = ref_node.resolved_data
-        @ctx.text_formatter.format_chapter_number_full(data.chapter_number, data.chapter_type).to_s
+        text_formatter.format_chapter_number_full(data.chapter_number, data.chapter_type).to_s
       end
 
       def render_inline_chapref(_type, _content, node)
@@ -561,7 +561,7 @@ module ReVIEW
         end
 
         data = ref_node.resolved_data
-        @ctx.text_formatter.format_reference(:chapter, data)
+        text_formatter.format_reference(:chapter, data)
       end
 
       # Default inline rendering - just return content
