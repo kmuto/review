@@ -646,12 +646,12 @@ class TestLatexRenderer < Test::Unit::TestCase
 
     # Test that inline element processing works by visiting an inline node
     # This will internally create a new inline renderer each time (no caching)
-    result = @renderer.visit_inline(inline_node)
+    result = @renderer.visit(inline_node)
     assert_true(result.is_a?(String), 'visit_inline should return a string')
     assert_match(/\\reviewbold\{bold text\}/, result, 'Result should contain LaTeX bold formatting')
 
     # Test that multiple calls work (each creating a new inline renderer)
-    result2 = @renderer.visit_inline(inline_node)
+    result2 = @renderer.visit(inline_node)
     assert_equal(result, result2, 'Multiple calls should produce same result')
   end
 

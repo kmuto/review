@@ -118,7 +118,7 @@ module ReVIEW
       end
 
       def visit_inline(node)
-        content = process_inline_content(node)
+        content = render_children(node)
         render_inline_element(node.inline_type, content, node)
       end
 
@@ -230,21 +230,6 @@ module ReVIEW
           else
             node.to_s
           end
-        end
-      end
-
-      # Process inline content within a node.
-      # This method visits all children of a node and returns the processed content.
-      #
-      # @param node [Object] The node containing inline content
-      # @return [String] The processed inline content
-      def process_inline_content(node)
-        return '' unless node
-
-        if node.children
-          node.children.map { |child| visit(child) }.join
-        else
-          extract_text(node)
         end
       end
     end

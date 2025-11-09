@@ -21,7 +21,6 @@ require 'review/template'
 require 'review/img_math'
 require 'digest'
 require_relative 'rendering_context'
-require 'review/renderer/text_formatter'
 require_relative 'html/inline_context'
 require_relative 'html/inline_element_handler'
 
@@ -200,11 +199,6 @@ module ReVIEW
 
       def visit_text(node)
         escape_content(node.content.to_s)
-      end
-
-      def visit_inline(node)
-        content = render_children(node)
-        render_inline_element(node.inline_type, content, node)
       end
 
       def visit_code_line(node)

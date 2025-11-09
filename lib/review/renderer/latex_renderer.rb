@@ -14,7 +14,6 @@ require 'review/i18n'
 require 'review/textutils'
 require_relative 'base'
 require_relative 'rendering_context'
-require 'review/renderer/text_formatter'
 require_relative 'latex/inline_context'
 require_relative 'latex/inline_element_handler'
 
@@ -158,11 +157,6 @@ module ReVIEW
         # Preserve newlines and escape content properly
         # Don't escape newlines so they are preserved in the output
         escape(content)
-      end
-
-      def visit_inline(node)
-        content = render_children(node)
-        render_inline_element(node.inline_type, content, node)
       end
 
       # Process caption for code blocks with proper context management

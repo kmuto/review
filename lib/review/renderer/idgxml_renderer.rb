@@ -32,7 +32,6 @@ require 'review/loggable'
 require 'digest/sha2'
 require_relative 'base'
 require_relative 'rendering_context'
-require 'review/renderer/text_formatter'
 require_relative 'idgxml/inline_context'
 require_relative 'idgxml/inline_element_handler'
 

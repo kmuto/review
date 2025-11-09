@@ -10,7 +10,6 @@ require 'review/textutils'
 require 'review/loggable'
 require 'review/i18n'
 require_relative 'base'
-require 'review/renderer/text_formatter'
 
 module ReVIEW
   module Renderer
