@@ -8,7 +8,7 @@
 
 require 'review/idgxmlmaker'
 require 'review/ast'
-require_relative 'book_indexer'
+require_relative '../book_indexer'
 require 'review/renderer/idgxml_renderer'
 
 module ReVIEW

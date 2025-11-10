@@ -13,6 +13,6 @@ require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
-require 'review/ast/epub_maker'
+require 'review/ast/command/epub_maker'
 
 ReVIEW::AST::EpubMaker.execute(*ARGV)

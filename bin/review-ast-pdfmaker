@@ -13,6 +13,6 @@ require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
-require 'review/ast/pdf_maker'
+require 'review/ast/command/pdf_maker'
 
 ReVIEW::AST::PdfMaker.execute(*ARGV)

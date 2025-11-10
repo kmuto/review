@@ -13,6 +13,6 @@ require 'pathname'
 bindir = Pathname.new(__FILE__).realpath.dirname
 $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
-require 'review/ast/idgxml_maker'
+require 'review/ast/command/idgxml_maker'
 
 ReVIEW::AST::IdgxmlMaker.execute(*ARGV)

@@ -3,7 +3,7 @@
 require_relative '../test_helper'
 require 'tmpdir'
 require 'fileutils'
-require 'review/ast/idgxml_maker'
+require 'review/ast/command/idgxml_maker'
 
 class ASTIdgxmlMakerTest < Test::Unit::TestCase
   def setup
