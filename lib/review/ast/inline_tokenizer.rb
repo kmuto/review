@@ -307,9 +307,10 @@ module ReVIEW
         preview_end = [start_pos + max_preview_length, str.length].min
 
         # For fence elements, look for matching delimiters beyond the opening one
-        if str[start_pos..-1] =~ /\A@<[a-z]+>([$|])/
-          delimiter = $1
-          delimiter_pos = start_pos + $~.end(0) - 1 # rubocop:disable Style/SpecialGlobalVars
+        matched = /\A@<[a-z]+>([$|])/.match(str[start_pos..-1])
+        if matched
+          delimiter = matched[0]
+          delimiter_pos = start_pos + matched.end(0) - 1
 
           # Look for the closing delimiter
           closing_pos = str.index(delimiter, delimiter_pos + 1)
