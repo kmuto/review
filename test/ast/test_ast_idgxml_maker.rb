@@ -26,7 +26,7 @@ class ASTIdgxmlMakerTest < Test::Unit::TestCase
     target_file = File.join(output_dir, 'ch01.xml')
 
     Dir.chdir(@tmpdir) do
-      maker = ReVIEW::AST::IdgxmlMaker.new
+      maker = ReVIEW::AST::Command::IdgxmlMaker.new
       maker.execute('config.yml')
     end
 

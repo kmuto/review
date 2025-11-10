@@ -15,4 +15,4 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
 require 'review/ast/command/epub_maker'
 
-ReVIEW::AST::EpubMaker.execute(*ARGV)
+ReVIEW::AST::Command::EpubMaker.execute(*ARGV)

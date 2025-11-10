@@ -15,4 +15,4 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
 require 'review/ast/command/pdf_maker'
 
-ReVIEW::AST::PdfMaker.execute(*ARGV)
+ReVIEW::AST::Command::PdfMaker.execute(*ARGV)

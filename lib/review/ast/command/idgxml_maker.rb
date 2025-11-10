@@ -13,183 +13,185 @@ require 'review/renderer/idgxml_renderer'
 
 module ReVIEW
   module AST
-    class IdgxmlMaker < ReVIEW::IDGXMLMaker
-      def initialize
-        super
-        @processor_type = 'AST/Renderer'
-        @renderer_adapter = nil
-      end
-
-      private
-
-      def build_body(basetmpdir, _yamlfile)
-        base_path = Pathname.new(@basedir)
-        book = @book || ReVIEW::Book::Base.new(@basedir, config: @config)
-
-        if @config.dig('ast', 'debug')
-          puts "AST::IdgxmlMaker: Using #{@processor_type} processor"
+    module Command
+      class IdgxmlMaker < ReVIEW::IDGXMLMaker
+        def initialize
+          super
+          @processor_type = 'AST/Renderer'
+          @renderer_adapter = nil
         end
 
-        ReVIEW::AST::BookIndexer.build(book)
+        private
 
-        @renderer_adapter = create_converter(book)
-        @converter = @renderer_adapter
-        @compile_errors = false
+        def build_body(basetmpdir, _yamlfile)
+          base_path = Pathname.new(@basedir)
+          book = @book || ReVIEW::Book::Base.new(@basedir, config: @config)
 
-        book.parts.each do |part|
-          if part.name.present?
-            if part.file?
-              build_chap(part, base_path, basetmpdir, true)
-            else
-              xmlfile = "part_#{part.number}.xml"
-              build_part(part, basetmpdir, xmlfile)
+          if @config.dig('ast', 'debug')
+            puts "AST::Command::IdgxmlMaker: Using #{@processor_type} processor"
+          end
+
+          ReVIEW::AST::BookIndexer.build(book)
+
+          @renderer_adapter = create_converter(book)
+          @converter = @renderer_adapter
+          @compile_errors = false
+
+          book.parts.each do |part|
+            if part.name.present?
+              if part.file?
+                build_chap(part, base_path, basetmpdir, true)
+              else
+                xmlfile = "part_#{part.number}.xml"
+                build_part(part, basetmpdir, xmlfile)
+              end
+            end
+            part.chapters.each do |chap|
+              build_chap(chap, base_path, basetmpdir, false)
             end
           end
-          part.chapters.each do |chap|
-            build_chap(chap, base_path, basetmpdir, false)
+
+          report_renderer_errors
+        end
+
+        def build_chap(chap, base_path, basetmpdir, ispart)
+          filename = if ispart.present?
+                       chap.path
+                     else
+                       Pathname.new(chap.path).relative_path_from(base_path).to_s
+                     end
+          id = File.basename(filename).sub(/\.re\Z/, '')
+          if @buildonly && !@buildonly.include?(id)
+            warn "skip #{id}.re"
+            return
           end
-        end
 
-        report_renderer_errors
-      end
-
-      def build_chap(chap, base_path, basetmpdir, ispart)
-        filename = if ispart.present?
-                     chap.path
-                   else
-                     Pathname.new(chap.path).relative_path_from(base_path).to_s
-                   end
-        id = File.basename(filename).sub(/\.re\Z/, '')
-        if @buildonly && !@buildonly.include?(id)
-          warn "skip #{id}.re"
-          return
-        end
-
-        xmlfile = "#{id}.xml"
-        output_path = File.join(basetmpdir, xmlfile)
-        success = @converter.convert(filename, output_path)
-        if success
-          apply_filter(output_path)
-        else
+          xmlfile = "#{id}.xml"
+          output_path = File.join(basetmpdir, xmlfile)
+          success = @converter.convert(filename, output_path)
+          if success
+            apply_filter(output_path)
+          else
+            @compile_errors = true
+          end
+        rescue StandardError => e
           @compile_errors = true
-        end
-      rescue StandardError => e
-        @compile_errors = true
-        error "compile error in #{filename} (#{e.class})"
-        error e.message
-      end
-
-      def create_converter(book)
-        RendererConverterAdapter.new(
-          book,
-          img_math: @img_math,
-          img_graph: @img_graph
-        )
-      end
-
-      def report_renderer_errors
-        return unless @renderer_adapter&.any_errors?
-
-        @compile_errors = true
-        summary = @renderer_adapter.compilation_error_summary
-        @logger.error(summary) if summary
-      end
-    end
-
-    class RendererConverterAdapter
-      attr_reader :compile_errors_list
-
-      def initialize(book, img_math:, img_graph:)
-        @book = book
-        @img_math = img_math
-        @img_graph = img_graph
-        @config = book.config
-        @logger = ReVIEW.logger
-        @compile_errors_list = []
-      end
-
-      def convert(filename, output_path)
-        chapter = find_chapter(filename)
-        unless chapter
-          record_error("#{filename}: chapter not found")
-          return false
+          error "compile error in #{filename} (#{e.class})"
+          error e.message
         end
 
-        compiler = ReVIEW::AST::Compiler.for_chapter(chapter)
-        ast_root = compiler.compile_to_ast(chapter)
-
-        renderer = ReVIEW::Renderer::IdgxmlRenderer.new(chapter)
-        inject_shared_resources(renderer)
-
-        xml_output = renderer.render(ast_root)
-        File.write(output_path, xml_output)
-
-        true
-        #      rescue ReVIEW::CompileError, ReVIEW::SyntaxError, ReVIEW::AST::InlineTokenizeError => e
-        #        handle_known_error(filename, e)
-        #        false
-        #      rescue StandardError => e
-        #        handle_unexpected_error(filename, e)
-        #        false
-      end
-
-      def any_errors?
-        !@compile_errors_list.empty?
-      end
-
-      def compilation_error_summary
-        return nil if @compile_errors_list.empty?
-
-        summary = ["Compilation errors occurred in #{@compile_errors_list.length} file(s):"]
-        @compile_errors_list.each_with_index do |error, i|
-          summary << "  #{i + 1}. #{error}"
+        def create_converter(book)
+          RendererConverterAdapter.new(
+            book,
+            img_math: @img_math,
+            img_graph: @img_graph
+          )
         end
-        summary.join("\n")
-      end
 
-      private
+        def report_renderer_errors
+          return unless @renderer_adapter&.any_errors?
 
-      def inject_shared_resources(renderer)
-        renderer.img_math = @img_math if @img_math
-        renderer.img_graph = @img_graph if @img_graph
-      end
-
-      def find_chapter(filename)
-        basename = File.basename(filename, '.*')
-
-        chapter = @book.chapters.find { |ch| File.basename(ch.path, '.*') == basename }
-        return chapter if chapter
-
-        @book.parts_in_file.find { |part| File.basename(part.path, '.*') == basename }
-      end
-
-      def handle_known_error(filename, error)
-        message = "#{filename}: #{error.class.name} - #{error.message}"
-        @compile_errors_list << message
-        @logger.error("Compilation error in #{filename}: #{error.message}")
-        if error.respond_to?(:location) && error.location
-          @logger.error("  at line #{error.location.lineno} in #{error.location.filename}")
+          @compile_errors = true
+          summary = @renderer_adapter.compilation_error_summary
+          @logger.error(summary) if summary
         end
-        log_backtrace(error)
       end
 
-      def handle_unexpected_error(filename, error)
-        message = "#{filename}: #{error.message}"
-        @compile_errors_list << message
-        @logger.error("AST Renderer Error in #{filename}: #{error.message}")
-        log_backtrace(error)
-      end
+      class RendererConverterAdapter
+        attr_reader :compile_errors_list
 
-      def log_backtrace(error)
-        return unless @config.dig('ast', 'debug')
+        def initialize(book, img_math:, img_graph:)
+          @book = book
+          @img_math = img_math
+          @img_graph = img_graph
+          @config = book.config
+          @logger = ReVIEW.logger
+          @compile_errors_list = []
+        end
 
-        @logger.debug('Backtrace:')
-        error.backtrace.first(10).each { |line| @logger.debug("  #{line}") }
-      end
+        def convert(filename, output_path)
+          chapter = find_chapter(filename)
+          unless chapter
+            record_error("#{filename}: chapter not found")
+            return false
+          end
 
-      def record_error(message)
-        @compile_errors_list << message
-        @logger.error("AST Renderer Error: #{message}")
+          compiler = ReVIEW::AST::Compiler.for_chapter(chapter)
+          ast_root = compiler.compile_to_ast(chapter)
+
+          renderer = ReVIEW::Renderer::IdgxmlRenderer.new(chapter)
+          inject_shared_resources(renderer)
+
+          xml_output = renderer.render(ast_root)
+          File.write(output_path, xml_output)
+
+          true
+          #      rescue ReVIEW::CompileError, ReVIEW::SyntaxError, ReVIEW::AST::InlineTokenizeError => e
+          #        handle_known_error(filename, e)
+          #        false
+          #      rescue StandardError => e
+          #        handle_unexpected_error(filename, e)
+          #        false
+        end
+
+        def any_errors?
+          !@compile_errors_list.empty?
+        end
+
+        def compilation_error_summary
+          return nil if @compile_errors_list.empty?
+
+          summary = ["Compilation errors occurred in #{@compile_errors_list.length} file(s):"]
+          @compile_errors_list.each_with_index do |error, i|
+            summary << "  #{i + 1}. #{error}"
+          end
+          summary.join("\n")
+        end
+
+        private
+
+        def inject_shared_resources(renderer)
+          renderer.img_math = @img_math if @img_math
+          renderer.img_graph = @img_graph if @img_graph
+        end
+
+        def find_chapter(filename)
+          basename = File.basename(filename, '.*')
+
+          chapter = @book.chapters.find { |ch| File.basename(ch.path, '.*') == basename }
+          return chapter if chapter
+
+          @book.parts_in_file.find { |part| File.basename(part.path, '.*') == basename }
+        end
+
+        def handle_known_error(filename, error)
+          message = "#{filename}: #{error.class.name} - #{error.message}"
+          @compile_errors_list << message
+          @logger.error("Compilation error in #{filename}: #{error.message}")
+          if error.respond_to?(:location) && error.location
+            @logger.error("  at line #{error.location.lineno} in #{error.location.filename}")
+          end
+          log_backtrace(error)
+        end
+
+        def handle_unexpected_error(filename, error)
+          message = "#{filename}: #{error.message}"
+          @compile_errors_list << message
+          @logger.error("AST Renderer Error in #{filename}: #{error.message}")
+          log_backtrace(error)
+        end
+
+        def log_backtrace(error)
+          return unless @config.dig('ast', 'debug')
+
+          @logger.debug('Backtrace:')
+          error.backtrace.first(10).each { |line| @logger.debug("  #{line}") }
+        end
+
+        def record_error(message)
+          @compile_errors_list << message
+          @logger.error("AST Renderer Error: #{message}")
+        end
       end
     end
   end

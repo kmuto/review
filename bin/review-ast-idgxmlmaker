@@ -15,4 +15,4 @@ $LOAD_PATH.unshift((bindir + '../lib').realpath)
 
 require 'review/ast/command/idgxml_maker'
 
-ReVIEW::AST::IdgxmlMaker.execute(*ARGV)
+ReVIEW::AST::Command::IdgxmlMaker.execute(*ARGV)
