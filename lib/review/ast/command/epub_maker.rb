@@ -26,6 +26,11 @@ module ReVIEW
 
       # Override converter creation to use AST Renderer
       def create_converter(book)
+        # Build indexes for all chapters to support cross-chapter references
+        # This must be done before rendering any chapter
+        require_relative('../book_indexer')
+        ReVIEW::AST::BookIndexer.build(book)
+
         # Create a wrapper that makes Renderer compatible with Converter interface
         # Renderer will be created per chapter in the adapter
         RendererConverterAdapter.new(book)
