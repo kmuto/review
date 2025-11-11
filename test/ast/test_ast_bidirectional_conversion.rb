@@ -3,7 +3,7 @@
 require_relative '../test_helper'
 require 'review/ast'
 require 'review/ast/compiler'
-require 'review/ast/comparator'
+require 'review/ast/diff/node'
 require 'review/ast/json_serializer'
 require 'review/ast/review_generator'
 require 'review/book'
@@ -376,7 +376,7 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
   # Compare two AST nodes for structural equivalence
   # Ignores location information and focuses on node types, attributes, and structure
   def assert_ast_equivalent(node1, node2, message = 'AST nodes are not equivalent')
-    comparator = ReVIEW::AST::Comparator.new
+    comparator = ReVIEW::AST::Diff::Node.new
     result = comparator.compare(node1, node2)
     assert(result.equal?, "#{message}\n#{result}")
   end

@@ -45,9 +45,41 @@ module ReVIEW
         when ReVIEW::AST::TextNode
           node.content
         when ReVIEW::AST::InlineNode
-          # Convert back to Re:VIEW markup
-          content = node.children.map { |child| render_node_as_review_markup(child) }.join
-          "@<#{node.inline_type}>{#{content}}"
+          # For kw and ruby, use args directly (same as visit_inline)
+          case node.inline_type
+          when 'kw'
+            if node.args.size >= 2
+              word = node.args[0].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
+              desc = node.args[1].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
+              "@<kw>{#{word}, #{desc}}"
+            elsif node.args.size == 1
+              word = node.args[0].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
+              "@<kw>{#{word}}"
+            else
+              content = node.children.map { |child| render_node_as_review_markup(child) }.join
+              "@<kw>{#{content}}"
+            end
+          when 'ruby'
+            base = node.args[0].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
+            if node.args.size >= 2
+              ruby_text = node.args[1].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
+              "@<ruby>{#{base}, #{ruby_text}}"
+            else
+              "@<ruby>{#{base}}"
+            end
+          when 'href'
+            url = node.args[0] || ''
+            content = node.children.map { |child| render_node_as_review_markup(child) }.join
+            if content.empty?
+              "@<href>{#{url}}"
+            else
+              "@<href>{#{url}, #{content}}"
+            end
+          else
+            # Default: use children
+            content = node.children.map { |child| render_node_as_review_markup(child) }.join
+            "@<#{node.inline_type}>{#{content}}"
+          end
         else
           node.leaf_node? ? node.content : ''
         end
@@ -270,7 +302,9 @@ module ReVIEW
       end
 
       def visit_image(node)
-        text = "//image[#{node.id || ''}]"
+        # Use image_type to determine the command (:image, :indepimage, :numberlessimage)
+        image_command = node.image_type || :image
+        text = "//#{image_command}[#{node.id || ''}]"
 
         caption_text = caption_to_review_markup(node.caption_node)
         text += "[#{caption_text}]" unless caption_text.empty?

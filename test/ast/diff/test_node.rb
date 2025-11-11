@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require_relative '../test_helper'
+require_relative '../../test_helper'
 require 'review/ast'
-require 'review/ast/comparator'
+require 'review/ast/diff/node'
 
-class TestASTComparator < Test::Unit::TestCase
+class TestASTDiffNode < Test::Unit::TestCase
   def setup
-    @comparator = ReVIEW::AST::Comparator.new
+    @comparator = ReVIEW::AST::Diff::Node.new
     @location = ReVIEW::SnapshotLocation.new('test.re', 1)
   end
 
