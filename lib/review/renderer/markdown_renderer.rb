@@ -145,9 +145,17 @@ module ReVIEW
         result = ''
         lang = node.lang || ''
 
+        # Add div wrapper with ID (if node has id)
+        if node.id && !node.id.empty?
+          list_id = normalize_id(node.id)
+          result += %Q(<div id="#{list_id}">\n\n)
+        end
+
         # Add caption if present
         caption = render_caption_inline(node.caption_node)
-        result += "**#{caption}**\n\n" unless caption.empty?
+        if caption && !caption.empty?
+          result += %Q(<p class="caption">#{caption}</p>\n\n)
+        end
 
         # Generate fenced code block
         result += "```#{lang}\n"
@@ -171,6 +179,11 @@ module ReVIEW
         end
 
         result += "```\n\n"
+
+        # Close div wrapper if added
+        if node.id && !node.id.empty?
+          result += "</div>\n\n"
+        end
 
         result
       end
@@ -208,10 +221,13 @@ module ReVIEW
         @table_rows = []
         @table_header_count = 0
 
+        # Add div wrapper with ID
+        table_id = normalize_id(node.id)
+        result = %Q(<div id="#{table_id}">\n\n)
+
         # Add caption if present
-        result = +''
         caption = render_caption_inline(node.caption_node)
-        result += "**#{caption}**\n\n" unless caption.empty?
+        result += %Q(<p class="caption">#{caption}</p>\n\n) unless caption.empty?
 
         # Process table content
         render_children(node)
@@ -221,7 +237,7 @@ module ReVIEW
           result += generate_markdown_table
         end
 
-        result += "\n"
+        result += "\n</div>\n\n"
         result
       end
 
@@ -249,9 +265,14 @@ module ReVIEW
 
       def visit_image(node)
         # Use node.id as the image path, get path from chapter if image is bound
-        image_path = if @chapter&.image_bound?(node.id)
-                       @chapter.image(node.id).path
-                     else
+        image_path = begin
+                       if @chapter&.image_bound?(node.id)
+                         @chapter.image(node.id).path
+                       else
+                         node.id
+                       end
+                     rescue StandardError
+                       # If image lookup fails (e.g., incomplete book structure), use node.id
                        node.id
                      end
 
@@ -260,11 +281,13 @@ module ReVIEW
         # Remove ./ prefix if present
         image_path = image_path.sub(%r{\A\./}, '')
 
-        if caption.empty?
-          "![](#{image_path})\n\n"
-        else
-          "![#{caption}](#{image_path})\n\n"
-        end
+        # Generate HTML figure with ID attribute
+        figure_id = normalize_id(node.id)
+        result = %Q(<figure id="#{figure_id}">\n)
+        result += %Q(<img src="#{image_path}" alt="#{escape_content(caption)}">\n)
+        result += %Q(<figcaption>#{caption}</figcaption>\n) unless caption.empty?
+        result += "</figure>\n\n"
+        result
       end
 
       def visit_minicolumn(node)
@@ -291,6 +314,18 @@ module ReVIEW
         lines = content.split("\n")
         quoted_lines = lines.map { |line| "> #{line}" }
         "#{quoted_lines.join("\n")}\n\n"
+      end
+
+      def visit_block_centering(node)
+        # Use HTML div for centering in Markdown
+        content = render_children(node)
+        "<div style=\"text-align: center;\">\n\n#{content}\n</div>\n\n"
+      end
+
+      def visit_block_flushright(node)
+        # Use HTML div for right alignment in Markdown
+        content = render_children(node)
+        "<div style=\"text-align: right;\">\n\n#{content}\n</div>\n\n"
       end
 
       def visit_block_captionblock(node)
@@ -357,6 +392,22 @@ module ReVIEW
         "\n\n"
       end
 
+      def visit_tex_equation(node)
+        # LaTeX equation block - render as math code block
+        content = node.content.strip
+        result = +''
+
+        if node.id? && node.caption?
+          # With ID and caption
+          caption = render_caption_inline(node.caption_node)
+          result += "**#{caption}**\n\n" unless caption.empty?
+        end
+
+        # Render equation in display math mode ($$...$$)
+        result += "$$\n#{content}\n$$\n\n"
+        result
+      end
+
       def render_inline_element(type, content, node)
         method_name = "render_inline_#{type}"
         if respond_to?(method_name, true)
@@ -380,10 +431,34 @@ module ReVIEW
       end
 
       def visit_footnote(node)
-        footnote_id = node.id
+        footnote_id = normalize_id(node.id)
         content = render_children(node)
 
+        # Use Markdown standard footnote definition notation
         "[^#{footnote_id}]: #{content}\n\n"
+      end
+
+      def visit_endnote(node)
+        # Endnote definition - treat similar to footnotes
+        endnote_id = node.id
+        content = render_children(node)
+
+        "[^#{endnote_id}]: #{content}\n\n"
+      end
+
+      def visit_block_label(node)
+        # Label definition for cross-references - render as HTML anchor
+        # Label ID is stored in args[0], not in node.id
+        label_id = node.args&.first
+        return '' unless label_id
+
+        "<a id=\"#{normalize_id(label_id)}\"></a>\n\n"
+      end
+
+      def visit_block_printendnotes(_node)
+        # Directive to print endnotes - in Markdown, endnotes are collected automatically
+        # Just output a horizontal rule or section marker
+        "---\n\n**Endnotes**\n\n"
       end
 
       def visit_text(node)
@@ -470,7 +545,10 @@ module ReVIEW
 
         data = ref_node.resolved_data
         chapter_num = text_formatter.format_chapter_number_full(data.chapter_number, data.chapter_type)
-        escape_content(chapter_num.to_s)
+        chapter_id = data.item_id
+
+        # Generate HTML link (same as HtmlRenderer)
+        %Q(<a href="./#{chapter_id}.html">#{escape_content(chapter_num.to_s)}</a>)
       end
 
       def render_inline_title(_type, _content, node)
@@ -481,7 +559,10 @@ module ReVIEW
 
         data = ref_node.resolved_data
         title = data.chapter_title || ''
-        "**#{escape_asterisks(title)}**"
+        chapter_id = data.item_id
+
+        # Generate HTML link with title
+        %Q(<a href="./#{chapter_id}.html">#{escape_content(title)}</a>)
       end
 
       def render_inline_chapref(_type, _content, node)
@@ -492,20 +573,32 @@ module ReVIEW
 
         data = ref_node.resolved_data
         display_str = text_formatter.format_reference(:chapter, data)
-        escape_content(display_str)
+        chapter_id = data.item_id
+
+        # Generate HTML link with full chapter reference
+        %Q(<a href="./#{chapter_id}.html">#{escape_content(display_str)}</a>)
       end
 
-      def render_inline_list(_type, content, _node)
-        escape_content(content)
-      end
-
-      def render_inline_img(_type, content, node)
-        if node.args.first
-          image_id = node.args.first
-          "![#{escape_content(content)}](##{image_id})"
-        else
-          "![#{escape_content(content)}](##{content})"
+      def render_inline_list(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.reference_node? && ref_node.resolved?
+          raise 'BUG: Reference should be resolved at AST construction time'
         end
+
+        data = ref_node.resolved_data
+        text = text_formatter.format_reference_text(:list, data)
+        wrap_reference_with_html(text, data, 'listref')
+      end
+
+      def render_inline_img(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.reference_node? && ref_node.resolved?
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
+
+        data = ref_node.resolved_data
+        text = text_formatter.format_reference_text(:image, data)
+        wrap_reference_with_html(text, data, 'imgref')
       end
 
       def render_inline_icon(_type, content, node)
@@ -518,14 +611,35 @@ module ReVIEW
         end
       end
 
-      def render_inline_table(_type, content, _node)
-        escape_content(content)
+      def render_inline_table(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.reference_node? && ref_node.resolved?
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
+
+        data = ref_node.resolved_data
+        text = text_formatter.format_reference_text(:table, data)
+        wrap_reference_with_html(text, data, 'tableref')
       end
 
-      def render_inline_fn(_type, content, node)
+      def render_inline_fn(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.reference_node? && ref_node.resolved?
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
+
+        data = ref_node.resolved_data
+        fn_id = normalize_id(data.item_id)
+
+        # Use Markdown standard footnote notation
+        "[^#{fn_id}]"
+      end
+
+      def render_inline_endnote(_type, content, node)
+        # Endnote references - treat similar to footnotes
         if node.args.first
-          fn_id = node.args.first
-          "[^#{fn_id}]"
+          endnote_id = node.args.first
+          "[^#{endnote_id}]"
         else
           "[^#{content}]"
         end
@@ -552,11 +666,17 @@ module ReVIEW
       def render_inline_href(_type, content, node)
         args = node.args || []
         if args.length >= 2
+          # @<href>{url,text} format
           url = args[0]
           text = args[1]
-          "[#{text}](#{url})"
+          "[#{escape_content(text)}](#{url})"
+        elsif args.length == 1
+          # @<href>{url} format - use URL as both text and href
+          url = args[0]
+          "[#{escape_content(url)}](#{url})"
         else
-          "[#{content}](#{content})"
+          # Fallback to content
+          "[#{escape_content(content)}](#{content})"
         end
       end
 
@@ -590,16 +710,94 @@ module ReVIEW
         end
       end
 
-      def render_inline_hd(_type, content, _node)
-        escape_content(content)
+      def render_inline_hd(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.reference_node? && ref_node.resolved?
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
+
+        data = ref_node.resolved_data
+        n = data.headline_number
+        chapter_num = text_formatter.format_chapter_number_short(data.chapter_number, data.chapter_type)
+
+        # Render caption with inline markup
+        caption_html = if data.caption_node
+                         render_children(data.caption_node)
+                       else
+                         escape_content(data.caption_text)
+                       end
+
+        # Build full section number
+        full_number = if n.present? && chapter_num && !chapter_num.to_s.empty? && over_secnolevel?(n)
+                        ([chapter_num] + n).join('.')
+                      end
+
+        str = text_formatter.format_headline_quote(full_number, caption_html)
+
+        # Generate HTML link if section number exists
+        if full_number
+          chapter_id = data.chapter_id || @chapter.id
+          anchor = 'h' + full_number.tr('.', '-')
+          %Q(<a href="#{chapter_id}.html##{anchor}">#{str}</a>)
+        else
+          str
+        end
       end
 
-      def render_inline_sec(_type, content, _node)
-        escape_content(content)
+      def render_inline_sec(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.reference_node? && ref_node.resolved?
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
+
+        data = ref_node.resolved_data
+        n = data.headline_number
+        chapter_num = text_formatter.format_chapter_number_short(data.chapter_number, data.chapter_type)
+
+        # Build full section number
+        full_number = if n.present? && chapter_num && !chapter_num.to_s.empty? && over_secnolevel?(n)
+                        ([chapter_num] + n).join('.')
+                      else
+                        ''
+                      end
+
+        # Generate HTML link if section number exists
+        if full_number.present?
+          chapter_id = data.chapter_id || @chapter.id
+          anchor = 'h' + full_number.tr('.', '-')
+          %Q(<a href="#{chapter_id}.html##{anchor}">#{escape_content(full_number)}</a>)
+        else
+          escape_content(full_number)
+        end
       end
 
-      def render_inline_secref(_type, content, _node)
-        escape_content(content)
+      def render_inline_secref(_type, _content, node)
+        # secref is usually same as sec
+        render_inline_sec(nil, nil, node)
+      end
+
+      def render_inline_sectitle(_type, _content, node)
+        ref_node = node.children.first
+        unless ref_node.reference_node? && ref_node.resolved?
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
+
+        data = ref_node.resolved_data
+
+        # Render title with inline markup
+        title_html = if data.caption_node
+                       render_children(data.caption_node)
+                     else
+                       escape_content(data.caption_text)
+                     end
+
+        # Generate HTML link
+        n = data.headline_number
+        chapter_num = text_formatter.format_chapter_number_short(data.chapter_number, data.chapter_type)
+        full_number = ([chapter_num] + n).join('.')
+        anchor = 'h' + full_number.tr('.', '-')
+        chapter_id = data.chapter_id || @chapter.id
+        %Q(<a href="#{chapter_id}.html##{anchor}">#{title_html}</a>)
       end
 
       def render_inline_labelref(_type, content, _node)
@@ -749,6 +947,34 @@ module ReVIEW
         end
 
         result
+      end
+
+      # Normalize ID for use in HTML anchors (same as HtmlRenderer)
+      def normalize_id(id)
+        id.to_s.gsub(/[^a-zA-Z0-9_-]/, '_')
+      end
+
+      # Get text formatter for reference formatting
+      def text_formatter
+        @text_formatter ||= ReVIEW::TextUtils.new(@chapter)
+      end
+
+      # Wrap reference with HTML span and link (same as HtmlRenderer)
+      def wrap_reference_with_html(text, data, css_class)
+        escaped_text = escape_content(text)
+        chapter_id = data.chapter_id || @chapter&.id
+        item_id = normalize_id(data.item_id)
+
+        # Generate HTML with span and link
+        %Q(<span class="#{css_class}"><a href="./#{chapter_id}.html##{item_id}">#{escaped_text}</a></span>)
+      end
+
+      # Check if section number should be displayed (based on secnolevel)
+      def over_secnolevel?(n)
+        secnolevel = config['secnolevel'] || 0
+        # Section level = chapter level (1) + n.size
+        section_level = n.is_a?(::Array) ? (1 + n.size) : (1 + n.to_s.split('.').size)
+        secnolevel >= section_level
       end
     end
   end

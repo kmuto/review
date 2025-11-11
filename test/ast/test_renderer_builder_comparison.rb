@@ -18,7 +18,7 @@ class TestRendererBuilderComparison < Test::Unit::TestCase
     @config = ReVIEW::Configure.values
     @config['secnolevel'] = 2
     @config['language'] = 'ja'
-    @config['disable_reference_resolution'] = true
+    
     @book = ReVIEW::Book::Base.new(config: @config)
     @log_io = StringIO.new
     ReVIEW.logger = ReVIEW::Logger.new(@log_io)
@@ -46,7 +46,7 @@ class TestRendererBuilderComparison < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
 
     ast_compiler = ReVIEW::AST::Compiler.new
-    ast_root = ast_compiler.compile_to_ast(chapter)
+    ast_root = ast_compiler.compile_to_ast(chapter, reference_resolution: false)
 
     renderer = renderer_class.new(chapter)
     renderer.render(ast_root)
