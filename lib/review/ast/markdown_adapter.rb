@@ -10,6 +10,7 @@ require 'review/ast'
 require 'review/snapshot_location'
 require_relative 'markdown_html_node'
 require_relative 'inline_tokenizer'
+require_relative 'context_stack'
 
 module ReVIEW
   module AST
@@ -18,14 +19,15 @@ module ReVIEW
     # This class walks the Markly AST and creates corresponding
     # Re:VIEW AST nodes.
     class MarkdownAdapter
+      # Placeholder for Re:VIEW inline notation marker (@<)
+      # Used to restore notation from MarkdownCompiler's preprocessing
+      REVIEW_NOTATION_PLACEHOLDER = '@@REVIEW_AT_LT@@'
+
       def initialize(compiler)
         @compiler = compiler
-        @list_stack = []
-        @table_stack = []
-        @current_line = 1
         @column_stack = [] # Stack for tracking nested columns
-        @pending_nodes = [] # Temporary storage for nodes inside columns
         @last_table_node = nil # Track last table node for attribute assignment
+        @context = nil # Will be initialized in convert()
       end
 
       # Convert Markly document to Re:VIEW AST
@@ -41,11 +43,21 @@ module ReVIEW
         # Initialize InlineTokenizer for processing Re:VIEW notation
         @inline_tokenizer = InlineTokenizer.new
 
-        # Walk the Markly AST
-        walk_node(markly_doc)
+        # Initialize context stack with document root
+        @context = ContextStack.new(ast_root)
 
-        # Close any remaining open columns at the end of the document
-        close_all_columns
+        begin
+          # Walk the Markly AST
+          walk_node(markly_doc)
+
+          # Close any remaining open columns at the end of the document
+          close_all_columns
+
+          # Validate final state
+          validate_final_state!
+        rescue StandardError => e
+          raise "Markdown conversion failed: #{e.message}\n#{e.backtrace.join("\n")}"
+        end
       end
 
       private
@@ -212,15 +224,19 @@ module ReVIEW
 
         add_node_to_current_context(list_node)
 
-        # Push list context
-        @list_stack.push(@current_node)
-        @current_node = list_node
+        # Save current context
+        saved_current = @current_node
 
-        # Process list items
-        process_children(cm_node)
+        # Use unified context management with exception safety
+        @context.with_context(list_node) do
+          @current_node = list_node
 
-        # Pop list context
-        @current_node = @list_stack.pop
+          # Process list items
+          process_children(cm_node)
+        end
+
+        # Restore current context
+        @current_node = saved_current
       end
 
       # Process list item node
@@ -231,20 +247,25 @@ module ReVIEW
 
         add_node_to_current_context(item)
 
-        # Process item content
+        # Save current context
         saved_current = @current_node
-        @current_node = item
 
-        cm_node.each_with_index do |child, idx|
-          if child.type == :paragraph && idx == 0
-            # For the first paragraph in a list item, process inline content directly
-            process_inline_content(child, item)
-          else
-            # For other blocks, process normally
-            walk_node(child)
+        # Use unified context management with exception safety
+        @context.with_context(item) do
+          @current_node = item
+
+          cm_node.each_with_index do |child, idx|
+            if child.type == :paragraph && idx == 0
+              # For the first paragraph in a list item, process inline content directly
+              process_inline_content(child, item)
+            else
+              # For other blocks, process normally
+              walk_node(child)
+            end
           end
         end
 
+        # Restore current context
         @current_node = saved_current
       end
 
@@ -287,7 +308,7 @@ module ReVIEW
 
         # Restore Re:VIEW notation markers in code block content
         code_content = cm_node.string_content
-        code_content = code_content.gsub(MarkdownCompiler::REVIEW_NOTATION_PLACEHOLDER, '@<')
+        code_content = code_content.gsub(REVIEW_NOTATION_PLACEHOLDER, '@<')
 
         code_block = CodeBlockNode.new(
           location: current_location(cm_node),
@@ -325,10 +346,16 @@ module ReVIEW
 
         add_node_to_current_context(quote_node)
 
-        # Process quote content
+        # Save current context
         saved_current = @current_node
-        @current_node = quote_node
-        process_children(cm_node)
+
+        # Use unified context management with exception safety
+        @context.with_context(quote_node) do
+          @current_node = quote_node
+          process_children(cm_node)
+        end
+
+        # Restore current context
         @current_node = saved_current
       end
 
@@ -340,13 +367,18 @@ module ReVIEW
 
         add_node_to_current_context(table_node)
 
-        # Process table content
-        @table_stack.push(@current_node)
-        @current_node = table_node
+        # Save current context
+        saved_current = @current_node
 
-        process_children(cm_node)
+        # Use unified context management with exception safety
+        @context.with_context(table_node) do
+          @current_node = table_node
 
-        @current_node = @table_stack.pop
+          process_children(cm_node)
+        end
+
+        # Restore current context
+        @current_node = saved_current
 
         # Check if the last row contains only attribute block
         # This happens when Markly includes the attribute line as part of the table
@@ -492,7 +524,7 @@ module ReVIEW
           text = cm_node.string_content
 
           # Restore Re:VIEW notation markers (@<) from placeholders
-          text = text.gsub(MarkdownCompiler::REVIEW_NOTATION_PLACEHOLDER, '@<')
+          text = text.gsub(REVIEW_NOTATION_PLACEHOLDER, '@<')
 
           # Process Re:VIEW inline notation
           # Use InlineTokenizer to properly parse @<xxx>{id} with escape sequences
@@ -544,7 +576,7 @@ module ReVIEW
         when :code
           # Restore Re:VIEW notation markers in inline code
           code_content = cm_node.string_content
-          code_content = code_content.gsub(MarkdownCompiler::REVIEW_NOTATION_PLACEHOLDER, '@<')
+          code_content = code_content.gsub(REVIEW_NOTATION_PLACEHOLDER, '@<')
 
           inline_node = InlineNode.new(location: current_location(cm_node), inline_type: :code, args: [code_content])
           inline_node.add_child(TextNode.new(location: current_location(cm_node), content: code_content))
@@ -623,7 +655,7 @@ module ReVIEW
         line = if cm_node.respond_to?(:source_position) && cm_node.source_position
                  cm_node.source_position[:start_line] + line_offset
                else
-                 @current_line + line_offset
+                 1 + line_offset # Default to line 1 if source position not available
                end
 
         SnapshotLocation.new(@chapter.basename, line)
@@ -690,6 +722,14 @@ module ReVIEW
 
       # Add node to current context (column or document)
       def add_node_to_current_context(node)
+        if @current_node.nil?
+          raise "Internal error: No current context. Cannot add #{node.class} node."
+        end
+
+        unless @current_node.respond_to?(:add_child)
+          raise "Internal error: Current context #{@current_node.class} doesn't support add_child."
+        end
+
         @current_node.add_child(node)
       end
 
@@ -859,44 +899,19 @@ module ReVIEW
       end
 
       # Parse Re:VIEW inline notation from text: @<type>{id}
-      # Returns array of text segments and reference nodes
-      # @param text [String] Text potentially containing Re:VIEW references
-      # @return [Array<Hash>] Array of {type: :text|:reference, content: String, ref_type: Symbol, ref_id: String}
-      def parse_review_references(text)
-        segments = []
-        pos = 0
-
-        # Pattern: @<img>{id}, @<list>{id}, @<table>{id}, @<code>{id}, etc.
-        pattern = /@<([a-z]+)>\{([^}]+)\}/
-
-        text.scan(pattern) do |match|
-          ref_type = match[0]
-          ref_id = match[1]
-          match_start = ::Regexp.last_match.begin(0)
-          match_end = ::Regexp.last_match.end(0)
-
-          # Add text before the match
-          if match_start > pos
-            segments << { type: :text, content: text[pos...match_start] }
-          end
-
-          # Add reference
-          segments << {
-            type: :reference,
-            ref_type: ref_type.to_sym,
-            ref_id: ref_id
-          }
-
-          pos = match_end
+      # Validate that final state is clean after conversion
+      def validate_final_state!
+        if @current_node != @ast_root
+          raise 'Internal error: Context not properly restored. ' \
+                "Expected to be at root but at #{@current_node.class}"
         end
 
-        # Add remaining text
-        if pos < text.length
-          segments << { type: :text, content: text[pos..-1] }
+        if @column_stack.any?
+          raise "Internal error: #{@column_stack.length} unclosed column(s) remain"
         end
 
-        # If no references found, return single text segment
-        segments.empty? ? [{ type: :text, content: text }] : segments
+        # Validate context stack
+        @context.validate!
       end
     end
   end
