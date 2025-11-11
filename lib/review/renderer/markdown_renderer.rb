@@ -45,7 +45,8 @@ module ReVIEW
       end
 
       def visit_paragraph(node)
-        content = render_children(node)
+        # Render children with spacing between adjacent inline elements
+        content = render_children_with_inline_spacing(node)
         return '' if content.empty?
 
         lines = content.split("\n")
@@ -247,7 +248,13 @@ module ReVIEW
       end
 
       def visit_image(node)
-        image_path = node.image_path || node.id
+        # Use node.id as the image path, get path from chapter if image is bound
+        image_path = if @chapter&.image_bound?(node.id)
+                       @chapter.image(node.id).path
+                     else
+                       node.id
+                     end
+
         caption = render_caption_inline(node.caption_node)
 
         # Remove ./ prefix if present
@@ -294,19 +301,79 @@ module ReVIEW
         result
       end
 
+      def visit_embed(node)
+        # Handle //raw and @<raw> commands with target builder specification
+        if node.targeted_for?('markdown')
+          content = node.content || ''
+          # Convert \n to actual newlines
+          content.gsub('\\n', "\n")
+        else
+          ''
+        end
+      end
+
+      def visit_column(node)
+        result = +''
+
+        # Use HTML div for columns as Markdown doesn't have native support
+        css_class = node.column_type.to_s
+
+        result += %Q(<div class="#{css_class}">\n\n)
+
+        caption = render_caption_inline(node.caption_node)
+        result += "**#{caption}**\n\n" unless caption.empty?
+
+        result += render_children(node)
+        result += "\n</div>\n\n"
+
+        result
+      end
+
+      def visit_block_lead(node)
+        # Lead paragraphs - render as regular paragraphs in Markdown
+        render_children(node) + "\n"
+      end
+
+      def visit_block_bibpaper(node)
+        # Bibliography entries - render as list items
+        result = +''
+
+        # Get ID and caption
+        bib_id = node.id || ''
+        caption = render_caption_inline(node.caption_node)
+
+        # Format as markdown list item with ID
+        result += "* **[#{bib_id}]** #{caption}\n" unless caption.empty?
+
+        # Add content if any
+        content = render_children(node)
+        result += "  #{content.gsub("\n", "\n  ")}\n" unless content.strip.empty?
+
+        result + "\n"
+      end
+
+      def visit_block_blankline(node)
+        # Blank line directive - render as double newline
+        "\n\n"
+      end
+
       def render_inline_element(type, content, node)
         method_name = "render_inline_#{type}"
         if respond_to?(method_name, true)
           send(method_name, type, content, node)
         else
-          raise NotImplementedError, "Unknown inline element: #{type}"
+          # Fallback for unknown inline elements: render as plain text
+          # This allows graceful degradation for specialized elements
+          ReVIEW.logger.warn("Unknown inline element: @<#{type}>{...} - rendering as plain text")
+          content
         end
       end
 
       def render_caption_inline(caption_node)
         return '' unless caption_node
 
-        content = render_children(caption_node)
+        # Use inline spacing for captions as well
+        content = render_children_with_inline_spacing(caption_node)
         # Join lines like visit_paragraph does
         lines = content.split("\n")
         lines.join(' ')
@@ -571,6 +638,95 @@ module ReVIEW
       end
 
       private
+
+      # Render children with spacing between adjacent inline elements
+      # This prevents Markdown parsing issues when inline elements are adjacent
+      #
+      # Rules:
+      # - Same type adjacent inlines are merged: @<b>{a}@<b>{b} → **ab**
+      # - Different type adjacent inlines get space: @<b>{a}@<i>{b} → **a** *b*
+      def render_children_with_inline_spacing(node)
+        return '' if node.children.empty?
+
+        # Group consecutive inline nodes of the same type
+        groups = group_inline_nodes(node.children)
+
+        result = +''
+        prev_group_was_inline = false
+
+        groups.each do |group|
+          if group[:type] == :inline_group
+            # Add space if previous group was also inline (but different type)
+            result += ' ' if prev_group_was_inline
+
+            # Merge same-type inline nodes and render together
+            merged_content = group[:nodes].map { |n| render_children(n) }.join
+            inline_type = group[:inline_type]
+
+            # Render the merged content as a single inline element
+            result += render_inline_element(inline_type, merged_content, group[:nodes].first)
+
+            prev_group_was_inline = true
+          else
+            # Regular nodes (text, etc.) - just render normally
+            group[:nodes].each do |n|
+              result += visit(n)
+            end
+            prev_group_was_inline = false
+          end
+        end
+
+        result
+      end
+
+      # Group consecutive inline nodes by type
+      # Returns array of groups: [{type: :inline_group, inline_type: 'b', nodes: [...]}, ...]
+      def group_inline_nodes(children)
+        groups = []
+        current_group = nil
+
+        children.each do |child|
+          if child.is_a?(ReVIEW::AST::InlineNode)
+            inline_type = child.inline_type
+
+            # Start new group if type changed or first inline
+            if current_group.nil? || current_group[:type] != :inline_group || current_group[:inline_type] != inline_type
+              # Save previous group if exists
+              groups << current_group if current_group
+
+              # Start new inline group
+              current_group = {
+                type: :inline_group,
+                inline_type: inline_type,
+                nodes: [child]
+              }
+            else
+              # Add to current group (same type)
+              current_group[:nodes] << child
+            end
+          else
+            # Non-inline node
+            # Save previous inline group if exists
+            if current_group && current_group[:type] == :inline_group
+              groups << current_group
+              current_group = nil
+            end
+
+            # Start or continue regular node group
+            if current_group.nil? || current_group[:type] != :regular
+              groups << current_group if current_group
+              current_group = { type: :regular, nodes: [child] }
+            else
+              current_group[:nodes] << child
+            end
+          end
+        end
+
+        # Don't forget the last group
+        groups << current_group if current_group
+
+        groups
+      end
 
       def generate_markdown_table
         return '' if @table_rows.empty?
