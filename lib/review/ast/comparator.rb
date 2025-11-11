@@ -4,47 +4,47 @@ require_relative 'visitor'
 
 module ReVIEW
   module AST
-    # Result of AST comparison
-    class ComparisonResult
-      attr_reader :differences
-
-      def initialize
-        @differences = []
-      end
-
-      # Add a difference to the result
-      def add_difference(path, message)
-        @differences << "#{path}: #{message}"
-      end
-
-      # Check if the comparison was successful (no differences)
-      def equal?
-        @differences.empty?
-      end
-
-      # Get a human-readable summary of differences
-      def to_s
-        if equal?
-          'AST nodes are equivalent'
-        else
-          "AST nodes differ:\n  " + @differences.join("\n  ")
-        end
-      end
-    end
-
     # Compares two AST nodes for structural equivalence using the Visitor pattern
     # (ignoring location information)
     class Comparator < Visitor
-      # Compare two AST nodes and return a ComparisonResult
+      # Result of AST comparison
+      class Result
+        attr_reader :differences
+
+        def initialize
+          @differences = []
+        end
+
+        # Add a difference to the result
+        def add_difference(path, message)
+          @differences << "#{path}: #{message}"
+        end
+
+        # Check if the comparison was successful (no differences)
+        def equal?
+          @differences.empty?
+        end
+
+        # Get a human-readable summary of differences
+        def to_s
+          if equal?
+            'AST nodes are equivalent'
+          else
+            "AST nodes differ:\n  " + @differences.join("\n  ")
+          end
+        end
+      end
+
+      # Compare two AST nodes and return a Result
       #
       # @param node1 [AST::Node] First node to compare
       # @param node2 [AST::Node] Second node to compare
       # @param path [String] Path to current node (for error messages)
-      # @return [ComparisonResult] Result of comparison
+      # @return [Result] Result of comparison
       def compare(node1, node2, path = 'root')
         @node2 = node2
         @path = path
-        @result = ComparisonResult.new
+        @result = Result.new
 
         compare_nodes(node1)
 
