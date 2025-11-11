@@ -28,6 +28,14 @@ module ReVIEW
         visit_all(node.children).join
       end
 
+      # Escape special characters for Re:VIEW inline markup
+      # Escapes backslashes and closing braces to prevent markup breaking
+      # @param text [String] The text to escape
+      # @return [String] Escaped text safe for Re:VIEW inline markup
+      def escape_inline_content(text)
+        text.to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
+      end
+
       # Convert CaptionNode to Re:VIEW markup format
       # @param caption_node [CaptionNode, nil] The caption node to convert
       # @return [String] Re:VIEW markup string
@@ -38,6 +46,8 @@ module ReVIEW
       end
 
       # Recursively render AST nodes as Re:VIEW markup text
+      # This method is primarily used for rendering caption content where inline elements
+      # need to be processed. For general node visiting, use the visit_* methods instead.
       # @param node [Node] The node to render
       # @return [String] Re:VIEW markup representation
       def render_node_as_review_markup(node)
@@ -45,41 +55,8 @@ module ReVIEW
         when ReVIEW::AST::TextNode
           node.content
         when ReVIEW::AST::InlineNode
-          # For kw and ruby, use args directly (same as visit_inline)
-          case node.inline_type
-          when 'kw'
-            if node.args.size >= 2
-              word = node.args[0].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
-              desc = node.args[1].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
-              "@<kw>{#{word}, #{desc}}"
-            elsif node.args.size == 1
-              word = node.args[0].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
-              "@<kw>{#{word}}"
-            else
-              content = node.children.map { |child| render_node_as_review_markup(child) }.join
-              "@<kw>{#{content}}"
-            end
-          when 'ruby'
-            base = node.args[0].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
-            if node.args.size >= 2
-              ruby_text = node.args[1].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
-              "@<ruby>{#{base}, #{ruby_text}}"
-            else
-              "@<ruby>{#{base}}"
-            end
-          when 'href'
-            url = node.args[0] || ''
-            content = node.children.map { |child| render_node_as_review_markup(child) }.join
-            if content.empty?
-              "@<href>{#{url}}"
-            else
-              "@<href>{#{url}, #{content}}"
-            end
-          else
-            # Default: use children
-            content = node.children.map { |child| render_node_as_review_markup(child) }.join
-            "@<#{node.inline_type}>{#{content}}"
-          end
+          # Use the visit_inline_* methods for consistency
+          visit(node)
         else
           node.leaf_node? ? node.content : ''
         end
@@ -138,50 +115,64 @@ module ReVIEW
       end
 
       def visit_inline(node)
-        # For certain inline types, use args instead of visit_children
-        # kw, ruby: args contain the actual content, children may have duplicate data
-        case node.inline_type
-        when 'kw'
-          # kw: @<kw>{word, description} - use args directly
-          if node.args.size >= 2
-            word = node.args[0].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
-            desc = node.args[1].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
-            "@<kw>{#{word}, #{desc}}"
-          elsif node.args.size == 1
-            word = node.args[0].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
-            "@<kw>{#{word}}"
-          else
-            content = visit_children(node).gsub('\\', '\\\\\\\\').gsub('}', '\\}')
-            "@<kw>{#{content}}"
-          end
-        when 'ruby'
-          # ruby: @<ruby>{base, ruby_text} - use args directly
-          base = node.args[0].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
-          if node.args.size >= 2
-            ruby_text = node.args[1].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
-            "@<ruby>{#{base}, #{ruby_text}}"
-          else
-            "@<ruby>{#{base}}"
-          end
-        when 'href'
-          # href: @<href>{url, text} - special handling
-          url = node.args[0] || ''
-          content = visit_children(node)
-          if content.empty?
-            "@<href>{#{url}}"
-          else
-            escaped_content = content.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
-            "@<href>{#{url}, #{escaped_content}}"
-          end
+        # Use dynamic method dispatch for extensibility
+        # To add a new inline type, define a method: visit_inline_<type>(node)
+        method_name = "visit_inline_#{node.inline_type}"
+        if respond_to?(method_name, true)
+          send(method_name, node)
         else
-          # Default: use visit_children
-          content = visit_children(node)
-          # Use args as fallback if children are empty
-          if content.empty? && node.args.any?
-            content = node.args.first.to_s
-          end
-          escaped_content = content.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
-          "@<#{node.inline_type}>{#{escaped_content}}"
+          # Default implementation for unknown inline types
+          visit_inline_default(node)
+        end
+      end
+
+      # Default implementation for inline elements
+      # Uses children content or first arg as fallback
+      def visit_inline_default(node)
+        content = visit_children(node)
+        # Use args as fallback if children are empty
+        if content.empty? && node.args.any?
+          content = node.args.first.to_s
+        end
+        escaped_content = escape_inline_content(content)
+        "@<#{node.inline_type}>{#{escaped_content}}"
+      end
+
+      # Inline element: @<kw>{word, description}
+      def visit_inline_kw(node)
+        if node.args.size >= 2
+          word = escape_inline_content(node.args[0])
+          desc = escape_inline_content(node.args[1])
+          "@<kw>{#{word}, #{desc}}"
+        elsif node.args.size == 1
+          word = escape_inline_content(node.args[0])
+          "@<kw>{#{word}}"
+        else
+          content = escape_inline_content(visit_children(node))
+          "@<kw>{#{content}}"
+        end
+      end
+
+      # Inline element: @<ruby>{base, ruby_text}
+      def visit_inline_ruby(node)
+        base = escape_inline_content(node.args[0])
+        if node.args.size >= 2
+          ruby_text = escape_inline_content(node.args[1])
+          "@<ruby>{#{base}, #{ruby_text}}"
+        else
+          "@<ruby>{#{base}}"
+        end
+      end
+
+      # Inline element: @<href>{url, text}
+      def visit_inline_href(node)
+        url = node.args[0] || ''
+        content = visit_children(node)
+        if content.empty?
+          "@<href>{#{url}}"
+        else
+          escaped_content = escape_inline_content(content)
+          "@<href>{#{url}, #{escaped_content}}"
         end
       end
 
@@ -265,39 +256,9 @@ module ReVIEW
       end
 
       def visit_table(node)
-        # Determine table type
         table_type = node.table_type || :table
-
-        # Build opening tag
-        text = "//#{table_type}"
-        text += "[#{node.id}]" if node.id?
-
-        caption_text = caption_to_review_markup(node.caption_node)
-        text += "[#{caption_text}]" unless caption_text.empty?
-        text += "{\n"
-
-        # Add header rows
-        header_lines = node.header_rows.map do |header_row|
-          header_row.children.map do |cell|
-            render_cell_content(cell)
-          end.join("\t")
-        end
-
-        # Add body rows
-        body_lines = node.body_rows.map do |body_row|
-          body_row.children.map do |cell|
-            render_cell_content(cell)
-          end.join("\t")
-        end
-
-        # Combine all lines with separator if headers exist
-        all_lines = header_lines
-        all_lines << ('-' * 12) if header_lines.any?
-        all_lines.concat(body_lines)
-
-        text += all_lines.join("\n")
-        text += "\n" if all_lines.any?
-
+        text = build_table_header(node, table_type)
+        text += build_table_body(node.header_rows, node.body_rows)
         text + "//}\n\n"
       end
 
@@ -339,142 +300,223 @@ module ReVIEW
         text + "//}\n\n"
       end
 
-      def visit_block(node) # rubocop:disable Metrics/CyclomaticComplexity,Metrics/MethodLength,Metrics/PerceivedComplexity
-        case node.block_type
-        when :quote
-          content = visit_children(node)
-          text = "//quote{\n" + content
-          text += "\n" unless content.end_with?("\n")
-          text + "//}\n\n"
-        when :read
-          content = visit_children(node)
-          text = "//read{\n" + content
-          text += "\n" unless content.end_with?("\n")
-          text + "//}\n\n"
-        when :lead
-          content = visit_children(node)
-          text = "//lead{\n" + content
-          text += "\n" unless content.end_with?("\n")
-          text + "//}\n\n"
-        when :centering
-          content = visit_children(node)
-          text = "//centering{\n" + content
-          text += "\n" unless content.end_with?("\n")
-          text + "//}\n\n"
-        when :flushright
-          content = visit_children(node)
-          text = "//flushright{\n" + content
-          text += "\n" unless content.end_with?("\n")
-          text + "//}\n\n"
-        when :comment
-          content = visit_children(node)
-          text = "//comment{\n" + content
-          text += "\n" unless content.end_with?("\n")
-          text + "//}\n\n"
-        when :blankline
-          "//blankline\n\n"
-        when :noindent
-          "//noindent\n" + visit_children(node)
-        when :pagebreak
-          "//pagebreak\n\n"
-        when :olnum
-          "//olnum[#{node.args.join(', ')}]\n\n"
-        when :firstlinenum
-          "//firstlinenum[#{node.args.join(', ')}]\n\n"
-        when :tsize
-          "//tsize[#{node.args.join(', ')}]\n\n"
-        when :footnote
-          content = visit_children(node)
-          "//footnote[#{node.args.join('][') || ''}][#{content.strip}]\n\n"
-        when :endnote
-          content = visit_children(node)
-          "//endnote[#{node.args.join('][') || ''}][#{content.strip}]\n\n"
-        when :label
-          "//label[#{node.args.first}]\n\n"
-        when :printendnotes
-          "//printendnotes\n\n"
-        when :beginchild
-          "//beginchild\n\n"
-        when :endchild
-          "//endchild\n\n"
-        when :texequation
-          # Math equation blocks
-          text = '//texequation'
-          caption_text = caption_to_review_markup(node.caption_node)
-          if node.id || !caption_text.empty?
-            text += "[#{node.id}]" if node.id
-            text += "[#{caption_text}]" unless caption_text.empty?
-          end
-          text += "{\n"
-          content = visit_children(node)
-          text += content
-          text += "\n" unless content.end_with?("\n")
-          text += "//}\n\n"
-
-          text
-        when :doorquote
-          text = '//doorquote'
-          text += "[#{node.args.join('][') if node.args.any?}]"
-          text += "{\n"
-          content = visit_children(node)
-          text += content
-          text += "\n" unless content.end_with?("\n")
-          text += "//}\n\n"
-
-          text
-        when :bibpaper
-          text = '//bibpaper'
-          text += "[#{node.args.join('][') if node.args.any?}]"
-          text += "{\n"
-          content = visit_children(node)
-          text += content
-          text += "\n" unless content.end_with?("\n")
-          text += "//}\n\n"
-
-          text
-        when :talk
-          text = '//talk'
-          text += "{\n"
-          content = visit_children(node)
-          text += content
-          text += "\n" unless content.end_with?("\n")
-          text += "//}\n\n"
-
-          text
-        when :graph
-          text = '//graph'
-          text += "[#{node.args.join('][') if node.args.any?}]"
-          text += "{\n"
-          content = visit_children(node)
-          text += content
-          text += "\n" unless content.end_with?("\n")
-          text += "//}\n\n"
-
-          text
-        when :address
-          content = visit_children(node)
-          text = "//address{\n" + content
-          text += "\n" unless content.end_with?("\n")
-          text + "//}\n\n"
-        when :bpo
-          "//bpo\n\n"
-        when :hr
-          "//hr\n\n"
-        when :parasep
-          "//parasep\n\n"
-        when :box
-          text = '//box'
-          text += "[#{node.args.first}]" if node.args.any?
-          text += "{\n"
-          content = visit_children(node)
-          text += content
-          text += "\n" unless content.end_with?("\n")
-          text += "//}\n\n"
-
-          text
+      def visit_block(node)
+        # Use dynamic method dispatch for extensibility
+        # To add a new block type, define a method: visit_block_<type>(node)
+        #
+        # EXTENSION GUIDE: When adding new block types:
+        # 1. Define a new method: visit_block_<blocktype>(node)
+        # 2. For simple wrapper blocks (like quote, read, lead):
+        #    - Get content: content = visit_children(node)
+        #    - Ensure newline: text += "\n" unless content.end_with?("\n")
+        #    - Format: "//blocktype{\ncontent\n//}\n\n"
+        # 3. For directive blocks (like pagebreak, hr):
+        #    - Format: "//blocktype\n\n"
+        # 4. For blocks with parameters (like footnote[id][content]):
+        #    - Use node.args for parameters
+        #    - Format: "//blocktype[#{node.args.join('][')}]\n\n"
+        # 5. For blocks with caption (like texequation):
+        #    - Use caption_to_review_markup(node.caption_node)
+        #    - Check node.id? for ID availability
+        method_name = "visit_block_#{node.block_type}"
+        if respond_to?(method_name, true)
+          send(method_name, node)
         else
+          # Default: just render children for unknown block types
           visit_children(node)
         end
+      end
+
+      # Simple wrapper block helper
+      # Wraps content in //blocktype{ ... //}
+      def render_simple_wrapper_block(block_type, content)
+        text = "//#{block_type}{\n" + content
+        text += "\n" unless content.end_with?("\n")
+        text + "//}\n\n"
+      end
+
+      # Block: //quote{ ... //}
+      def visit_block_quote(node)
+        content = visit_children(node)
+        render_simple_wrapper_block('quote', content)
+      end
+
+      # Block: //read{ ... //}
+      def visit_block_read(node)
+        content = visit_children(node)
+        render_simple_wrapper_block('read', content)
+      end
+
+      # Block: //lead{ ... //}
+      def visit_block_lead(node)
+        content = visit_children(node)
+        render_simple_wrapper_block('lead', content)
+      end
+
+      # Block: //centering{ ... //}
+      def visit_block_centering(node)
+        content = visit_children(node)
+        render_simple_wrapper_block('centering', content)
+      end
+
+      # Block: //flushright{ ... //}
+      def visit_block_flushright(node)
+        content = visit_children(node)
+        render_simple_wrapper_block('flushright', content)
+      end
+
+      # Block: //comment{ ... //}
+      def visit_block_comment(node)
+        content = visit_children(node)
+        render_simple_wrapper_block('comment', content)
+      end
+
+      # Block: //address{ ... //}
+      def visit_block_address(node)
+        content = visit_children(node)
+        render_simple_wrapper_block('address', content)
+      end
+
+      # Block: //talk{ ... //}
+      def visit_block_talk(node)
+        content = visit_children(node)
+        render_simple_wrapper_block('talk', content)
+      end
+
+      # Block: //blankline
+      def visit_block_blankline(_node)
+        "//blankline\n\n"
+      end
+
+      # Block: //noindent
+      def visit_block_noindent(node)
+        "//noindent\n" + visit_children(node)
+      end
+
+      # Block: //pagebreak
+      def visit_block_pagebreak(_node)
+        "//pagebreak\n\n"
+      end
+
+      # Block: //hr
+      def visit_block_hr(_node)
+        "//hr\n\n"
+      end
+
+      # Block: //parasep
+      def visit_block_parasep(_node)
+        "//parasep\n\n"
+      end
+
+      # Block: //bpo
+      def visit_block_bpo(_node)
+        "//bpo\n\n"
+      end
+
+      # Block: //printendnotes
+      def visit_block_printendnotes(_node)
+        "//printendnotes\n\n"
+      end
+
+      # Block: //beginchild
+      def visit_block_beginchild(_node)
+        "//beginchild\n\n"
+      end
+
+      # Block: //endchild
+      def visit_block_endchild(_node)
+        "//endchild\n\n"
+      end
+
+      # Block: //olnum[num]
+      def visit_block_olnum(node)
+        "//olnum[#{node.args.join(', ')}]\n\n"
+      end
+
+      # Block: //firstlinenum[num]
+      def visit_block_firstlinenum(node)
+        "//firstlinenum[#{node.args.join(', ')}]\n\n"
+      end
+
+      # Block: //tsize[...]
+      def visit_block_tsize(node)
+        "//tsize[#{node.args.join(', ')}]\n\n"
+      end
+
+      # Block: //label[id]
+      def visit_block_label(node)
+        "//label[#{node.args.first}]\n\n"
+      end
+
+      # Block: //footnote[id][content]
+      def visit_block_footnote(node)
+        content = visit_children(node)
+        "//footnote[#{node.args.join('][') || ''}][#{content.strip}]\n\n"
+      end
+
+      # Block: //endnote[id][content]
+      def visit_block_endnote(node)
+        content = visit_children(node)
+        "//endnote[#{node.args.join('][') || ''}][#{content.strip}]\n\n"
+      end
+
+      # Block: //texequation[id][caption]{ ... //}
+      def visit_block_texequation(node)
+        text = '//texequation'
+        caption_text = caption_to_review_markup(node.caption_node)
+        if node.id || !caption_text.empty?
+          text += "[#{node.id}]" if node.id
+          text += "[#{caption_text}]" unless caption_text.empty?
+        end
+        text += "{\n"
+        content = visit_children(node)
+        text += content
+        text += "\n" unless content.end_with?("\n")
+        text + "//}\n\n"
+      end
+
+      # Block: //doorquote[...]{ ... //}
+      def visit_block_doorquote(node)
+        text = '//doorquote'
+        text += "[#{node.args.join('][')}]" if node.args.any?
+        text += "{\n"
+        content = visit_children(node)
+        text += content
+        text += "\n" unless content.end_with?("\n")
+        text + "//}\n\n"
+      end
+
+      # Block: //bibpaper[...]{ ... //}
+      def visit_block_bibpaper(node)
+        text = '//bibpaper'
+        text += "[#{node.args.join('][')}]" if node.args.any?
+        text += "{\n"
+        content = visit_children(node)
+        text += content
+        text += "\n" unless content.end_with?("\n")
+        text + "//}\n\n"
+      end
+
+      # Block: //graph[...]{ ... //}
+      def visit_block_graph(node)
+        text = '//graph'
+        text += "[#{node.args.join('][')}]" if node.args.any?
+        text += "{\n"
+        content = visit_children(node)
+        text += content
+        text += "\n" unless content.end_with?("\n")
+        text + "//}\n\n"
+      end
+
+      # Block: //box[caption]{ ... //}
+      def visit_block_box(node)
+        text = '//box'
+        text += "[#{node.args.first}]" if node.args.any?
+        text += "{\n"
+        content = visit_children(node)
+        text += content
+        text += "\n" unless content.end_with?("\n")
+        text + "//}\n\n"
       end
 
       def visit_embed(node)
@@ -623,12 +665,52 @@ module ReVIEW
         text
       end
 
-      # Helper to render table cell content
-      def render_cell_content(cell)
-        content = cell.children.map do |child|
-          visit(child)
-        end.join
+      # Build table opening tag with type, ID, and caption
+      # @param node [TableNode] The table node
+      # @param table_type [Symbol] The table type (:table, :imgtable, etc.)
+      # @return [String] Table opening tag with parameters
+      def build_table_header(node, table_type)
+        text = "//#{table_type}"
+        text += "[#{node.id}]" if node.id?
 
+        caption_text = caption_to_review_markup(node.caption_node)
+        text += "[#{caption_text}]" unless caption_text.empty?
+        text + "{\n"
+      end
+
+      # Build table body with header and body rows
+      # @param header_rows [Array<RowNode>] Header row nodes
+      # @param body_rows [Array<RowNode>] Body row nodes
+      # @return [String] Formatted table rows with separator
+      def build_table_body(header_rows, body_rows)
+        lines = format_table_rows(header_rows)
+        lines << ('-' * 12) if header_rows.any?
+        lines.concat(format_table_rows(body_rows))
+
+        return '' if lines.empty?
+
+        lines.join("\n") + "\n"
+      end
+
+      # Format multiple table rows
+      # @param rows [Array<RowNode>] Row nodes to format
+      # @return [Array<String>] Formatted row strings
+      def format_table_rows(rows)
+        rows.map { |row| format_table_row(row) }
+      end
+
+      # Format a single table row
+      # @param row [RowNode] Row node to format
+      # @return [String] Tab-separated cell contents
+      def format_table_row(row)
+        row.children.map { |cell| render_cell_content(cell) }.join("\t")
+      end
+
+      # Render table cell content
+      # @param cell [CellNode] Cell node to render
+      # @return [String] Cell content or '.' for empty cells
+      def render_cell_content(cell)
+        content = cell.children.map { |child| visit(child) }.join
         # Empty cells should be represented with a dot in Re:VIEW syntax
         content.empty? ? '.' : content
       end
