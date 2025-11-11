@@ -8,6 +8,7 @@
 
 require_relative 'compiler'
 require_relative 'markdown_adapter'
+require_relative 'inline_tokenizer'
 require 'markly'
 
 module ReVIEW
@@ -17,6 +18,10 @@ module ReVIEW
     # This class compiles Markdown documents to Re:VIEW AST using Markly
     # for parsing and MarkdownAdapter for AST conversion.
     class MarkdownCompiler < Compiler
+      # Placeholder for Re:VIEW inline notation marker (@<)
+      # Used to protect @<xxx>{id} from Markly's HTML parser
+      REVIEW_NOTATION_PLACEHOLDER = '@@REVIEW_AT_LT@@'
+
       def initialize
         super
         @adapter = MarkdownAdapter.new(self)
@@ -40,80 +45,22 @@ module ReVIEW
         # NOTE: tagfilter is removed to allow Re:VIEW inline notation @<xxx>{id}
         extensions = %i[strikethrough table autolink]
 
-        # Preprocess: Extract footnote definitions and escape Re:VIEW inline notation
         markdown_content = @chapter.content
-        ref_map = {}
-        ref_counter = 0
-        footnote_map = {}
-        footnote_counter = 0
-        footnote_ref_map = {}
 
-        # Extract footnote definitions: [^id]: content
-        # Footnotes can span multiple lines if indented
-        lines = markdown_content.lines
-        i = 0
-        processed_lines = []
-
-        while i < lines.length
-          line = lines[i]
-
-          # Check if this is a footnote definition
-          if line =~ /^\[\^([^\]]+)\]:\s*(.*)$/
-            footnote_id = ::Regexp.last_match(1)
-            footnote_content = ::Regexp.last_match(2)
-
-            # Collect continuation lines (indented lines)
-            i += 1
-            while i < lines.length && lines[i] =~ /^[ \t]+(.+)$/
-              footnote_content += ' ' + ::Regexp.last_match(1).strip
-              i += 1
-            end
-
-            # Store footnote definition
-            placeholder = "@@FOOTNOTE_DEF_#{footnote_counter}@@"
-            footnote_map[placeholder] = { id: footnote_id, content: footnote_content.strip }
-            footnote_counter += 1
-
-            # Replace with placeholder followed by blank line to ensure separate paragraph
-            processed_lines << "#{placeholder}\n\n"
-          else
-            processed_lines << line
-            i += 1
-          end
-        end
-
-        markdown_content = processed_lines.join
-
-        # Replace footnote references [^id] with placeholder
-        markdown_content = markdown_content.gsub(/\[\^([^\]]+)\]/) do
-          footnote_id = ::Regexp.last_match(1)
-          placeholder = "@@FOOTNOTE_REF_#{ref_counter}@@"
-          footnote_ref_map[placeholder] = footnote_id
-          ref_counter += 1
-          placeholder
-        end
-
-        # Replace Re:VIEW inline notation @<xxx>{id} with placeholder
-        markdown_content = markdown_content.gsub(/@<([a-z]+)>\{([^}]+)\}/) do
-          ref_type = ::Regexp.last_match(1)
-          ref_id = ::Regexp.last_match(2)
-          placeholder = "@@REVIEW_REF_#{ref_counter}@@"
-          ref_map[placeholder] = { type: ref_type, id: ref_id }
-          ref_counter += 1
-          placeholder
-        end
+        # Protect Re:VIEW inline notation from Markly's HTML parser
+        # Markly treats @<xxx> as HTML tags and removes them
+        # Replace @< with a temporary placeholder before parsing
+        markdown_content = markdown_content.gsub('@<', REVIEW_NOTATION_PLACEHOLDER)
 
         # Parse the Markdown content
         markly_doc = Markly.parse(
           markdown_content,
+          flags: Markly::FOOTNOTES,
           extensions: extensions
         )
 
         # Convert Markly AST to Re:VIEW AST
-        @adapter.convert(markly_doc, @ast_root, @chapter,
-                         ref_map: ref_map,
-                         footnote_map: footnote_map,
-                         footnote_ref_map: footnote_ref_map)
+        @adapter.convert(markly_doc, @ast_root, @chapter)
 
         if reference_resolution
           resolve_references

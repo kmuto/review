@@ -59,17 +59,6 @@ module ReVIEW
         end
       end
 
-      # Check if this is a column start comment
-      # Matches patterns like "<!-- column: Title -->" or "<!-- column -->"
-      #
-      # @return [Boolean] True if this is a column start comment
-      def column_start?
-        return false unless comment?
-
-        content = comment_content
-        content&.start_with?('column')
-      end
-
       # Check if this is a column end comment
       # Matches patterns like "<!-- /column -->"
       #
@@ -79,20 +68,6 @@ module ReVIEW
 
         content = comment_content
         content&.match?(%r{\A\s*/column\s*\z})
-      end
-
-      # Extract column title from column start comment
-      # For "<!-- column: My Title -->" returns "My Title"
-      # For "<!-- column -->" returns nil
-      #
-      # @return [String, nil] Column title or nil
-      def column_title
-        return nil unless column_start?
-
-        content = comment_content
-        if content.include?(':')
-          content.split(':', 2).last.strip
-        end
       end
     end
   end

@@ -26,24 +26,29 @@ class TestMarkdownColumn < Test::Unit::TestCase
     content = <<~MARKDOWN
       # Chapter
 
-      <!-- column: Test Column -->
+      ## [column] Test Column
       Column content
-      <!-- /column -->
+
+      ### not column separator
+
+      ## [column] Test Column2
+      Column content2
     MARKDOWN
 
     chapter = create_chapter(content)
     ast_root = @compiler.compile_to_ast(chapter)
 
     columns = find_columns(ast_root)
-    assert_equal 1, columns.length
-    assert_equal 'Test Column', extract_column_title(columns.first)
+    assert_equal 2, columns.length
+    assert_equal 'Test Column', extract_column_title(columns[0])
+    assert_equal 'Test Column2', extract_column_title(columns[1])
   end
 
   def test_column_detection_no_title
     content = <<~MARKDOWN
       # Chapter
 
-      <!-- column -->
+      ## [column]
       Column content
       <!-- /column -->
     MARKDOWN
@@ -60,7 +65,7 @@ class TestMarkdownColumn < Test::Unit::TestCase
     content = <<~MARKDOWN
       # Chapter
 
-      <!-- column: Rich Column -->
+      ## [column] Rich Column
 
       This is **bold** and *italic* text.
 
@@ -93,13 +98,13 @@ class TestMarkdownColumn < Test::Unit::TestCase
     content = <<~MARKDOWN
       # Chapter
 
-      <!-- column: First Column -->
+      ### [column] First Column
       First content
       <!-- /column -->
 
       Normal paragraph
 
-      <!-- column: Second Column -->
+      ### [column] Second Column
       Second content
       <!-- /column -->
     MARKDOWN
@@ -117,9 +122,8 @@ class TestMarkdownColumn < Test::Unit::TestCase
     content = <<~MARKDOWN
       # Chapter
 
-      <!-- column: HTML Test -->
+      ## [column] HTML Test
       Column **content**
-      <!-- /column -->
     MARKDOWN
 
     chapter = create_chapter(content)
@@ -136,7 +140,7 @@ class TestMarkdownColumn < Test::Unit::TestCase
     content = <<~MARKDOWN
       # Chapter
 
-      <!-- column: LaTeX Test -->
+      ## [column] LaTeX Test
       Column content
       <!-- /column -->
     MARKDOWN
@@ -159,9 +163,7 @@ class TestMarkdownColumn < Test::Unit::TestCase
       html_type: :comment
     )
 
-    assert_true(start_node.column_start?)
     assert_false(start_node.column_end?)
-    assert_equal 'Test Title', start_node.column_title
 
     end_node = AST::MarkdownHtmlNode.new(
       location: nil,
@@ -169,9 +171,7 @@ class TestMarkdownColumn < Test::Unit::TestCase
       html_type: :comment
     )
 
-    assert_false(end_node.column_start?)
     assert_true(end_node.column_end?)
-    assert_nil(end_node.column_title)
   end
 
   def test_mixed_syntax_heading_start

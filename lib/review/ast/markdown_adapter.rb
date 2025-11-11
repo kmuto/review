@@ -9,6 +9,7 @@
 require 'review/ast'
 require 'review/snapshot_location'
 require_relative 'markdown_html_node'
+require_relative 'inline_tokenizer'
 
 module ReVIEW
   module AST
@@ -32,16 +33,13 @@ module ReVIEW
       # @param markly_doc [Markly::Node] Markly document root
       # @param ast_root [DocumentNode] Re:VIEW AST root
       # @param chapter [ReVIEW::Book::Chapter] Chapter context (required)
-      # @param ref_map [Hash] Map of placeholders to Re:VIEW inline references
-      # @param footnote_map [Hash] Map of placeholders to footnote definitions
-      # @param footnote_ref_map [Hash] Map of placeholders to footnote references
-      def convert(markly_doc, ast_root, chapter, ref_map: {}, footnote_map: {}, footnote_ref_map: {})
+      def convert(markly_doc, ast_root, chapter)
         @ast_root = ast_root
         @current_node = ast_root
         @chapter = chapter
-        @ref_map = ref_map
-        @footnote_map = footnote_map
-        @footnote_ref_map = footnote_ref_map
+
+        # Initialize InlineTokenizer for processing Re:VIEW notation
+        @inline_tokenizer = InlineTokenizer.new
 
         # Walk the Markly AST
         walk_node(markly_doc)
@@ -96,6 +94,9 @@ module ReVIEW
         when :hrule
           process_thematic_break(cm_node)
 
+        when :footnote_definition
+          process_footnote_definition(cm_node)
+
         else # rubocop:disable Style/EmptyElse
           # For inline elements and other types, delegate to inline processing
           # This includes :text, :strong, :emph, :code, :link, :image, etc.
@@ -119,12 +120,8 @@ module ReVIEW
         # Extract text content to check for column marker
         heading_text = extract_text(cm_node)
 
-        # Check if this is a column end marker: ### [/column]
-        if %r{\A\s*\[/column\]\s*\z}.match?(heading_text)
-          # End the current column
-          end_column_from_heading(cm_node)
         # Check if this is a column start marker: ### [column] Title or ### [column]
-        elsif heading_text =~ /\A\s*\[column\](.*)/
+        if heading_text =~ /\A\s*\[column\](.*)/
           title = $1.strip
           title = nil if title.empty?
 
@@ -162,17 +159,8 @@ module ReVIEW
           return
         end
 
-        # Check if this is a footnote definition placeholder
-        para_text = extract_text(cm_node).strip
-        footnote_map = @footnote_map || {}
-
-        if footnote_map[para_text]
-          process_footnote_definition(cm_node, para_text)
-          @last_table_node = nil
-          return
-        end
-
         # Check if this is an attribute block for the previous table
+        para_text = extract_text(cm_node).strip
         # Pattern: {#id caption="..."}
         attrs = parse_attribute_block(para_text)
 
@@ -297,17 +285,21 @@ module ReVIEW
         # Use :list type if ID is present (numbered list), otherwise :emlist
         code_type = code_id ? :list : :emlist
 
+        # Restore Re:VIEW notation markers in code block content
+        code_content = cm_node.string_content
+        code_content = code_content.gsub(MarkdownCompiler::REVIEW_NOTATION_PLACEHOLDER, '@<')
+
         code_block = CodeBlockNode.new(
           location: current_location(cm_node),
           id: code_id,
           lang: lang,
           code_type: code_type,
           caption_node: caption_node,
-          original_text: cm_node.string_content
+          original_text: code_content
         )
 
         # Add code lines
-        cm_node.string_content.each_line.with_index do |line, idx|
+        code_content.each_line.with_index do |line, idx|
           line_node = CodeLineNode.new(
             location: current_location(cm_node, line_offset: idx),
             original_text: line.chomp
@@ -463,9 +455,7 @@ module ReVIEW
         )
 
         # Check if this is a column marker
-        if html_node.column_start?
-          start_column(html_node)
-        elsif html_node.column_end?
+        if html_node.column_end?
           end_column(html_node)
         else
           # Regular HTML content - add to current context
@@ -501,79 +491,44 @@ module ReVIEW
         when :text
           text = cm_node.string_content
 
-          # Check for placeholders from preprocessing
-          # Pattern: @@REVIEW_REF_N@@ or @@FOOTNOTE_REF_N@@
-          ref_map = @ref_map || {}
-          footnote_ref_map = @footnote_ref_map || {}
-          segments = []
-          pos = 0
+          # Restore Re:VIEW notation markers (@<) from placeholders
+          text = text.gsub(MarkdownCompiler::REVIEW_NOTATION_PLACEHOLDER, '@<')
 
-          # Scan for both types of placeholders
-          text.scan(/@@(REVIEW_REF|FOOTNOTE_REF)_(\d+)@@/) do
-            match_start = ::Regexp.last_match.begin(0)
-            match_end = ::Regexp.last_match.end(0)
-            placeholder = ::Regexp.last_match(0)
-            placeholder_type = ::Regexp.last_match(1)
+          # Process Re:VIEW inline notation
+          # Use InlineTokenizer to properly parse @<xxx>{id} with escape sequences
+          location = current_location(cm_node)
 
-            # Add text before placeholder
-            if match_start > pos
-              segments << { type: :text, content: text[pos...match_start] }
+          begin
+            # Tokenize text for Re:VIEW inline notation
+            tokens = @inline_tokenizer.tokenize(text, location: location)
+
+            # Process each token
+            tokens.each do |token|
+              case token.type
+              when :text
+                # Text token: create TextNode
+                parent_node.add_child(TextNode.new(location: location, content: token.content))
+
+              when :inline
+                # InlineToken: Re:VIEW inline notation @<xxx>{id}
+                ref_type = token.command.to_sym
+                ref_id = token.content
+
+                # Create ReferenceNode
+                reference_node = ReferenceNode.new(ref_id, nil, location: location)
+
+                # Create InlineNode with reference type
+                inline_node = InlineNode.new(location: location, inline_type: ref_type, args: [ref_id])
+                inline_node.add_child(reference_node)
+
+                parent_node.add_child(inline_node)
+              end
             end
-
-            # Add reference based on placeholder type
-            segments << if placeholder_type == 'REVIEW_REF' && ref_map[placeholder]
-                          { type: :reference, ref_type: ref_map[placeholder][:type].to_sym, ref_id: ref_map[placeholder][:id] }
-                        elsif placeholder_type == 'FOOTNOTE_REF' && footnote_ref_map[placeholder]
-                          { type: :footnote_ref, footnote_id: footnote_ref_map[placeholder] }
-                        else
-                          # Fallback: treat as text if not in map
-                          { type: :text, content: placeholder }
-                        end
-
-            pos = match_end
-          end
-
-          # Add remaining text
-          if pos < text.length
-            segments << { type: :text, content: text[pos..-1] }
-          end
-
-          # If no placeholders found, treat entire text as single segment
-          segments = [{ type: :text, content: text }] if segments.empty?
-
-          # Create nodes from segments
-          segments.each do |segment|
-            case segment[:type]
-            when :text
-              # Regular text node
-              parent_node.add_child(TextNode.new(location: current_location(cm_node), content: segment[:content]))
-            when :reference
-              # Reference: create InlineNode with ReferenceNode child
-              ref_type = segment[:ref_type]
-              ref_id = segment[:ref_id]
-
-              # Create ReferenceNode
-              reference_node = ReferenceNode.new(ref_id, nil, location: current_location(cm_node))
-
-              # Create InlineNode with reference type
-              inline_node = InlineNode.new(location: current_location(cm_node), inline_type: ref_type, args: [ref_id])
-              inline_node.add_child(reference_node)
-
-              parent_node.add_child(inline_node)
-
-            when :footnote_ref
-              # Footnote reference: create InlineNode with fn type
-              footnote_id = segment[:footnote_id]
-
-              # Create ReferenceNode
-              reference_node = ReferenceNode.new(footnote_id, nil, location: current_location(cm_node))
-
-              # Create InlineNode with fn type
-              inline_node = InlineNode.new(location: current_location(cm_node), inline_type: :fn, args: [footnote_id])
-              inline_node.add_child(reference_node)
-
-              parent_node.add_child(inline_node)
-            end
+          rescue InlineTokenizeError => e
+            # If tokenization fails, add error message as comment and add original text
+            # This allows the document to continue processing
+            warn("Failed to parse inline notation: #{e.message}")
+            parent_node.add_child(TextNode.new(location: location, content: text))
           end
 
         when :strong
@@ -587,8 +542,12 @@ module ReVIEW
           parent_node.add_child(inline_node)
 
         when :code
-          inline_node = InlineNode.new(location: current_location(cm_node), inline_type: :code, args: [cm_node.string_content])
-          inline_node.add_child(TextNode.new(location: current_location(cm_node), content: cm_node.string_content))
+          # Restore Re:VIEW notation markers in inline code
+          code_content = cm_node.string_content
+          code_content = code_content.gsub(MarkdownCompiler::REVIEW_NOTATION_PLACEHOLDER, '@<')
+
+          inline_node = InlineNode.new(location: current_location(cm_node), inline_type: :code, args: [code_content])
+          inline_node.add_child(TextNode.new(location: current_location(cm_node), content: code_content))
           parent_node.add_child(inline_node)
 
         when :link
@@ -615,6 +574,24 @@ module ReVIEW
         when :linebreak
           # Hard line break - preserve as newline
           parent_node.add_child(TextNode.new(location: current_location(cm_node), content: "\n"))
+
+        when :footnote_reference
+          # Footnote reference [^id] parsed by Markly
+          # Get the actual footnote ID from the parent footnote definition
+          footnote_id = if cm_node.respond_to?(:parent_footnote_def) && cm_node.parent_footnote_def
+                          cm_node.parent_footnote_def.string_content
+                        else
+                          cm_node.string_content # Fallback to reference number
+                        end
+
+          # Create ReferenceNode
+          reference_node = ReferenceNode.new(footnote_id, nil, location: current_location(cm_node))
+
+          # Create InlineNode with fn type
+          inline_node = InlineNode.new(location: current_location(cm_node), inline_type: :fn, args: [footnote_id])
+          inline_node.add_child(reference_node)
+
+          parent_node.add_child(inline_node)
 
         when :html_inline
           # Inline HTML - store as text for now
@@ -663,36 +640,6 @@ module ReVIEW
         end
       end
 
-      # Start a new column context
-      def start_column(html_node)
-        title = html_node.column_title
-
-        # Create caption node if title is provided
-        caption_node = if title && !title.empty?
-                         node = CaptionNode.new(location: html_node.location)
-                         node.add_child(TextNode.new(
-                                          location: html_node.location,
-                                          content: title
-                                        ))
-                         node
-                       end
-
-        # Create column node
-        column_node = ColumnNode.new(
-          location: html_node.location,
-          caption_node: caption_node
-        )
-
-        # Push current context to stack
-        @column_stack.push({
-                             column_node: column_node,
-                             previous_node: @current_node
-                           })
-
-        # Set column as current context
-        @current_node = column_node
-      end
-
       # Start a new column context from heading syntax
       def start_column_from_heading(cm_node, title, level)
         # Create caption node if title is provided
@@ -726,25 +673,6 @@ module ReVIEW
       def end_column(_html_node)
         if @column_stack.empty?
           # Warning: /column without matching column
-          return
-        end
-
-        # Pop column context
-        column_context = @column_stack.pop
-        column_node = column_context[:column_node]
-        previous_node = column_context[:previous_node]
-
-        # Add completed column to previous context
-        previous_node.add_child(column_node)
-
-        # Restore previous context
-        @current_node = previous_node
-      end
-
-      # End current column context from heading syntax
-      def end_column_from_heading(_cm_node)
-        if @column_stack.empty?
-          # Warning: [/column] without matching [column]
           return
         end
 
@@ -841,14 +769,11 @@ module ReVIEW
         File.basename(url, '.*')
       end
 
-      # Process footnote definition placeholder
-      def process_footnote_definition(cm_node, placeholder)
-        footnote_map = @footnote_map || {}
-        footnote_data = footnote_map[placeholder]
-        return unless footnote_data
-
-        footnote_id = footnote_data[:id]
-        footnote_content = footnote_data[:content]
+      # Process footnote definition from Markly
+      # Markly parses [^id]: content into :footnote_definition nodes
+      def process_footnote_definition(cm_node)
+        # Get footnote ID from Markly node's string_content
+        footnote_id = cm_node.string_content
 
         # Create FootnoteNode
         footnote_node = FootnoteNode.new(
@@ -857,16 +782,14 @@ module ReVIEW
           footnote_type: :footnote
         )
 
-        # Create paragraph for footnote content
-        para = ParagraphNode.new(
-          location: current_location(cm_node)
-        )
-        para.add_child(TextNode.new(
-                         location: current_location(cm_node),
-                         content: footnote_content
-                       ))
+        # Process footnote content (children of the footnote_definition node)
+        # Markly already parsed the content, including inline markup
+        saved_current = @current_node
+        @current_node = footnote_node
 
-        footnote_node.add_child(para)
+        process_children(cm_node)
+
+        @current_node = saved_current
 
         add_node_to_current_context(footnote_node)
       end
