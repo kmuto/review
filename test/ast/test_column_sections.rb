@@ -78,7 +78,7 @@ class TestColumnSections < Test::Unit::TestCase
     # Test round-trip conversion
     generator = ReVIEW::AST::ReVIEWGenerator.new
     result = generator.generate(ast_root)
-    assert_include(result, '==[column] Column with Label')
+    assert_include(result, '==[column]{col1} Column with Label')
   end
 
   def test_nested_column_levels

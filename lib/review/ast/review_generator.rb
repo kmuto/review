@@ -59,7 +59,7 @@ module ReVIEW
 
       def visit_headline(node)
         text = '=' * (node.level || 1)
-        text += "[#{node.label}]" if node.label && !node.label.empty?
+        text += "{#{node.label}}" if node.label && !node.label.empty?
 
         caption_text = caption_to_review_markup(node.caption_node)
         text += ' ' + caption_text unless caption_text.empty?
@@ -78,38 +78,78 @@ module ReVIEW
         node.content || ''
       end
 
+      def visit_reference(node)
+        # ReferenceNode inherits from TextNode and has content
+        # Simply output the content (which is the ref_id or resolved item_id)
+        node.content || ''
+      end
+
+      def visit_footnote(node)
+        # FootnoteNode represents a footnote definition
+        # Format: //footnote[id][content]
+        content = visit_children(node).strip
+        footnote_type = node.footnote_type == :endnote ? 'endnote' : 'footnote'
+        "//#{footnote_type}[#{node.id}][#{content}]\n\n"
+      end
+
+      def visit_tex_equation(node)
+        # TexEquationNode represents LaTeX equation blocks
+        # Format: //texequation[id][caption]{content//}
+        text = '//texequation'
+        text += "[#{node.id}]" if node.id?
+        caption_text = caption_to_review_markup(node.caption_node)
+        text += "[#{caption_text}]" unless caption_text.empty?
+        text += "{\n"
+        text += node.content || ''
+        text += "\n" unless node.content&.end_with?("\n")
+        text + "//}\n\n"
+      end
+
       def visit_inline(node)
-        content = visit_children(node)
-
-        # Debug: check if we're getting the content properly
-        # Only use args as content for specific inline types that don't have special handling
-        if content.empty? && node.args.any? && !%w[href kw ruby].include?(node.inline_type)
-          # Use first arg as content if children are empty
-          content = node.args.first.to_s
-        end
-
+        # For certain inline types, use args instead of visit_children
+        # kw, ruby: args contain the actual content, children may have duplicate data
         case node.inline_type
-        when 'href'
-          # href has special syntax with URL
-          url = node.args.first || ''
-          if content.empty?
-            "@<href>{#{url}}"
-          else
-            "@<href>{#{url}, #{content}}"
-          end
         when 'kw'
-          # kw can have optional description
-          if node.args.any?
-            "@<kw>{#{content}, #{node.args.join(', ')}}"
+          # kw: @<kw>{word, description} - use args directly
+          if node.args.size >= 2
+            word = node.args[0].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
+            desc = node.args[1].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
+            "@<kw>{#{word}, #{desc}}"
+          elsif node.args.size == 1
+            word = node.args[0].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
+            "@<kw>{#{word}}"
           else
+            content = visit_children(node).gsub('\\', '\\\\\\\\').gsub('}', '\\}')
             "@<kw>{#{content}}"
           end
         when 'ruby'
-          # ruby has base text and ruby text
-          ruby_text = node.args.first || ''
-          "@<ruby>{#{content}, #{ruby_text}}"
+          # ruby: @<ruby>{base, ruby_text} - use args directly
+          base = node.args[0].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
+          if node.args.size >= 2
+            ruby_text = node.args[1].to_s.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
+            "@<ruby>{#{base}, #{ruby_text}}"
+          else
+            "@<ruby>{#{base}}"
+          end
+        when 'href'
+          # href: @<href>{url, text} - special handling
+          url = node.args[0] || ''
+          content = visit_children(node)
+          if content.empty?
+            "@<href>{#{url}}"
+          else
+            escaped_content = content.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
+            "@<href>{#{url}, #{escaped_content}}"
+          end
         else
-          "@<#{node.inline_type}>{#{content}}"
+          # Default: use visit_children
+          content = visit_children(node)
+          # Use args as fallback if children are empty
+          if content.empty? && node.args.any?
+            content = node.args.first.to_s
+          end
+          escaped_content = content.gsub('\\', '\\\\\\\\').gsub('}', '\\}')
+          "@<#{node.inline_type}>{#{escaped_content}}"
         end
       end
 
@@ -126,7 +166,24 @@ module ReVIEW
         text += "[#{node.id}]" if node.id?
 
         caption_text = caption_to_review_markup(node.caption_node)
-        text += "[#{caption_text}]" unless caption_text.empty?
+        has_lang = node.lang && !node.lang.empty?
+        has_caption = !caption_text.empty?
+
+        # Handle caption and language parameters based on block type
+        if block_type == 'list' || block_type == 'listnum'
+          # list/listnum: //list[id][caption][lang]
+          text += "[#{caption_text}]" if has_caption || has_lang
+          text += "[#{node.lang}]" if has_lang
+        elsif has_lang
+          # emlist/emlistnum with lang: //emlist[caption][lang]
+          # Caption parameter is required even when empty
+          text += "[#{caption_text}]"
+          text += "[#{node.lang}]"
+        elsif has_caption
+          # emlist/emlistnum with only caption: //emlist[caption]
+          text += "[#{caption_text}]"
+        end
+
         text += "{\n"
 
         # Add code lines from original_text or reconstruct from AST
@@ -248,20 +305,38 @@ module ReVIEW
         text + "//}\n\n"
       end
 
-      def visit_block(node) # rubocop:disable Metrics/CyclomaticComplexity
+      def visit_block(node) # rubocop:disable Metrics/CyclomaticComplexity,Metrics/MethodLength,Metrics/PerceivedComplexity
         case node.block_type
         when :quote
-          "//quote{\n" + visit_children(node) + "//}\n\n"
+          content = visit_children(node)
+          text = "//quote{\n" + content
+          text += "\n" unless content.end_with?("\n")
+          text + "//}\n\n"
         when :read
-          "//read{\n" + visit_children(node) + "//}\n\n"
+          content = visit_children(node)
+          text = "//read{\n" + content
+          text += "\n" unless content.end_with?("\n")
+          text + "//}\n\n"
         when :lead
-          "//lead{\n" + visit_children(node) + "//}\n\n"
+          content = visit_children(node)
+          text = "//lead{\n" + content
+          text += "\n" unless content.end_with?("\n")
+          text + "//}\n\n"
         when :centering
-          "//centering{\n" + visit_children(node) + "//}\n\n"
+          content = visit_children(node)
+          text = "//centering{\n" + content
+          text += "\n" unless content.end_with?("\n")
+          text + "//}\n\n"
         when :flushright
-          "//flushright{\n" + visit_children(node) + "//}\n\n"
+          content = visit_children(node)
+          text = "//flushright{\n" + content
+          text += "\n" unless content.end_with?("\n")
+          text + "//}\n\n"
         when :comment
-          "//comment{\n" + visit_children(node) + "//}\n\n"
+          content = visit_children(node)
+          text = "//comment{\n" + content
+          text += "\n" unless content.end_with?("\n")
+          text + "//}\n\n"
         when :blankline
           "//blankline\n\n"
         when :noindent
@@ -297,7 +372,9 @@ module ReVIEW
             text += "[#{caption_text}]" unless caption_text.empty?
           end
           text += "{\n"
-          text += visit_children(node)
+          content = visit_children(node)
+          text += content
+          text += "\n" unless content.end_with?("\n")
           text += "//}\n\n"
 
           text
@@ -305,7 +382,9 @@ module ReVIEW
           text = '//doorquote'
           text += "[#{node.args.join('][') if node.args.any?}]"
           text += "{\n"
-          text += visit_children(node)
+          content = visit_children(node)
+          text += content
+          text += "\n" unless content.end_with?("\n")
           text += "//}\n\n"
 
           text
@@ -313,14 +392,18 @@ module ReVIEW
           text = '//bibpaper'
           text += "[#{node.args.join('][') if node.args.any?}]"
           text += "{\n"
-          text += visit_children(node)
+          content = visit_children(node)
+          text += content
+          text += "\n" unless content.end_with?("\n")
           text += "//}\n\n"
 
           text
         when :talk
           text = '//talk'
           text += "{\n"
-          text += visit_children(node)
+          content = visit_children(node)
+          text += content
+          text += "\n" unless content.end_with?("\n")
           text += "//}\n\n"
 
           text
@@ -328,12 +411,17 @@ module ReVIEW
           text = '//graph'
           text += "[#{node.args.join('][') if node.args.any?}]"
           text += "{\n"
-          text += visit_children(node)
+          content = visit_children(node)
+          text += content
+          text += "\n" unless content.end_with?("\n")
           text += "//}\n\n"
 
           text
         when :address
-          "//address{\n" + visit_children(node) + "//}\n\n"
+          content = visit_children(node)
+          text = "//address{\n" + content
+          text += "\n" unless content.end_with?("\n")
+          text + "//}\n\n"
         when :bpo
           "//bpo\n\n"
         when :hr
@@ -344,7 +432,9 @@ module ReVIEW
           text = '//box'
           text += "[#{node.args.first}]" if node.args.any?
           text += "{\n"
-          text += visit_children(node)
+          content = visit_children(node)
+          text += content
+          text += "\n" unless content.end_with?("\n")
           text += "//}\n\n"
 
           text
@@ -380,9 +470,15 @@ module ReVIEW
       def visit_column(node)
         text = '=' * (node.level || 1)
         text += '[column]'
+        text += "{#{node.label}}" if node.label && !node.label.empty?
         caption_text = caption_to_review_markup(node.caption_node)
         text += " #{caption_text}" unless caption_text.empty?
-        text + "\n\n" + visit_children(node)
+        text += "\n\n"
+        text += visit_children(node)
+        text += "\n" unless text.end_with?("\n")
+        text += '=' * (node.level || 1)
+        text += "[/column]\n\n"
+        text
       end
 
       def visit_unordered_list(node)
@@ -390,7 +486,9 @@ module ReVIEW
         node.children.each do |item|
           next unless item.is_a?(ReVIEW::AST::ListItemNode)
 
-          text += format_list_item('*', item.level || 1, item)
+          level = item.level || 1
+          marker = '*' * level
+          text += format_list_item(marker, level, item)
         end
         text + (text.empty? ? '' : "\n")
       end
@@ -400,8 +498,10 @@ module ReVIEW
         node.children.each_with_index do |item, index|
           next unless item.is_a?(ReVIEW::AST::ListItemNode)
 
+          level = item.level || 1
           number = item.number || (index + 1)
-          text += format_list_item("#{number}.", item.level || 1, item)
+          marker = "#{number}."
+          text += format_list_item(marker, level, item)
         end
         text + (text.empty? ? '' : "\n")
       end
@@ -418,6 +518,9 @@ module ReVIEW
 
           item.children.each do |defn|
             defn_text = visit(defn)
+            # Remove trailing newlines from paragraph content in definition lists
+            # to avoid creating blank lines between definition items
+            defn_text = defn_text.sub(/\n+\z/, '') if defn.is_a?(ReVIEW::AST::ParagraphNode)
             text += "\t#{defn_text}\n" unless defn_text.strip.empty?
           end
         end
@@ -425,21 +528,62 @@ module ReVIEW
       end
 
       # Format a list item with proper indentation
-      def format_list_item(marker, level, item)
-        # For Re:VIEW format, level 1 starts with no indent
-        # Level 2+ gets additional spaces
-        indent = ' ' * ((level - 1) * 2)
-        content = visit_children(item).strip
+      def format_list_item(marker, _level, item)
+        # For Re:VIEW format, all list items start with a single space
+        indent = ' '
 
-        # Handle nested lists
-        lines = content.split("\n")
-        first_line = lines.shift || ''
+        # Separate nested lists from other content
+        non_list_children = []
+        nested_lists = []
 
-        text = "#{indent}#{marker} #{first_line}\n"
+        item.children.each do |child|
+          if child.is_a?(ReVIEW::AST::ListNode)
+            nested_lists << child
+          else
+            non_list_children << child
+          end
+        end
 
-        # Add continuation lines with proper indentation
-        lines.each do |line|
-          text += "#{indent}  #{line}\n"
+        # Process non-list content
+        # Check if we have multiple TextNodes (possibly with InlineNodes in between)
+        # which indicates continuation lines in the original markup
+        text_node_count = non_list_children.count { |c| c.is_a?(ReVIEW::AST::TextNode) }
+
+        if text_node_count > 1
+          # Multiple text nodes indicate continuation lines
+          # Process each child separately and join with newlines
+          parts = []
+          current_line = []
+
+          non_list_children.each do |child|
+            # Start a new line if we already have content
+            if child.is_a?(ReVIEW::AST::TextNode) && current_line.any?
+              # Join the current line and strip it
+              parts << current_line.join.strip
+              current_line = []
+            end
+            # Add the visited child to the current line (TextNode or InlineNode)
+            current_line << visit(child)
+          end
+
+          # Don't forget the last line
+          parts << current_line.join.strip if current_line.any?
+
+          content = parts.first
+          continuation = parts[1..].map { |part| "   #{part}" }.join("\n")
+          content += "\n" + continuation unless continuation.empty?
+        else
+          content = visit_all(non_list_children).join.strip
+        end
+
+        # Build the item text
+        text = "#{indent}#{marker} #{content}\n"
+
+        # Process nested lists separately
+        nested_lists.each do |nested_list|
+          nested_text = visit(nested_list)
+          # Remove the trailing newline from nested list to avoid extra blank line
+          text += nested_text.chomp
         end
 
         text
@@ -447,16 +591,12 @@ module ReVIEW
 
       # Helper to render table cell content
       def render_cell_content(cell)
-        cell.children.map do |child|
-          case child
-          when ReVIEW::AST::TextNode
-            child.content
-          when ReVIEW::AST::InlineNode
-            "@<#{child.inline_type}>{#{child.args.first || ''}}"
-          else
-            visit(child)
-          end
+        content = cell.children.map do |child|
+          visit(child)
         end.join
+
+        # Empty cells should be represented with a dot in Re:VIEW syntax
+        content.empty? ? '.' : content
       end
     end
   end

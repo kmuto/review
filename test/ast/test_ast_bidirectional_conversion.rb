@@ -3,6 +3,7 @@
 require_relative '../test_helper'
 require 'review/ast'
 require 'review/ast/compiler'
+require 'review/ast/comparator'
 require 'review/ast/json_serializer'
 require 'review/ast/review_generator'
 require 'review/book'
@@ -299,12 +300,84 @@ class TestASTBidirectionalConversion < Test::Unit::TestCase
     assert_equal 'ReVIEW::AST::DocumentNode', regenerated_ast.class.name
   end
 
+  # Test all .re files in samples/syntax-book and samples/debug-book directories
+  # The test verifies AST-level equivalence through roundtrip conversion:
+  # Original.re -> AST1 -> JSON -> AST2 -> Re:VIEW -> AST3
+  # AST1 and AST3 should be structurally equivalent
+  def test_sample_files_roundtrip
+    sample_files = [
+      'samples/syntax-book/appA.re',
+      'samples/syntax-book/bib.re',
+      'samples/syntax-book/ch01.re',
+      'samples/syntax-book/ch02.re',
+      'samples/syntax-book/ch03.re',
+      'samples/syntax-book/part2.re',
+      'samples/syntax-book/pre01.re',
+      'samples/debug-book/advanced_features.re',
+      'samples/debug-book/comprehensive.re',
+      'samples/debug-book/edge_cases_test.re',
+      'samples/debug-book/extreme_features.re',
+      'samples/debug-book/multicontent_test.re'
+    ]
+
+    sample_files.each do |file_path|
+      next unless File.exist?(file_path)
+
+      # Step 1: Re:VIEW -> AST1
+      original_ast = compile_from_file(file_path)
+      assert_not_nil(original_ast, "Failed to compile #{file_path}")
+
+      # Step 2: AST1 -> JSON
+      json_string = ReVIEW::AST::JSONSerializer.serialize(original_ast)
+      assert_not_nil(json_string, "Failed to serialize #{file_path}")
+
+      # Step 3: JSON -> AST2
+      regenerated_ast = ReVIEW::AST::JSONSerializer.deserialize(json_string)
+      assert_not_nil(regenerated_ast, "Failed to deserialize #{file_path}")
+
+      # Step 4: AST2 -> Re:VIEW
+      regenerated_content = @generator.generate(regenerated_ast)
+      assert_not_nil(regenerated_content, "Failed to generate Re:VIEW from #{file_path}")
+
+      # Step 5: Re:VIEW -> AST3
+      begin
+        basename = File.basename(file_path, '.re')
+        reparsed_ast = compile_to_ast(regenerated_content, basename, file_path)
+        assert_not_nil(reparsed_ast, "Failed to reparse regenerated content from #{file_path}")
+
+        # Step 6: Compare AST1 and AST3 for structural equivalence
+        assert_ast_equivalent(original_ast, reparsed_ast, "AST mismatch for #{file_path}")
+      rescue StandardError => e
+        flunk("Roundtrip failed for #{file_path}: #{e.message}")
+      end
+    end
+  end
+
   private
 
-  def compile_to_ast(content)
+  def compile_to_ast(content, basename = 'test', file_path = 'test.re')
     compiler = ReVIEW::AST::Compiler.new
-    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, basename, file_path, StringIO.new(content))
 
-    compiler.compile_to_ast(chapter)
+    # Skip reference resolution to avoid chapter lookup errors in isolated tests
+    compiler.compile_to_ast(chapter, reference_resolution: false)
+  end
+
+  def compile_from_file(file_path)
+    content = File.read(file_path)
+    basename = File.basename(file_path, '.re')
+    compiler = ReVIEW::AST::Compiler.new
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, basename, file_path, StringIO.new(content))
+
+    # Skip reference resolution to avoid chapter lookup errors in isolated tests
+    compiler.compile_to_ast(chapter, reference_resolution: false)
+  end
+
+  # Compare two AST nodes for structural equivalence
+  # Ignores location information and focuses on node types, attributes, and structure
+  def assert_ast_equivalent(node1, node2, message = 'AST nodes are not equivalent')
+    comparator = ReVIEW::AST::Comparator.new
+    result = comparator.compare(node1, node2)
+    assert(result.equal?, "#{message}\n#{result}")
   end
 end

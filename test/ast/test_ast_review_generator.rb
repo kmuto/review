@@ -6,6 +6,8 @@ require 'review/ast/review_generator'
 require 'review/ast/code_line_node'
 require 'review/ast/table_row_node'
 require 'review/ast/table_cell_node'
+require 'review/ast/reference_node'
+require 'review/ast/footnote_node'
 
 class TestASTReVIEWGenerator < Test::Unit::TestCase
   def setup
@@ -35,7 +37,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
     doc.add_child(headline)
 
     result = @generator.generate(doc)
-    assert_equal "==[intro] Introduction\n\n", result
+    assert_equal "=={intro} Introduction\n\n", result
   end
 
   def test_paragraph_with_text
@@ -91,7 +93,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
 
     result = @generator.generate(doc)
     expected = <<~EOB
-      //list[hello][Hello Example]{
+      //list[hello][Hello Example][ruby]{
       def hello
         puts "Hello"
       end
@@ -118,7 +120,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
 
     result = @generator.generate(doc)
     expected = <<~EOB
-      //emlist{
+      //emlist[][sh]{
       echo "Hello"
       //}
 
@@ -141,11 +143,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
     doc.add_child(list)
 
     result = @generator.generate(doc)
-    expected = <<~EOB
-      * First item
-      * Second item
-
-    EOB
+    expected = " * First item\n * Second item\n\n"
     assert_equal expected, result
   end
 
@@ -321,11 +319,7 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
     doc.add_child(list)
 
     result = @generator.generate(doc)
-    expected = <<~EOB
-      1. First
-      2. Second
-
-    EOB
+    expected = " 1. First\n 2. Second\n\n"
     assert_equal expected, result
   end
 
@@ -377,5 +371,237 @@ class TestASTReVIEWGenerator < Test::Unit::TestCase
 
     EOB
     assert_equal expected, result
+  end
+
+  def test_nested_unordered_list
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    list = ReVIEW::AST::ListNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), list_type: :ul)
+
+    # First item with nested list
+    item1 = ReVIEW::AST::ListItemNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1)
+    item1.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Item 1'))
+
+    # Nested list
+    nested_list = ReVIEW::AST::ListNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), list_type: :ul)
+    nested_item1 = ReVIEW::AST::ListItemNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2)
+    nested_item1.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Nested 1'))
+    nested_list.add_child(nested_item1)
+
+    nested_item2 = ReVIEW::AST::ListItemNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2)
+    nested_item2.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Nested 2'))
+    nested_list.add_child(nested_item2)
+
+    item1.add_child(nested_list)
+    list.add_child(item1)
+
+    # Second top-level item
+    item2 = ReVIEW::AST::ListItemNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1)
+    item2.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Item 2'))
+    list.add_child(item2)
+
+    doc.add_child(list)
+
+    result = @generator.generate(doc)
+    expected = " * Item 1\n ** Nested 1\n ** Nested 2\n * Item 2\n\n"
+    assert_equal expected, result
+  end
+
+  def test_nested_ordered_list
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    list = ReVIEW::AST::ListNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), list_type: :ol)
+
+    # First item with nested list
+    item1 = ReVIEW::AST::ListItemNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, number: 1)
+    item1.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'First'))
+
+    # Nested ordered list
+    nested_list = ReVIEW::AST::ListNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), list_type: :ol)
+    nested_item1 = ReVIEW::AST::ListItemNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2, number: 1)
+    nested_item1.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Nested First'))
+    nested_list.add_child(nested_item1)
+
+    item1.add_child(nested_list)
+    list.add_child(item1)
+
+    # Second top-level item
+    item2 = ReVIEW::AST::ListItemNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1, number: 2)
+    item2.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Second'))
+    list.add_child(item2)
+
+    doc.add_child(list)
+
+    result = @generator.generate(doc)
+    expected = " 1. First\n 1. Nested First\n 2. Second\n\n"
+    assert_equal expected, result
+  end
+
+  def test_reference_node
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    para = ReVIEW::AST::ParagraphNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+
+    # ReferenceNode is typically a child of InlineNode, but can also be standalone
+    reference = ReVIEW::AST::ReferenceNode.new('fig1', nil, location: @location)
+    para.add_child(reference)
+
+    doc.add_child(para)
+
+    result = @generator.generate(doc)
+    # ReferenceNode should output its content (the ref_id)
+    assert_equal "fig1\n\n", result
+  end
+
+  def test_footnote_node
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+
+    # FootnoteNode with content
+    footnote = ReVIEW::AST::FootnoteNode.new(location: @location, id: 'note1')
+    footnote.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'This is a footnote'))
+
+    doc.add_child(footnote)
+
+    result = @generator.generate(doc)
+    # FootnoteNode should be rendered as //footnote[id][content]
+    assert_equal "//footnote[note1][This is a footnote]\n\n", result
+  end
+
+  # Edge case tests
+  def test_empty_list
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    list = ReVIEW::AST::ListNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), list_type: :ul)
+    doc.add_child(list)
+
+    result = @generator.generate(doc)
+    # Empty list should produce empty string
+    assert_equal '', result
+  end
+
+  def test_multiple_inline_elements
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    para = ReVIEW::AST::ParagraphNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+
+    para.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Text with '))
+
+    bold = ReVIEW::AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :b)
+    bold.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'bold'))
+    para.add_child(bold)
+
+    para.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: ' and '))
+
+    italic = ReVIEW::AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :i)
+    italic.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'italic'))
+    para.add_child(italic)
+
+    para.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: ' and '))
+
+    code = ReVIEW::AST::InlineNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), inline_type: :code)
+    code.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'code'))
+    para.add_child(code)
+
+    para.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: '.'))
+
+    doc.add_child(para)
+
+    result = @generator.generate(doc)
+    assert_equal "Text with @<b>{bold} and @<i>{italic} and @<code>{code}.\n\n", result
+  end
+
+  def test_deeply_nested_list
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    list = ReVIEW::AST::ListNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), list_type: :ul)
+
+    # Level 1
+    item1 = ReVIEW::AST::ListItemNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 1)
+    item1.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Level 1'))
+
+    # Level 2
+    list2 = ReVIEW::AST::ListNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), list_type: :ul)
+    item2 = ReVIEW::AST::ListItemNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 2)
+    item2.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Level 2'))
+
+    # Level 3
+    list3 = ReVIEW::AST::ListNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), list_type: :ul)
+    item3 = ReVIEW::AST::ListItemNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), level: 3)
+    item3.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Level 3'))
+    list3.add_child(item3)
+
+    item2.add_child(list3)
+    list2.add_child(item2)
+    item1.add_child(list2)
+    list.add_child(item1)
+    doc.add_child(list)
+
+    result = @generator.generate(doc)
+    assert_equal " * Level 1\n ** Level 2\n *** Level 3\n\n", result
+  end
+
+  def test_code_block_without_original_text
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+
+    # CodeBlockNode without original_text (reconstructed from AST)
+    code = ReVIEW::AST::CodeBlockNode.new(
+      location: @location,
+      id: 'sample',
+      lang: 'ruby'
+    )
+
+    # Add code line nodes
+    ['line 1', 'line 2', 'line 3'].each do |line|
+      line_node = ReVIEW::AST::CodeLineNode.new(location: @location)
+      line_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: line))
+      code.add_child(line_node)
+    end
+
+    doc.add_child(code)
+
+    result = @generator.generate(doc)
+    expected = <<~EOB
+      //list[sample][][ruby]{
+      line 1
+      line 2
+      line 3
+      //}
+
+    EOB
+    assert_equal expected, result
+  end
+
+  def test_image_with_metric
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+
+    caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
+    caption_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Scaled Image'))
+
+    image = ReVIEW::AST::ImageNode.new(
+      location: @location,
+      id: 'figure1',
+      caption_node: caption_node,
+      metric: 'scale=0.5'
+    )
+    doc.add_child(image)
+
+    result = @generator.generate(doc)
+    assert_equal "//image[figure1][Scaled Image][scale=0.5]\n\n", result
+  end
+
+  def test_column
+    doc = ReVIEW::AST::DocumentNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+
+    caption_node = ReVIEW::AST::CaptionNode.new(location: @location)
+    caption_node.add_child(ReVIEW::AST::TextNode.new(location: @location, content: 'Column Title'))
+
+    column = ReVIEW::AST::ColumnNode.new(
+      location: @location,
+      level: 2,
+      caption_node: caption_node
+    )
+
+    para = ReVIEW::AST::ParagraphNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0))
+    para.add_child(ReVIEW::AST::TextNode.new(location: ReVIEW::SnapshotLocation.new(nil, 0), content: 'Column content.'))
+    column.add_child(para)
+
+    doc.add_child(column)
+
+    result = @generator.generate(doc)
+    assert_equal "==[column] Column Title\n\nColumn content.\n\n==[/column]\n\n", result
   end
 end
