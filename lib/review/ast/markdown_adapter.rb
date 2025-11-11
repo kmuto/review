@@ -8,9 +8,9 @@
 
 require 'review/ast'
 require 'review/snapshot_location'
+require 'review/exception'
 require_relative 'markdown_html_node'
 require_relative 'inline_tokenizer'
-require_relative 'context_stack'
 
 module ReVIEW
   module AST
@@ -19,6 +19,53 @@ module ReVIEW
     # This class walks the Markly AST and creates corresponding
     # Re:VIEW AST nodes.
     class MarkdownAdapter
+      # ContextStack manages hierarchical context for AST node construction.
+      # It provides exception-safe context switching with automatic cleanup.
+      class ContextStack
+        attr_reader :current
+
+        def initialize(initial_context)
+          @stack = []
+          @current = initial_context
+        end
+
+        def push(node)
+          @stack.push(@current)
+          @current = node
+        end
+
+        def pop
+          raise ReVIEW::CompileError, 'Cannot pop from empty context stack' if @stack.empty?
+
+          @current = @stack.pop
+        end
+
+        def with_context(node)
+          push(node)
+          yield
+        ensure
+          pop
+        end
+
+        def depth
+          @stack.length + 1
+        end
+
+        def validate!
+          if @current.nil?
+            raise ReVIEW::CompileError, 'Context corruption: current node is nil'
+          end
+
+          if @stack.any?(&:nil?)
+            raise ReVIEW::CompileError, 'Context corruption: nil found in stack'
+          end
+        end
+
+        def empty?
+          @stack.empty?
+        end
+      end
+
       # Placeholder for Re:VIEW inline notation marker (@<)
       # Used to restore notation from MarkdownCompiler's preprocessing
       REVIEW_NOTATION_PLACEHOLDER = '@@REVIEW_AT_LT@@'
@@ -55,8 +102,10 @@ module ReVIEW
 
           # Validate final state
           validate_final_state!
+        rescue ReVIEW::CompileError
+          raise
         rescue StandardError => e
-          raise "Markdown conversion failed: #{e.message}\n#{e.backtrace.join("\n")}"
+          raise ReVIEW::CompileError, "Markdown conversion failed: #{e.message}\n#{e.backtrace.join("\n")}"
         end
       end
 
@@ -723,11 +772,11 @@ module ReVIEW
       # Add node to current context (column or document)
       def add_node_to_current_context(node)
         if @current_node.nil?
-          raise "Internal error: No current context. Cannot add #{node.class} node."
+          raise ReVIEW::CompileError, "Internal error: No current context. Cannot add #{node.class} node."
         end
 
         unless @current_node.respond_to?(:add_child)
-          raise "Internal error: Current context #{@current_node.class} doesn't support add_child."
+          raise ReVIEW::CompileError, "Internal error: Current context #{@current_node.class} doesn't support add_child."
         end
 
         @current_node.add_child(node)
@@ -902,12 +951,12 @@ module ReVIEW
       # Validate that final state is clean after conversion
       def validate_final_state!
         if @current_node != @ast_root
-          raise 'Internal error: Context not properly restored. ' \
-                "Expected to be at root but at #{@current_node.class}"
+          raise ReVIEW::CompileError, 'Internal error: Context not properly restored. ' \
+                                      "Expected to be at root but at #{@current_node.class}"
         end
 
         if @column_stack.any?
-          raise "Internal error: #{@column_stack.length} unclosed column(s) remain"
+          raise ReVIEW::CompileError, "Internal error: #{@column_stack.length} unclosed column(s) remain"
         end
 
         # Validate context stack

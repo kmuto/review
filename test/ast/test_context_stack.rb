@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
-require 'review/ast/context_stack'
+require 'review/ast/markdown_adapter'
 
 class TestContextStack < Test::Unit::TestCase
   # Mock node class for testing
@@ -24,7 +24,7 @@ class TestContextStack < Test::Unit::TestCase
 
   def setup
     @root = MockNode.new('root')
-    @stack = ReVIEW::AST::ContextStack.new(@root)
+    @stack = ReVIEW::AST::MarkdownAdapter::ContextStack.new(@root)
   end
 
   def test_initialize
@@ -104,7 +104,7 @@ class TestContextStack < Test::Unit::TestCase
   end
 
   def test_pop_from_empty_raises_error
-    assert_raise(RuntimeError) do
+    assert_raise(ReVIEW::CompileError) do
       @stack.pop
     end
   end
