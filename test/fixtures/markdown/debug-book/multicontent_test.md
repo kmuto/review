@@ -8,7 +8,7 @@
 
 <div id="api_implementation">
 
-<p class="caption">API実装例</p>
+**API実装例**
 
 ```
 class APIService {
@@ -48,7 +48,7 @@ class APIService {
 
 <div id="api_endpoints">
 
-<p class="caption">API エンドポイント仕様</p>
+**API エンドポイント仕様**
 
 | メソッド | パス | 説明 | 認証 | レート制限 | レスポンス形式 |
 | :-- | :-- | :-- | :-- | :-- | :-- |
@@ -74,7 +74,7 @@ API設計のベストプラクティス:
 
 <div id="response_codes">
 
-<p class="caption">HTTPレスポンスコード詳細</p>
+**HTTPレスポンスコード詳細**
 
 | カテゴリ | コード | 名称 | 説明 | 使用場面 | 例 |
 | :-- | :-- | :-- | :-- | :-- | :-- |
@@ -96,7 +96,7 @@ API設計のベストプラクティス:
 
 <div id="error_handling">
 
-<p class="caption">包括的エラーハンドリング実装</p>
+**包括的エラーハンドリング実装**
 
 ```
 class ErrorHandler {
@@ -213,7 +213,7 @@ class ErrorHandler {
 
 <div id="complex_data_structures">
 
-<p class="caption">複雑なデータ構造操作</p>
+**複雑なデータ構造操作**
 
 ```
 class DataTransformer {
@@ -273,7 +273,7 @@ class DataTransformer {
 
 <div id="data_transformation_matrix">
 
-<p class="caption">データ変換マトリックス</p>
+**データ変換マトリックス**
 
 | 元フィールド | 変換後 | 変換ルール | バリデーション | デフォルト値 |
 | :-- | :-- | :-- | :-- | :-- |

@@ -53,6 +53,8 @@ module ReVIEW
       end
 
       def resolve_references(ast)
+        # Build indexes for current chapter from AST
+        # This also sets chapter title for Markdown files
         build_indexes_from_ast(ast)
 
         @resolve_count = 0

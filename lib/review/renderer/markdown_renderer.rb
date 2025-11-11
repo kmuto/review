@@ -154,7 +154,7 @@ module ReVIEW
         # Add caption if present
         caption = render_caption_inline(node.caption_node)
         if caption && !caption.empty?
-          result += %Q(<p class="caption">#{caption}</p>\n\n)
+          result += "**#{caption}**\n\n"
         end
 
         # Generate fenced code block
@@ -227,7 +227,7 @@ module ReVIEW
 
         # Add caption if present
         caption = render_caption_inline(node.caption_node)
-        result += %Q(<p class="caption">#{caption}</p>\n\n) unless caption.empty?
+        result += "**#{caption}**\n\n" unless caption.empty?
 
         # Process table content
         render_children(node)
@@ -266,28 +266,23 @@ module ReVIEW
       def visit_image(node)
         # Use node.id as the image path, get path from chapter if image is bound
         image_path = begin
-                       if @chapter&.image_bound?(node.id)
-                         @chapter.image(node.id).path
-                       else
-                         node.id
-                       end
-                     rescue StandardError
-                       # If image lookup fails (e.g., incomplete book structure), use node.id
-                       node.id
-                     end
+          if @chapter&.image_bound?(node.id)
+            @chapter.image(node.id).path
+          else
+            node.id
+          end
+        rescue StandardError
+          # If image lookup fails (e.g., incomplete book structure), use node.id
+          node.id
+        end
 
         caption = render_caption_inline(node.caption_node)
 
         # Remove ./ prefix if present
         image_path = image_path.sub(%r{\A\./}, '')
 
-        # Generate HTML figure with ID attribute
-        figure_id = normalize_id(node.id)
-        result = %Q(<figure id="#{figure_id}">\n)
-        result += %Q(<img src="#{image_path}" alt="#{escape_content(caption)}">\n)
-        result += %Q(<figcaption>#{caption}</figcaption>\n) unless caption.empty?
-        result += "</figure>\n\n"
-        result
+        # Generate markdown image syntax
+        "![#{caption}](#{image_path})\n\n"
       end
 
       def visit_minicolumn(node)
@@ -387,7 +382,7 @@ module ReVIEW
         result + "\n"
       end
 
-      def visit_block_blankline(node)
+      def visit_block_blankline(_node)
         # Blank line directive - render as double newline
         "\n\n"
       end
@@ -624,12 +619,18 @@ module ReVIEW
 
       def render_inline_fn(_type, _content, node)
         ref_node = node.children.first
-        unless ref_node.reference_node? && ref_node.resolved?
-          raise 'BUG: Reference should be resolved at AST construction time'
-        end
 
-        data = ref_node.resolved_data
-        fn_id = normalize_id(data.item_id)
+        # Handle both resolved and unresolved references
+        if ref_node.reference_node? && ref_node.resolved?
+          data = ref_node.resolved_data
+          fn_id = normalize_id(data.item_id)
+        elsif ref_node.reference_node?
+          # Unresolved reference - use the ref_id directly
+          fn_id = ref_node.ref_id
+        elsif node.args.any?
+          # Fallback to args if available
+          fn_id = node.args.first
+        end
 
         # Use Markdown standard footnote notation
         "[^#{fn_id}]"

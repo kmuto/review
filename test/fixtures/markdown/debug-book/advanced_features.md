@@ -16,7 +16,7 @@
 
 <div id="sample1">
 
-<p class="caption">基本的なPythonコード</p>
+**基本的なPythonコード**
 
 ```
 def hello_world():
@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
 <div id="sample2">
 
-<p class="caption">Rubyのクラス定義</p>
+**Rubyのクラス定義**
 
 ```
 class Calculator
@@ -58,7 +58,7 @@ end
 
 <div id="advanced_code">
 
-<p class="caption">JavaScriptの非同期処理</p>
+**JavaScriptの非同期処理**
 
 ```
 async function fetchUserData(userId) {
@@ -104,7 +104,7 @@ fetchUserData(123)
 
 <div id="performance_comparison">
 
-<p class="caption">パフォーマンス比較表</p>
+**パフォーマンス比較表**
 
 | 言語 | 実行時間(ms) | メモリ使用量(MB) | コード行数 | 複雑度 |
 | :-- | :-- | :-- | :-- | :-- |
@@ -210,10 +210,7 @@ fetchUserData(123)
 
 ### 画像参照（仮想）
 
-<figure id="architecture_diagram">
-<img src="architecture_diagram" alt="システムアーキテクチャ図">
-<figcaption>システムアーキテクチャ図</figcaption>
-</figure>
+![システムアーキテクチャ図](architecture_diagram)
 
 <span class="imgref"><a href="./advanced_features.html#architecture_diagram">図2.1</a></span>に示すように、マイクロサービスアーキテクチャでは 各サービスが独立してデプロイ可能です。
 

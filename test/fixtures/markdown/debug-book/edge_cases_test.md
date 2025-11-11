@@ -8,7 +8,7 @@
 
 <div id="multilingual_comments">
 
-<p class="caption">多言語コメント付きコード</p>
+**多言語コメント付きコード**
 
 ```
 // English: Hello World implementation
@@ -49,7 +49,7 @@ function multilingualGreeting(language) {
 
 <div id="unicode_characters">
 
-<p class="caption">Unicode文字分類表</p>
+**Unicode文字分類表**
 
 | 分類 | 文字例 | Unicode範囲 | 説明 | 表示 |
 | :-- | :-- | :-- | :-- | :-- |
@@ -73,7 +73,7 @@ Unicode テスト文字列の例: `😀🎉💻🚀⚡️🛡️🎯📊📈🔍
 
 <div id="very_long_strings">
 
-<p class="caption">超長文字列処理</p>
+**超長文字列処理**
 
 ```
 function processVeryLongString() {
@@ -131,7 +131,7 @@ function processVeryLongString() {
 
 <div id="empty_and_special_cases">
 
-<p class="caption">空要素と特殊ケース</p>
+**空要素と特殊ケース**
 
 ```
 // 空の関数
@@ -172,7 +172,7 @@ const backspace = "\b";
 
 <div id="error_recovery">
 
-<p class="caption">エラー処理とリカバリ機構</p>
+**エラー処理とリカバリ機構**
 
 ```
 class RobustProcessor {
@@ -248,7 +248,7 @@ class ValidationError extends Error {
 
 <div id="special_characters">
 
-<p class="caption">特殊文字エスケープテーブル</p>
+**特殊文字エスケープテーブル**
 
 | 文字 | HTML実体参照 | URL エンコード | JSON エスケープ | SQL エスケープ | 説明 |
 | :-- | :-- | :-- | :-- | :-- | :-- |

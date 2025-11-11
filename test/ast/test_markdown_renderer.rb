@@ -235,7 +235,7 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
-    assert_match(/<sup>2<\/sup>/, result)
+    assert_match(%r{<sup>2</sup>}, result)
   end
 
   def test_inline_sub
@@ -243,7 +243,7 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
-    assert_match(/<sub>2<\/sub>/, result)
+    assert_match(%r{<sub>2</sub>}, result)
   end
 
   def test_inline_del
@@ -259,7 +259,7 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
-    assert_match(/<ins>inserted<\/ins>/, result)
+    assert_match(%r{<ins>inserted</ins>}, result)
   end
 
   def test_inline_u
@@ -267,7 +267,7 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
-    assert_match(/<u>underlined<\/u>/, result)
+    assert_match(%r{<u>underlined</u>}, result)
   end
 
   def test_inline_bou
@@ -291,7 +291,7 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
-    # Note: @<br>{} in a paragraph gets joined with spaces due to paragraph line joining
+    # NOTE: @<br>{} in a paragraph gets joined with spaces due to paragraph line joining
     # This is expected behavior in Markdown rendering
     assert_match(/Line one Line two/, result)
   end
@@ -301,7 +301,7 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
-    assert_match(/\[Example Site\]\(http:\/\/example\.com\)/, result)
+    assert_match(%r{\[Example Site\]\(http://example\.com\)}, result)
   end
 
   def test_inline_href_without_label
@@ -309,7 +309,7 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
-    assert_match(/\[http:\/\/example\.com\]\(http:\/\/example\.com\)/, result)
+    assert_match(%r{\[http://example\.com\]\(http://example\.com\)}, result)
   end
 
   def test_inline_ruby
@@ -317,7 +317,7 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
-    assert_match(/<ruby>漢字<rt>かんじ<\/rt><\/ruby>/, result)
+    assert_match(%r{<ruby>漢字<rt>かんじ</rt></ruby>}, result)
   end
 
   def test_inline_kw_with_alt
@@ -497,7 +497,7 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     assert_match(/<div class="notice">/, result)
   end
 
-  # Note: //captionblock is not supported in AST compiler, only in old Builder
+  # NOTE: //captionblock is not supported in AST compiler, only in old Builder
 
   # Code block tests
   def test_code_block_emlist
@@ -563,7 +563,7 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
-    # Note: AST structure has caption as ID and lang as caption text
+    # NOTE: AST structure has caption as ID and lang as caption text
     # This might be a compiler bug, but we test the current behavior
     assert_match(/\*\*source-file\*\*/, result)
     assert_match(/```Source File/, result)
@@ -584,10 +584,10 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
     assert_match(/<dl>/, result)
-    assert_match(/<dt>Term 1<\/dt>/, result)
-    assert_match(/<dd>Definition 1<\/dd>/, result)
-    assert_match(/<dt>Term 2<\/dt>/, result)
-    assert_match(/<dd>Definition 2<\/dd>/, result)
+    assert_match(%r{<dt>Term 1</dt>}, result)
+    assert_match(%r{<dd>Definition 1</dd>}, result)
+    assert_match(%r{<dt>Term 2</dt>}, result)
+    assert_match(%r{<dd>Definition 2</dd>}, result)
   end
 
   def test_definition_list_with_inline_markup
@@ -600,8 +600,8 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
-    assert_match(/<dt>\*\*Bold Term\*\*<\/dt>/, result)
-    assert_match(/<dd>Definition with `code`<\/dd>/, result)
+    assert_match(%r{<dt>\*\*Bold Term\*\*</dt>}, result)
+    assert_match(%r{<dd>Definition with `code`</dd>}, result)
   end
 
   # Nested list tests
@@ -701,7 +701,7 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
     # Should not output HTML-targeted content
-    assert_no_match(/<span>HTML<\/span>/, result)
+    assert_no_match(%r{<span>HTML</span>}, result)
   end
 
   # Table tests
@@ -802,7 +802,7 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
-    # Note: Current implementation does not escape asterisks in plain text
+    # NOTE: Current implementation does not escape asterisks in plain text
     # This might cause Markdown parsers to interpret them as formatting
     assert_match(/\*asterisks\*/, result)
     assert_match(/\*\*double\*\*/, result)
@@ -994,6 +994,6 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
     # Should have space between adjacent inline elements
-    assert_match(/~~deleted~~ <ins>inserted<\/ins>/, result)
+    assert_match(%r{~~deleted~~ <ins>inserted</ins>}, result)
   end
 end

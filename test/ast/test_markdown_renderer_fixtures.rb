@@ -18,6 +18,7 @@ require 'review/book/chapter'
 #   bundle exec ruby test/fixtures/generate_markdown_fixtures.rb
 class TestMarkdownRendererFixtures < Test::Unit::TestCase
   class ChapterNotInCatalogError < StandardError; end
+
   def setup
     @config = ReVIEW::Configure.values
     @config['secnolevel'] = 2
@@ -58,12 +59,12 @@ class TestMarkdownRendererFixtures < Test::Unit::TestCase
     # If not found in chapters, look for part files
     unless chapter
       book.parts.each do |part|
-        if part.id == basename
-          # For part files, create a pseudo-chapter
-          content = File.read(file_path, encoding: 'UTF-8')
-          chapter = ReVIEW::Book::Chapter.new(book, part.number, basename, file_path, StringIO.new(content))
-          break
-        end
+        next unless part.id == basename
+
+        # For part files, create a pseudo-chapter
+        content = File.read(file_path, encoding: 'UTF-8')
+        chapter = ReVIEW::Book::Chapter.new(book, part.number, basename, file_path, StringIO.new(content))
+        break
       end
     end
 
@@ -100,7 +101,7 @@ class TestMarkdownRendererFixtures < Test::Unit::TestCase
       flunk(error_msg)
     end
 
-    assert(result.equal?, "Markdown output should match fixture")
+    assert(result.equal?, 'Markdown output should match fixture')
   end
 
   # ===== syntax-book Tests =====
@@ -250,8 +251,8 @@ class TestMarkdownRendererFixtures < Test::Unit::TestCase
   end
 
   def test_markdown_diff_heading_normalization
-    markdown1 = "# Heading"
-    markdown2 = "#Heading"
+    markdown1 = '# Heading'
+    markdown2 = '#Heading'
 
     assert(@markdown_diff.equal?(markdown1, markdown2), 'Should normalize heading spacing')
   end

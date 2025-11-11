@@ -24,7 +24,7 @@ def generate_fixture(chapter, output_file)
     # Write output file
     File.write(output_file, markdown, encoding: 'UTF-8')
     puts "  ✓ Successfully generated #{output_file}"
-  rescue => e
+  rescue StandardError => e
     puts "  ✗ Error generating #{output_file}: #{e.message}"
     puts "    #{e.backtrace.first}"
   end
@@ -57,16 +57,16 @@ def generate_fixtures_for_book(book_dir, fixture_dir)
       output_file = File.join(fixture_dir, "#{basename}.md")
       generate_fixture(chapter, output_file)
     end
-  rescue => e
+  rescue StandardError => e
     puts "  ✗ Error loading book structure: #{e.message}"
     puts "    #{e.backtrace.first(3).join("\n    ")}"
   end
 end
 
 # Main execution
-puts "=" * 60
-puts "Markdown Fixture Generator"
-puts "=" * 60
+puts '=' * 60
+puts 'Markdown Fixture Generator'
+puts '=' * 60
 
 # Generate fixtures for syntax-book
 syntax_book_dir = File.join(__dir__, '../../samples/syntax-book')
@@ -78,6 +78,6 @@ debug_book_dir = File.join(__dir__, '../../samples/debug-book')
 debug_fixture_dir = File.join(__dir__, 'markdown/debug-book')
 generate_fixtures_for_book(debug_book_dir, debug_fixture_dir)
 
-puts "\n" + "=" * 60
-puts "Fixture generation complete!"
-puts "=" * 60
+puts "\n" + ('=' * 60)
+puts 'Fixture generation complete!'
+puts '=' * 60

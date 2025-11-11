@@ -55,6 +55,9 @@ module ReVIEW
       def build_indexes(ast_root)
         return self unless ast_root
 
+        # Extract and set chapter title from first level-1 headline (for Markdown files)
+        extract_and_set_chapter_title(ast_root)
+
         visit(ast_root)
 
         set_indexes_on_chapter
@@ -98,6 +101,21 @@ module ReVIEW
         else
           raise ArgumentError, "Unknown index type: #{type}"
         end
+      end
+
+      # Extract and set chapter title from first level-1 headline
+      # This is particularly important for Markdown files where chapter.title is empty
+      def extract_and_set_chapter_title(ast_root)
+        # Skip if chapter already has a title (from Re:VIEW format parsing)
+        return if @chapter.title && !@chapter.title.empty?
+
+        # Find first level-1 headline
+        headline = find_first_headline(ast_root, level: 1)
+        return unless headline
+
+        # Extract text from caption node
+        title = extract_text_from_caption(headline.caption_node)
+        @chapter.instance_variable_set(:@title, title) if title && !title.empty?
       end
 
       private
@@ -402,6 +420,45 @@ module ReVIEW
         end
 
         visit_all(node.children)
+      end
+
+      # Find first headline node with specified level
+      # @param node [Node] The node to search
+      # @param level [Integer] The headline level to find
+      # @return [HeadlineNode, nil] The found headline or nil
+      def find_first_headline(node, level:)
+        return node if node.is_a?(HeadlineNode) && node.level == level
+
+        return nil unless node.respond_to?(:children)
+
+        node.children.each do |child|
+          result = find_first_headline(child, level: level)
+          return result if result
+        end
+
+        nil
+      end
+
+      # Extract plain text from caption node
+      # @param caption_node [CaptionNode, nil] The caption node
+      # @return [String] The extracted text
+      def extract_text_from_caption(caption_node)
+        return '' unless caption_node
+
+        result = +''
+        extract_text_recursive(caption_node, result)
+        result
+      end
+
+      # Recursively extract text from node and its children
+      # @param node [Node] The node to extract text from
+      # @param result [String] The accumulator string
+      def extract_text_recursive(node, result)
+        if node.is_a?(TextNode)
+          result << node.content
+        elsif node.respond_to?(:children)
+          node.children.each { |child| extract_text_recursive(child, result) }
+        end
       end
 
       # Extract plain text from caption node

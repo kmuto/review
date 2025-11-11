@@ -200,16 +200,16 @@ class TestMarkdownRendererValidation < Test::Unit::TestCase
     doc = parse_markdown_with_markly(markdown)
 
     # Verify it can be parsed without errors
-    assert_not_nil(doc, "Markdown should be parseable by CommonMark")
+    assert_not_nil(doc, 'Markdown should be parseable by CommonMark')
 
     # Convert to HTML to verify structure
     html = doc.to_html
 
     # Check that expected HTML elements are present
-    assert_match(/<h1>Chapter Title<\/h1>/, html)
-    assert_match(/<h2>Section<\/h2>/, html)
-    assert_match(/<strong>bold<\/strong>/, html)
-    assert_match(/<em>italic<\/em>/, html)
+    assert_match(%r{<h1>Chapter Title</h1>}, html)
+    assert_match(%r{<h2>Section</h2>}, html)
+    assert_match(%r{<strong>bold</strong>}, html)
+    assert_match(%r{<em>italic</em>}, html)
   end
 
   def test_commonmark_list_structure
@@ -230,9 +230,9 @@ class TestMarkdownRendererValidation < Test::Unit::TestCase
 
     # Check for list structures in HTML
     assert_match(/<ul>/, html)
-    assert_match(/<li>Item 1<\/li>/, html)
+    assert_match(%r{<li>Item 1</li>}, html)
     assert_match(/<ol>/, html)
-    assert_match(/<li>Numbered 1<\/li>/, html)
+    assert_match(%r{<li>Numbered 1</li>}, html)
   end
 
   def test_commonmark_code_blocks
@@ -263,7 +263,7 @@ class TestMarkdownRendererValidation < Test::Unit::TestCase
     html = doc.to_html
 
     # Check for inline code in HTML
-    assert_match(/<code>puts 'hello'<\/code>/, html)
+    assert_match(%r{<code>puts 'hello'</code>}, html)
   end
 
   def test_commonmark_links
@@ -274,7 +274,7 @@ class TestMarkdownRendererValidation < Test::Unit::TestCase
     html = doc.to_html
 
     # Check for link in HTML
-    assert_match(/<a href="http:\/\/example\.com">Example Site<\/a>/, html)
+    assert_match(%r{<a href="http://example\.com">Example Site</a>}, html)
   end
 
   def test_commonmark_tables
@@ -295,8 +295,8 @@ class TestMarkdownRendererValidation < Test::Unit::TestCase
 
     # Check for table structure (with or without alignment attributes)
     assert_match(/<table>/, html)
-    assert_match(/<th.*?>Name<\/th>/, html)
-    assert_match(/<td.*?>Alice<\/td>/, html)
+    assert_match(%r{<th.*?>Name</th>}, html)
+    assert_match(%r{<td.*?>Alice</td>}, html)
   end
 
   # ===== Real-world Document Tests =====
@@ -313,12 +313,12 @@ class TestMarkdownRendererValidation < Test::Unit::TestCase
     markdown = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast)
 
     # Basic sanity checks
-    assert(!markdown.empty?, "Should generate non-empty output")
-    assert_match(/^#+ /, markdown, "Should have at least one heading")
+    assert(!markdown.empty?, 'Should generate non-empty output')
+    assert_match(/^#+ /, markdown, 'Should have at least one heading')
 
     # Verify it's valid CommonMark
     doc = parse_markdown_with_markly(markdown)
-    assert_not_nil(doc, "Generated Markdown should be parseable by CommonMark")
+    assert_not_nil(doc, 'Generated Markdown should be parseable by CommonMark')
   end
 
   def test_complex_document_structure
@@ -370,9 +370,9 @@ class TestMarkdownRendererValidation < Test::Unit::TestCase
     assert_not_nil(doc)
 
     html = doc.to_html
-    assert_match(/<h1>Main Chapter<\/h1>/, html)
-    assert_match(/<h2>First Section<\/h2>/, html)
-    assert_match(/<h3>Subsection<\/h3>/, html)
+    assert_match(%r{<h1>Main Chapter</h1>}, html)
+    assert_match(%r{<h2>First Section</h2>}, html)
+    assert_match(%r{<h3>Subsection</h3>}, html)
   end
 
   # ===== Snapshot Tests =====
@@ -433,8 +433,8 @@ class TestMarkdownRendererValidation < Test::Unit::TestCase
     assert_match(/`code`/, markdown)
     assert_match(/`tt`/, markdown)
     assert_match(/~~strikethrough~~/, markdown)
-    assert_match(/<sup>super<\/sup>/, markdown)
-    assert_match(/<sub>sub<\/sub>/, markdown)
+    assert_match(%r{<sup>super</sup>}, markdown)
+    assert_match(%r{<sub>sub</sub>}, markdown)
   end
 
   # ===== Edge Case Validation =====
@@ -453,9 +453,9 @@ class TestMarkdownRendererValidation < Test::Unit::TestCase
   end
 
   def test_nested_inline_elements
-    # Note: Nested inline elements are not currently supported by Re:VIEW parser
+    # NOTE: Nested inline elements are not currently supported by Re:VIEW parser
     # This test is skipped until the feature is implemented
-    omit("Nested inline elements are not supported by Re:VIEW parser")
+    omit('Nested inline elements are not supported by Re:VIEW parser')
 
     review_content = "= Chapter\n\n@<b>{Bold with @<code>{code} inside}.\n"
 

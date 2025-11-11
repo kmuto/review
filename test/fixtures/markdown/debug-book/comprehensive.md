@@ -14,7 +14,7 @@
 
 <div id="ruby_sample">
 
-<p class="caption">Rubyサンプル</p>
+**Rubyサンプル**
 
 ```
 class HelloWorld
@@ -39,7 +39,7 @@ hello.greet
 
 <div id="feature_comparison">
 
-<p class="caption">機能比較表</p>
+**機能比較表**
 
 | 項目 | HTMLBuilder | HTMLRenderer | LATEXBuilder | LATEXRenderer |
 | :-- | :-- | :-- | :-- | :-- |

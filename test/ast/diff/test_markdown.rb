@@ -19,8 +19,8 @@ class TestMarkdownDiff < Test::Unit::TestCase
   end
 
   def test_different_content
-    left = "# Heading 1"
-    right = "# Heading 2"
+    left = '# Heading 1'
+    right = '# Heading 2'
 
     result = @differ.compare(left, right)
     assert(!result.equal?)
@@ -32,7 +32,7 @@ class TestMarkdownDiff < Test::Unit::TestCase
     right = "#  Heading  \n\n  Paragraph text  "
 
     result = @differ.compare(left, right)
-    assert(result.equal?, "Should normalize whitespace differences")
+    assert(result.equal?, 'Should normalize whitespace differences')
   end
 
   def test_normalize_blank_lines
@@ -40,7 +40,7 @@ class TestMarkdownDiff < Test::Unit::TestCase
     right = "# Heading\n\n\n\nParagraph"
 
     result = @differ.compare(left, right)
-    assert(result.equal?, "Should normalize multiple blank lines")
+    assert(result.equal?, 'Should normalize multiple blank lines')
   end
 
   def test_normalize_list_markers
@@ -48,23 +48,23 @@ class TestMarkdownDiff < Test::Unit::TestCase
     right = "- Item 1\n+ Item 2"
 
     result = @differ.compare(left, right)
-    assert(result.equal?, "Should normalize list markers to *")
+    assert(result.equal?, 'Should normalize list markers to *')
   end
 
   def test_normalize_heading_spacing
-    left = "# Heading"
-    right = "#Heading"
+    left = '# Heading'
+    right = '#Heading'
 
     result = @differ.compare(left, right)
-    assert(result.equal?, "Should normalize heading spacing")
+    assert(result.equal?, 'Should normalize heading spacing')
   end
 
   def test_normalize_heading_trailing_hashes
-    left = "# Heading"
-    right = "# Heading #"
+    left = '# Heading'
+    right = '# Heading #'
 
     result = @differ.compare(left, right)
-    assert(result.equal?, "Should remove trailing # from headings")
+    assert(result.equal?, 'Should remove trailing # from headings')
   end
 
   def test_pretty_diff_output
@@ -79,23 +79,23 @@ class TestMarkdownDiff < Test::Unit::TestCase
   end
 
   def test_quick_equality_check
-    left = "# Heading"
-    right = "#  Heading  "
+    left = '# Heading'
+    right = '#  Heading  '
 
-    assert(@differ.equal?(left, right), "Should have quick equality check")
+    assert(@differ.equal?(left, right), 'Should have quick equality check')
   end
 
   def test_diff_method
-    left = "Line 1"
-    right = "Line 2"
+    left = 'Line 1'
+    right = 'Line 2'
 
     diff_output = @differ.diff(left, right)
-    assert(!diff_output.empty?, "Should return diff output")
+    assert(!diff_output.empty?, 'Should return diff output')
   end
 
   def test_empty_strings
-    left = ""
-    right = ""
+    left = ''
+    right = ''
 
     result = @differ.compare(left, right)
     assert(result.equal?)
@@ -103,10 +103,10 @@ class TestMarkdownDiff < Test::Unit::TestCase
 
   def test_nil_handling
     left = nil
-    right = ""
+    right = ''
 
     result = @differ.compare(left, right)
-    assert(result.equal?, "nil and empty string should be equivalent")
+    assert(result.equal?, 'nil and empty string should be equivalent')
   end
 
   def test_complex_markdown_document
@@ -137,7 +137,7 @@ class TestMarkdownDiff < Test::Unit::TestCase
     MD
 
     result = @differ.compare(left, right)
-    assert(result.equal?, "Should handle complex documents with normalization")
+    assert(result.equal?, 'Should handle complex documents with normalization')
   end
 
   def test_code_blocks_preserved
@@ -169,10 +169,10 @@ class TestMarkdownDiff < Test::Unit::TestCase
       normalize_lists: false
     )
 
-    left = "# Heading"
-    right = "#Heading"
+    left = '# Heading'
+    right = '#Heading'
 
     result = differ.compare(left, right)
-    assert(!result.equal?, "Should not normalize when options disabled")
+    assert(!result.equal?, 'Should not normalize when options disabled')
   end
 end

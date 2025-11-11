@@ -24,6 +24,7 @@ module ReVIEW
         @current_line = 1
         @column_stack = [] # Stack for tracking nested columns
         @pending_nodes = [] # Temporary storage for nodes inside columns
+        @last_table_node = nil # Track last table node for attribute assignment
       end
 
       # Convert Markly document to Re:VIEW AST
@@ -31,10 +32,16 @@ module ReVIEW
       # @param markly_doc [Markly::Node] Markly document root
       # @param ast_root [DocumentNode] Re:VIEW AST root
       # @param chapter [ReVIEW::Book::Chapter] Chapter context (required)
-      def convert(markly_doc, ast_root, chapter)
+      # @param ref_map [Hash] Map of placeholders to Re:VIEW inline references
+      # @param footnote_map [Hash] Map of placeholders to footnote definitions
+      # @param footnote_ref_map [Hash] Map of placeholders to footnote references
+      def convert(markly_doc, ast_root, chapter, ref_map: {}, footnote_map: {}, footnote_ref_map: {})
         @ast_root = ast_root
         @current_node = ast_root
         @chapter = chapter
+        @ref_map = ref_map
+        @footnote_map = footnote_map
+        @footnote_ref_map = footnote_ref_map
 
         # Walk the Markly AST
         walk_node(markly_doc)
@@ -105,6 +112,8 @@ module ReVIEW
 
       # Process heading node
       def process_heading(cm_node)
+        @last_table_node = nil # Clear table tracking
+
         level = cm_node.header_level
 
         # Extract text content to check for column marker
@@ -149,20 +158,64 @@ module ReVIEW
         # Check if this paragraph contains only an image
         if standalone_image_paragraph?(cm_node)
           process_standalone_image(cm_node)
-        else
-          para = ParagraphNode.new(
-            location: current_location(cm_node)
-          )
-
-          # Process inline content
-          process_inline_content(cm_node, para)
-
-          add_node_to_current_context(para)
+          @last_table_node = nil # Clear table tracking
+          return
         end
+
+        # Check if this is a footnote definition placeholder
+        para_text = extract_text(cm_node).strip
+        footnote_map = @footnote_map || {}
+
+        if footnote_map[para_text]
+          process_footnote_definition(cm_node, para_text)
+          @last_table_node = nil
+          return
+        end
+
+        # Check if this is an attribute block for the previous table
+        # Pattern: {#id caption="..."}
+        attrs = parse_attribute_block(para_text)
+
+        if attrs && @last_table_node
+          # Apply attributes to the last table
+          table_id = attrs[:id]
+          caption_text = attrs[:caption]
+
+          # Build caption node if caption text is provided
+          caption_node = nil
+          if caption_text && !caption_text.empty?
+            caption_node = CaptionNode.new(location: current_location(cm_node))
+            caption_node.add_child(TextNode.new(
+                                     location: current_location(cm_node),
+                                     content: caption_text
+                                   ))
+          end
+
+          # Update table attributes
+          @last_table_node.update_attributes(id: table_id, caption_node: caption_node)
+
+          @last_table_node = nil # Clear after applying
+          return # Don't add this paragraph as a regular node
+        end
+
+        # Clear table tracking for any other paragraph
+        @last_table_node = nil
+
+        # Regular paragraph processing
+        para = ParagraphNode.new(
+          location: current_location(cm_node)
+        )
+
+        # Process inline content
+        process_inline_content(cm_node, para)
+
+        add_node_to_current_context(para)
       end
 
       # Process list node
       def process_list(cm_node)
+        @last_table_node = nil # Clear table tracking
+
         list_node = ListNode.new(
           location: current_location(cm_node),
           list_type: cm_node.list_type == :ordered_list ? :ol : :ul,
@@ -209,13 +262,47 @@ module ReVIEW
 
       # Process code block node
       def process_code_block(cm_node)
+        @last_table_node = nil # Clear table tracking
+
         code_info = cm_node.fence_info || ''
-        lang = code_info.split(/\s+/).first || nil
+
+        # Parse language and attributes
+        # Pattern: ruby {#id caption="..."}
+        lang = nil
+        attrs = nil
+
+        if code_info =~ /\A(\S+)\s+(.+)\z/
+          lang = ::Regexp.last_match(1)
+          attr_text = ::Regexp.last_match(2)
+          attrs = parse_attribute_block(attr_text)
+        else
+          lang = code_info.strip
+          lang = nil if lang.empty?
+        end
+
+        # Extract ID and caption from attributes
+        code_id = attrs&.[](:id)
+        caption_text = attrs&.[](:caption)
+
+        # Create caption node if caption text exists
+        caption_node = if caption_text && !caption_text.empty?
+                         node = CaptionNode.new(location: current_location(cm_node))
+                         node.add_child(TextNode.new(
+                                          location: current_location(cm_node),
+                                          content: caption_text
+                                        ))
+                         node
+                       end
+
+        # Use :list type if ID is present (numbered list), otherwise :emlist
+        code_type = code_id ? :list : :emlist
 
         code_block = CodeBlockNode.new(
           location: current_location(cm_node),
+          id: code_id,
           lang: lang,
-          code_type: :emlist, # Default to emlist for Markdown code blocks
+          code_type: code_type,
+          caption_node: caption_node,
           original_text: cm_node.string_content
         )
 
@@ -237,6 +324,8 @@ module ReVIEW
 
       # Process blockquote node
       def process_blockquote(cm_node)
+        @last_table_node = nil # Clear table tracking
+
         quote_node = BlockNode.new(
           location: current_location(cm_node),
           block_type: :quote
@@ -266,6 +355,49 @@ module ReVIEW
         process_children(cm_node)
 
         @current_node = @table_stack.pop
+
+        # Check if the last row contains only attribute block
+        # This happens when Markly includes the attribute line as part of the table
+        if table_node.body_rows.any?
+          last_row = table_node.body_rows.last
+          # Check if the last row has only one cell with attribute block
+          if last_row.children.length >= 1
+            first_cell = last_row.children.first
+            # Extract text from all children of the cell
+            cell_text = first_cell.children.map do |child|
+              child.is_a?(TextNode) ? child.content : ''
+            end.join.strip
+
+            attrs = parse_attribute_block(cell_text)
+            if attrs
+              # Remove the last row from children (body_rows is a filtered view)
+              table_node.children.delete(last_row)
+
+              # Apply attributes to the table
+              table_id = attrs[:id]
+              caption_text = attrs[:caption]
+
+              # Build caption node if caption text is provided
+              caption_node = nil
+              if caption_text && !caption_text.empty?
+                caption_node = CaptionNode.new(location: current_location(cm_node))
+                caption_node.add_child(TextNode.new(
+                                         location: current_location(cm_node),
+                                         content: caption_text
+                                       ))
+              end
+
+              # Update table attributes
+              table_node.update_attributes(id: table_id, caption_node: caption_node)
+
+              # No need to track this table for next paragraph
+              return
+            end
+          end
+        end
+
+        # Save table node for potential attribute assignment from next paragraph
+        @last_table_node = table_node
       end
 
       # Process table row node
@@ -367,90 +499,126 @@ module ReVIEW
       def process_inline_node(cm_node, parent_node)
         case cm_node.type
         when :text
-          parent_node.add_child(TextNode.new(
-                                  location: current_location(cm_node),
-                                  content: cm_node.string_content
-                                ))
+          text = cm_node.string_content
+
+          # Check for placeholders from preprocessing
+          # Pattern: @@REVIEW_REF_N@@ or @@FOOTNOTE_REF_N@@
+          ref_map = @ref_map || {}
+          footnote_ref_map = @footnote_ref_map || {}
+          segments = []
+          pos = 0
+
+          # Scan for both types of placeholders
+          text.scan(/@@(REVIEW_REF|FOOTNOTE_REF)_(\d+)@@/) do
+            match_start = ::Regexp.last_match.begin(0)
+            match_end = ::Regexp.last_match.end(0)
+            placeholder = ::Regexp.last_match(0)
+            placeholder_type = ::Regexp.last_match(1)
+
+            # Add text before placeholder
+            if match_start > pos
+              segments << { type: :text, content: text[pos...match_start] }
+            end
+
+            # Add reference based on placeholder type
+            segments << if placeholder_type == 'REVIEW_REF' && ref_map[placeholder]
+                          { type: :reference, ref_type: ref_map[placeholder][:type].to_sym, ref_id: ref_map[placeholder][:id] }
+                        elsif placeholder_type == 'FOOTNOTE_REF' && footnote_ref_map[placeholder]
+                          { type: :footnote_ref, footnote_id: footnote_ref_map[placeholder] }
+                        else
+                          # Fallback: treat as text if not in map
+                          { type: :text, content: placeholder }
+                        end
+
+            pos = match_end
+          end
+
+          # Add remaining text
+          if pos < text.length
+            segments << { type: :text, content: text[pos..-1] }
+          end
+
+          # If no placeholders found, treat entire text as single segment
+          segments = [{ type: :text, content: text }] if segments.empty?
+
+          # Create nodes from segments
+          segments.each do |segment|
+            case segment[:type]
+            when :text
+              # Regular text node
+              parent_node.add_child(TextNode.new(location: current_location(cm_node), content: segment[:content]))
+            when :reference
+              # Reference: create InlineNode with ReferenceNode child
+              ref_type = segment[:ref_type]
+              ref_id = segment[:ref_id]
+
+              # Create ReferenceNode
+              reference_node = ReferenceNode.new(ref_id, nil, location: current_location(cm_node))
+
+              # Create InlineNode with reference type
+              inline_node = InlineNode.new(location: current_location(cm_node), inline_type: ref_type, args: [ref_id])
+              inline_node.add_child(reference_node)
+
+              parent_node.add_child(inline_node)
+
+            when :footnote_ref
+              # Footnote reference: create InlineNode with fn type
+              footnote_id = segment[:footnote_id]
+
+              # Create ReferenceNode
+              reference_node = ReferenceNode.new(footnote_id, nil, location: current_location(cm_node))
+
+              # Create InlineNode with fn type
+              inline_node = InlineNode.new(location: current_location(cm_node), inline_type: :fn, args: [footnote_id])
+              inline_node.add_child(reference_node)
+
+              parent_node.add_child(inline_node)
+            end
+          end
 
         when :strong
-          inline_node = InlineNode.new(
-            location: current_location(cm_node),
-            inline_type: :b,
-            args: [extract_text(cm_node)]
-          )
+          inline_node = InlineNode.new(location: current_location(cm_node), inline_type: :b, args: [extract_text(cm_node)])
           process_inline_content(cm_node, inline_node)
           parent_node.add_child(inline_node)
 
         when :emph
-          inline_node = InlineNode.new(
-            location: current_location(cm_node),
-            inline_type: :i,
-            args: [extract_text(cm_node)]
-          )
+          inline_node = InlineNode.new(location: current_location(cm_node), inline_type: :i, args: [extract_text(cm_node)])
           process_inline_content(cm_node, inline_node)
           parent_node.add_child(inline_node)
 
         when :code
-          inline_node = InlineNode.new(
-            location: current_location(cm_node),
-            inline_type: :code,
-            args: [cm_node.string_content]
-          )
-          inline_node.add_child(TextNode.new(
-                                  location: current_location(cm_node),
-                                  content: cm_node.string_content
-                                ))
+          inline_node = InlineNode.new(location: current_location(cm_node), inline_type: :code, args: [cm_node.string_content])
+          inline_node.add_child(TextNode.new(location: current_location(cm_node), content: cm_node.string_content))
           parent_node.add_child(inline_node)
 
         when :link
           # Create href inline node
-          inline_node = InlineNode.new(
-            location: current_location(cm_node),
-            inline_type: :href,
-            args: [cm_node.url, extract_text(cm_node)]
-          )
+          inline_node = InlineNode.new(location: current_location(cm_node), inline_type: :href, args: [cm_node.url, extract_text(cm_node)])
           process_inline_content(cm_node, inline_node)
           parent_node.add_child(inline_node)
 
         when :image
           # Create icon inline node (Re:VIEW's image inline)
-          inline_node = InlineNode.new(
-            location: current_location(cm_node),
-            inline_type: :icon,
-            args: [cm_node.url]
-          )
+          inline_node = InlineNode.new(location: current_location(cm_node), inline_type: :icon, args: [cm_node.url])
           parent_node.add_child(inline_node)
 
         when :strikethrough
           # GFM extension
-          inline_node = InlineNode.new(
-            location: current_location(cm_node),
-            inline_type: :del,
-            args: [extract_text(cm_node)]
-          )
+          inline_node = InlineNode.new(location: current_location(cm_node), inline_type: :del, args: [extract_text(cm_node)])
           process_inline_content(cm_node, inline_node)
           parent_node.add_child(inline_node)
 
         when :softbreak
           # Soft line break - convert to space
-          parent_node.add_child(TextNode.new(
-                                  location: current_location(cm_node),
-                                  content: ' '
-                                ))
+          parent_node.add_child(TextNode.new(location: current_location(cm_node), content: ' '))
 
         when :linebreak
           # Hard line break - preserve as newline
-          parent_node.add_child(TextNode.new(
-                                  location: current_location(cm_node),
-                                  content: "\n"
-                                ))
+          parent_node.add_child(TextNode.new(location: current_location(cm_node), content: "\n"))
 
-        when :html_inline # rubocop:disable Lint/DuplicateBranch
+        when :html_inline
           # Inline HTML - store as text for now
-          parent_node.add_child(TextNode.new(
-                                  location: current_location(cm_node),
-                                  content: cm_node.string_content
-                                ))
+          parent_node.add_child(TextNode.new(location: current_location(cm_node), content: cm_node.string_content))
 
         else
           # Process any children
@@ -600,31 +768,62 @@ module ReVIEW
       # Check if paragraph contains only a standalone image
       def standalone_image_paragraph?(cm_node)
         children = cm_node.to_a
-        return false if children.length != 1
+        return false if children.empty?
 
-        child = children.first
-        child.type == :image
+        # Filter out softbreak and linebreak nodes (they're just formatting)
+        significant_children = children.reject { |c| %i[softbreak linebreak].include?(c.type) }
+
+        # Pattern 1: Only image node
+        if significant_children.length == 1
+          return significant_children.first.type == :image
+        end
+
+        # Pattern 2: Image node followed by attribute block text
+        if significant_children.length == 2
+          first = significant_children[0]
+          second = significant_children[1]
+          if first.type == :image && second.type == :text
+            # Check if the text is an attribute block
+            text_content = second.string_content.strip
+            return !parse_attribute_block(text_content).nil?
+          end
+        end
+
+        false
       end
 
       # Process standalone image as block-level ImageNode
       def process_standalone_image(cm_node)
-        image_node = cm_node.first # Get the image node
+        children = cm_node.to_a
+        # Filter out softbreak and linebreak nodes
+        significant_children = children.reject { |c| %i[softbreak linebreak].include?(c.type) }
+
+        image_node = significant_children[0] # Get the image node
+
+        # Check if there's an attribute block after the image (second child of paragraph)
+        # Pattern: ![alt](url){#id caption="..."}
+        attrs = nil
+        if significant_children.length == 2 && significant_children[1].type == :text
+          text_content = significant_children[1].string_content
+          attrs = parse_attribute_block(text_content)
+        end
 
         # Extract image information
-        image_id = extract_image_id(image_node.url)
+        image_id = attrs&.[](:id) || extract_image_id(image_node.url)
         alt_text = extract_text(image_node) # Extract alt text from children
+        caption_text = attrs&.[](:caption) || alt_text
 
-        # Create caption if alt text exists
-        caption_node = if alt_text && !alt_text.empty?
+        # Create caption if caption text exists
+        caption_node = if caption_text && !caption_text.empty?
                          node = CaptionNode.new(location: current_location(image_node))
                          node.add_child(TextNode.new(
                                           location: current_location(image_node),
-                                          content: alt_text
+                                          content: caption_text
                                         ))
                          node
                        end
 
-        # Create ImageNode
+        # Create ImageNode with explicit ID
         image_block = ImageNode.new(
           location: current_location(image_node),
           id: image_id,
@@ -640,6 +839,36 @@ module ReVIEW
       def extract_image_id(url)
         # Remove file extension for Re:VIEW compatibility
         File.basename(url, '.*')
+      end
+
+      # Process footnote definition placeholder
+      def process_footnote_definition(cm_node, placeholder)
+        footnote_map = @footnote_map || {}
+        footnote_data = footnote_map[placeholder]
+        return unless footnote_data
+
+        footnote_id = footnote_data[:id]
+        footnote_content = footnote_data[:content]
+
+        # Create FootnoteNode
+        footnote_node = FootnoteNode.new(
+          location: current_location(cm_node),
+          id: footnote_id,
+          footnote_type: :footnote
+        )
+
+        # Create paragraph for footnote content
+        para = ParagraphNode.new(
+          location: current_location(cm_node)
+        )
+        para.add_child(TextNode.new(
+                         location: current_location(cm_node),
+                         content: footnote_content
+                       ))
+
+        footnote_node.add_child(para)
+
+        add_node_to_current_context(footnote_node)
       end
 
       # Auto-close columns when encountering a heading at the same or higher level
@@ -679,6 +908,72 @@ module ReVIEW
           # Restore previous context
           @current_node = previous_node
         end
+      end
+
+      # Parse attribute block in the format {#id .class attr="value"}
+      # @param text [String] Text potentially containing attributes
+      # @return [Hash, nil] Hash of attributes or nil if not an attribute block
+      def parse_attribute_block(text)
+        return nil unless text =~ /\A\s*\{([^}]+)\}\s*\z/
+
+        attrs = {}
+        attr_text = ::Regexp.last_match(1)
+
+        # Extract ID: #id
+        if attr_text =~ /#([a-zA-Z0-9_-]+)/
+          attrs[:id] = ::Regexp.last_match(1)
+        end
+
+        # Extract caption attribute: caption="..."
+        if attr_text =~ /caption=["']([^"']+)["']/
+          attrs[:caption] = ::Regexp.last_match(1)
+        end
+
+        # Extract classes: .classname
+        attrs[:classes] = attr_text.scan(/\.([a-zA-Z0-9_-]+)/).flatten
+
+        attrs.empty? ? nil : attrs
+      end
+
+      # Parse Re:VIEW inline notation from text: @<type>{id}
+      # Returns array of text segments and reference nodes
+      # @param text [String] Text potentially containing Re:VIEW references
+      # @return [Array<Hash>] Array of {type: :text|:reference, content: String, ref_type: Symbol, ref_id: String}
+      def parse_review_references(text)
+        segments = []
+        pos = 0
+
+        # Pattern: @<img>{id}, @<list>{id}, @<table>{id}, @<code>{id}, etc.
+        pattern = /@<([a-z]+)>\{([^}]+)\}/
+
+        text.scan(pattern) do |match|
+          ref_type = match[0]
+          ref_id = match[1]
+          match_start = ::Regexp.last_match.begin(0)
+          match_end = ::Regexp.last_match.end(0)
+
+          # Add text before the match
+          if match_start > pos
+            segments << { type: :text, content: text[pos...match_start] }
+          end
+
+          # Add reference
+          segments << {
+            type: :reference,
+            ref_type: ref_type.to_sym,
+            ref_id: ref_id
+          }
+
+          pos = match_end
+        end
+
+        # Add remaining text
+        if pos < text.length
+          segments << { type: :text, content: text[pos..-1] }
+        end
+
+        # If no references found, return single text segment
+        segments.empty? ? [{ type: :text, content: text }] : segments
       end
     end
   end

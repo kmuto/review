@@ -10,7 +10,7 @@
 
 <div id="lista-1">
 
-<p class="caption">Hello</p>
+**Hello**
 
 ```
 os.println("Hello");
@@ -18,14 +18,11 @@ os.println("Hello");
 
 </div>
 
-<figure id="puzzle">
-<img src="puzzle" alt="パズル">
-<figcaption>パズル</figcaption>
-</figure>
+![パズル](puzzle)
 
 <div id="taba-1">
 
-<p class="caption">付録表、見出し行なし（左1列目を見出しと見なす）</p>
+**付録表、見出し行なし（左1列目を見出しと見なす）**
 
 | a | 1 |
 | :-- | :-- |
