@@ -43,10 +43,20 @@ module ReVIEW
       end
 
       def self.deserialize_from_hash(hash)
+        # Deserialize term_children if present
+        term_children = []
+        if hash['term_children']
+          term_children = hash['term_children'].map do |child_hash|
+            ReVIEW::AST::JSONSerializer.deserialize_from_hash(child_hash)
+          end.compact
+        end
+
         node = new(
           location: ReVIEW::AST::JSONSerializer.restore_location(hash),
           level: hash['level'] || 1,
-          number: hash['number']
+          number: hash['number'],
+          item_type: hash['item_type']&.to_sym,
+          term_children: term_children
         )
         if hash['children']
           hash['children'].each do |child_hash|
