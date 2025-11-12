@@ -69,7 +69,6 @@ module ReVIEW
       def initialize(compiler)
         @compiler = compiler
         @column_stack = [] # Stack for tracking nested columns
-        @last_table_node = nil # Track last table node for attribute assignment
         @context = nil # Will be initialized in convert()
       end
 
@@ -170,8 +169,6 @@ module ReVIEW
 
       # Process heading node
       def process_heading(cm_node)
-        @last_table_node = nil # Clear table tracking
-
         level = cm_node.header_level
 
         # Extract text content to check for column marker
@@ -212,7 +209,6 @@ module ReVIEW
         # Check if this paragraph contains only an image
         if standalone_image_paragraph?(cm_node)
           process_standalone_image(cm_node)
-          @last_table_node = nil # Clear table tracking
           return
         end
 
@@ -221,8 +217,10 @@ module ReVIEW
         # Pattern: {#id caption="..."}
         attrs = parse_attribute_block(para_text)
 
-        if attrs && @last_table_node
+        # Check if this is an attribute block for the previous table
+        if attrs && @current_node.children.last.is_a?(TableNode)
           # Apply attributes to the last table
+          last_table_node = @current_node.children.last
           table_id = attrs[:id]
           caption_text = attrs[:caption]
 
@@ -237,14 +235,10 @@ module ReVIEW
           end
 
           # Update table attributes
-          @last_table_node.update_attributes(id: table_id, caption_node: caption_node)
+          last_table_node.update_attributes(id: table_id, caption_node: caption_node)
 
-          @last_table_node = nil # Clear after applying
           return # Don't add this paragraph as a regular node
         end
-
-        # Clear table tracking for any other paragraph
-        @last_table_node = nil
 
         # Regular paragraph processing
         para = ParagraphNode.new(
@@ -259,8 +253,6 @@ module ReVIEW
 
       # Process list node
       def process_list(cm_node)
-        @last_table_node = nil # Clear table tracking
-
         list_node = ListNode.new(
           location: current_location(cm_node),
           list_type: cm_node.list_type == :ordered_list ? :ol : :ul,
@@ -316,8 +308,6 @@ module ReVIEW
 
       # Process code block node
       def process_code_block(cm_node)
-        @last_table_node = nil # Clear table tracking
-
         code_info = cm_node.fence_info || ''
 
         # Parse language and attributes
@@ -382,8 +372,6 @@ module ReVIEW
 
       # Process blockquote node
       def process_blockquote(cm_node)
-        @last_table_node = nil # Clear table tracking
-
         quote_node = BlockNode.new(
           location: current_location(cm_node),
           block_type: :quote
@@ -464,9 +452,6 @@ module ReVIEW
             end
           end
         end
-
-        # Save table node for potential attribute assignment from next paragraph
-        @last_table_node = table_node
       end
 
       # Process table row node
