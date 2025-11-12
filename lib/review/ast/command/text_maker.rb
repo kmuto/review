@@ -157,10 +157,15 @@ module ReVIEW
             # Always output error to user, not just in debug mode
             @logger.error "AST Renderer Error in #{filename}: #{e.message}"
 
-            # Show backtrace in debug mode
+            # Show first backtrace line to help identify the issue
+            if e.backtrace && !e.backtrace.empty?
+              @logger.error "  at #{e.backtrace.first}"
+            end
+
+            # Show full backtrace in debug mode
             if @config['debug']
-              @logger.debug('Backtrace:')
-              e.backtrace.first(10).each { |line| @logger.debug("  #{line}") }
+              @logger.error('Full Backtrace:')
+              e.backtrace.first(20).each { |line| @logger.error("  #{line}") }
             end
 
             false

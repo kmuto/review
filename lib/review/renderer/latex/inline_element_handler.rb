@@ -649,6 +649,12 @@ module ReVIEW
           "\\reviewbou{#{content}}"
         end
 
+        # Render tcy notation (tate-chu-yoko: horizontal-in-vertical text)
+        def render_inline_tcy(_type, content, _node)
+          # Tate-chu-yoko (縦中横) for vertical typesetting
+          "\\reviewtcy{#{content}}"
+        end
+
         # Render balloon notation
         def render_inline_balloon(_type, content, _node)
           # Balloon annotation - content contains the balloon text

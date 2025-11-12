@@ -795,12 +795,83 @@ module ReVIEW
         end
       end
 
+      def visit_block_label(_node)
+        # Labels are not rendered in TOP format
+        ''
+      end
+
+      def visit_block_printendnotes(_node)
+        # Print all endnotes collected in the chapter
+        return '' unless @chapter
+        return '' if @chapter.endnotes.size == 0
+
+        result = +''
+        @chapter.endnotes.each do |en|
+          # Format: (number) content
+          number = en.number
+          content_text = en.content || ''
+          result += "(#{number}) #{content_text}\n"
+        end
+        result
+      end
+
+      def visit_block_bibpaper(node)
+        id = node.args[0]
+        caption_text = node.args[1]
+
+        result = +''
+        if id && @chapter
+          begin
+            bibpaper_number = @chapter.bibpaper(id).number
+            result += "[#{bibpaper_number}]"
+          rescue KeyError
+            result += "[#{id}]"
+          end
+        end
+
+        # Render caption with inline elements if it has a caption_node
+        if node.respond_to?(:caption_node) && node.caption_node
+          caption = render_caption_inline(node.caption_node)
+          result += " #{caption}\n"
+        elsif caption_text
+          result += " #{caption_text}\n"
+        else
+          result += "\n"
+        end
+
+        # Render body content
+        content = render_children(node)
+        result += "#{content}\n" unless content.strip.empty?
+
+        result
+      end
+
+      def visit_embed(node)
+        # Check if content should be output for this renderer
+        # TOP format accepts 'top' and 'text' as target builders
+        return '' unless node.targeted_for?('top') || node.targeted_for?('text')
+
+        # Get content
+        content = node.content || ''
+
+        # Process \n based on embed type
+        case node.embed_type
+        when :inline, :raw
+          # For inline and raw embeds, convert \\n to actual newlines
+          content = content.gsub('\\n', "\n")
+        end
+
+        # For block embeds, add trailing newline
+        node.embed_type == :block ? content + "\n" : content
+      end
+
       def get_footnote_number(footnote_id)
         # Use chapter's footnote numbering (matches TOPBuilder)
         return 1 unless @chapter
 
         begin
-          @chapter.footnote(footnote_id).number
+          footnote = @chapter.footnote(footnote_id)
+          footnote&.number || 1
         rescue KeyError
           # Fallback if footnote not found
           1

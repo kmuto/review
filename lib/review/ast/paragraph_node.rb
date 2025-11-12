@@ -5,6 +5,17 @@ require_relative 'node'
 module ReVIEW
   module AST
     class ParagraphNode < Node
+      # Convert paragraph content to inline text by joining children's inline text
+      #
+      # While ParagraphNode is a block element, in some contexts (like footnote indexing)
+      # we need to extract the text content. This method allows extracting the inline
+      # text from the paragraph's children.
+      #
+      # @return [String] The inline text content
+      def to_inline_text
+        children.map(&:to_inline_text).join
+      end
+
       # Deserialize from hash
       def self.deserialize_from_hash(hash)
         node = new(location: ReVIEW::AST::JSONSerializer.restore_location(hash))

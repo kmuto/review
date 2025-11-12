@@ -68,11 +68,9 @@ module ReVIEW
             result += visit_list_item(item, :ol, index + 1)
           end
         when :dl
-          result += "<dl>\n"
           node.children.each do |item|
             result += visit_definition_item(item)
           end
-          result += "</dl>\n\n"
         else
           raise NotImplementedError, "MarkdownRenderer does not support list_type #{node.list_type}."
         end
@@ -137,7 +135,9 @@ module ReVIEW
         end
         definition = definition_parts.join(' ').strip
 
-        "<dt>#{term}</dt>\n<dd>#{definition}</dd>\n"
+        # Format as: **term**: description
+        # Note: term already contains rendered inline markup, so we don't escape it
+        "**#{term}**: #{definition}\n\n"
       end
 
       # Common code block rendering method used by all code block types
@@ -488,6 +488,21 @@ module ReVIEW
         "`#{content}`"
       end
 
+      def render_inline_ttb(_type, content, _node)
+        # Bold + monospace: **`content`**
+        "**`#{content}`**"
+      end
+
+      def render_inline_ttbold(type, content, node)
+        # Alias for ttb
+        render_inline_ttb(type, content, node)
+      end
+
+      def render_inline_tti(_type, content, _node)
+        # Italic + monospace: *`content`*
+        "*`#{content}`*"
+      end
+
       def render_inline_kbd(_type, content, _node)
         "`#{content}`"
       end
@@ -646,6 +661,19 @@ module ReVIEW
         end
       end
 
+      def render_inline_bib(_type, _content, node)
+        # Bibliography reference
+        ref_node = node.children.first
+        unless ref_node.reference_node? && ref_node.resolved?
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
+
+        data = ref_node.resolved_data
+        bib_number = data.item_number
+        # Format as [number] like other builders
+        "[#{bib_number}]"
+      end
+
       def render_inline_kw(_type, content, node)
         if node.args.length >= 2
           word = node.args[0]
@@ -745,6 +773,19 @@ module ReVIEW
         end
       end
 
+      def render_inline_column(_type, _content, node)
+        # Column reference
+        ref_node = node.children.first
+        unless ref_node.reference_node? && ref_node.resolved?
+          raise 'BUG: Reference should be resolved at AST construction time'
+        end
+
+        data = ref_node.resolved_data
+
+        # Use TextFormatter to format column reference (e.g., "コラム「タイトル」")
+        text_formatter.format_reference_text(:column, data)
+      end
+
       def render_inline_sec(_type, _content, node)
         ref_node = node.children.first
         unless ref_node.reference_node? && ref_node.resolved?
@@ -825,6 +866,11 @@ module ReVIEW
         dictionary = @book&.config&.[]('dictionary') || {}
         word_content = dictionary[content] || "[missing word: #{content}]"
         "**#{escape_asterisks(word_content)}**"
+      end
+
+      def render_inline_uchar(_type, content, _node)
+        # Convert hex code to Unicode character
+        [content.to_i(16)].pack('U')
       end
 
       # Helper methods

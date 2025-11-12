@@ -194,6 +194,10 @@ module ReVIEW
 
         ref_type = parent_inline.inline_type
 
+        # Skip non-reference inline elements (decoration elements)
+        # Only process elements that are registered as reference types
+        return unless @resolver_methods.key?(ref_type.to_sym)
+
         if resolve_node(node, ref_type.to_sym)
           @resolve_count += 1
         else

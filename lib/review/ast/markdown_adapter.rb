@@ -70,6 +70,33 @@ module ReVIEW
         end
       end
 
+      # parse CodeBlock or other attributes to get id and caption
+      class AttributeParser
+        def parse(text)
+          # Ensure input is UTF-8 (Markly's fence_info returns ASCII-8BIT)
+          text = text.dup.force_encoding('UTF-8') if text.encoding == Encoding::ASCII_8BIT
+
+          return nil unless text =~ /\A\s*\{([^}]+)\}\s*\z/
+
+          attrs = {}
+          attr_text = ::Regexp.last_match(1)
+
+          # Extract ID: #id
+          if attr_text =~ /#([a-zA-Z0-9_-]+)/
+            attrs[:id] = ::Regexp.last_match(1)
+          end
+
+          # Extract caption attribute: caption="..."
+          if attr_text =~ /caption=["']([^"']+)["']/
+            attrs[:caption] = ::Regexp.last_match(1)
+          end
+
+          # Extract classes: .classname
+          # attrs[:classes] = attr_text.scan(/\.([a-zA-Z0-9_-]+)/).flatten
+          attrs.empty? ? nil : attrs
+        end
+      end
+
       # Placeholder for Re:VIEW inline notation marker (@<)
       # Used to restore notation from MarkdownCompiler's preprocessing
       REVIEW_NOTATION_PLACEHOLDER = '@@REVIEW_AT_LT@@'
@@ -80,6 +107,7 @@ module ReVIEW
 
         # Initialize InlineTokenizer for processing Re:VIEW notation
         @inline_tokenizer = InlineTokenizer.new
+        @attribute_parser = AttributeParser.new
       end
 
       # Convert Markly document to Re:VIEW AST
@@ -854,25 +882,7 @@ module ReVIEW
       # @param text [String] Text potentially containing attributes
       # @return [Hash, nil] Hash of attributes or nil if not an attribute block
       def parse_attribute_block(text)
-        return nil unless text =~ /\A\s*\{([^}]+)\}\s*\z/
-
-        attrs = {}
-        attr_text = ::Regexp.last_match(1)
-
-        # Extract ID: #id
-        if attr_text =~ /#([a-zA-Z0-9_-]+)/
-          attrs[:id] = ::Regexp.last_match(1)
-        end
-
-        # Extract caption attribute: caption="..."
-        if attr_text =~ /caption=["']([^"']+)["']/
-          attrs[:caption] = ::Regexp.last_match(1)
-        end
-
-        # Extract classes: .classname
-        attrs[:classes] = attr_text.scan(/\.([a-zA-Z0-9_-]+)/).flatten
-
-        attrs.empty? ? nil : attrs
+        @attribute_parser.parse(text)
       end
 
       # Validate that final state is clean after conversion

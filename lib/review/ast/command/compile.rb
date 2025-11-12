@@ -292,6 +292,9 @@ module ReVIEW
           when 'idgxml'
             require 'review/renderer/idgxml_renderer'
             ReVIEW::Renderer::IdgxmlRenderer
+          when 'markdown'
+            require 'review/renderer/markdown_renderer'
+            ReVIEW::Renderer::MarkdownRenderer
           else
             raise UnsupportedFormatError, "Unsupported format: #{format} (supported: html, latex, idgxml)"
           end
@@ -324,6 +327,8 @@ module ReVIEW
             '.tex'
           when 'idgxml'
             '.xml'
+          when 'markdown'
+            '.md'
           else
             '.txt'
           end

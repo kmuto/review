@@ -583,11 +583,8 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
-    assert_match(/<dl>/, result)
-    assert_match(%r{<dt>Term 1</dt>}, result)
-    assert_match(%r{<dd>Definition 1</dd>}, result)
-    assert_match(%r{<dt>Term 2</dt>}, result)
-    assert_match(%r{<dd>Definition 2</dd>}, result)
+    assert_match(/\*\*Term 1\*\*: Definition 1/, result)
+    assert_match(/\*\*Term 2\*\*: Definition 2/, result)
   end
 
   def test_definition_list_with_inline_markup
@@ -600,8 +597,8 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
-    assert_match(%r{<dt>\*\*Bold Term\*\*</dt>}, result)
-    assert_match(%r{<dd>Definition with `code`</dd>}, result)
+    # Term is wrapped in ** (bold) and inline markup is preserved
+    assert_match(/\*\*\*\*Bold Term\*\*\*\*: Definition with `code`/, result)
   end
 
   # Nested list tests

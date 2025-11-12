@@ -312,6 +312,21 @@ module ReVIEW
         ''
       end
 
+      def visit_block_printendnotes(_node)
+        # Print all endnotes collected in the chapter
+        return '' unless @chapter
+        return '' if @chapter.endnotes.size == 0
+
+        result = +''
+        @chapter.endnotes.each do |en|
+          # Format: (number) content
+          number = en.number
+          content_text = en.content || ''
+          result += "(#{number}) #{content_text}\n"
+        end
+        result
+      end
+
       def visit_block_tsize(_node)
         # Table size control is not meaningful in plaintext
         ''
@@ -400,7 +415,9 @@ module ReVIEW
         if respond_to?(method_name, true)
           send(method_name, type, content, node)
         else
-          raise NotImplementedError, "Unknown inline element: #{type}"
+          # For unknown inline elements (typically reference types), return content as-is
+          # Reference types (list, img, table, hd, column, etc.) have their content already resolved
+          content || ''
         end
       end
 
