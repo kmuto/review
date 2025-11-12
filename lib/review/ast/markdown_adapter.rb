@@ -22,22 +22,22 @@ module ReVIEW
       # ContextStack manages hierarchical context for AST node construction.
       # It provides exception-safe context switching with automatic cleanup.
       class ContextStack
-        attr_reader :current
-
         def initialize(initial_context)
-          @stack = []
-          @current = initial_context
+          @stack = [initial_context]
+        end
+
+        def current
+          @stack.last
         end
 
         def push(node)
-          @stack.push(@current)
-          @current = node
+          @stack.push(node)
         end
 
         def pop
-          raise ReVIEW::CompileError, 'Cannot pop from empty context stack' if @stack.empty?
+          raise ReVIEW::CompileError, 'Cannot pop initial context from stack' if @stack.length <= 1
 
-          @current = @stack.pop
+          @stack.pop
         end
 
         def with_context(node)
@@ -48,21 +48,17 @@ module ReVIEW
         end
 
         def depth
-          @stack.length + 1
+          @stack.length
         end
 
         def validate!
-          if @current.nil?
-            raise ReVIEW::CompileError, 'Context corruption: current node is nil'
-          end
-
           if @stack.any?(&:nil?)
             raise ReVIEW::CompileError, 'Context corruption: nil found in stack'
           end
         end
 
         def empty?
-          @stack.empty?
+          @stack.length <= 1
         end
       end
 

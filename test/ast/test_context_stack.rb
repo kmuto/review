@@ -115,14 +115,6 @@ class TestContextStack < Test::Unit::TestCase
     end
   end
 
-  def test_validate_nil_current
-    @stack.instance_variable_set(:@current, nil)
-
-    assert_raise_message(/Context corruption: current node is nil/) do
-      @stack.validate!
-    end
-  end
-
   def test_validate_nil_in_stack
     child = MockNode.new('child')
     @stack.push(child)

@@ -18,10 +18,6 @@ module ReVIEW
     # This class compiles Markdown documents to Re:VIEW AST using Markly
     # for parsing and MarkdownAdapter for AST conversion.
     class MarkdownCompiler < Compiler
-      # Placeholder for Re:VIEW inline notation marker (@<)
-      # Used to protect @<xxx>{id} from Markly's HTML parser
-      REVIEW_NOTATION_PLACEHOLDER = '@@REVIEW_AT_LT@@'
-
       def initialize
         super
         @adapter = MarkdownAdapter.new(self)
@@ -50,7 +46,7 @@ module ReVIEW
         # Protect Re:VIEW inline notation from Markly's HTML parser
         # Markly treats @<xxx> as HTML tags and removes them
         # Replace @< with a temporary placeholder before parsing
-        markdown_content = markdown_content.gsub('@<', REVIEW_NOTATION_PLACEHOLDER)
+        markdown_content = markdown_content.gsub('@<', MarkdownAdapter::REVIEW_NOTATION_PLACEHOLDER)
 
         # Parse the Markdown content
         markly_doc = Markly.parse(
