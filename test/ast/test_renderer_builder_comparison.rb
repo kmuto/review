@@ -269,4 +269,48 @@ class TestRendererBuilderComparison < Test::Unit::TestCase
     assert_includes(renderer_output, '■Note Title', 'Renderer should include note caption')
     assert_includes(renderer_output, 'This is a note.', 'Renderer should include note content')
   end
+
+  def test_top_footnote_comparison
+    content = <<~EOB
+      = Footnote Test
+
+      Text with footnote@<fn>{note1} and another@<fn>{note2}.
+
+      More text here.
+
+      //footnote[note1][This is the first footnote]
+      //footnote[note2][This is the second footnote]
+    EOB
+
+    # Compile with both builder and renderer (need reference resolution for footnotes)
+    builder_output = compile_with_builder(content, ReVIEW::TOPBuilder)
+
+    # Compile with renderer with reference resolution enabled
+    chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
+    ast_compiler = ReVIEW::AST::Compiler.new
+    ast_root = ast_compiler.compile_to_ast(chapter, reference_resolution: true)
+    renderer = ReVIEW::Renderer::TopRenderer.new(chapter)
+    renderer_output = renderer.render(ast_root)
+
+    # Check inline footnote references in both outputs
+    assert_includes(builder_output, '【注1】', 'Builder should produce footnote reference 1')
+    assert_includes(renderer_output, '【注1】', 'Renderer should produce footnote reference 1')
+    assert_includes(builder_output, '【注2】', 'Builder should produce footnote reference 2')
+    assert_includes(renderer_output, '【注2】', 'Renderer should produce footnote reference 2')
+
+    # Check footnote definitions in both outputs
+    assert_includes(builder_output, '【注1】This is the first footnote', 'Builder should produce footnote definition 1')
+    assert_includes(renderer_output, '【注1】This is the first footnote', 'Renderer should produce footnote definition 1')
+    assert_includes(builder_output, '【注2】This is the second footnote', 'Builder should produce footnote definition 2')
+    assert_includes(renderer_output, '【注2】This is the second footnote', 'Renderer should produce footnote definition 2')
+
+    # Check that numbering is consistent (footnote 1 comes before footnote 2)
+    builder_note1_pos = builder_output.index('【注1】')
+    builder_note2_pos = builder_output.index('【注2】')
+    assert(builder_note1_pos < builder_note2_pos, 'Builder should order footnotes correctly')
+
+    renderer_note1_pos = renderer_output.index('【注1】')
+    renderer_note2_pos = renderer_output.index('【注2】')
+    assert(renderer_note1_pos < renderer_note2_pos, 'Renderer should order footnotes correctly')
+  end
 end

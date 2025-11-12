@@ -323,8 +323,8 @@ module ReVIEW
       def visit_table_cell(node)
         content = render_children(node)
 
-        # Apply bold formatting for headers if configured
-        if should_format_table_header?
+        # Apply bold formatting for header cells if configured (matches TOPBuilder)
+        if node.cell_type == :th && should_format_table_header?
           "★#{content}☆"
         else
           content
@@ -620,8 +620,9 @@ module ReVIEW
       end
 
       def should_add_table_separator?
-        # Simplified logic - in real implementation this would check table structure
-        true
+        # Add separator when th_bold is not enabled (matches TOPBuilder logic)
+        # TOPBuilder adds separator when: !@book.config['textmaker'] || !@book.config['textmaker']['th_bold']
+        !config&.dig('textmaker', 'th_bold')
       end
 
       def should_format_table_header?
@@ -783,16 +784,14 @@ module ReVIEW
       end
 
       def get_footnote_number(footnote_id)
-        # Simplified footnote numbering - in real implementation this would
-        # use the footnote index from the chapter or book
-        if @chapter&.book.respond_to?(:footnote_index) && @chapter.book.footnote_index
-          @chapter.book.footnote_index[footnote_id] || 1
-        elsif @book.respond_to?(:footnote_index) && @book&.footnote_index
-          @book.footnote_index[footnote_id] || 1
-        else
-          # Fallback: simple incrementing number based on footnote_id hash
-          @footnote_counter ||= {}
-          @footnote_counter[footnote_id] ||= (@footnote_counter.size + 1)
+        # Use chapter's footnote numbering (matches TOPBuilder)
+        return 1 unless @chapter
+
+        begin
+          @chapter.footnote(footnote_id).number
+        rescue KeyError
+          # Fallback if footnote not found
+          1
         end
       end
     end
