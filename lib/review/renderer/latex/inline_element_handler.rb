@@ -117,7 +117,7 @@ module ReVIEW
             '\\protect\\footnotemark{}'
           else
             footnote_content = if data.caption_node
-                                 @ctx.render_children(data.caption_node)
+                                 @ctx.render_children(data.caption_node).strip
                                else
                                  escape(data.caption_text || '')
                                end

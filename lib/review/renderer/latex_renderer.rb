@@ -1525,6 +1525,9 @@ module ReVIEW
 
       # Process //raw command with LATEXBuilder-compatible behavior
       def process_raw_embed(node)
+        # Skip HTML embeds (from Markdown raw HTML) - they are not compatible with LaTeX
+        return '' if node.embed_type.to_s == 'html'
+
         # Check if this embed is targeted for LaTeX builder
         unless node.targeted_for?('latex')
           return ''
