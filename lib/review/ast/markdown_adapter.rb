@@ -77,6 +77,9 @@ module ReVIEW
       def initialize(compiler)
         @compiler = compiler
         @context = nil # Will be initialized in convert()
+
+        # Initialize InlineTokenizer for processing Re:VIEW notation
+        @inline_tokenizer = InlineTokenizer.new
       end
 
       # Convert Markly document to Re:VIEW AST
@@ -87,9 +90,6 @@ module ReVIEW
       def convert(markly_doc, ast_root, chapter)
         @ast_root = ast_root
         @chapter = chapter
-
-        # Initialize InlineTokenizer for processing Re:VIEW notation
-        @inline_tokenizer = InlineTokenizer.new
 
         # Initialize context stack with document root
         @context = ContextStack.new(ast_root)
