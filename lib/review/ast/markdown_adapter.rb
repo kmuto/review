@@ -60,6 +60,14 @@ module ReVIEW
         def empty?
           @stack.length <= 1
         end
+
+        def find_all(klass)
+          @stack.find_all { |node| node.is_a?(klass) }
+        end
+
+        def any?(klass)
+          @stack.any?(klass)
+        end
       end
 
       # Placeholder for Re:VIEW inline notation marker (@<)
@@ -68,7 +76,6 @@ module ReVIEW
 
       def initialize(compiler)
         @compiler = compiler
-        @column_heading_levels = [] # Stack for tracking column heading levels
         @context = nil # Will be initialized in convert()
       end
 
@@ -680,30 +687,26 @@ module ReVIEW
                          node
                        end
 
-        # Create column node
+        # Create column node with level
         column_node = ColumnNode.new(
           location: current_location(cm_node),
-          caption_node: caption_node
+          caption_node: caption_node,
+          level: level
         )
 
-        # Push column heading level and use context stack for node management
-        @column_heading_levels.push(level)
         @context.push(column_node)
       end
 
       # End current column context
       def end_column(_html_node)
-        if @column_heading_levels.empty?
+        unless @context.current.is_a?(ColumnNode)
           # Warning: /column without matching column
           return
         end
 
-        # Pop column from context stack
         column_node = @context.current
         @context.pop
-        @column_heading_levels.pop
 
-        # Add completed column to current (previous) context
         @context.current.add_child(column_node)
       end
 
@@ -769,7 +772,6 @@ module ReVIEW
         alt_text = extract_text(image_node) # Extract alt text from children
         caption_text = attrs&.[](:caption) || alt_text
 
-        # Create caption if caption text exists
         caption_node = if caption_text && !caption_text.empty?
                          node = CaptionNode.new(location: current_location(image_node))
                          node.add_child(TextNode.new(
@@ -779,7 +781,6 @@ module ReVIEW
                          node
                        end
 
-        # Create ImageNode with explicit ID
         image_block = ImageNode.new(
           location: current_location(image_node),
           id: image_id,
@@ -822,17 +823,19 @@ module ReVIEW
       # Auto-close columns when encountering a heading at the same or higher level
       def auto_close_columns_for_heading(heading_level)
         # Close columns that are at the same or lower level than the current heading
-        until @column_heading_levels.empty?
-          column_level = @column_heading_levels.last
+        loop do
+          # Check if current context is a column
+          break unless @context.current.is_a?(ColumnNode)
+
+          column_node = @context.current
+          column_level = column_node.level
 
           # If the column was started at the same level or lower, close it
           # (lower level number = higher heading, e.g., # is level 1, ## is level 2)
           break if column_level && heading_level > column_level
 
           # Close the column
-          column_node = @context.current
           @context.pop
-          @column_heading_levels.pop
 
           # Add completed column to parent context
           @context.current.add_child(column_node)
@@ -841,10 +844,9 @@ module ReVIEW
 
       # Close all remaining open columns
       def close_all_columns
-        until @column_heading_levels.empty?
+        while @context.current.is_a?(ColumnNode)
           column_node = @context.current
           @context.pop
-          @column_heading_levels.pop
 
           # Add completed column to parent context
           @context.current.add_child(column_node)
@@ -876,19 +878,18 @@ module ReVIEW
         attrs.empty? ? nil : attrs
       end
 
-      # Parse Re:VIEW inline notation from text: @<type>{id}
       # Validate that final state is clean after conversion
       def validate_final_state!
         if @context.current != @ast_root
-          raise ReVIEW::CompileError, 'Internal error: Context not properly restored. ' \
-                                      "Expected to be at root but at #{@context.current.class}"
+          raise ReVIEW::CompileError, "Internal error: Context not properly restored. Expected to be at root but at #{@context.current.class}"
         end
 
-        unless @column_heading_levels.empty?
-          raise ReVIEW::CompileError, "Internal error: #{@column_heading_levels.length} unclosed column(s) remain"
+        # Check for unclosed columns
+        column_nodes = @context.find_all(ColumnNode)
+        unless column_nodes.empty?
+          raise ReVIEW::CompileError, "Internal error: #{column_nodes.length} unclosed column(s) remain"
         end
 
-        # Validate context stack
         @context.validate!
       end
     end
