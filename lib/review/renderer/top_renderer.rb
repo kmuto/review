@@ -40,7 +40,12 @@ module ReVIEW
         warning: '警告',
         important: '重要',
         caution: '注意',
-        notice: '注記'
+        notice: '注記',
+        lead: 'リード',
+        read: 'リード',
+        flushright: '右寄せ',
+        centering: '中央揃え',
+        texequation: 'TeX式'
       }.freeze
 
       def initialize(chapter)
@@ -199,7 +204,10 @@ module ReVIEW
         # Add caption if present
         caption = render_caption_inline(node.caption_node)
         unless caption.empty?
-          result += if node.id
+          result += if node.id && (code_type == :list || code_type == :listnum)
+                      # For list/listnum, use I18n formatting to match TOPBuilder
+                      format_list_caption(node.id, caption)
+                    elsif node.id
                       "■#{node.id}■#{caption}\n"
                     else
                       "■#{caption}\n"
@@ -270,7 +278,8 @@ module ReVIEW
         caption = render_caption_inline(node.caption_node)
         unless caption.empty?
           result += if node.id
-                      "■#{node.id}■#{caption}\n"
+                      # Use I18n formatting to match TOPBuilder
+                      format_table_caption(node.id, caption)
                     else
                       "■#{caption}\n"
                     end
@@ -332,7 +341,8 @@ module ReVIEW
         caption = render_caption_inline(node.caption_node)
         unless caption.empty?
           result += if node.id
-                      "■#{node.id}■#{caption}\n"
+                      # Use I18n formatting to match TOPBuilder
+                      format_image_caption(node.id, caption)
                     else
                       "■#{caption}\n"
                     end
@@ -403,7 +413,100 @@ module ReVIEW
         result
       end
 
-      def render_inline_element(type, content, node)
+      # Block elements from todo-top.md
+
+      def visit_block_lead(node)
+        result = +''
+        result += "\n◆→開始:#{TITLES[:lead]}←◆\n"
+        result += render_children(node)
+        result += "◆→終了:#{TITLES[:lead]}←◆\n\n"
+        result
+      end
+
+      alias_method :visit_block_read, :visit_block_lead
+
+      def visit_block_flushright(node)
+        result = +''
+        result += "\n◆→開始:#{TITLES[:flushright]}←◆\n"
+        result += render_children(node)
+        result += "◆→終了:#{TITLES[:flushright]}←◆\n\n"
+        result
+      end
+
+      def visit_block_centering(node)
+        result = +''
+        result += "\n◆→開始:#{TITLES[:centering]}←◆\n"
+        result += render_children(node)
+        result += "◆→終了:#{TITLES[:centering]}←◆\n\n"
+        result
+      end
+
+      def visit_block_blankline(_node)
+        "\n"
+      end
+
+      def visit_tex_equation(node)
+        result = +''
+        result += "\n◆→開始:#{TITLES[:texequation]}←◆\n"
+        result += node.content if node.respond_to?(:content)
+        result += render_children(node) unless node.respond_to?(:content)
+        result += "\n◆→終了:#{TITLES[:texequation]}←◆\n\n"
+        result
+      end
+
+      def visit_block_emtable(node)
+        result = +''
+        @table_row_separator_count = 0
+
+        result += "\n"
+        result += "◆→開始:#{TITLES[:emtable]}←◆\n"
+
+        # Add caption if present
+        caption = render_caption_inline(node.caption_node)
+        unless caption.empty?
+          result += "■#{caption}\n"
+          result += "\n"
+        end
+
+        # Process table content
+        result += render_children(node)
+
+        result += "◆→終了:#{TITLES[:emtable]}←◆\n"
+        result += "\n"
+
+        result
+      end
+
+      def visit_block_imgtable(node)
+        result = +''
+
+        result += "\n"
+        result += "◆→開始:#{TITLES[:table]}←◆\n"
+
+        # Add caption if present
+        caption = render_caption_inline(node.caption_node)
+        unless caption.empty?
+          result += if node.id
+                      # Use I18n formatting to match TOPBuilder
+                      format_table_caption(node.id, caption)
+                    else
+                      "■#{caption}\n"
+                    end
+          result += "\n"
+        end
+
+        # Add image path with metrics
+        image_path = node.image_path || node.id
+        metrics = format_image_metrics(node)
+        result += "◆→#{image_path}#{metrics}←◆\n"
+
+        result += "◆→終了:#{TITLES[:table]}←◆\n"
+        result += "\n"
+
+        result
+      end
+
+      def render_inline_element(type, content, node) # rubocop:disable Metrics/CyclomaticComplexity
         case type
         when :b, :strong
           "★#{content}☆"
@@ -411,6 +514,36 @@ module ReVIEW
           "▲#{content}☆"
         when :code, :tt
           "△#{content}☆"
+        when :ttb, :ttbold
+          "★#{content}☆◆→等幅フォント太字←◆"
+        when :tti
+          "▲#{content}☆◆→等幅フォントイタ←◆"
+        when :u
+          "＠#{content}＠◆→＠〜＠部分に下線←◆"
+        when :ami
+          "#{content}◆→DTP連絡:「#{content}」に網カケ←◆"
+        when :bou
+          "#{content}◆→DTP連絡:「#{content}」に傍点←◆"
+        when :keytop
+          "#{content}◆→キートップ#{content}←◆"
+        when :idx
+          "#{content}◆→索引項目:#{content}←◆"
+        when :hidx
+          "◆→索引項目:#{content}←◆"
+        when :balloon
+          "\t←#{content}"
+        when :m
+          "◆→TeX式ここから←◆#{content}◆→TeX式ここまで←◆"
+        when :ins
+          "◆→開始:挿入表現←◆#{content}◆→終了:挿入表現←◆"
+        when :del
+          "◆→開始:削除表現←◆#{content}◆→終了:削除表現←◆"
+        when :tcy
+          "◆→開始:回転←◆#{content}◆→終了:縦回転←◆"
+        when :maru
+          "#{content}◆→丸数字#{content}←◆"
+        when :hint
+          "◆→ヒントスタイルここから←◆#{content}◆→ヒントスタイルここまで←◆"
         when :sup
           "#{content}◆→DTP連絡:「#{content}」は上付き←◆"
         when :sub
@@ -457,14 +590,30 @@ module ReVIEW
       private
 
       def generate_headline_prefix(level)
-        # Simple numbering - in real implementation this would use chapter numbering
+        # Generate headline prefix based on chapter structure
+        # Similar to TOPBuilder's headline_prefix method
+        secnolevel = config['secnolevel'] || 2
+
+        if level > secnolevel || @chapter.nil?
+          return ''
+        end
+
         case level
         when 1
-          "#{@chapter&.number || 1}　"
-        when 2
-          "#{@chapter&.number || 1}.1　"
-        when 3
-          "#{@chapter&.number || 1}.1.1　"
+          # Chapter level: just the chapter number
+          if @chapter.number
+            "#{@chapter.number}　"
+          else
+            ''
+          end
+        when 2, 3, 4, 5, 6
+          # Section levels: use counter from chapter
+          if @chapter.number
+            # Get section counter from chapter if available
+            # For now, return empty string as section counter needs proper implementation
+            # This matches the behavior of TOPBuilder which uses @sec_counter
+          end
+          ''
         else
           ''
         end
@@ -487,6 +636,60 @@ module ReVIEW
           metrics = "、#{node.metric}"
         end
         metrics
+      end
+
+      # Format list caption using I18n (matches TOPBuilder)
+      def format_list_caption(id, caption_text)
+        return "■#{caption_text}\n" unless @chapter
+
+        begin
+          list_item = @chapter.list(id)
+          chapter_number = @chapter.number
+          item_number = list_item.number
+
+          # Use TextFormatter to generate caption
+          formatted = text_formatter.format_caption_plain('list', chapter_number, item_number, caption_text)
+          "#{formatted}\n"
+        rescue KeyError, NoMethodError
+          # Fallback if list not found or chapter doesn't have list index
+          "■#{id}■#{caption_text}\n"
+        end
+      end
+
+      # Format table caption using I18n (matches TOPBuilder)
+      def format_table_caption(id, caption_text)
+        return "■#{caption_text}\n" unless @chapter
+
+        begin
+          table_item = @chapter.table(id)
+          chapter_number = @chapter.number
+          item_number = table_item.number
+
+          # Use TextFormatter to generate caption
+          formatted = text_formatter.format_caption_plain('table', chapter_number, item_number, caption_text)
+          "#{formatted}\n"
+        rescue KeyError, NoMethodError
+          # Fallback if table not found or chapter doesn't have table index
+          "■#{id}■#{caption_text}\n"
+        end
+      end
+
+      # Format image caption using I18n (matches TOPBuilder)
+      def format_image_caption(id, caption_text)
+        return "■#{caption_text}\n" unless @chapter
+
+        begin
+          image_item = @chapter.image(id)
+          chapter_number = @chapter.number
+          item_number = image_item.number
+
+          # Use TextFormatter to generate caption
+          formatted = text_formatter.format_caption_plain('image', chapter_number, item_number, caption_text)
+          "#{formatted}\n"
+        rescue KeyError, NoMethodError
+          # Fallback if image not found or chapter doesn't have image index
+          "■#{id}■#{caption_text}\n"
+        end
       end
 
       def render_caption_inline(caption_node)

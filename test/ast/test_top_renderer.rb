@@ -154,7 +154,7 @@ class TestTopRenderer < Test::Unit::TestCase
     # Verify complex structures
     assert(top_result.include?('●	First item'), 'Should handle unordered lists with TOP markers')
     assert(top_result.include?('◆→開始:リスト←◆'), 'Should handle code blocks with proper markers')
-    assert(top_result.include?('■sample-code■Sample Code'), 'Should handle code captions with proper format')
+    assert(top_result.include?('リスト1.1　Sample Code'), 'Should handle code captions with I18n format (matches TOPBuilder)')
     assert(top_result.include?('◆→開始:表←◆'), 'Should handle tables with proper markers')
     assert(top_result.include?('◆→開始:引用←◆'), 'Should handle quotes with proper markers')
     assert(top_result.include?('◆→開始:ノート←◆'), 'Should handle notes with proper markers')
