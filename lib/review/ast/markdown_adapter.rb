@@ -823,10 +823,7 @@ module ReVIEW
       # Auto-close columns when encountering a heading at the same or higher level
       def auto_close_columns_for_heading(heading_level)
         # Close columns that are at the same or lower level than the current heading
-        loop do
-          # Check if current context is a column
-          break unless @context.current.is_a?(ColumnNode)
-
+        while @context.current.is_a?(ColumnNode)
           column_node = @context.current
           column_level = column_node.level
 
