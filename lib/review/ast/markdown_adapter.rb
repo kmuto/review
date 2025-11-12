@@ -68,7 +68,7 @@ module ReVIEW
 
       def initialize(compiler)
         @compiler = compiler
-        @column_stack = [] # Stack for tracking nested columns
+        @column_heading_levels = [] # Stack for tracking column heading levels
         @context = nil # Will be initialized in convert()
       end
 
@@ -79,7 +79,6 @@ module ReVIEW
       # @param chapter [ReVIEW::Book::Chapter] Chapter context (required)
       def convert(markly_doc, ast_root, chapter)
         @ast_root = ast_root
-        @current_node = ast_root
         @chapter = chapter
 
         # Initialize InlineTokenizer for processing Re:VIEW notation
@@ -218,9 +217,9 @@ module ReVIEW
         attrs = parse_attribute_block(para_text)
 
         # Check if this is an attribute block for the previous table
-        if attrs && @current_node.children.last.is_a?(TableNode)
+        if attrs && @context.current.children.last.is_a?(TableNode)
           # Apply attributes to the last table
-          last_table_node = @current_node.children.last
+          last_table_node = @context.current.children.last
           table_id = attrs[:id]
           caption_text = attrs[:caption]
 
@@ -261,19 +260,11 @@ module ReVIEW
 
         add_node_to_current_context(list_node)
 
-        # Save current context
-        saved_current = @current_node
-
         # Use unified context management with exception safety
         @context.with_context(list_node) do
-          @current_node = list_node
-
           # Process list items
           process_children(cm_node)
         end
-
-        # Restore current context
-        @current_node = saved_current
       end
 
       # Process list item node
@@ -284,13 +275,8 @@ module ReVIEW
 
         add_node_to_current_context(item)
 
-        # Save current context
-        saved_current = @current_node
-
         # Use unified context management with exception safety
         @context.with_context(item) do
-          @current_node = item
-
           cm_node.each_with_index do |child, idx|
             if child.type == :paragraph && idx == 0
               # For the first paragraph in a list item, process inline content directly
@@ -301,9 +287,6 @@ module ReVIEW
             end
           end
         end
-
-        # Restore current context
-        @current_node = saved_current
       end
 
       # Process code block node
@@ -379,17 +362,10 @@ module ReVIEW
 
         add_node_to_current_context(quote_node)
 
-        # Save current context
-        saved_current = @current_node
-
         # Use unified context management with exception safety
         @context.with_context(quote_node) do
-          @current_node = quote_node
           process_children(cm_node)
         end
-
-        # Restore current context
-        @current_node = saved_current
       end
 
       # Process table node (GFM extension)
@@ -400,18 +376,10 @@ module ReVIEW
 
         add_node_to_current_context(table_node)
 
-        # Save current context
-        saved_current = @current_node
-
         # Use unified context management with exception safety
         @context.with_context(table_node) do
-          @current_node = table_node
-
           process_children(cm_node)
         end
-
-        # Restore current context
-        @current_node = saved_current
 
         # Check if the last row contains only attribute block
         # This happens when Markly includes the attribute line as part of the table
@@ -461,13 +429,12 @@ module ReVIEW
           row_type: :body
         )
 
-        @current_node.add_body_row(row_node)
+        @context.current.add_body_row(row_node)
 
         # Process cells
-        saved_current = @current_node
-        @current_node = row_node
-        process_children(cm_node)
-        @current_node = saved_current
+        @context.with_context(row_node) do
+          process_children(cm_node)
+        end
       end
 
       # Process table header node
@@ -477,18 +444,17 @@ module ReVIEW
           row_type: :header
         )
 
-        @current_node.add_header_row(row_node)
+        @context.current.add_header_row(row_node)
 
         # Process cells
-        saved_current = @current_node
-        @current_node = row_node
-        process_children(cm_node)
-        @current_node = saved_current
+        @context.with_context(row_node) do
+          process_children(cm_node)
+        end
       end
 
       # Process table cell node
       def process_table_cell(cm_node)
-        cell_type = if @current_node.is_a?(TableRowNode) && @current_node.row_type == :header
+        cell_type = if @context.current.is_a?(TableRowNode) && @context.current.row_type == :header
                       :th
                     else
                       :td
@@ -720,47 +686,39 @@ module ReVIEW
           caption_node: caption_node
         )
 
-        # Push current context to stack with heading level
-        @column_stack.push({
-                             column_node: column_node,
-                             previous_node: @current_node,
-                             heading_level: level
-                           })
-
-        # Set column as current context
-        @current_node = column_node
+        # Push column heading level and use context stack for node management
+        @column_heading_levels.push(level)
+        @context.push(column_node)
       end
 
       # End current column context
       def end_column(_html_node)
-        if @column_stack.empty?
+        if @column_heading_levels.empty?
           # Warning: /column without matching column
           return
         end
 
-        # Pop column context
-        column_context = @column_stack.pop
-        column_node = column_context[:column_node]
-        previous_node = column_context[:previous_node]
+        # Pop column from context stack
+        column_node = @context.current
+        @context.pop
+        @column_heading_levels.pop
 
-        # Add completed column to previous context
-        previous_node.add_child(column_node)
-
-        # Restore previous context
-        @current_node = previous_node
+        # Add completed column to current (previous) context
+        @context.current.add_child(column_node)
       end
 
       # Add node to current context (column or document)
       def add_node_to_current_context(node)
-        if @current_node.nil?
+        current = @context.current
+        if current.nil?
           raise ReVIEW::CompileError, "Internal error: No current context. Cannot add #{node.class} node."
         end
 
-        unless @current_node.respond_to?(:add_child)
-          raise ReVIEW::CompileError, "Internal error: Current context #{@current_node.class} doesn't support add_child."
+        unless current.respond_to?(:add_child)
+          raise ReVIEW::CompileError, "Internal error: Current context #{current.class} doesn't support add_child."
         end
 
-        @current_node.add_child(node)
+        current.add_child(node)
       end
 
       # Check if paragraph contains only a standalone image
@@ -854,12 +812,9 @@ module ReVIEW
 
         # Process footnote content (children of the footnote_definition node)
         # Markly already parsed the content, including inline markup
-        saved_current = @current_node
-        @current_node = footnote_node
-
-        process_children(cm_node)
-
-        @current_node = saved_current
+        @context.with_context(footnote_node) do
+          process_children(cm_node)
+        end
 
         add_node_to_current_context(footnote_node)
       end
@@ -867,39 +822,32 @@ module ReVIEW
       # Auto-close columns when encountering a heading at the same or higher level
       def auto_close_columns_for_heading(heading_level)
         # Close columns that are at the same or lower level than the current heading
-        until @column_stack.empty?
-          column_context = @column_stack.last
-          column_level = column_context[:heading_level]
+        until @column_heading_levels.empty?
+          column_level = @column_heading_levels.last
 
           # If the column was started at the same level or lower, close it
           # (lower level number = higher heading, e.g., # is level 1, ## is level 2)
           break if column_level && heading_level > column_level
 
           # Close the column
-          @column_stack.pop
-          column_node = column_context[:column_node]
-          previous_node = column_context[:previous_node]
+          column_node = @context.current
+          @context.pop
+          @column_heading_levels.pop
 
-          # Add completed column to previous context
-          previous_node.add_child(column_node)
-
-          # Restore previous context
-          @current_node = previous_node
+          # Add completed column to parent context
+          @context.current.add_child(column_node)
         end
       end
 
       # Close all remaining open columns
       def close_all_columns
-        until @column_stack.empty?
-          column_context = @column_stack.pop
-          column_node = column_context[:column_node]
-          previous_node = column_context[:previous_node]
+        until @column_heading_levels.empty?
+          column_node = @context.current
+          @context.pop
+          @column_heading_levels.pop
 
-          # Add completed column to previous context
-          previous_node.add_child(column_node)
-
-          # Restore previous context
-          @current_node = previous_node
+          # Add completed column to parent context
+          @context.current.add_child(column_node)
         end
       end
 
@@ -931,13 +879,13 @@ module ReVIEW
       # Parse Re:VIEW inline notation from text: @<type>{id}
       # Validate that final state is clean after conversion
       def validate_final_state!
-        if @current_node != @ast_root
+        if @context.current != @ast_root
           raise ReVIEW::CompileError, 'Internal error: Context not properly restored. ' \
-                                      "Expected to be at root but at #{@current_node.class}"
+                                      "Expected to be at root but at #{@context.current.class}"
         end
 
-        if @column_stack.any?
-          raise ReVIEW::CompileError, "Internal error: #{@column_stack.length} unclosed column(s) remain"
+        unless @column_heading_levels.empty?
+          raise ReVIEW::CompileError, "Internal error: #{@column_heading_levels.length} unclosed column(s) remain"
         end
 
         # Validate context stack
