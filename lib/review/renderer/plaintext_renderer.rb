@@ -317,6 +317,15 @@ module ReVIEW
         ''
       end
 
+      def visit_block_lead(node)
+        result = +"\n"
+        result += render_children(node)
+        result += "\n"
+        result
+      end
+
+      alias_method :visit_block_read, :visit_block_lead
+
       def visit_block_flushright(node)
         result = +"\n"
         result += render_children(node)

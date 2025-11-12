@@ -350,7 +350,7 @@ module ReVIEW
         end
 
         # Add image path with metrics
-        image_path = node.image_path || node.id
+        image_path = node.id
         metrics = format_image_metrics(node)
         result += "◆→#{image_path}#{metrics}←◆\n"
 
@@ -382,6 +382,18 @@ module ReVIEW
         result += "\n"
 
         @minicolumn_stack.pop
+
+        result
+      end
+
+      def visit_column(node)
+        result = +''
+        caption = render_caption_inline(node.caption_node)
+
+        result += "\n"
+        result += "#{caption}\n" unless caption.empty?
+        result += render_children(node)
+        result += "\n"
 
         result
       end
@@ -496,7 +508,7 @@ module ReVIEW
         end
 
         # Add image path with metrics
-        image_path = node.image_path || node.id
+        image_path = node.id
         metrics = format_image_metrics(node)
         result += "◆→#{image_path}#{metrics}←◆\n"
 
