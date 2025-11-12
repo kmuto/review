@@ -119,7 +119,7 @@ module ReVIEW
             true
           rescue StandardError => e
             @compile_errors << "#{filename}: #{e.message}"
-            if @config['ast'] && @config['ast']['debug']
+            if @config['debug']
               puts "AST Renderer Error in #{filename}: #{e.message}"
               puts e.backtrace.first(5)
             end

@@ -57,16 +57,6 @@ module ReVIEW
 
         private
 
-        # Override the build_pdf method to use appropriate processor
-        def build_pdf
-          # Log processor selection for user feedback
-          if @config['ast'] && @config['ast']['debug']
-            puts "AST::Command::PdfMaker: Using #{@processor_type} processor"
-          end
-
-          super
-        end
-
         # Override converter creation to use Renderer when appropriate
         def create_converter(book)
           # Create a wrapper that makes Renderer compatible with Converter interface
@@ -141,7 +131,7 @@ module ReVIEW
             end
 
             # Show backtrace in debug mode
-            if @config['ast'] && @config['ast']['debug']
+            if @config['debug']
               @logger.debug('Backtrace:')
               e.backtrace.first(10).each { |line| @logger.debug("  #{line}") }
             end
@@ -156,7 +146,7 @@ module ReVIEW
             @logger.error "AST Renderer Error in #{filename}: #{e.message}"
 
             # Show backtrace in debug mode
-            if @config['ast'] && @config['ast']['debug']
+            if @config['debug']
               @logger.debug('Backtrace:')
               e.backtrace.first(10).each { |line| @logger.debug("  #{line}") }
             end
