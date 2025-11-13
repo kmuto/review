@@ -4,12 +4,12 @@
 
 ## 目次
 
-- [AST/Rendererとは](#astrендererとは)
+- [AST/Rendererとは](#astrendererとは)
 - [なぜASTが必要なのか](#なぜastが必要なのか)
 - [アーキテクチャ概要](#アーキテクチャ概要)
 - [主要コンポーネント](#主要コンポーネント)
 - [基本的な使い方](#基本的な使い方)
-- [AST/Rendererでできること](#astrenderererでできること)
+- [AST/Rendererでできること](#astrendererでできること)
 - [より詳しく知るには](#より詳しく知るには)
 - [FAQ](#faq)
 
@@ -115,6 +115,7 @@ flowchart TB
 | Renderer | ASTを各種出力フォーマットに変換 | `lib/review/renderer/*.rb` |
 | Visitor | ASTを走査する基底クラス | `lib/review/ast/visitor.rb` |
 | Indexer | 図表・リスト等のインデックスを構築 | `lib/review/ast/indexer.rb` |
+| TextFormatter | テキスト整形とI18nを一元管理 | `lib/review/renderer/text_formatter.rb` |
 | JSONSerializer | ASTとJSONの相互変換 | `lib/review/ast/json_serializer.rb` |
 
 ### 従来方式との比較
@@ -221,7 +222,7 @@ ASTを各種出力フォーマットに変換するクラスです。`Renderer::
 - `IdgxmlRenderer`: InDesign XML出力
 - `MarkdownRenderer`: Markdown出力
 - `PlaintextRenderer`: プレーンテキスト出力
-- `TopRenderer`: 原稿用紙形式出力
+- `TopRenderer`: TOP形式出力
 
 #### Rendererの仕組み
 
@@ -270,11 +271,34 @@ review_text = generator.generate(ast)
 - 構造の正規化
 - フォーマット変換ツールの実装
 
+#### TextFormatter
+
+Rendererで使用される、テキスト整形とI18n（国際化）を一元管理するサービスクラスです。
+
+```ruby
+# Renderer内で使用
+formatter = text_formatter
+caption = formatter.format_caption('list', chapter_number, item_number, caption_text)
+```
+
+##### 主な機能
+- I18nキーを使用したテキスト生成（図表番号、キャプション等）
+- フォーマット固有の装飾（HTML: `図1.1:`, TOP/TEXT: `図1.1　`）
+- 章番号の整形（`第1章`, `Appendix A`等）
+- 参照テキストの生成
+
+##### 用途
+- Rendererでの一貫したテキスト生成
+- 多言語対応（I18nキーを通じた翻訳）
+- フォーマット固有の整形ルールの集約
+
 ## 基本的な使い方
 
 ### コマンドライン実行
 
 Re:VIEW文書をAST経由で各種フォーマットに変換します。
+
+#### 単一ファイルのコンパイル
 
 ```bash
 # HTML出力
@@ -290,6 +314,26 @@ review-ast-compile --target=json chapter.re > chapter.json
 review-ast-dump chapter.re
 ```
 
+#### 書籍全体のビルド
+
+AST Rendererを使用した書籍全体のビルドには、専用のmakerコマンドを使用します：
+
+```bash
+# PDF生成（LaTeX経由）
+review-ast-pdfmaker config.yml
+
+# EPUB生成
+review-ast-epubmaker config.yml
+
+# InDesign XML生成
+review-ast-idgxmlmaker config.yml
+
+# テキスト生成（TOP形式またはプレーンテキスト）
+review-ast-textmaker config.yml          # TOP形式（◆→マーカー付き）
+```
+
+これらのコマンドは、従来の`review-pdfmaker`、`review-epubmaker`等と同じインターフェースを持ちますが、内部的にAST Rendererを使用します。
+
 ### プログラムからの利用
 
 Ruby APIを使用してASTを操作できます。
@@ -298,20 +342,43 @@ Ruby APIを使用してASTを操作できます。
 require 'review'
 require 'review/ast/compiler'
 require 'review/renderer/html_renderer'
+require 'stringio'
 
-# チャプターを読み込む
-book = ReVIEW::Book::Base.load('config.yml')
+# 設定を読み込む
+config = ReVIEW::Configure.create(yamlfile: 'config.yml')
+book = ReVIEW::Book::Base.new('.', config: config)
+
+# チャプターを取得
 chapter = book.chapters.first
 
-# ASTを生成
-compiler = ReVIEW::AST::Compiler.new(chapter)
-ast = compiler.compile_to_ast
+# ASTを生成（参照解決を有効化）
+compiler = ReVIEW::AST::Compiler.new
+ast_root = compiler.compile_to_ast(chapter, reference_resolution: true)
 
 # HTMLに変換
-renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter, ast)
-html = renderer.render
+renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
+html = renderer.render(ast_root)
 
 puts html
+```
+
+#### 異なるフォーマットへの変換
+
+```ruby
+# LaTeXに変換
+require 'review/renderer/latex_renderer'
+latex_renderer = ReVIEW::Renderer::LatexRenderer.new(chapter)
+latex = latex_renderer.render(ast_root)
+
+# Markdownに変換
+require 'review/renderer/markdown_renderer'
+md_renderer = ReVIEW::Renderer::MarkdownRenderer.new(chapter)
+markdown = md_renderer.render(ast_root)
+
+# TOP形式に変換
+require 'review/renderer/top_renderer'
+top_renderer = ReVIEW::Renderer::TopRenderer.new(chapter)
+top_text = top_renderer.render(ast_root)
 ```
 
 ### よくあるユースケース
@@ -373,15 +440,15 @@ end
 
 AST/Rendererは以下の出力フォーマットに対応しています：
 
-| フォーマット | Renderer | 用途 |
-|------------|----------|------|
-| HTML | `HtmlRenderer` | Web公開、プレビュー |
-| LaTeX | `LatexRenderer` | PDF生成（LaTeX経由） |
-| IDGXML | `IdgxmlRenderer` | InDesign組版 |
-| Markdown | `MarkdownRenderer` | Markdown形式への変換 |
-| Plaintext | `PlaintextRenderer` | プレーンテキスト |
-| TOP | `TopRenderer` | 独自編集記法つきテキスト |
-| JSON | `JSONSerializer` | AST構造のJSON出力 |
+| フォーマット | Renderer | Makerコマンド | 用途 |
+|------------|----------|--------------|------|
+| HTML | `HtmlRenderer` | `review-ast-epubmaker` | Web公開、プレビュー、EPUB生成 |
+| LaTeX | `LatexRenderer` | `review-ast-pdfmaker` | PDF生成（LaTeX経由） |
+| IDGXML | `IdgxmlRenderer` | `review-ast-idgxmlmaker` | InDesign組版 |
+| Markdown | `MarkdownRenderer` | `review-ast-compile` | Markdown形式への変換 |
+| Plaintext | `PlaintextRenderer` | `review-ast-textmaker -n` | 装飾なしプレーンテキスト |
+| TOP | `TopRenderer` | `review-ast-textmaker` | 編集マーカー付きテキスト |
+| JSON | `JSONSerializer` | `review-ast-compile` | AST構造のJSON出力 |
 
 ### 拡張機能
 

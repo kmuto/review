@@ -85,6 +85,7 @@ Re:VIEWは[CommonMark](https://commonmark.org/)および[GitHub Flavored Markdow
 | 脚注参照（`[^id]`） | 脚注への参照 | `InlineNode(:fn)` + `ReferenceNode` |
 | 脚注定義（`[^id]: 内容`） | 脚注の定義 | `FootnoteNode` |
 | Re:VIEW参照（`@<type>{id}`） | 図表リストへの参照 | `InlineNode(type)` + `ReferenceNode` |
+| 定義リスト（Markdown出力） | 用語と説明のペア | `DefinitionListNode` / `DefinitionItemNode` |
 
 ### 変換例
 
@@ -350,6 +351,47 @@ Markdown標準の脚注記法をサポートしています：
 
 脚注定義は`FootnoteNode`に変換され、Re:VIEWの`//footnote`コマンドと同等に扱われます。脚注参照は`InlineNode(:fn)`として表現されます。
 
+## 定義リスト（Markdown出力）
+
+Re:VIEWの定義リスト（`: 用語`形式）をMarkdown形式に変換する場合、以下の形式で出力されます：
+
+### 基本的な出力形式
+
+```markdown
+**用語**: 説明文
+
+**別の用語**: 別の説明文
+```
+
+用語は太字（`**term**`）で強調され、コロンと空白の後に説明が続きます。
+
+### 用語に強調が含まれる場合
+
+用語に既に太字（`**text**`）や強調（`@<b>{text}`）が含まれている場合、MarkdownRendererは二重の太字マークアップ（`****text****`）を避けるため、用語を太字で囲みません：
+
+Re:VIEW入力例:
+```review
+ : @<b>{重要な}用語
+	説明文
+```
+
+Markdown出力:
+```markdown
+**重要な**用語: 説明文
+```
+
+このように、用語内の強調要素がそのまま保持され、外側の太字マークアップは追加されません。
+
+### 定義リストのAST表現
+
+定義リストはRe:VIEW ASTでは以下のノードで表現されます：
+- `DefinitionListNode`: 定義リスト全体を表すノード
+- `DefinitionItemNode`: 個々の用語と説明のペアを表すノード
+  - `term_children`: 用語のインライン要素のリスト
+  - `children`: 説明部分のブロック要素のリスト
+
+MarkdownRendererは、`term_children`内に`InlineNode(:b)`または`InlineNode(:strong)`が含まれているかをチェックし、含まれている場合は外側の太字マークアップを省略します。
+
 ## その他のMarkdown機能
 
 ### 改行
@@ -364,6 +406,8 @@ Markdown標準の脚注記法をサポートしています：
 ### ファイル拡張子
 
 Markdownファイルは適切に処理されるために `.md` 拡張子を使用する必要があります。Re:VIEWシステムは拡張子によってファイル形式を自動判別します。
+
+**重要:** Re:VIEWは`.md`拡張子のみをサポートしています。`.markdown`拡張子はサポートされていません。
 
 ### 画像パス
 
@@ -628,6 +672,8 @@ Happy coding! ![Rubyロゴ](ruby-logo.png)
 | 脚注定義 `[^id]: 内容` | `FootnoteNode` |
 | 脚注参照 `[^id]` | `InlineNode(:fn)` + `ReferenceNode` |
 | 図表参照 `@<type>{id}` | `InlineNode(type)` + `ReferenceNode` |
+| 定義リスト（出力のみ） | `DefinitionListNode` |
+| 定義項目（出力のみ） | `DefinitionItemNode` |
 
 ### 位置情報の追跡
 
@@ -679,12 +725,12 @@ MarkdownAdapterは内部に`ContextStack`クラスを持ち、AST構築時の階
 - Re:VIEW inline notation（`@<xxx>{id}`）の処理
 
 特徴:
-- **ContextStackによる例外安全な状態管理**: すべてのコンテキスト（リスト、テーブル、コラム等）を単一のContextStackで管理し、`ensure`ブロックによる自動クリーンアップで例外安全性を保証
-- **コラムの自動クローズ**: 同じレベル以上の見出しでコラムを自動的にクローズ。コラムレベルはColumnNode.level属性に保存され、ContextStackから取得可能
-- **スタンドアローン画像の検出**: 段落内に単独で存在する画像（属性ブロック付き含む）をブロックレベルの`ImageNode`に変換。`softbreak`/`linebreak`ノードを無視することで、画像と属性ブロックの間に改行があっても正しく認識
-- **属性ブロックパーサー**: `{#id caption="..."}`形式の属性を解析してIDとキャプションを抽出
-- **Markly脚注サポート**: Marklyのネイティブ脚注機能（Markly::FOOTNOTES）を使用して`[^id]`と`[^id]: 内容`を処理
-- **InlineTokenizerによるinline notation処理**: Re:VIEWのinline notation（`@<img>{id}`等）をInlineTokenizerで解析してInlineNodeとReferenceNodeに変換
+- ContextStackによる例外安全な状態管理: すべてのコンテキスト（リスト、テーブル、コラム等）を単一のContextStackで管理し、`ensure`ブロックによる自動クリーンアップで例外安全性を保証
+- コラムの自動クローズ: 同じレベル以上の見出しでコラムを自動的にクローズ。コラムレベルはColumnNode.level属性に保存され、ContextStackから取得可能
+- スタンドアローン画像の検出: 段落内に単独で存在する画像（属性ブロック付き含む）をブロックレベルの`ImageNode`に変換。`softbreak`/`linebreak`ノードを無視することで、画像と属性ブロックの間に改行があっても正しく認識
+- 属性ブロックパーサー: `{#id caption="..."}`形式の属性を解析してIDとキャプションを抽出
+- Markly脚注サポート: Marklyのネイティブ脚注機能（Markly::FOOTNOTES）を使用して`[^id]`と`[^id]: 内容`を処理
+- InlineTokenizerによるinline notation処理: Re:VIEWのinline notation（`@<img>{id}`等）をInlineTokenizerで解析してInlineNodeとReferenceNodeに変換
 
 #### 3. MarkdownHtmlNode（内部使用）
 
@@ -722,20 +768,20 @@ MarkdownAdapterは内部に`ContextStack`クラスを持ち、AST構築時の階
 
 ### 変換処理の流れ
 
-1. **前処理**: MarkdownCompilerがRe:VIEW inline notation（`@<xxx>{id}`）を保護
+1. 前処理: MarkdownCompilerがRe:VIEW inline notation（`@<xxx>{id}`）を保護
    - `@<` → `@@REVIEW_AT_LT@@` に置換してMarklyの誤解釈を防止
 
-2. **解析フェーズ**: MarklyがMarkdownをパースしてMarkly AST（CommonMark準拠）を生成
+2. 解析フェーズ: MarklyがMarkdownをパースしてMarkly AST（CommonMark準拠）を生成
    - GFM拡張（strikethrough, table, autolink）を有効化
    - 脚注サポート（Markly::FOOTNOTES）を有効化
 
-3. **変換フェーズ**: MarkdownAdapterがMarkly ASTを走査し、各要素をRe:VIEW ASTノードに変換
+3. 変換フェーズ: MarkdownAdapterがMarkly ASTを走査し、各要素をRe:VIEW ASTノードに変換
    - ContextStackで階層的なコンテキスト管理
    - 属性ブロック `{#id caption="..."}` を解析してIDとキャプションを抽出
    - Re:VIEW inline notationプレースホルダを元に戻してInlineTokenizerで処理
    - Marklyの脚注ノード（`:footnote_reference`、`:footnote_definition`）をFootnoteNodeとInlineNode(:fn)に変換
 
-4. **後処理フェーズ**: コラムやリストなどの入れ子構造を適切に閉じる
+4. 後処理フェーズ: コラムやリストなどの入れ子構造を適切に閉じる
    - ContextStackの`ensure`ブロックによる自動クリーンアップ
    - 未閉じのコラムを検出してエラー報告
 
@@ -765,12 +811,12 @@ markdown_text → 前処理（@< のプレースホルダ化）
 
 #### コラム終了（2つの方法）
 
-1. **HTMLコメント構文**: `<!-- /column -->`
+1. HTMLコメント構文: `<!-- /column -->`
    - `process_html_block`メソッドで検出
    - `MarkdownHtmlNode`を使用してコラム終了マーカーを識別
    - `end_column`メソッドを呼び出してContextStackからpop
 
-2. **自動クローズ**: 同じ/より高いレベルの見出し
+2. 自動クローズ: 同じ/より高いレベルの見出し
    - `auto_close_columns_for_heading`メソッドがContextStackから現在のColumnNodeを取得し、level属性を確認
    - 新しい見出しレベルが現在のコラムレベル以下の場合、コラムを自動クローズ
    - ドキュメント終了時も自動的にクローズ（`close_all_columns`）
@@ -822,13 +868,18 @@ end
 Alice	25
 Bob	30
 //}
+
+ : API
+	Application Programming Interface
+ : @<b>{REST}
+	Representational State Transfer
 ````
 
 MarkdownRenderer出力:
 `````markdown
 # 章タイトル
 
-サンプルコード
+**サンプルコード**
 
 ```ruby
 def hello
@@ -836,17 +887,25 @@ def hello
 end
 ```
 
-リスト[^sample]を参照してください。
+リスト@<list>{sample}を参照してください。
 
-データ表
+**データ表**
 
 | 名前 | 年齢 |
 | :-- | :-- |
 | Alice | 25 |
 | Bob | 30 |
+
+API: Application Programming Interface
+
+REST: Representational State Transfer
+
 `````
 
-キャプションは`**Caption**`形式で出力され、コードブロックやテーブルの直前に配置されます。これにより、人間が読みやすく、かつGFM互換のMarkdownが生成されます。
+注意:
+- キャプションは`**Caption**`形式で出力され、コードブロックやテーブルの直前に配置されます
+- 定義リストの用語は太字で出力されますが、用語内に既に強調が含まれている場合（例：`@<b>{REST}`）は、二重の太字マークアップを避けるため外側の太字は省略されます
+- これにより、人間が読みやすく、かつGFM互換のMarkdownが生成されます
 
 ## テスト
 
