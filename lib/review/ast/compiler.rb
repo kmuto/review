@@ -48,7 +48,7 @@ module ReVIEW
         filename = chapter.respond_to?(:filename) ? chapter.filename : chapter.basename
 
         # Check file extension for format detection
-        if filename&.end_with?('.md', '.markdown')
+        if filename&.end_with?('.md')
           require_relative('markdown_compiler')
           MarkdownCompiler.new
         else

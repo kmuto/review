@@ -121,6 +121,12 @@ module ReVIEW
       end
 
       def visit_definition_item(node)
+        # Check if term contains inline elements that render as ** (bold/strong)
+        # to avoid nesting issues like ****bold****
+        term_has_bold = node.term_children&.any? do |child|
+          child.is_a?(ReVIEW::AST::InlineNode) && %i[b strong].include?(child.inline_type)
+        end
+
         # Handle definition term - use term_children (AST structure)
         term = if node.term_children && !node.term_children.empty?
                  # Render term children (which contain inline elements)
@@ -135,9 +141,14 @@ module ReVIEW
         end
         definition = definition_parts.join(' ').strip
 
-        # Format as: **term**: description
-        # Note: term already contains rendered inline markup, so we don't escape it
-        "**#{term}**: #{definition}\n\n"
+        # Format term: if term contains bold inline elements, don't wrap in **
+        if term_has_bold
+          # Term already has strong emphasis, use it as-is
+          "#{term}: #{definition}\n\n"
+        else
+          # Wrap plain term in bold
+          "**#{term}**: #{definition}\n\n"
+        end
       end
 
       # Common code block rendering method used by all code block types
