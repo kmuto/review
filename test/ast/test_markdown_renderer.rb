@@ -597,8 +597,8 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
     ast_root = ReVIEW::AST::Compiler.new.compile_to_ast(chapter)
     result = ReVIEW::Renderer::MarkdownRenderer.new(chapter).render(ast_root)
-    # Term is wrapped in ** (bold) and inline markup is preserved
-    assert_match(/\*\*\*\*Bold Term\*\*\*\*: Definition with `code`/, result)
+    # Term contains bold, so outer ** is omitted to avoid nesting issues
+    assert_match(/\*\*Bold Term\*\*: Definition with `code`/, result)
   end
 
   # Nested list tests
