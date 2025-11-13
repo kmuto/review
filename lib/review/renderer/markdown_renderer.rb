@@ -387,6 +387,11 @@ module ReVIEW
         "\n\n"
       end
 
+      def visit_block_hr(_node)
+        # Horizontal rule - render as Markdown horizontal line
+        "---\n\n"
+      end
+
       def visit_tex_equation(node)
         # LaTeX equation block - render as math code block
         content = node.content.strip
@@ -870,7 +875,7 @@ module ReVIEW
 
       def render_inline_uchar(_type, content, _node)
         # Convert hex code to Unicode character
-        [content.to_i(16)].pack('U')
+        [content.to_i(16)].pack('U').force_encoding('UTF-8')
       end
 
       # Helper methods
