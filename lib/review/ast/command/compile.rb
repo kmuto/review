@@ -83,7 +83,7 @@ module ReVIEW
             opts.banner = 'Usage: review-ast-compile --target FORMAT <file>'
             opts.version = ReVIEW::VERSION
 
-            opts.on('-t', '--target FORMAT', 'Output format (html, latex, idgxml) [required unless --check]') do |fmt|
+            opts.on('-t', '--target FORMAT', 'Output format (html, latex, idgxml, markdown) [required unless --check]') do |fmt|
               @options[:target] = fmt
             end
 
@@ -296,7 +296,7 @@ module ReVIEW
             require 'review/renderer/markdown_renderer'
             ReVIEW::Renderer::MarkdownRenderer
           else
-            raise UnsupportedFormatError, "Unsupported format: #{format} (supported: html, latex, idgxml)"
+            raise UnsupportedFormatError, "Unsupported format: #{format} (supported: html, latex, idgxml, markdown)"
           end
         end
 

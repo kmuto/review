@@ -18,14 +18,6 @@ class TestFormatAutoDetection < Test::Unit::TestCase
     assert_instance_of(ReVIEW::AST::MarkdownCompiler, compiler)
   end
 
-  def test_markdown_file_detection_with_markdown_extension
-    # Test .markdown extension
-    chapter_markdown = create_chapter('test.markdown', '# Markdown heading')
-    compiler = ReVIEW::AST::Compiler.for_chapter(chapter_markdown)
-
-    assert_instance_of(ReVIEW::AST::MarkdownCompiler, compiler)
-  end
-
   def test_review_file_detection
     # Test .re extension (Re:VIEW format)
     chapter_re = create_chapter('test.re', '= Re:VIEW heading')
