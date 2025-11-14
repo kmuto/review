@@ -1,33 +1,33 @@
-# Re:VIEW AST/Renderer 概要
+# Re:VIEW AST/Renderer Overview
 
-このドキュメントは、Re:VIEWのAST（Abstract Syntax Tree：抽象構文木）/Rendererアーキテクチャの全体像を理解するための入門ガイドです。
+This document is an introductory guide to understanding the overall architecture of Re:VIEW's AST (Abstract Syntax Tree)/Renderer.
 
-## 目次
+## Table of Contents
 
-- [AST/Rendererとは](#astrendererとは)
-- [なぜASTが必要なのか](#なぜastが必要なのか)
-- [アーキテクチャ概要](#アーキテクチャ概要)
-- [主要コンポーネント](#主要コンポーネント)
-- [基本的な使い方](#基本的な使い方)
-- [AST/Rendererでできること](#astrendererでできること)
-- [より詳しく知るには](#より詳しく知るには)
+- [What is AST/Renderer](#what-is-astrenderer)
+- [Why AST is Needed](#why-ast-is-needed)
+- [Architecture Overview](#architecture-overview)
+- [Key Components](#key-components)
+- [Basic Usage](#basic-usage)
+- [What AST/Renderer Can Do](#what-astrenderer-can-do)
+- [Learning More](#learning-more)
 - [FAQ](#faq)
 
-## AST/Rendererとは
+## What is AST/Renderer
 
-Re:VIEWのAST/Rendererは、Re:VIEW文書を構造化されたデータ（AST）して扱い、様々な出力フォーマットに変換するための新しいアーキテクチャです。
+Re:VIEW's AST/Renderer is a new architecture for handling Re:VIEW documents as structured data (AST) and converting them to various output formats.
 
-「AST（Abstract Syntax Tree：抽象構文木）」とは、文書の構造を木構造のデータとして表現したものです。例えば、見出し・段落・リスト・表といった要素が、親子関係を持つノードとして表現されます。
+An "AST (Abstract Syntax Tree)" is a representation of document structure as a tree-structured data model. For example, elements such as headings, paragraphs, lists, and tables are represented as nodes with parent-child relationships.
 
-従来の直接Builder呼び出し方式と異なり、AST方式では文書構造を中間表現（AST）として明示的に保持することで、より柔軟で拡張性の高い文書処理を実現します。
+Unlike the traditional direct Builder invocation approach, the AST approach explicitly maintains document structure as an intermediate representation (AST), enabling more flexible and extensible document processing.
 
-## なぜASTが必要なのか
+## Why AST is Needed
 
-### 従来方式の課題
+### Challenges with the Traditional Approach
 
 ```mermaid
 graph LR
-    A[Re:VIEW文書] --> B[Compiler]
+    A[Re:VIEW Document] --> B[Compiler]
     B --> C[HTMLBuilder]
     B --> D[LaTeXBuilder]
     B --> E[EPUBBuilder]
@@ -38,59 +38,59 @@ graph LR
     style E fill:#ffcccc
 ```
 
-従来の方式では：
-- フォーマット固有の処理が分散: 各Builderが独自に文書を解釈
-- 構文解析と出力生成が密結合: 解析処理とフォーマット変換が分離されていない
-- カスタム処理や拡張が困難: 新しいフォーマットや機能の追加が複雑
-- 構造の再利用が不可: 一度解析した構造を他の用途で利用できない
+In the traditional approach:
+- Format-specific processing is scattered: Each Builder interprets documents independently
+- Parsing and output generation are tightly coupled: Parsing logic and format conversion are not separated
+- Custom processing and extensions are difficult: Adding new formats or features is complex
+- Structure reuse is not possible: Once-parsed structure cannot be reused for other purposes
 
-### AST方式の利点
+### Benefits of the AST Approach
 
 ```mermaid
 graph LR
-    A[Re:VIEW文書] --> B[AST::Compiler]
+    A[Re:VIEW Document] --> B[AST::Compiler]
     B --> C[AST]
     C --> D[HTMLRenderer]
     C --> E[LaTeXRenderer]
     C --> F[IDGXMLRenderer]
-    C --> G[JSON出力]
-    C --> H[カスタムツール]
+    C --> G[JSON Output]
+    C --> H[Custom Tools]
 
     style C fill:#ccffcc
 ```
 
-AST方式では：
-- 構造の明示化: 文書構造を明確なデータモデル（ノードツリー）で表現
-- 再利用性: 一度構築したASTを複数のフォーマットや用途で利用可能
-- 拡張性: カスタムレンダラーやツールの開発が容易
-- 解析・変換: JSON出力、双方向変換、構文解析ツールの実現
-- 保守性: 構文解析とレンダリングの責務が明確に分離
+The AST approach provides:
+- Explicit structure: Document structure is represented with a clear data model (node tree)
+- Reusability: Once-built AST can be used for multiple formats and purposes
+- Extensibility: Easy to develop custom renderers and tools
+- Analysis & transformation: Enables JSON output, bidirectional conversion, and syntax analysis tools
+- Maintainability: Clear separation of concerns between parsing and rendering
 
-## アーキテクチャ概要
+## Architecture Overview
 
-### 処理フロー
+### Processing Flow
 
-Re:VIEW文書がAST経由で出力されるまでの流れ：
+The flow from Re:VIEW document to output via AST:
 
 ```mermaid
 flowchart TB
-    A[Re:VIEW文書] --> B[AST::Compiler]
-    B --> C[AST構築]
-    C --> D[参照解決]
-    D --> E[後処理]
-    E --> F[AST生成完了]
+    A[Re:VIEW Document] --> B[AST::Compiler]
+    B --> C[Build AST]
+    C --> D[Reference Resolution]
+    D --> E[Post-processing]
+    E --> F[AST Generation Complete]
 
     F --> G[HTMLRenderer]
     F --> H[LaTeXRenderer]
     F --> I[IDGXMLRenderer]
     F --> J[JSONSerializer]
 
-    G --> K[HTML出力]
-    H --> L[LaTeX出力]
-    I --> M[IDGXML出力]
-    J --> N[JSON出力]
+    G --> K[HTML Output]
+    H --> L[LaTeX Output]
+    I --> M[IDGXML Output]
+    J --> N[JSON Output]
 
-    subgraph "1. AST生成フェーズ"
+    subgraph "1. AST Generation Phase"
         B
         C
         D
@@ -98,7 +98,7 @@ flowchart TB
         F
     end
 
-    subgraph "2. レンダリングフェーズ"
+    subgraph "2. Rendering Phase"
         G
         H
         I
@@ -106,68 +106,68 @@ flowchart TB
     end
 ```
 
-### 主要コンポーネントの役割
+### Roles of Key Components
 
-| コンポーネント | 役割 | 場所 |
-|--------------|------|------|
-| AST::Compiler | Re:VIEW文書を解析し、AST構造を構築 | `lib/review/ast/compiler.rb` |
-| ASTノード | 文書の各要素（見出し、段落、リストなど）を表現 | `lib/review/ast/*_node.rb` |
-| Renderer | ASTを各種出力フォーマットに変換 | `lib/review/renderer/*.rb` |
-| Visitor | ASTを走査する基底クラス | `lib/review/ast/visitor.rb` |
-| Indexer | 図表・リスト等のインデックスを構築 | `lib/review/ast/indexer.rb` |
-| TextFormatter | テキスト整形とI18nを一元管理 | `lib/review/renderer/text_formatter.rb` |
-| JSONSerializer | ASTとJSONの相互変換 | `lib/review/ast/json_serializer.rb` |
+| Component | Role | Location |
+|-----------|------|----------|
+| AST::Compiler | Parses Re:VIEW documents and builds AST structure | `lib/review/ast/compiler.rb` |
+| AST Nodes | Represents document elements (headings, paragraphs, lists, etc.) | `lib/review/ast/*_node.rb` |
+| Renderer | Converts AST to various output formats | `lib/review/renderer/*.rb` |
+| Visitor | Base class for traversing AST | `lib/review/ast/visitor.rb` |
+| Indexer | Builds indexes for figures, tables, listings, etc. | `lib/review/ast/indexer.rb` |
+| TextFormatter | Centrally manages text formatting and I18n | `lib/review/renderer/text_formatter.rb` |
+| JSONSerializer | Bidirectional conversion between AST and JSON | `lib/review/ast/json_serializer.rb` |
 
-### 従来方式との比較
+### Comparison with Traditional Approach
 
 ```mermaid
 graph TB
-    subgraph "従来方式"
-        A1[Re:VIEW文書] --> B1[Compiler]
+    subgraph "Traditional Approach"
+        A1[Re:VIEW Document] --> B1[Compiler]
         B1 --> C1[Builder]
-        C1 --> D1[出力]
+        C1 --> D1[Output]
     end
 
-    subgraph "AST方式"
-        A2[Re:VIEW文書] --> B2[AST::Compiler]
+    subgraph "AST Approach"
+        A2[Re:VIEW Document] --> B2[AST::Compiler]
         B2 --> C2[AST]
         C2 --> D2[Renderer]
-        D2 --> E2[出力]
-        C2 -.-> F2[JSON/ツール]
+        D2 --> E2[Output]
+        C2 -.-> F2[JSON/Tools]
     end
 
     style C2 fill:#ccffcc
     style F2 fill:#ffffcc
 ```
 
-#### 主な違い
-- 中間表現の有無: AST方式では明示的な中間表現（AST）を持つ
-- 処理の分離: 構文解析とレンダリングが完全に分離
-- 拡張性: ASTを利用したツールやカスタム処理が可能
+#### Key Differences
+- Intermediate representation: AST approach has explicit intermediate representation (AST)
+- Separation of concerns: Parsing and rendering are completely separated
+- Extensibility: Tools and custom processing using AST are possible
 
-## 主要コンポーネント
+## Key Components
 
 ### AST::Compiler
 
-Re:VIEW文書を読み込み、AST構造を構築するコンパイラです。
+A compiler that reads Re:VIEW documents and builds AST structure.
 
-#### 主な機能
-- Re:VIEW記法の解析（見出し、段落、ブロックコマンド、リスト等）
-- Markdown入力のサポート（拡張子による自動切り替え）
-- 位置情報の保持（エラー報告用）
-- 参照解決と後処理の実行
+#### Main Features
+- Parsing Re:VIEW syntax (headings, paragraphs, block commands, lists, etc.)
+- Support for Markdown input (automatic switching based on file extension)
+- Maintains location information (for error reporting)
+- Reference resolution and post-processing execution
 
-#### 処理の流れ
-1. 入力ファイルを1行ずつ走査
-2. 各要素を適切なASTノードに変換
-3. 参照解決（図表・リスト等への参照を解決）
-4. 後処理（構造の正規化、番号付与等）
+#### Processing Flow
+1. Scan input file line by line
+2. Convert each element to appropriate AST nodes
+3. Reference resolution (resolve references to figures, tables, listings, etc.)
+4. Post-processing (structure normalization, numbering, etc.)
 
-### ASTノード
+### AST Nodes
 
-文書の構造を表現する各種ノードクラスです。すべてのノードは`AST::Node`（ブランチノード）または`AST::LeafNode`（リーフノード）を継承します。
+Various node classes that represent document structure. All nodes inherit from either `AST::Node` (branch node) or `AST::LeafNode` (leaf node).
 
-#### ノードの階層構造
+#### Node Hierarchy
 
 ```mermaid
 classDiagram
@@ -199,50 +199,50 @@ classDiagram
     }
 ```
 
-#### 主要なノードクラス
-- `DocumentNode`: 文書全体のルート
-- `HeadlineNode`: 見出し（レベル、ラベル、キャプション）
-- `ParagraphNode`: 段落
-- `ListNode`/`ListItemNode`: リスト（箇条書き、番号付き、定義リスト）
-- `TableNode`: 表
-- `CodeBlockNode`: コードブロック
-- `InlineNode`: インライン要素（太字、コード、リンク等）
-- `TextNode`: プレーンテキスト（LeafNode）
-- `ImageNode`: 画像（LeafNode）
+#### Major Node Classes
+- `DocumentNode`: Root of the entire document
+- `HeadlineNode`: Headings (level, label, caption)
+- `ParagraphNode`: Paragraphs
+- `ListNode`/`ListItemNode`: Lists (bulleted, numbered, definition lists)
+- `TableNode`: Tables
+- `CodeBlockNode`: Code blocks
+- `InlineNode`: Inline elements (bold, code, links, etc.)
+- `TextNode`: Plain text (LeafNode)
+- `ImageNode`: Images (LeafNode)
 
-詳細は[ast_node.md](./ast_node.md)を参照してください。
+See [ast_node.md](./ast_node.md) for details.
 
 ### Renderer
 
-ASTを各種出力フォーマットに変換するクラスです。`Renderer::Base`を継承し、Visitorパターンでノードを走査します。
+Classes that convert AST to various output formats. They inherit from `Renderer::Base` and traverse nodes using the Visitor pattern.
 
-#### 主要なRenderer
-- `HtmlRenderer`: HTML出力
-- `LatexRenderer`: LaTeX出力
-- `IdgxmlRenderer`: InDesign XML出力
-- `MarkdownRenderer`: Markdown出力
-- `PlaintextRenderer`: プレーンテキスト出力
-- `TopRenderer`: TOP形式出力
+#### Major Renderers
+- `HtmlRenderer`: HTML output
+- `LatexRenderer`: LaTeX output
+- `IdgxmlRenderer`: InDesign XML output
+- `MarkdownRenderer`: Markdown output
+- `PlaintextRenderer`: Plain text output
+- `TopRenderer`: TOP format output
 
-#### Rendererの仕組み
+#### How Renderers Work
 
 ```ruby
-# 各ノードタイプに対応したvisitメソッドを実装
+# Implement visit methods corresponding to each node type
 def visit_headline(node)
-  # HeadlineNodeをHTMLに変換
+  # Convert HeadlineNode to HTML
   level = node.level
   caption = render_children(node.caption_node)
   "<h#{level}>#{caption}</h#{level}>"
 end
 ```
 
-詳細は[ast_architecture.md](./ast_architecture.md)を参照してください。
+See [ast_architecture.md](./ast_architecture.md) for details.
 
-### 補助機能
+### Supporting Features
 
 #### JSONSerializer
 
-ASTとJSON形式の相互変換を提供します。
+Provides bidirectional conversion between AST and JSON format.
 
 ```ruby
 # AST → JSON
@@ -252,91 +252,91 @@ json = JSONSerializer.serialize(ast, options)
 ast = JSONSerializer.deserialize(json)
 ```
 
-##### 用途
-- AST構造のデバッグ
-- 外部ツールとの連携
-- ASTの保存と復元
+##### Use Cases
+- Debugging AST structure
+- Integration with external tools
+- Saving and restoring AST
 
 #### ReVIEWGenerator
 
-ASTからRe:VIEW記法のテキストを再生成します。
+Regenerates Re:VIEW syntax text from AST.
 
 ```ruby
 generator = ReVIEW::AST::ReviewGenerator.new
 review_text = generator.generate(ast)
 ```
 
-##### 用途
-- 双方向変換（Re:VIEW ↔ AST ↔ Re:VIEW）
-- 構造の正規化
-- フォーマット変換ツールの実装
+##### Use Cases
+- Bidirectional conversion (Re:VIEW ↔ AST ↔ Re:VIEW)
+- Structure normalization
+- Implementing format conversion tools
 
 #### TextFormatter
 
-Rendererで使用される、テキスト整形とI18n（国際化）を一元管理するサービスクラスです。
+A service class used by Renderers that centrally manages text formatting and I18n (internationalization).
 
 ```ruby
-# Renderer内で使用
+# Used within Renderers
 formatter = text_formatter
 caption = formatter.format_caption('list', chapter_number, item_number, caption_text)
 ```
 
-##### 主な機能
-- I18nキーを使用したテキスト生成（図表番号、キャプション等）
-- フォーマット固有の装飾（HTML: `図1.1:`, TOP/TEXT: `図1.1　`）
-- 章番号の整形（`第1章`, `Appendix A`等）
-- 参照テキストの生成
+##### Main Features
+- Text generation using I18n keys (figure numbers, captions, etc.)
+- Format-specific decoration (HTML: `Figure 1.1:`, TOP/TEXT: `Figure 1.1　`)
+- Chapter number formatting (`Chapter 1`, `Appendix A`, etc.)
+- Reference text generation
 
-##### 用途
-- Rendererでの一貫したテキスト生成
-- 多言語対応（I18nキーを通じた翻訳）
-- フォーマット固有の整形ルールの集約
+##### Use Cases
+- Consistent text generation in Renderers
+- Multilingual support (translation through I18n keys)
+- Centralization of format-specific formatting rules
 
-## 基本的な使い方
+## Basic Usage
 
-### コマンドライン実行
+### Command-Line Execution
 
-Re:VIEW文書をAST経由で各種フォーマットに変換します。
+Convert Re:VIEW documents to various formats via AST.
 
-#### 単一ファイルのコンパイル
+#### Compiling a Single File
 
 ```bash
-# HTML出力
+# HTML output
 review-ast-compile --target=html chapter.re > chapter.html
 
-# LaTeX出力
+# LaTeX output
 review-ast-compile --target=latex chapter.re > chapter.tex
 
-# JSON出力（AST構造を確認）
+# JSON output (check AST structure)
 review-ast-compile --target=json chapter.re > chapter.json
 
-# AST構造のダンプ（デバッグ用）
+# Dump AST structure (for debugging)
 review-ast-dump chapter.re
 ```
 
-#### 書籍全体のビルド
+#### Building Entire Books
 
-AST Rendererを使用した書籍全体のビルドには、専用のmakerコマンドを使用します：
+To build entire books using AST Renderer, use dedicated maker commands:
 
 ```bash
-# PDF生成（LaTeX経由）
+# PDF generation (via LaTeX)
 review-ast-pdfmaker config.yml
 
-# EPUB生成
+# EPUB generation
 review-ast-epubmaker config.yml
 
-# InDesign XML生成
+# InDesign XML generation
 review-ast-idgxmlmaker config.yml
 
-# テキスト生成（TOP形式またはプレーンテキスト）
-review-ast-textmaker config.yml          # TOP形式（◆→マーカー付き）
+# Text generation (TOP format or plain text)
+review-ast-textmaker config.yml          # TOP format (with ◆→ markers)
 ```
 
-これらのコマンドは、従来の`review-pdfmaker`、`review-epubmaker`等と同じインターフェースを持ちますが、内部的にAST Rendererを使用します。
+These commands have the same interface as traditional `review-pdfmaker`, `review-epubmaker`, etc., but internally use AST Renderer.
 
-### プログラムからの利用
+### Using from Programs
 
-Ruby APIを使用してASTを操作できます。
+You can manipulate AST using the Ruby API.
 
 ```ruby
 require 'review'
@@ -344,64 +344,64 @@ require 'review/ast/compiler'
 require 'review/renderer/html_renderer'
 require 'stringio'
 
-# 設定を読み込む
+# Load configuration
 config = ReVIEW::Configure.create(yamlfile: 'config.yml')
 book = ReVIEW::Book::Base.new('.', config: config)
 
-# チャプターを取得
+# Get chapter
 chapter = book.chapters.first
 
-# ASTを生成（参照解決を有効化）
+# Generate AST (with reference resolution enabled)
 compiler = ReVIEW::AST::Compiler.new
 ast_root = compiler.compile_to_ast(chapter, reference_resolution: true)
 
-# HTMLに変換
+# Convert to HTML
 renderer = ReVIEW::Renderer::HtmlRenderer.new(chapter)
 html = renderer.render(ast_root)
 
 puts html
 ```
 
-#### 異なるフォーマットへの変換
+#### Converting to Different Formats
 
 ```ruby
-# LaTeXに変換
+# Convert to LaTeX
 require 'review/renderer/latex_renderer'
 latex_renderer = ReVIEW::Renderer::LatexRenderer.new(chapter)
 latex = latex_renderer.render(ast_root)
 
-# Markdownに変換
+# Convert to Markdown
 require 'review/renderer/markdown_renderer'
 md_renderer = ReVIEW::Renderer::MarkdownRenderer.new(chapter)
 markdown = md_renderer.render(ast_root)
 
-# TOP形式に変換
+# Convert to TOP format
 require 'review/renderer/top_renderer'
 top_renderer = ReVIEW::Renderer::TopRenderer.new(chapter)
 top_text = top_renderer.render(ast_root)
 ```
 
-### よくあるユースケース
+### Common Use Cases
 
-#### 1. カスタムレンダラーの作成
+#### 1. Creating Custom Renderers
 
-特定の用途向けに独自のレンダラーを実装できます。
+You can implement your own renderer for specific purposes.
 
 ```ruby
 class MyCustomRenderer < ReVIEW::Renderer::Base
   def visit_headline(node)
-    # 独自のヘッドライン処理
+    # Custom headline processing
   end
 
   def visit_paragraph(node)
-    # 独自の段落処理
+    # Custom paragraph processing
   end
 end
 ```
 
-#### 2. AST解析ツールの作成
+#### 2. Creating AST Analysis Tools
 
-ASTを走査して統計情報を収集するツールを作成できます。
+You can create tools that traverse AST to collect statistics.
 
 ```ruby
 class WordCountVisitor < ReVIEW::AST::Visitor
@@ -421,194 +421,190 @@ visitor.visit(ast)
 puts "Total words: #{visitor.word_count}"
 ```
 
-#### 3. 文書構造の変換
+#### 3. Document Structure Transformation
 
-ASTを操作して文書構造を変更できます。
+You can manipulate AST to modify document structure.
 
 ```ruby
-# 特定のノードを検索して置換
+# Search and replace specific nodes
 ast.children.each do |node|
   if node.is_a?(ReVIEW::AST::HeadlineNode) && node.level == 1
-    # レベル1の見出しを処理
+    # Process level 1 headings
   end
 end
 ```
 
-## AST/Rendererでできること
+## What AST/Renderer Can Do
 
-### 対応フォーマット
+### Supported Formats
 
-AST/Rendererは以下の出力フォーマットに対応しています：
+AST/Renderer supports the following output formats:
 
-| フォーマット | Renderer | Makerコマンド | 用途 |
-|------------|----------|--------------|------|
-| HTML | `HtmlRenderer` | `review-ast-epubmaker` | Web公開、プレビュー、EPUB生成 |
-| LaTeX | `LatexRenderer` | `review-ast-pdfmaker` | PDF生成（LaTeX経由） |
-| IDGXML | `IdgxmlRenderer` | `review-ast-idgxmlmaker` | InDesign組版 |
-| Markdown | `MarkdownRenderer` | `review-ast-compile` | Markdown形式への変換 |
-| Plaintext | `PlaintextRenderer` | `review-ast-textmaker -n` | 装飾なしプレーンテキスト |
-| TOP | `TopRenderer` | `review-ast-textmaker` | 編集マーカー付きテキスト |
-| JSON | `JSONSerializer` | `review-ast-compile` | AST構造のJSON出力 |
+| Format | Renderer | Maker Command | Purpose |
+|--------|----------|---------------|---------|
+| HTML | `HtmlRenderer` | `review-ast-epubmaker` | Web publishing, preview, EPUB generation |
+| LaTeX | `LatexRenderer` | `review-ast-pdfmaker` | PDF generation (via LaTeX) |
+| IDGXML | `IdgxmlRenderer` | `review-ast-idgxmlmaker` | InDesign typesetting |
+| Markdown | `MarkdownRenderer` | `review-ast-compile` | Conversion to Markdown format |
+| Plaintext | `PlaintextRenderer` | `review-ast-textmaker -n` | Plain text without decoration |
+| TOP | `TopRenderer` | `review-ast-textmaker` | Text with editorial markers |
+| JSON | `JSONSerializer` | `review-ast-compile` | JSON output of AST structure |
 
-### 拡張機能
+### Extended Features
 
-AST/Rendererならではの機能：
+Features unique to AST/Renderer:
 
-#### JSON出力
+#### JSON Output
 ```bash
-# AST構造をJSON形式で出力
+# Output AST structure in JSON format
 review-ast-compile --target=json chapter.re
 ```
 
-##### 用途
-- AST構造のデバッグ
-- 外部ツールとの連携
-- 構文解析エンジンとしての利用
+##### Use Cases
+- Debugging AST structure
+- Integration with external tools
+- Use as a parsing engine
 
-#### 双方向変換
+#### Bidirectional Conversion
 ```bash
 # Re:VIEW → AST → JSON → AST → Re:VIEW
 review-ast-compile --target=json chapter.re > ast.json
-# JSONからRe:VIEWテキストを再生成
+# Regenerate Re:VIEW text from JSON
 review-ast-generate ast.json > regenerated.re
 ```
 
-##### 用途
-- 構造の正規化
-- フォーマット変換
-- 文書の検証
+##### Use Cases
+- Structure normalization
+- Format conversion
+- Document validation
 
-#### カスタムツール開発
+#### Custom Tool Development
 
-ASTを利用して独自のツールを開発できます：
+You can develop your own tools using AST:
 
-- 文書解析ツール: 文書の統計情報収集
-- リンティングツール: スタイルチェック、構造検証
-- 変換ツール: 独自フォーマットへの変換
-- 自動化ツール: 文書生成、テンプレート処理
+- Document analysis tools: Collecting document statistics
+- Linting tools: Style checking, structure validation
+- Conversion tools: Converting to custom formats
+- Automation tools: Document generation, template processing
 
-### Re:VIEW全要素への対応
+### Support for All Re:VIEW Elements
 
-AST/Rendererは、Re:VIEWのすべての記法要素に対応しています：
+AST/Renderer supports all Re:VIEW syntax elements:
 
-##### ブロック要素
-- 見出し（`=`, `==`, `===`）
-- 段落
-- リスト（箇条書き、番号付き、定義リスト）
-- 表（`//table`）
-- コードブロック（`//list`, `//emlist`, `//cmd`等）
-- 画像（`//image`, `//indepimage`）
-- コラム（`//note`, `//memo`, `//column`等）
-- 数式（`//texequation`）
+##### Block Elements
+- Headings (`=`, `==`, `===`)
+- Paragraphs
+- Lists (bulleted, numbered, definition lists)
+- Tables (`//table`)
+- Code blocks (`//list`, `//emlist`, `//cmd`, etc.)
+- Images (`//image`, `//indepimage`)
+- Columns (`//note`, `//memo`, `//column`, etc.)
+- Math equations (`//texequation`)
 
-##### インライン要素
-- 装飾（`@<b>`, `@<i>`, `@<tt>`等）
-- リンク（`@<href>`, `@<link>`）
-- 参照（`@<img>`, `@<table>`, `@<list>`, `@<hd>`等）
-- 脚注（`@<fn>`）
-- ルビ（`@<ruby>`）
+##### Inline Elements
+- Decoration (`@<b>`, `@<i>`, `@<tt>`, etc.)
+- Links (`@<href>`, `@<link>`)
+- References (`@<img>`, `@<table>`, `@<list>`, `@<hd>`, etc.)
+- Footnotes (`@<fn>`)
+- Ruby (`@<ruby>`)
 
-詳細は[ast_node.md](./ast_node.md)および[ast_architecture.md](./ast_architecture.md)を参照してください。
+See [ast_node.md](./ast_node.md) and [ast_architecture.md](./ast_architecture.md) for details.
 
-## より詳しく知るには
+## Learning More
 
-AST/Rendererについてさらに詳しく知るには、以下のドキュメントを参照してください：
+To learn more about AST/Renderer, refer to the following documents:
 
-### 詳細ドキュメント
+### Detailed Documentation
 
-| ドキュメント | 内容 |
-|------------|------|
-| [ast_architecture.md](./ast_architecture.md) | アーキテクチャ全体の詳細説明。パイプライン、コンポーネント、処理フローの詳細 |
-| [ast_node.md](./ast_node.md) | ASTノードクラスの完全なリファレンス。各ノードの属性、メソッド、使用例 |
-| [ast_list_processing.md](./ast_list_processing.md) | リスト処理の詳細。ListParser、NestedListAssembler、後処理の仕組み |
+| Document | Content |
+|----------|---------|
+| [ast_architecture.md](./ast_architecture.md) | Detailed explanation of the overall architecture. Pipeline, components, and processing flow details |
+| [ast_node.md](./ast_node.md) | Complete reference for AST node classes. Attributes, methods, and usage examples for each node |
+| [ast_list_processing.md](./ast_list_processing.md) | Details of list processing. ListParser, NestedListAssembler, and post-processing mechanisms |
 
-### 推奨する学習順序
+### Recommended Learning Path
 
-1. このドキュメント（ast.md）: まず全体像を把握
-2. [ast_architecture.md](./ast_architecture.md): アーキテクチャの詳細を理解
-3. [ast_node.md](./ast_node.md): 具体的なノードクラスを学習
-4. [ast_list_processing.md](./ast_list_processing.md): 複雑なリスト処理を深掘り
-5. ソースコード: 実装の詳細を確認
+1. This document (ast.md): First, grasp the overall picture
+2. [ast_architecture.md](./ast_architecture.md): Understand architectural details
+3. [ast_node.md](./ast_node.md): Learn specific node classes
+4. [ast_list_processing.md](./ast_list_processing.md): Deep dive into complex list processing
+5. Source code: Check implementation details
 
-### サンプルコード
+### Sample Code
 
-実際の使用例は以下を参照してください：
+See the following for actual usage examples:
 
-- `lib/review/ast/command/compile.rb`: コマンドライン実装
-- `lib/review/renderer/`: 各種Rendererの実装
-- `test/ast/`: ASTのテストコード（使用例として参考になります）
+- `lib/review/ast/command/compile.rb`: Command-line implementation
+- `lib/review/renderer/`: Implementation of various Renderers
+- `test/ast/`: AST test code (useful as usage examples)
 
 ## FAQ
 
-### Q1: 従来のBuilderとAST/Rendererの使い分けは？
+### Q1: How to choose between traditional Builder and AST/Renderer?
 
-A: 現時点では両方とも使用可能です。
+A: Both are currently available.
 
-- AST/Renderer方式: 新機能（JSON出力、双方向変換等）が必要な場合、カスタムツールを開発する場合
-- 従来のBuilder方式: 既存のプロジェクトやワークフローを維持する場合
+- AST/Renderer approach: When you need new features (JSON output, bidirectional conversion, etc.) or want to develop custom tools
+- Traditional Builder approach: When maintaining existing projects or workflows
 
-将来的にはAST/Renderer方式を標準とすることを目指しています。
+We aim to make the AST/Renderer approach the standard in the future.
 
-### Q2: 既存のプロジェクトをAST方式に移行する必要はありますか？
+### Q2: Do I need to migrate existing projects to AST approach?
 
-A: 必須ではありません。従来の方式もしばらくは引き続きサポートされます。ただし、新しい機能や拡張を利用したい場合は、AST方式の使用を推奨します。
+A: It's not mandatory. The traditional approach will continue to be supported for a while. However, if you want to use new features and extensions, we recommend using the AST approach.
 
-### Q3: カスタムRendererを作成するには？
+### Q3: How to create a custom Renderer?
 
-A: `Renderer::Base`を継承し、必要な`visit_*`メソッドをオーバーライドします。
+A: Inherit from `Renderer::Base` and override the necessary `visit_*` methods.
 
 ```ruby
 class MyRenderer < ReVIEW::Renderer::Base
   def visit_headline(node)
-    # 独自の処理
+    # Custom processing
   end
 end
 ```
 
-詳細は[ast_architecture.md](./ast_architecture.md)のRenderer層の説明を参照してください。
+See the Renderer layer explanation in [ast_architecture.md](./ast_architecture.md) for details.
 
-### Q4: ASTのデバッグ方法は？
+### Q4: How to debug AST?
 
-A: 以下の方法があります：
+A: There are several methods:
 
-1. JSON出力でAST構造を確認:
+1. Check AST structure with JSON output:
    ```bash
    review-ast-compile --target=json chapter.re | jq .
    ```
 
-2. review-ast-dumpコマンドを使用:
+2. Use review-ast-dump command:
    ```bash
    review-ast-dump chapter.re
    ```
 
-3. プログラムから直接確認:
+3. Check directly from program:
    ```ruby
    require 'pp'
    pp ast.to_h
    ```
 
-### Q5: パフォーマンスは従来方式と比べてどうですか？
+### Q5: How does performance compare to the traditional approach?
 
-A: AST方式は中間表現（AST）を構築するオーバーヘッドがありますが、以下の利点があります：
+A: The AST approach has overhead from building the intermediate representation (AST), but offers the following benefits:
 
-- 一度構築したASTを複数のフォーマットで再利用可能（複数フォーマット出力時に効率的）
-- 構造化されたデータモデルによる最適化の余地
-- 参照解決やインデックス構築の効率化
+- Once-built AST can be reused for multiple formats (efficient when outputting multiple formats)
+- Room for optimization through structured data model
+- Efficient reference resolution and index building
 
-通常の使用では、パフォーマンスの差はほとんど体感できないレベルです。
+In normal usage, the performance difference is hardly noticeable.
 
-### Q6: Markdownファイルも処理できますか？
+### Q6: Can Markdown files be processed?
 
-A: はい、対応しています。ファイルの拡張子（`.md`）によって自動的にMarkdownコンパイラが使用されます。
+A: Yes, they are supported. The Markdown compiler is automatically used based on the file extension (`.md`).
 
 ```bash
 review-ast-compile --target=html chapter.md
 ```
 
-### Q7: 既存のプラグインやカスタマイズは動作しますか？
+### Q7: Do existing plugins and customizations work?
 
-A: AST/Rendererは従来のBuilderシステムとは独立しています。従来のBuilderプラグインはそのまま動作しますが、AST/Renderer方式では新しいカスタマイズ方法（カスタムRenderer、Visitor等）を使用します。
-
----
-
-このドキュメントは、Re:VIEW AST/Rendererの入門ガイドです。より詳細な情報については、関連ドキュメントを参照してください。
+A: AST/Renderer is independent of the traditional Builder system. Traditional Builder plugins continue to work as is, but the AST/Renderer approach uses new customization methods (custom Renderers, Visitors, etc.).

@@ -1,544 +1,544 @@
-# Re:VIEW Markdown サポート
+# Re:VIEW Markdown Support
 
-Re:VIEWはAST版Markdownコンパイラを通じてGitHub Flavored Markdown（GFM）をサポートしています。この文書では、サポートされているMarkdown機能とRe:VIEW ASTへの変換方法について説明します。
+Re:VIEW supports GitHub Flavored Markdown (GFM) through the AST-based Markdown compiler. This document describes supported Markdown features and conversion methods to Re:VIEW AST.
 
-## 概要
+## Overview
 
-Markdownサポートは、Re:VIEWのAST/Rendererアーキテクチャ上に実装されています。Markdownドキュメントは内部的にRe:VIEW ASTに変換され、従来のRe:VIEWフォーマット（`.re`ファイル）と同等に扱われます。
+Markdown support is implemented on top of Re:VIEW's AST/Renderer architecture. Markdown documents are internally converted to Re:VIEW AST and treated equivalently to traditional Re:VIEW format (`.re` files).
 
-### 双方向変換のサポート
+### Bidirectional Conversion Support
 
-Re:VIEWは以下の双方向変換をサポートしています：
+Re:VIEW supports the following bidirectional conversions:
 
-1. Markdown → AST → 各種フォーマット: MarkdownCompilerを使用してMarkdownをASTに変換し、各種Rendererで出力
-2. Re:VIEW → AST → Markdown: Re:VIEWフォーマットをASTに変換し、MarkdownRendererでMarkdown形式に出力
+1. Markdown → AST → Various formats: Convert Markdown to AST using MarkdownCompiler and output with various Renderers
+2. Re:VIEW → AST → Markdown: Convert Re:VIEW format to AST and output in Markdown format with MarkdownRenderer
 
-この双方向変換により、以下が可能になります：
-- Markdownで執筆した文書をPDF、EPUB、HTMLなどに変換
-- Re:VIEWで執筆した文書をMarkdown形式に変換してGitHubなどで公開
-- 異なるフォーマット間でのコンテンツの相互変換
+This bidirectional conversion enables:
+- Converting documents written in Markdown to PDF, EPUB, HTML, etc.
+- Converting documents written in Re:VIEW to Markdown format for publishing on GitHub, etc.
+- Mutual content conversion between different formats
 
-### アーキテクチャ
+### Architecture
 
-Markdownサポートは双方向の変換をサポートしています：
+Markdown support provides bidirectional conversion:
 
-#### Markdown → Re:VIEW AST（入力）
+#### Markdown → Re:VIEW AST (Input)
 
-- Markly: GFM拡張を備えた高速CommonMarkパーサー（外部gem）
-- MarkdownCompiler: MarkdownドキュメントをRe:VIEW ASTにコンパイルする統括クラス
-- MarkdownAdapter: Markly ASTをRe:VIEW ASTに変換するアダプター層
-- MarkdownHtmlNode: HTML要素の解析とコラムマーカーの検出を担当（内部使用）
+- Markly: Fast CommonMark parser with GFM extensions (external gem)
+- MarkdownCompiler: Oversees compiling Markdown documents to Re:VIEW AST
+- MarkdownAdapter: Adapter layer that converts Markly AST to Re:VIEW AST
+- MarkdownHtmlNode: Handles HTML element parsing and column marker detection (internal use)
 
-#### Re:VIEW AST → Markdown（出力）
+#### Re:VIEW AST → Markdown (Output)
 
-- MarkdownRenderer: Re:VIEW ASTをMarkdown形式で出力するレンダラー
-  - キャプションは`**Caption**`形式で出力
-  - 画像は`![alt](path)`形式で出力
-  - テーブルはGFMパイプスタイルで出力
-  - 脚注は`[^id]`記法で出力
+- MarkdownRenderer: Renderer that outputs Re:VIEW AST in Markdown format
+  - Captions are output in `**Caption**` format
+  - Images are output in `![alt](path)` format
+  - Tables are output in GFM pipe style
+  - Footnotes are output in `[^id]` notation
 
-### サポートされている拡張機能
+### Supported Extensions
 
-以下のGitHub Flavored Markdown拡張機能が有効化されています：
-- strikethrough: 取り消し線（`~~text~~`）
-- table: テーブル（パイプスタイル）
-- autolink: オートリンク（`http://example.com`を自動的にリンクに変換）
+The following GitHub Flavored Markdown extensions are enabled:
+- strikethrough: Strikethrough text (`~~text~~`)
+- table: Tables (pipe style)
+- autolink: Autolinks (automatically converts `http://example.com` to links)
 
-### Re:VIEW独自の拡張
+### Re:VIEW-Specific Extensions
 
-標準的なGFMに加えて、以下のRe:VIEW独自の拡張機能もサポートされています：
+In addition to standard GFM, the following Re:VIEW-specific extensions are supported:
 
-- コラム構文: 見出し（`### [column] Title`）で開始し、HTMLコメント（`<!-- /column -->`）または自動クローズで終了するコラムブロック
-- 自動コラムクローズ: 見出しレベルに基づくコラムの自動クローズ機能
-- 属性ブロック: Pandoc/kramdown互換の`{#id caption="..."}`構文によるID・キャプション指定
-- Re:VIEW参照記法: `@<img>{id}`、`@<list>{id}`、`@<table>{id}`による図表参照
-- 脚注サポート: Markdown標準の`[^id]`記法による脚注
+- Column syntax: Column blocks starting with heading (`### [column] Title`) and ending with HTML comment (`<!-- /column -->`) or auto-close
+- Auto column close: Automatic column closing based on heading level
+- Attribute blocks: ID and caption specification using Pandoc/kramdown-compatible `{#id caption="..."}` syntax
+- Re:VIEW reference notation: Figure/table/listing references using `@<img>{id}`, `@<list>{id}`, `@<table>{id}`
+- Footnote support: Footnotes using Markdown standard `[^id]` notation
 
-## Markdown基本記法
+## Markdown Basic Syntax
 
-Re:VIEWは[CommonMark](https://commonmark.org/)および[GitHub Flavored Markdown（GFM）](https://github.github.com/gfm/)の仕様に準拠しています。標準的なMarkdown記法の詳細については、これらの公式仕様を参照してください。
+Re:VIEW conforms to [CommonMark](https://commonmark.org/) and [GitHub Flavored Markdown (GFM)](https://github.github.com/gfm/) specifications. For details on standard Markdown syntax, refer to these official specifications.
 
-### サポートされている主な要素
+### Main Supported Elements
 
-以下のMarkdown要素がRe:VIEW ASTに変換されます：
+The following Markdown elements are converted to Re:VIEW AST:
 
-| Markdown記法 | 説明 | Re:VIEW AST |
-|------------|------|-------------|
-| 段落 | 空行で区切られたテキストブロック | `ParagraphNode` |
-| 見出し（`#`〜`######`） | 6段階の見出しレベル | `HeadlineNode` |
-| 太字（`**text**`） | 強調表示 | `InlineNode(:b)` |
-| イタリック（`*text*`） | 斜体表示 | `InlineNode(:i)` |
-| コード（`` `code` ``） | インラインコード | `InlineNode(:code)` |
-| リンク（`[text](url)`） | ハイパーリンク | `InlineNode(:href)` |
-| 取り消し線（`~~text~~`） | 取り消し線（GFM拡張） | `InlineNode(:del)` |
-| 箇条書きリスト（`*`, `-`, `+`） | 順序なしリスト | `ListNode(:ul)` |
-| 番号付きリスト（`1.`, `2.`） | 順序付きリスト | `ListNode(:ol)` |
-| コードブロック（` ``` `） | 言語指定可能なコードブロック | `CodeBlockNode` |
-| コードブロック+属性 | `{#id caption="..."}`でID・キャプション指定 | `CodeBlockNode(:list)` |
-| 引用（`>`） | 引用ブロック | `BlockNode(:quote)` |
-| テーブル（GFM） | パイプスタイルのテーブル | `TableNode` |
-| テーブル+属性 | `{#id caption="..."}`でID・キャプション指定 | `TableNode`（ID・キャプション付き） |
-| 画像（`![alt](path)`） | 画像（単独行はブロック、行内はインライン） | `ImageNode` / `InlineNode(:icon)` |
-| 画像+属性 | `{#id caption="..."}`でID・キャプション指定 | `ImageNode`（ID・キャプション付き） |
-| 水平線（`---`, `***`） | 区切り線 | `BlockNode(:hr)` |
-| HTMLブロック | 生HTML（保持される） | `EmbedNode(:html)` |
-| 脚注参照（`[^id]`） | 脚注への参照 | `InlineNode(:fn)` + `ReferenceNode` |
-| 脚注定義（`[^id]: 内容`） | 脚注の定義 | `FootnoteNode` |
-| Re:VIEW参照（`@<type>{id}`） | 図表リストへの参照 | `InlineNode(type)` + `ReferenceNode` |
-| 定義リスト（Markdown出力） | 用語と説明のペア | `DefinitionListNode` / `DefinitionItemNode` |
+| Markdown Syntax | Description | Re:VIEW AST |
+|----------------|-------------|-------------|
+| Paragraph | Text block separated by blank lines | `ParagraphNode` |
+| Headings (`#` to `######`) | 6 heading levels | `HeadlineNode` |
+| Bold (`**text**`) | Strong emphasis | `InlineNode(:b)` |
+| Italic (`*text*`) | Italic emphasis | `InlineNode(:i)` |
+| Code (`` `code` ``) | Inline code | `InlineNode(:code)` |
+| Link (`[text](url)`) | Hyperlink | `InlineNode(:href)` |
+| Strikethrough (`~~text~~`) | Strikethrough (GFM extension) | `InlineNode(:del)` |
+| Bulleted list (`*`, `-`, `+`) | Unordered list | `ListNode(:ul)` |
+| Numbered list (`1.`, `2.`) | Ordered list | `ListNode(:ol)` |
+| Code block (` ``` `) | Code block with language specification | `CodeBlockNode` |
+| Code block + attributes | ID and caption with `{#id caption="..."}` | `CodeBlockNode(:list)` |
+| Blockquote (`>`) | Quote block | `BlockNode(:quote)` |
+| Table (GFM) | Pipe-style table | `TableNode` |
+| Table + attributes | ID and caption with `{#id caption="..."}` | `TableNode` (with ID/caption) |
+| Image (`![alt](path)`) | Image (standalone line is block, inline is inline) | `ImageNode` / `InlineNode(:icon)` |
+| Image + attributes | ID and caption with `{#id caption="..."}` | `ImageNode` (with ID/caption) |
+| Horizontal rule (`---`, `***`) | Divider | `BlockNode(:hr)` |
+| HTML block | Raw HTML (preserved) | `EmbedNode(:html)` |
+| Footnote reference (`[^id]`) | Reference to footnote | `InlineNode(:fn)` + `ReferenceNode` |
+| Footnote definition (`[^id]: content`) | Footnote definition | `FootnoteNode` |
+| Re:VIEW reference (`@<type>{id}`) | Reference to figures/tables/listings | `InlineNode(type)` + `ReferenceNode` |
+| Definition list (Markdown output) | Term and description pairs | `DefinitionListNode` / `DefinitionItemNode` |
 
-### 変換例
+### Conversion Example
 
 ```markdown
-## 見出し
+## Heading
 
-これは **太字** と *イタリック* を含む段落です。`インラインコード`も使えます。
+This is a paragraph with **bold** and *italic* text. You can also use `inline code`.
 
-* 箇条書き項目1
-* 箇条書き項目2
+* Bulleted item 1
+* Bulleted item 2
 
-詳細は[公式サイト](https://example.com)を参照してください。
+See the [official site](https://example.com) for details.
 ```
 
-### 画像の扱い
+### Image Handling
 
-画像は文脈によって異なるASTノードに変換されます：
+Images are converted to different AST nodes depending on context:
 
-#### 単独行の画像（ブロックレベル）
+#### Standalone Image (Block Level)
 
 ```markdown
-![図1のキャプション](image.png)
+![Figure 1 caption](image.png)
 ```
-単独行の画像は `ImageNode`（ブロックレベル）に変換され、Re:VIEWの `//image[image][図1のキャプション]` と同等になります。
+Standalone images are converted to `ImageNode` (block level), equivalent to Re:VIEW's `//image[image][Figure 1 caption]`.
 
-#### IDとキャプションの明示的指定
+#### Explicit ID and Caption Specification
 
-属性ブロック構文を使用して、画像にIDとキャプションを明示的に指定できます。属性ブロックは画像と同じ行に書くことも、次の行に書くこともできます：
-
-```markdown
-![代替テキスト](images/sample.png){#fig-sample caption="サンプル画像"}
-```
-
-または、次の行に書く形式：
+You can explicitly specify ID and caption for images using attribute block syntax. The attribute block can be written on the same line as the image or on the next line:
 
 ```markdown
-![代替テキスト](images/sample.png)
-{#fig-sample caption="サンプル画像"}
+![alt text](images/sample.png){#fig-sample caption="Sample image"}
 ```
 
-これにより、`ImageNode`に`id="fig-sample"`と`caption="サンプル画像"`が設定されます。属性ブロックのキャプションが指定されている場合、それが優先されます。IDのみを指定することも可能です：
+Or written on the next line:
 
 ```markdown
-![サンプル画像](images/sample.png){#fig-sample}
+![alt text](images/sample.png)
+{#fig-sample caption="Sample image"}
 ```
 
-または：
+This sets `id="fig-sample"` and `caption="Sample image"` on the `ImageNode`. If attribute block caption is specified, it takes precedence. You can also specify only the ID:
 
 ```markdown
-![サンプル画像](images/sample.png)
+![Sample image](images/sample.png){#fig-sample}
+```
+
+Or:
+
+```markdown
+![Sample image](images/sample.png)
 {#fig-sample}
 ```
 
-この場合、代替テキスト「サンプル画像」がキャプションとして使用されます。
+In this case, the alt text "Sample image" is used as the caption.
 
-#### インライン画像
+#### Inline Images
 
 ```markdown
-これは ![アイコン](icon.png) インライン画像です。
+This is an ![icon](icon.png) inline image.
 ```
-行内の画像は `InlineNode(:icon)` に変換され、Re:VIEWの `@<icon>{icon.png}` と同等になります。
+Inline images are converted to `InlineNode(:icon)`, equivalent to Re:VIEW's `@<icon>{icon.png}`.
 
-## コラム（Re:VIEW拡張）
+## Columns (Re:VIEW Extension)
 
-Re:VIEWはMarkdownドキュメント内でコラムブロックをサポートしています。コラムは見出し構文で開始し、HTMLコメントまたは自動クローズで終了します。
+Re:VIEW supports column blocks within Markdown documents. Columns start with heading syntax and end with HTML comments or auto-close.
 
-### 方法1: 見出し構文 + HTMLコメントで終了
+### Method 1: Heading Syntax + HTML Comment End
 
 ```markdown
-### [column] コラムのタイトル
+### [column] Column Title
 
-ここにコラムの内容を書きます。
+Write your column content here.
 
-コラム内ではすべてのMarkdown機能を使用できます。
+You can use all Markdown features within columns.
 
 <!-- /column -->
 ```
 
-タイトルなしのコラムの場合：
+For columns without title:
 
 ```markdown
 ### [column]
 
-タイトルなしのコラム内容。
+Column content without title.
 
 <!-- /column -->
 ```
 
-### 方法2: 見出し構文（自動クローズ）
+### Method 2: Heading Syntax (Auto-close)
 
-以下の場合にコラムは自動的にクローズされます：
-- 同じレベルの見出しに遭遇したとき
-- より高いレベル（小さい数字）の見出しに遭遇したとき
-- ドキュメントの終わり
+Columns are automatically closed in the following cases:
+- When encountering a heading of the same level
+- When encountering a heading of higher level (smaller number)
+- At document end
 
 ```markdown
-### [column] コラムのタイトル
+### [column] Column Title
 
-ここにコラムの内容を書きます。
+Write your column content here.
 
-### 次のセクション
+### Next Section
 ```
 
-この例では、「次のセクション」の見出しに遭遇したときにコラムが自動的にクローズされます。
+In this example, the column is automatically closed when the "Next Section" heading is encountered.
 
-ドキュメント終了時の自動クローズの例：
+Example of auto-close at document end:
 
 ```markdown
-### [column] ヒントとコツ
+### [column] Tips and Tricks
 
-このコラムはドキュメントの最後で自動的にクローズされます。
+This column will be automatically closed at the end of the document.
 
-明示的な終了マーカーは不要です。
+No explicit end marker is needed.
 ```
 
-より高いレベルの見出しでの例：
+Example with higher level heading:
 
 ```markdown
-### [column] サブセクションコラム
+### [column] Subsection Column
 
-レベル3のコラム。
+Level 3 column.
 
-## メインセクション
+## Main Section
 
-このレベル2の見出しはレベル3のコラムをクローズします。
+This level 2 heading closes the level 3 column.
 ```
 
-### コラムの自動クローズ規則
+### Column Auto-close Rules
 
-- 同じレベル: `### [column]` は別の `###` 見出しが現れるとクローズ
-- より高いレベル: `### [column]` は `##` または `#` 見出しが現れるとクローズ
-- より低いレベル: `### [column]` は `####` 以下が現れてもクローズされない
-- ドキュメント終了: すべての開いているコラムは自動的にクローズ
+- Same level: `### [column]` closes when another `###` heading appears
+- Higher level: `### [column]` closes when `##` or `#` heading appears
+- Lower level: `### [column]` does not close when `####` or lower appears
+- Document end: All open columns are automatically closed
 
-### コラムのネスト
+### Column Nesting
 
-コラムはネスト可能ですが、見出しレベルに注意してください：
+Columns can be nested, but pay attention to heading levels:
 
 ```markdown
-## [column] 外側のコラム
+## [column] Outer Column
 
-外側のコラムの内容。
+Outer column content.
 
-### [column] 内側のコラム
+### [column] Inner Column
 
-内側のコラムの内容。
+Inner column content.
 
 <!-- /column -->
 
-外側のコラムに戻ります。
+Back to outer column.
 
 <!-- /column -->
 ```
 
-## コードブロックとリスト（Re:VIEW拡張）
+## Code Blocks and Lists (Re:VIEW Extension)
 
-### キャプション付きコードブロック
+### Code Blocks with Captions
 
-コードブロックにIDとキャプションを指定して、Re:VIEWの`//list`コマンドと同等の機能を使用できます。属性ブロックは言語指定の後に記述します：
+You can specify ID and caption for code blocks to use functionality equivalent to Re:VIEW's `//list` command. The attribute block is written after the language specification:
 
 ````markdown
-```ruby {#lst-hello caption="挨拶プログラム"}
+```ruby {#lst-hello caption="Greeting program"}
 def hello(name)
   puts "Hello, #{name}!"
 end
 ```
 ````
 
-属性ブロック`{#lst-hello caption="挨拶プログラム"}`を言語指定の後に記述することで、コードブロックにIDとキャプションが設定されます。この場合、`CodeBlockNode`の`code_type`は`:list`になります。
+By writing the attribute block `{#lst-hello caption="Greeting program"}` after the language specification, ID and caption are set on the code block. In this case, the `code_type` of `CodeBlockNode` becomes `:list`.
 
-IDのみを指定することも可能です：
+You can also specify only the ID:
 
 ````markdown
 ```ruby {#lst-example}
-# コード
+# code
 ```
 ````
 
-属性ブロックを指定しない通常のコードブロックは`code_type: :emlist`として扱われます。
+Regular code blocks without attribute blocks are treated as `code_type: :emlist`.
 
-注意：コードブロックの属性ブロックは、開始のバッククオート行に記述する必要があります。画像やテーブルとは異なり、次の行に書くことはできません。
+Note: Attribute blocks for code blocks must be written on the opening backtick line. Unlike images and tables, they cannot be written on the next line.
 
-## テーブル（Re:VIEW拡張）
+## Tables (Re:VIEW Extension)
 
-### キャプション付きテーブル
+### Tables with Captions
 
-GFMテーブルにIDとキャプションを指定できます。属性ブロックはテーブルの直後の行に記述します：
+You can specify ID and caption for GFM tables. The attribute block is written on the line immediately after the table:
 
 ```markdown
-| 名前 | 年齢 | 職業 |
-|------|------|------|
-| Alice| 25   | エンジニア |
-| Bob  | 30   | デザイナー |
-{#tbl-users caption="ユーザー一覧"}
+| Name | Age | Occupation |
+|------|-----|------------|
+| Alice| 25  | Engineer   |
+| Bob  | 30  | Designer   |
+{#tbl-users caption="User list"}
 ```
 
-属性ブロック`{#tbl-users caption="ユーザー一覧"}`をテーブルの直後の行に記述することで、テーブルにIDとキャプションが設定されます。これはRe:VIEWの`//table`コマンドと同等の機能です。
+By writing the attribute block `{#tbl-users caption="User list"}` on the line immediately after the table, ID and caption are set on the table. This is equivalent to Re:VIEW's `//table` command.
 
-## 図表参照（Re:VIEW拡張）
+## Figure/Table References (Re:VIEW Extension)
 
-### Re:VIEW記法による参照
+### References Using Re:VIEW Notation
 
-Markdown内でRe:VIEWの参照記法を使用して、図・表・リストを参照できます：
+You can use Re:VIEW reference notation within Markdown to reference figures, tables, and listings:
 
 ```markdown
-![サンプル画像](images/sample.png)
-{#fig-sample caption="サンプル画像"}
+![Sample image](images/sample.png)
+{#fig-sample caption="Sample image"}
 
-図@<img>{fig-sample}を参照してください。
+See Figure @<img>{fig-sample}.
 ```
 
 ```markdown
-```ruby {#lst-hello caption="挨拶プログラム"}
+```ruby {#lst-hello caption="Greeting program"}
 def hello
   puts "Hello, World!"
 end
 ```
 
-リスト@<list>{lst-hello}を参照してください。
+See Listing @<list>{lst-hello}.
 ```
 
 ```markdown
-| 名前 | 年齢 |
-|------|------|
-| Alice| 25   |
-{#tbl-users caption="ユーザー一覧"}
+| Name | Age |
+|------|-----|
+| Alice| 25  |
+{#tbl-users caption="User list"}
 
-表@<table>{tbl-users}を参照してください。
+See Table @<table>{tbl-users}.
 ```
 
-この記法はRe:VIEWの標準的な参照記法と同じです。参照先のIDは、上記の属性ブロックで指定したIDと対応している必要があります。
+This notation is the same as Re:VIEW's standard reference notation. The reference IDs must correspond to the IDs specified in the attribute blocks above.
 
-参照は後続の処理で適切な番号に置き換えられます：
-- `@<img>{fig-sample}` → 「図1.1」
-- `@<list>{lst-hello}` → 「リスト1.1」
-- `@<table>{tbl-users}` → 「表1.1」
+References are replaced with appropriate numbers in subsequent processing:
+- `@<img>{fig-sample}` → "Figure 1.1"
+- `@<list>{lst-hello}` → "Listing 1.1"
+- `@<table>{tbl-users}` → "Table 1.1"
 
-### 参照の解決
+### Reference Resolution
 
-参照は後続の処理（参照解決フェーズ）で適切な図番・表番・リスト番号に置き換えられます。AST内では`InlineNode`と`ReferenceNode`の組み合わせとして表現されます。
+References are replaced with appropriate figure/table/listing numbers in subsequent processing (reference resolution phase). They are represented as a combination of `InlineNode` and `ReferenceNode` in the AST.
 
-## 脚注（Re:VIEW拡張）
+## Footnotes (Re:VIEW Extension)
 
-Markdown標準の脚注記法をサポートしています：
+Markdown standard footnote notation is supported:
 
-### 脚注の使用
+### Using Footnotes
 
 ```markdown
-これは脚注のテストです[^1]。
+This is a footnote test[^1].
 
-複数の脚注も使えます[^note]。
+Multiple footnotes can also be used[^note].
 
-[^1]: これは最初の脚注です。
+[^1]: This is the first footnote.
 
-[^note]: これは名前付き脚注です。
-  複数行の内容も
-  サポートします。
+[^note]: This is a named footnote.
+  Multiple line content is
+  also supported.
 ```
 
-脚注参照`[^id]`と脚注定義`[^id]: 内容`を使用できます。脚注定義は複数行にまたがることができ、インデントされた行は前の脚注の続きとして扱われます。
+You can use footnote references `[^id]` and footnote definitions `[^id]: content`. Footnote definitions can span multiple lines, and indented lines are treated as continuations of the previous footnote.
 
-### FootnoteNodeへの変換
+### Conversion to FootnoteNode
 
-脚注定義は`FootnoteNode`に変換され、Re:VIEWの`//footnote`コマンドと同等に扱われます。脚注参照は`InlineNode(:fn)`として表現されます。
+Footnote definitions are converted to `FootnoteNode` and treated equivalently to Re:VIEW's `//footnote` command. Footnote references are represented as `InlineNode(:fn)`.
 
-## 定義リスト（Markdown出力）
+## Definition Lists (Markdown Output)
 
-Re:VIEWの定義リスト（`: 用語`形式）をMarkdown形式に変換する場合、以下の形式で出力されます：
+When converting Re:VIEW definition lists (`: term` format) to Markdown format, they are output in the following format:
 
-### 基本的な出力形式
+### Basic Output Format
 
 ```markdown
-**用語**: 説明文
+**term**: description
 
-**別の用語**: 別の説明文
+**another term**: another description
 ```
 
-用語は太字（`**term**`）で強調され、コロンと空白の後に説明が続きます。
+Terms are emphasized in bold (`**term**`) followed by a colon, space, and description.
 
-### 用語に強調が含まれる場合
+### When Terms Include Emphasis
 
-用語に既に太字（`**text**`）や強調（`@<b>{text}`）が含まれている場合、MarkdownRendererは二重の太字マークアップ（`****text****`）を避けるため、用語を太字で囲みません：
+When a term already includes bold (`**text**`) or emphasis (`@<b>{text}`), MarkdownRenderer does not wrap the term in bold to avoid double bold markup (`****text****`):
 
-Re:VIEW入力例:
+Re:VIEW input example:
 ```review
- : @<b>{重要な}用語
-	説明文
+ : @<b>{Important} term
+	Description
 ```
 
-Markdown出力:
+Markdown output:
 ```markdown
-**重要な**用語: 説明文
+**Important** term: Description
 ```
 
-このように、用語内の強調要素がそのまま保持され、外側の太字マークアップは追加されません。
+In this way, emphasis elements within the term are preserved as is, and outer bold markup is not added.
 
-### 定義リストのAST表現
+### AST Representation of Definition Lists
 
-定義リストはRe:VIEW ASTでは以下のノードで表現されます：
-- `DefinitionListNode`: 定義リスト全体を表すノード
-- `DefinitionItemNode`: 個々の用語と説明のペアを表すノード
-  - `term_children`: 用語のインライン要素のリスト
-  - `children`: 説明部分のブロック要素のリスト
+Definition lists are represented in Re:VIEW AST with the following nodes:
+- `DefinitionListNode`: Node representing the entire definition list
+- `DefinitionItemNode`: Node representing individual term and description pairs
+  - `term_children`: List of inline elements for the term
+  - `children`: List of block elements for the description
 
-MarkdownRendererは、`term_children`内に`InlineNode(:b)`または`InlineNode(:strong)`が含まれているかをチェックし、含まれている場合は外側の太字マークアップを省略します。
+MarkdownRenderer checks if `term_children` contains `InlineNode(:b)` or `InlineNode(:strong)`, and if so, omits the outer bold markup.
 
-## その他のMarkdown機能
+## Other Markdown Features
 
-### 改行
-- ソフト改行: 単一の改行はスペースに変換
-- ハード改行: 行末の2つのスペースで改行を挿入
+### Line Breaks
+- Soft break: Single line break is converted to space
+- Hard break: Two spaces at line end insert a line break
 
-### HTMLブロック
-生のHTMLブロックは `EmbedNode(:html)` として保持され、Re:VIEWの `//embed[html]` と同等に扱われます。インラインHTMLもサポートされます。
+### HTML Blocks
+Raw HTML blocks are preserved as `EmbedNode(:html)` and treated equivalently to Re:VIEW's `//embed[html]`. Inline HTML is also supported.
 
-## 制限事項と注意点
+## Limitations and Notes
 
-### ファイル拡張子
+### File Extension
 
-Markdownファイルは適切に処理されるために `.md` 拡張子を使用する必要があります。Re:VIEWシステムは拡張子によってファイル形式を自動判別します。
+Markdown files must use the `.md` extension to be processed properly. The Re:VIEW system automatically detects file format by extension.
 
-**重要:** Re:VIEWは`.md`拡張子のみをサポートしています。`.markdown`拡張子はサポートされていません。
+**Important:** Re:VIEW only supports the `.md` extension. The `.markdown` extension is not supported.
 
-### 画像パス
+### Image Paths
 
-画像パスはプロジェクトの画像ディレクトリ（デフォルトでは`images/`）からの相対パスか、Re:VIEWの画像パス規約を使用する必要があります。
+Image paths must be relative paths from the project's image directory (default `images/`) or use Re:VIEW's image path conventions.
 
-#### 例
+#### Example
 ```markdown
-![キャプション](sample.png)  <!-- images/sample.png を参照 -->
+![Caption](sample.png)  <!-- References images/sample.png -->
 ```
 
-### Re:VIEW固有の機能
+### Re:VIEW-Specific Features
 
-以下のRe:VIEW機能がMarkdown内でサポートされています：
+The following Re:VIEW features are supported within Markdown:
 
-#### サポートされているRe:VIEW機能
-- `//list`（キャプション付きコードブロック）→ 属性ブロック`{#id caption="..."}`で指定可能
-- `//table`（キャプション付き表）→ 属性ブロック`{#id caption="..."}`で指定可能
-- `//image`（キャプション付き画像）→ 属性ブロック`{#id caption="..."}`で指定可能
-- `//footnote`（脚注）→ Markdown標準の`[^id]`記法をサポート
-- 図表参照（`@<img>{id}`、`@<list>{id}`、`@<table>{id}`）→ 完全サポート
-- コラム（`//column`）→ HTMLコメントまたは見出し記法でサポート
+#### Supported Re:VIEW Features
+- `//list` (code block with caption) → Can be specified with attribute block `{#id caption="..."}`
+- `//table` (table with caption) → Can be specified with attribute block `{#id caption="..."}`
+- `//image` (image with caption) → Can be specified with attribute block `{#id caption="..."}`
+- `//footnote` (footnote) → Supports Markdown standard `[^id]` notation
+- Figure/table references (`@<img>{id}`, `@<list>{id}`, `@<table>{id}`) → Fully supported
+- Column (`//column`) → Supported with HTML comment or heading notation
 
-#### サポートされていないRe:VIEW固有機能
-- `//cmd`、`//embed`などの特殊なブロック命令
-- インライン命令の一部（`@<kw>`、`@<bou>`、`@<ami>`など）
-- 複雑なテーブル機能（セル結合、カスタム列幅など）
+#### Unsupported Re:VIEW-Specific Features
+- Special block commands like `//cmd`, `//embed`, etc.
+- Some inline commands (`@<kw>`, `@<bou>`, `@<ami>`, etc.)
+- Complex table features (cell merging, custom column widths, etc.)
 
-すべてのRe:VIEW機能にアクセスする必要がある場合は、Re:VIEWフォーマット（`.re`ファイル）を使用してください。
+If you need access to all Re:VIEW features, use Re:VIEW format (`.re` files).
 
-### コラムのネスト
+### Column Nesting
 
-コラムをネストする場合、見出しレベルに注意が必要です。内側のコラムは外側のコラムよりも高い見出しレベル（大きい数字）を使用してください：
+When nesting columns, pay attention to heading levels. Inner columns should use higher heading levels (larger numbers) than outer columns:
 
 ```markdown
-## [column] 外側のコラム
-外側の内容
+## [column] Outer Column
+Outer content
 
-### [column] 内側のコラム
-内側の内容
+### [column] Inner Column
+Inner content
 <!-- /column -->
 
-外側のコラムに戻る
+Back to outer column
 <!-- /column -->
 ```
 
-### HTMLコメントの使用
+### HTML Comment Usage
 
-HTMLコメント`<!-- /column -->`はコラムの終了マーカーとして使用されます。一般的なコメントとして使用する場合は、`/column`と書かないように注意してください：
+HTML comment `<!-- /column -->` is used as a column end marker. When using as a general comment, be careful not to write `/column`:
 
 ```markdown
-<!-- これは通常のコメント（問題なし） -->
-<!-- /column と書くとコラム終了マーカーとして解釈されます -->
+<!-- This is a normal comment (no problem) -->
+<!-- Writing /column will be interpreted as a column end marker -->
 ```
 
-## 使用方法
+## Usage
 
-### コマンドラインツール
+### Command-Line Tools
 
-#### AST経由での変換（推奨）
+#### Conversion via AST (Recommended)
 
-MarkdownファイルをAST経由で各種フォーマットに変換する場合、AST専用のコマンドを使用します：
+When converting Markdown files to various formats via AST, use AST-specific commands:
 
 ```bash
-# MarkdownをJSON形式のASTにダンプ
+# Dump Markdown to JSON-formatted AST
 review-ast-dump chapter.md > chapter.json
 
-# MarkdownをRe:VIEW形式に変換
+# Convert Markdown to Re:VIEW format
 review-ast-dump2re chapter.md > chapter.re
 
-# MarkdownからEPUBを生成（AST経由）
+# Generate EPUB from Markdown (via AST)
 review-ast-epubmaker config.yml
 
-# MarkdownからPDFを生成（AST経由）
+# Generate PDF from Markdown (via AST)
 review-ast-pdfmaker config.yml
 
-# MarkdownからInDesign XMLを生成（AST経由）
+# Generate InDesign XML from Markdown (via AST)
 review-ast-idgxmlmaker config.yml
 ```
 
-#### review-ast-compileの使用
+#### Using review-ast-compile
 
-`review-ast-compile`コマンドでは、Markdownを指定したフォーマットに直接変換できます：
+With the `review-ast-compile` command, you can directly convert Markdown to specified formats:
 
 ```bash
-# MarkdownをJSON形式のASTに変換
+# Convert Markdown to JSON-formatted AST
 review-ast-compile --target=ast chapter.md
 
-# MarkdownをHTMLに変換（AST経由）
+# Convert Markdown to HTML (via AST)
 review-ast-compile --target=html chapter.md
 
-# MarkdownをLaTeXに変換（AST経由）
+# Convert Markdown to LaTeX (via AST)
 review-ast-compile --target=latex chapter.md
 
-# MarkdownをInDesign XMLに変換（AST経由）
+# Convert Markdown to InDesign XML (via AST)
 review-ast-compile --target=idgxml chapter.md
 
-# MarkdownをMarkdownに変換（AST経由、正規化・整形）
+# Convert Markdown to Markdown (via AST, normalization/formatting)
 review-ast-compile --target=markdown chapter.md
 ```
 
-注意: `--target=ast`を指定すると、生成されたAST構造をJSON形式で出力します。これはデバッグやAST構造の確認に便利です。
+Note: Specifying `--target=ast` outputs the generated AST structure in JSON format. This is useful for debugging and checking AST structure.
 
-#### Re:VIEW形式からMarkdown形式への変換
+#### Converting Re:VIEW Format to Markdown Format
 
-Re:VIEWフォーマット（`.re`ファイル）をMarkdown形式に変換することもできます：
+You can also convert Re:VIEW format (`.re` files) to Markdown format:
 
 ```bash
-# Re:VIEWファイルをMarkdownに変換
+# Convert Re:VIEW file to Markdown
 review-ast-compile --target=markdown chapter.re > chapter.md
 ```
 
-この変換により、Re:VIEWで書かれた文書をMarkdown形式で出力できます。MarkdownRendererは以下の形式で出力します：
+This conversion allows you to output documents written in Re:VIEW in Markdown format. MarkdownRenderer outputs in the following formats:
 
-- コードブロック: キャプションは`**Caption**`形式で出力され、その後にフェンスドコードブロックが続きます
-- テーブル: キャプションは`**Caption**`形式で出力され、その後にGFMパイプスタイルのテーブルが続きます
-- 画像: Markdown標準の`![alt](path)`形式で出力されます
-- 脚注: Markdown標準の`[^id]`記法で出力されます
+- Code blocks: Captions are output in `**Caption**` format, followed by fenced code blocks
+- Tables: Captions are output in `**Caption**` format, followed by GFM pipe-style tables
+- Images: Output in Markdown standard `![alt](path)` format
+- Footnotes: Output in Markdown standard `[^id]` notation
 
-#### 従来のreview-compileとの互換性
+#### Compatibility with Traditional review-compile
 
-従来の`review-compile`コマンドも引き続き使用できますが、AST/Rendererアーキテクチャを利用する場合は`review-ast-compile`や各種`review-ast-*maker`コマンドの使用を推奨します：
+The traditional `review-compile` command can still be used, but when utilizing AST/Renderer architecture, we recommend using `review-ast-compile` and various `review-ast-*maker` commands:
 
 ```bash
-# 従来の方式（互換性のため残されています）
+# Traditional method (kept for compatibility)
 review-compile --target=html chapter.md
 review-compile --target=latex chapter.md
 ```
 
-### プロジェクト設定
+### Project Configuration
 
-Markdownを使用するようにプロジェクトを設定：
+Configure project to use Markdown:
 
 ```yaml
 # config.yml
@@ -550,52 +550,52 @@ CHAPS:
   - chapter2.md
 ```
 
-### Re:VIEWプロジェクトとの統合
+### Integration with Re:VIEW Projects
 
-MarkdownファイルとRe:VIEWファイルを同じプロジェクト内で混在させることができます：
+You can mix Markdown and Re:VIEW files in the same project:
 
 ```
 project/
   ├── config.yml
   ├── CATALOG.yml
   └── src/
-      ├── chapter1.re     # Re:VIEWフォーマット
-      ├── chapter2.md     # Markdownフォーマット
-      └── chapter3.re     # Re:VIEWフォーマット
+      ├── chapter1.re     # Re:VIEW format
+      ├── chapter2.md     # Markdown format
+      └── chapter3.re     # Re:VIEW format
 ```
 
-## サンプル
+## Sample
 
-### 完全なドキュメントの例
+### Complete Document Example
 
 ````markdown
-# Rubyの紹介
+# Introduction to Ruby
 
-Rubyはシンプルさと生産性に重点を置いた動的でオープンソースのプログラミング言語です[^intro]。
+Ruby is a dynamic, open source programming language with a focus on simplicity and productivity[^intro].
 
-## インストール
+## Installation
 
-Rubyをインストールするには、次の手順に従います：
+To install Ruby, follow these steps:
 
-1. [Rubyウェブサイト](https://www.ruby-lang.org/ja/)にアクセス
-2. プラットフォームに応じたインストーラーをダウンロード
-3. インストーラーを実行
+1. Visit the [Ruby website](https://www.ruby-lang.org/en/)
+2. Download the installer for your platform
+3. Run the installer
 
-### [column] バージョン管理
+### [column] Version Management
 
-Rubyのインストールを管理するには、**rbenv**や**RVM**のようなバージョンマネージャーの使用を推奨します。
+For managing Ruby installations, we recommend using version managers like **rbenv** or **RVM**.
 
 <!-- /column -->
 
-## 基本構文
+## Basic Syntax
 
-シンプルなRubyプログラムの例をリスト@<list>{lst-hello}に示します：
+A simple Ruby program example is shown in Listing @<list>{lst-hello}:
 
-```ruby {#lst-hello caption="RubyでHello World"}
-# RubyでHello World
+```ruby {#lst-hello caption="Hello World in Ruby"}
+# Hello World in Ruby
 puts "Hello, World!"
 
-# メソッドの定義
+# Define a method
 def greet(name)
   "Hello, #{name}!"
 end
@@ -603,267 +603,267 @@ end
 puts greet("Ruby")
 ```
 
-### 変数
+### Variables
 
-Rubyにはいくつかの変数タイプがあります（表@<table>{tbl-vars}参照）：
+Ruby has several variable types (see Table @<table>{tbl-vars}):
 
-| タイプ | プレフィックス | 例 |
+| Type | Prefix | Example |
 |------|--------|---------|
-| ローカル | なし | `variable` |
-| インスタンス | `@` | `@variable` |
-| クラス | `@@` | `@@variable` |
-| グローバル | `$` | `$variable` |
-{#tbl-vars caption="Rubyの変数タイプ"}
+| Local | none | `variable` |
+| Instance | `@` | `@variable` |
+| Class | `@@` | `@@variable` |
+| Global | `$` | `$variable` |
+{#tbl-vars caption="Ruby variable types"}
 
-## プロジェクト構造
+## Project Structure
 
-典型的なRubyプロジェクトの構造を図@<img>{fig-structure}に示します：
+A typical Ruby project structure is shown in Figure @<img>{fig-structure}:
 
-![プロジェクト構造図](images/ruby-structure.png)
-{#fig-structure caption="Rubyプロジェクトの構造"}
+![Project structure diagram](images/ruby-structure.png)
+{#fig-structure caption="Ruby project structure"}
 
-## まとめ
+## Summary
 
-> Rubyはプログラマーを幸せにするために設計されています。
+> Ruby is designed to make programmers happy.
 >
-> -- まつもとゆきひろ
+> -- Yukihiro Matsumoto
 
-詳細については、~~公式ドキュメント~~ [Ruby Docs](https://docs.ruby-lang.org/)をご覧ください[^docs]。
+For more information, see ~~official documentation~~ [Ruby Docs](https://docs.ruby-lang.org/)[^docs].
 
 ---
 
-Happy coding! ![Rubyロゴ](ruby-logo.png)
+Happy coding! ![Ruby logo](ruby-logo.png)
 
-[^intro]: Rubyは1995年にまつもとゆきひろ氏によって公開されました。
+[^intro]: Ruby was released by Yukihiro Matsumoto in 1995.
 
-[^docs]: 公式ドキュメントには豊富なチュートリアルとAPIリファレンスが含まれています。
+[^docs]: The official documentation includes rich tutorials and API references.
 ````
 
-## 変換の詳細
+## Conversion Details
 
-### ASTノードマッピング
+### AST Node Mapping
 
-| Markdown要素 | Re:VIEW ASTノード |
+| Markdown Element | Re:VIEW AST Node |
 |------------------|------------------|
-| 段落 | `ParagraphNode` |
-| 見出し | `HeadlineNode` |
-| 太字 | `InlineNode(:b)` |
-| イタリック | `InlineNode(:i)` |
-| コード | `InlineNode(:code)` |
-| リンク | `InlineNode(:href)` |
-| 取り消し線 | `InlineNode(:del)` |
-| 箇条書きリスト | `ListNode(:ul)` |
-| 番号付きリスト | `ListNode(:ol)` |
-| リスト項目 | `ListItemNode` |
-| コードブロック | `CodeBlockNode` |
-| コードブロック（属性付き） | `CodeBlockNode(:list)` |
-| 引用 | `BlockNode(:quote)` |
-| テーブル | `TableNode` |
-| テーブル（属性付き） | `TableNode`（ID・キャプション付き） |
-| テーブル行 | `TableRowNode` |
-| テーブルセル | `TableCellNode` |
-| 単独画像 | `ImageNode` |
-| 単独画像（属性付き） | `ImageNode`（ID・キャプション付き） |
-| インライン画像 | `InlineNode(:icon)` |
-| 水平線 | `BlockNode(:hr)` |
-| HTMLブロック | `EmbedNode(:html)` |
-| コラム（HTMLコメント/見出し） | `ColumnNode` |
-| コードブロック行 | `CodeLineNode` |
-| 脚注定義 `[^id]: 内容` | `FootnoteNode` |
-| 脚注参照 `[^id]` | `InlineNode(:fn)` + `ReferenceNode` |
-| 図表参照 `@<type>{id}` | `InlineNode(type)` + `ReferenceNode` |
-| 定義リスト（出力のみ） | `DefinitionListNode` |
-| 定義項目（出力のみ） | `DefinitionItemNode` |
+| Paragraph | `ParagraphNode` |
+| Heading | `HeadlineNode` |
+| Bold | `InlineNode(:b)` |
+| Italic | `InlineNode(:i)` |
+| Code | `InlineNode(:code)` |
+| Link | `InlineNode(:href)` |
+| Strikethrough | `InlineNode(:del)` |
+| Bulleted list | `ListNode(:ul)` |
+| Numbered list | `ListNode(:ol)` |
+| List item | `ListItemNode` |
+| Code block | `CodeBlockNode` |
+| Code block (with attributes) | `CodeBlockNode(:list)` |
+| Blockquote | `BlockNode(:quote)` |
+| Table | `TableNode` |
+| Table (with attributes) | `TableNode` (with ID/caption) |
+| Table row | `TableRowNode` |
+| Table cell | `TableCellNode` |
+| Standalone image | `ImageNode` |
+| Standalone image (with attributes) | `ImageNode` (with ID/caption) |
+| Inline image | `InlineNode(:icon)` |
+| Horizontal rule | `BlockNode(:hr)` |
+| HTML block | `EmbedNode(:html)` |
+| Column (HTML comment/heading) | `ColumnNode` |
+| Code block line | `CodeLineNode` |
+| Footnote definition `[^id]: content` | `FootnoteNode` |
+| Footnote reference `[^id]` | `InlineNode(:fn)` + `ReferenceNode` |
+| Figure/table reference `@<type>{id}` | `InlineNode(type)` + `ReferenceNode` |
+| Definition list (output only) | `DefinitionListNode` |
+| Definition item (output only) | `DefinitionItemNode` |
 
-### 位置情報の追跡
+### Location Information Tracking
 
-すべてのASTノードには以下を追跡する位置情報（`SnapshotLocation`）が含まれます：
-- ソースファイル名
-- 行番号
+All AST nodes include location information (`SnapshotLocation`) that tracks:
+- Source file name
+- Line number
 
-これにより正確なエラー報告とデバッグが可能になります。
+This enables accurate error reporting and debugging.
 
-### 実装アーキテクチャ
+### Implementation Architecture
 
-Markdownサポートは以下の3つの主要コンポーネントから構成されています：
+Markdown support consists of three main components:
 
 #### 1. MarkdownCompiler
 
-`MarkdownCompiler`は、Markdownドキュメント全体をRe:VIEW ASTにコンパイルする責務を持ちます。
+`MarkdownCompiler` is responsible for compiling entire Markdown documents to Re:VIEW AST.
 
-主な機能:
-- Marklyパーサーの初期化と設定
-- GFM拡張機能の有効化（strikethrough, table, autolink）
-- 脚注サポートの有効化（Markly::FOOTNOTES）
-- Re:VIEW inline notation保護（`@<xxx>{id}`記法の保護）
-- MarkdownAdapterとの連携
-- AST生成の統括
+Main features:
+- Initializing and configuring Markly parser
+- Enabling GFM extensions (strikethrough, table, autolink)
+- Enabling footnote support (Markly::FOOTNOTES)
+- Re:VIEW inline notation protection (`@<xxx>{id}` notation protection)
+- Coordination with MarkdownAdapter
+- Overseeing AST generation
 
-Re:VIEW記法の保護:
+Re:VIEW notation protection:
 
-MarkdownCompilerは、Marklyによる解析の前にRe:VIEW inline notation（`@<xxx>{id}`）を保護します。Marklyは`@<xxx>`をHTMLタグとして誤って解釈するため、`@<`をプレースホルダ`@@REVIEW_AT_LT@@`に置換してからパースし、MarkdownAdapterで元に戻します。
+MarkdownCompiler protects Re:VIEW inline notation (`@<xxx>{id}`) before parsing by Markly. Since Markly incorrectly interprets `@<xxx>` as HTML tags, `@<` is replaced with placeholder `@@REVIEW_AT_LT@@` before parsing and restored by MarkdownAdapter.
 
 #### 2. MarkdownAdapter
 
-`MarkdownAdapter`は、Markly ASTをRe:VIEW ASTに変換するアダプター層です。
+`MarkdownAdapter` is the adapter layer that converts Markly AST to Re:VIEW AST.
 
 ##### ContextStack
 
-MarkdownAdapterは内部に`ContextStack`クラスを持ち、AST構築時の階層的なコンテキストを管理します。これにより、以下のような状態管理が統一され、例外安全性が保証されます：
+MarkdownAdapter has an internal `ContextStack` class that manages hierarchical context during AST construction. This unifies state management like the following and guarantees exception safety:
 
-- リスト、テーブル、コラムなどのネストされた構造の管理
-- `with_context`メソッドによる例外安全なコンテキスト切り替え（`ensure`ブロックで自動クリーンアップ）
-- `find_all`、`any?`メソッドによるスタック内の特定ノード検索
-- コンテキストの検証機能（`validate!`）によるデバッグ支援
+- Managing nested structures like lists, tables, columns
+- Exception-safe context switching with `with_context` method (automatic cleanup in `ensure` block)
+- Searching for specific nodes in stack with `find_all`, `any?` methods
+- Debug support with context validation (`validate!`)
 
-主な機能:
-- Markly ASTの走査と変換
-- 各Markdown要素の対応するRe:VIEW ASTノードへの変換
-- ContextStackによる統一された階層的コンテキスト管理
-- インライン要素の再帰的処理（InlineTokenizerを使用）
-- 属性ブロックの解析とID・キャプションの抽出
-- Re:VIEW inline notation（`@<xxx>{id}`）の処理
+Main features:
+- Traversing and converting Markly AST
+- Converting each Markdown element to corresponding Re:VIEW AST node
+- Unified hierarchical context management with ContextStack
+- Recursive processing of inline elements (using InlineTokenizer)
+- Parsing attribute blocks and extracting IDs/captions
+- Processing Re:VIEW inline notation (`@<xxx>{id}`)
 
-特徴:
-- ContextStackによる例外安全な状態管理: すべてのコンテキスト（リスト、テーブル、コラム等）を単一のContextStackで管理し、`ensure`ブロックによる自動クリーンアップで例外安全性を保証
-- コラムの自動クローズ: 同じレベル以上の見出しでコラムを自動的にクローズ。コラムレベルはColumnNode.level属性に保存され、ContextStackから取得可能
-- スタンドアローン画像の検出: 段落内に単独で存在する画像（属性ブロック付き含む）をブロックレベルの`ImageNode`に変換。`softbreak`/`linebreak`ノードを無視することで、画像と属性ブロックの間に改行があっても正しく認識
-- 属性ブロックパーサー: `{#id caption="..."}`形式の属性を解析してIDとキャプションを抽出
-- Markly脚注サポート: Marklyのネイティブ脚注機能（Markly::FOOTNOTES）を使用して`[^id]`と`[^id]: 内容`を処理
-- InlineTokenizerによるinline notation処理: Re:VIEWのinline notation（`@<img>{id}`等）をInlineTokenizerで解析してInlineNodeとReferenceNodeに変換
+Features:
+- Exception-safe state management with ContextStack: All contexts (lists, tables, columns, etc.) are managed in a single ContextStack, guaranteeing exception safety with automatic cleanup in `ensure` blocks
+- Auto column close: Automatically closes columns with same level or higher headings. Column level is stored in ColumnNode.level attribute and can be retrieved from ContextStack
+- Standalone image detection: Converts images that exist alone in paragraphs (including those with attribute blocks) to block-level `ImageNode`. Correctly recognizes even when there's a line break between image and attribute block by ignoring `softbreak`/`linebreak` nodes
+- Attribute block parser: Parses `{#id caption="..."}` format attributes to extract ID and caption
+- Markly footnote support: Uses Markly's native footnote feature (Markly::FOOTNOTES) to process `[^id]` and `[^id]: content`
+- Inline notation processing with InlineTokenizer: Parses Re:VIEW inline notation (`@<img>{id}`, etc.) with InlineTokenizer and converts to InlineNode and ReferenceNode
 
-#### 3. MarkdownHtmlNode（内部使用）
+#### 3. MarkdownHtmlNode (Internal Use)
 
-`MarkdownHtmlNode`は、Markdown内のHTML要素を解析し、特別な意味を持つHTMLコメント（コラムマーカーなど）を識別するための補助ノードです。
+`MarkdownHtmlNode` is an auxiliary node for parsing HTML elements in Markdown and identifying HTML comments with special meaning (column markers, etc.).
 
-主な機能:
-- HTMLコメントの解析
-- コラム終了マーカー（`<!-- /column -->`）の検出
+Main features:
+- Parsing HTML comments
+- Detecting column end markers (`<!-- /column -->`)
 
-特徴:
-- このノードは最終的なASTには含まれず、変換処理中にのみ使用されます
-- コラム終了マーカー（`<!-- /column -->`）を検出すると`end_column`メソッドを呼び出し
-- 一般的なHTMLブロックは`EmbedNode(:html)`として保持されます
+Features:
+- This node is not included in the final AST, used only during conversion processing
+- Calls `end_column` method when column end marker (`<!-- /column -->`) is detected
+- General HTML blocks are preserved as `EmbedNode(:html)`
 
 #### 4. MarkdownRenderer
 
-`MarkdownRenderer`は、Re:VIEW ASTをMarkdown形式で出力するレンダラーです。
+`MarkdownRenderer` is a renderer that outputs Re:VIEW AST in Markdown format.
 
-主な機能:
-- Re:VIEW ASTの走査とMarkdown形式への変換
-- GFM互換のMarkdown記法での出力
-- キャプション付き要素の適切な形式での出力
+Main features:
+- Traversing Re:VIEW AST and converting to Markdown format
+- Output in GFM-compatible Markdown notation
+- Output of captioned elements in appropriate format
 
-出力形式:
-- コードブロックのキャプション: `**Caption**`形式で出力し、その後にフェンスドコードブロックを出力
-- テーブルのキャプション: `**Caption**`形式で出力し、その後にGFMパイプスタイルのテーブルを出力
-- 画像: Markdown標準の`![alt](path)`形式で出力
-- 脚注参照: `[^id]`形式で出力
-- 脚注定義: `[^id]: 内容`形式で出力
+Output formats:
+- Code block captions: Output in `**Caption**` format followed by fenced code block
+- Table captions: Output in `**Caption**` format followed by GFM pipe-style table
+- Images: Output in Markdown standard `![alt](path)` format
+- Footnote references: Output in `[^id]` format
+- Footnote definitions: Output in `[^id]: content` format
 
-特徴:
-- 純粋なMarkdown形式での出力を優先
-- GFM（GitHub Flavored Markdown）との互換性を重視
-- 未解決の参照でもエラーにならず、ref_idをそのまま使用
+Features:
+- Prioritizes pure Markdown format output
+- Emphasizes compatibility with GFM (GitHub Flavored Markdown)
+- Does not error on unresolved references, uses ref_id as is
 
-### 変換処理の流れ
+### Conversion Process Flow
 
-1. 前処理: MarkdownCompilerがRe:VIEW inline notation（`@<xxx>{id}`）を保護
-   - `@<` → `@@REVIEW_AT_LT@@` に置換してMarklyの誤解釈を防止
+1. Preprocessing: MarkdownCompiler protects Re:VIEW inline notation (`@<xxx>{id}`)
+   - Replace `@<` → `@@REVIEW_AT_LT@@` to prevent Markly misinterpretation
 
-2. 解析フェーズ: MarklyがMarkdownをパースしてMarkly AST（CommonMark準拠）を生成
-   - GFM拡張（strikethrough, table, autolink）を有効化
-   - 脚注サポート（Markly::FOOTNOTES）を有効化
+2. Parsing phase: Markly parses Markdown and generates Markly AST (CommonMark compliant)
+   - Enable GFM extensions (strikethrough, table, autolink)
+   - Enable footnote support (Markly::FOOTNOTES)
 
-3. 変換フェーズ: MarkdownAdapterがMarkly ASTを走査し、各要素をRe:VIEW ASTノードに変換
-   - ContextStackで階層的なコンテキスト管理
-   - 属性ブロック `{#id caption="..."}` を解析してIDとキャプションを抽出
-   - Re:VIEW inline notationプレースホルダを元に戻してInlineTokenizerで処理
-   - Marklyの脚注ノード（`:footnote_reference`、`:footnote_definition`）をFootnoteNodeとInlineNode(:fn)に変換
+3. Conversion phase: MarkdownAdapter traverses Markly AST and converts each element to Re:VIEW AST node
+   - Hierarchical context management with ContextStack
+   - Parse attribute blocks `{#id caption="..."}` to extract ID and caption
+   - Restore Re:VIEW inline notation placeholder and process with InlineTokenizer
+   - Convert Markly footnote nodes (`:footnote_reference`, `:footnote_definition`) to FootnoteNode and InlineNode(:fn)
 
-4. 後処理フェーズ: コラムやリストなどの入れ子構造を適切に閉じる
-   - ContextStackの`ensure`ブロックによる自動クリーンアップ
-   - 未閉じのコラムを検出してエラー報告
+4. Post-processing phase: Properly close nested structures like columns and lists
+   - Automatic cleanup with ContextStack's `ensure` block
+   - Detect unclosed columns and report errors
 
 ```ruby
-# 変換の流れ
-markdown_text → 前処理（@< のプレースホルダ化）
+# Conversion flow
+markdown_text → Preprocessing (@< placeholderization)
                          ↓
-        Markly.parse（GFM拡張 + 脚注サポート）
+        Markly.parse (GFM extensions + footnote support)
                          ↓
                    Markly AST
                          ↓
               MarkdownAdapter.convert
-        （ContextStack管理、属性ブロック解析、
-         InlineTokenizer処理、脚注変換）
+        (ContextStack management, attribute block parsing,
+         InlineTokenizer processing, footnote conversion)
                          ↓
                   Re:VIEW AST
 ```
 
-### コラム処理の詳細
+### Column Processing Details
 
-コラムは見出し構文で開始し、HTMLコメントまたは自動クローズで終了します：
+Columns start with heading syntax and end with HTML comments or auto-close:
 
-#### コラム開始（見出し構文）
-- `process_heading`メソッドで検出
-- 見出しテキストから`[column]`マーカーを抽出
-- 見出しレベルをColumnNode.level属性に保存してContextStackにpush
+#### Column Start (Heading Syntax)
+- Detected in `process_heading` method
+- Extract `[column]` marker from heading text
+- Save heading level to ColumnNode.level attribute and push to ContextStack
 
-#### コラム終了（2つの方法）
+#### Column End (Two Methods)
 
-1. HTMLコメント構文: `<!-- /column -->`
-   - `process_html_block`メソッドで検出
-   - `MarkdownHtmlNode`を使用してコラム終了マーカーを識別
-   - `end_column`メソッドを呼び出してContextStackからpop
+1. HTML comment syntax: `<!-- /column -->`
+   - Detected in `process_html_block` method
+   - Use `MarkdownHtmlNode` to identify column end marker
+   - Call `end_column` method to pop from ContextStack
 
-2. 自動クローズ: 同じ/より高いレベルの見出し
-   - `auto_close_columns_for_heading`メソッドがContextStackから現在のColumnNodeを取得し、level属性を確認
-   - 新しい見出しレベルが現在のコラムレベル以下の場合、コラムを自動クローズ
-   - ドキュメント終了時も自動的にクローズ（`close_all_columns`）
+2. Auto-close: Same/higher level heading
+   - `auto_close_columns_for_heading` method retrieves current ColumnNode from ContextStack and checks level attribute
+   - If new heading level is less than or equal to current column level, auto-close column
+   - Also automatically closes at document end (`close_all_columns`)
 
-コラムの階層はContextStackで管理され、level属性でクローズ判定が行われます。
+Column hierarchy is managed by ContextStack, and close determination is made by level attribute.
 
-## 高度な機能
+## Advanced Features
 
-### カスタム処理
+### Custom Processing
 
-`MarkdownAdapter` クラスを拡張してカスタム処理を追加できます：
+You can extend the `MarkdownAdapter` class to add custom processing:
 
 ```ruby
 class CustomMarkdownAdapter < ReVIEW::AST::MarkdownAdapter
-  # メソッドをオーバーライドして動作をカスタマイズ
+  # Override methods to customize behavior
 end
 ```
 
-### Rendererとの統合
+### Integration with Renderers
 
-Markdownから生成されたASTは、すべてのRe:VIEW AST Rendererで動作します：
-- HTMLRenderer: HTML形式で出力
-- LaTeXRenderer: LaTeX形式で出力（PDF生成用）
-- IDGXMLRenderer: InDesign XML形式で出力
-- MarkdownRenderer: Markdown形式で出力（正規化・整形）
-- その他のカスタムRenderer
+AST generated from Markdown works with all Re:VIEW AST Renderers:
+- HTMLRenderer: Output in HTML format
+- LaTeXRenderer: Output in LaTeX format (for PDF generation)
+- IDGXMLRenderer: Output in InDesign XML format
+- MarkdownRenderer: Output in Markdown format (normalization/formatting)
+- Other custom Renderers
 
-AST構造を経由することで、Markdownで書かれた文書も従来のRe:VIEWフォーマット（`.re`ファイル）と同じように処理され、同じ出力品質を実現できます。
+By going through AST structure, documents written in Markdown are processed the same as traditional Re:VIEW format (`.re` files) and achieve the same output quality.
 
-#### MarkdownRendererの出力例
+#### MarkdownRenderer Output Example
 
-Re:VIEWフォーマットをMarkdown形式に変換する場合、以下のような出力になります：
+When converting Re:VIEW format to Markdown format, the output looks like this:
 
-Re:VIEW入力例:
+Re:VIEW input example:
 ````review
-= 章タイトル
+= Chapter Title
 
-//list[sample][サンプルコード][ruby]{
+//list[sample][Sample code][ruby]{
 def hello
   puts "Hello, World!"
 end
 //}
 
-リスト@<list>{sample}を参照してください。
+See Listing @<list>{sample}.
 
-//table[data][データ表]{
-名前	年齢
+//table[data][Data table]{
+Name	Age
 -----
 Alice	25
 Bob	30
@@ -875,11 +875,11 @@ Bob	30
 	Representational State Transfer
 ````
 
-MarkdownRenderer出力:
+MarkdownRenderer output:
 `````markdown
-# 章タイトル
+# Chapter Title
 
-**サンプルコード**
+**Sample code**
 
 ```ruby
 def hello
@@ -887,11 +887,11 @@ def hello
 end
 ```
 
-リスト@<list>{sample}を参照してください。
+See Listing @<list>{sample}.
 
-**データ表**
+**Data table**
 
-| 名前 | 年齢 |
+| Name | Age |
 | :-- | :-- |
 | Alice | 25 |
 | Bob | 30 |
@@ -902,54 +902,54 @@ REST: Representational State Transfer
 
 `````
 
-注意:
-- キャプションは`**Caption**`形式で出力され、コードブロックやテーブルの直前に配置されます
-- 定義リストの用語は太字で出力されますが、用語内に既に強調が含まれている場合（例：`@<b>{REST}`）は、二重の太字マークアップを避けるため外側の太字は省略されます
-- これにより、人間が読みやすく、かつGFM互換のMarkdownが生成されます
+Notes:
+- Captions are output in `**Caption**` format and placed immediately before code blocks or tables
+- Definition list terms are output in bold, but if the term already contains emphasis (e.g., `@<b>{REST}`), outer bold is omitted to avoid double bold markup
+- This generates human-readable, GFM-compatible Markdown
 
-## テスト
+## Testing
 
-Markdownサポートの包括的なテストが用意されています：
+Comprehensive tests for Markdown support are provided:
 
-### テストファイル
+### Test Files
 
-- `test/ast/test_markdown_adapter.rb`: MarkdownAdapterのテスト
-- `test/ast/test_markdown_compiler.rb`: MarkdownCompilerのテスト
-- `test/ast/test_markdown_renderer.rb`: MarkdownRendererのテスト
-- `test/ast/test_markdown_renderer_fixtures.rb`: フィクスチャベースのMarkdownRendererテスト
-- `test/ast/test_renderer_builder_comparison.rb`: RendererとBuilderの出力比較テスト
+- `test/ast/test_markdown_adapter.rb`: MarkdownAdapter tests
+- `test/ast/test_markdown_compiler.rb`: MarkdownCompiler tests
+- `test/ast/test_markdown_renderer.rb`: MarkdownRenderer tests
+- `test/ast/test_markdown_renderer_fixtures.rb`: Fixture-based MarkdownRenderer tests
+- `test/ast/test_renderer_builder_comparison.rb`: Renderer and Builder output comparison tests
 
-### テストの実行
+### Running Tests
 
 ```bash
-# すべてのテストを実行
+# Run all tests
 bundle exec rake test
 
-# Markdown関連のテストのみ実行
+# Run only Markdown-related tests
 ruby test/ast/test_markdown_adapter.rb
 ruby test/ast/test_markdown_compiler.rb
 ruby test/ast/test_markdown_renderer.rb
 
-# フィクスチャテストの実行
+# Run fixture tests
 ruby test/ast/test_markdown_renderer_fixtures.rb
 ```
 
-### フィクスチャの再生成
+### Regenerating Fixtures
 
-MarkdownRendererの出力形式を変更した場合、フィクスチャを再生成する必要があります：
+If you change MarkdownRenderer output format, you need to regenerate fixtures:
 
 ```bash
 bundle exec ruby test/fixtures/generate_markdown_fixtures.rb
 ```
 
-これにより、`test/fixtures/markdown/`ディレクトリ内のMarkdownフィクスチャファイルが最新の出力形式で再生成されます。
+This regenerates Markdown fixture files in the `test/fixtures/markdown/` directory with the latest output format.
 
-## 参考資料
+## References
 
-- [CommonMark仕様](https://commonmark.org/)
-- [GitHub Flavored Markdown仕様](https://github.github.com/gfm/)
+- [CommonMark Specification](https://commonmark.org/)
+- [GitHub Flavored Markdown Specification](https://github.github.com/gfm/)
 - [Markly Ruby Gem](https://github.com/gjtorikian/markly)
-- [Re:VIEWフォーマットドキュメント](format.md)
-- [AST概要](ast.md)
-- [ASTアーキテクチャ詳細](ast_architecture.md)
-- [ASTノード詳細](ast_node.md)
+- [Re:VIEW Format Documentation](format.md)
+- [AST Overview](ast.md)
+- [AST Architecture Details](ast_architecture.md)
+- [AST Node Details](ast_node.md)

@@ -1,247 +1,228 @@
-# Re:VIEW AST / Renderer アーキテクチャ概要
+# Re:VIEW AST / Renderer Architecture Overview
 
-この文書は、Re:VIEW の最新実装（`lib/review/ast` および `lib/review/renderer` 配下のソース、ならびに `test/ast` 配下のテスト）に基づき、AST と Renderer の役割分担と処理フローについて整理したものです。
+This document provides an organized view of the roles and processing flow of AST and Renderer, based on the latest implementation of Re:VIEW (sources under `lib/review/ast` and `lib/review/renderer`, as well as tests under `test/ast`).
 
-## パイプライン全体像
+## Overall Pipeline
 
-1. 各章（`ReVIEW::Book::Chapter`）の本文を `AST::Compiler` が読み取り、`DocumentNode` をルートに持つ AST を構築します（`lib/review/ast/compiler.rb`）。
-2. AST 生成後に参照解決 (`ReferenceResolver`) と各種後処理（`TsizeProcessor` / `FirstLineNumProcessor` / `NoindentProcessor` / `OlnumProcessor` / `ListStructureNormalizer` / `ListItemNumberingProcessor` / `AutoIdProcessor`）を適用し、構造とメタ情報を整備します。
-3. Renderer は 構築された AST を Visitor パターンで走査し、HTML・LaTeX・IDGXML などのフォーマット固有の出力へ変換します（`lib/review/renderer`）。
-4. 既存の `EPUBMaker` / `PDFMaker` / `IDGXMLMaker` などを継承する `AST::Command::EpubMaker` / `AST::Command::PdfMaker` / `AST::Command::IdgxmlMaker` が Compiler と Renderer からなる AST 版パイプラインを作ります。
+1. `AST::Compiler` reads the body of each chapter (`ReVIEW::Book::Chapter`) and builds an AST with `DocumentNode` as the root (`lib/review/ast/compiler.rb`).
+2. After AST generation, reference resolution (`ReferenceResolver`) and various post-processors (`TsizeProcessor` / `FirstLineNumProcessor` / `NoindentProcessor` / `OlnumProcessor` / `ListStructureNormalizer` / `ListItemNumberingProcessor` / `AutoIdProcessor`) are applied to organize structure and metadata.
+3. Renderers traverse the built AST using the Visitor pattern and convert it to format-specific output such as HTML, LaTeX, IDGXML, etc. (`lib/review/renderer`).
+4. `AST::Command::EpubMaker` / `AST::Command::PdfMaker` / `AST::Command::IdgxmlMaker`, which inherit from existing `EPUBMaker` / `PDFMaker` / `IDGXMLMaker`, create AST-based pipelines consisting of Compiler and Renderer.
 
-## `AST::Compiler` の詳細
+## Details of `AST::Compiler`
 
-### 主な責務
-- Re:VIEW 記法（`.re`）または Markdown（`.md`）のソースを逐次読み込み、要素ごとに AST ノードを構築する (`compile_to_ast`, `build_ast_from_chapter`)。
-  - `.re`ファイル: `AST::Compiler`が直接解析してASTを構築
-  - `.md`ファイル: `MarkdownCompiler`がMarkly経由でASTを構築（[Markdownサポート](#markdown-サポート)セクション参照）
-- インライン記法は `InlineProcessor`、ブロック系コマンドは `BlockProcessor`、箇条書きは `ListProcessor` に委譲して組み立てる。
-- 行番号などの位置情報を保持した `SnapshotLocation` を各ノードに付与し、エラー報告やレンダリング時に利用可能にする。
-- 参照解決・後処理を含むパイプラインを統括し、検出したエラーを集約して `CompileError` として通知する。
+### Main Responsibilities
+- Sequentially reads Re:VIEW notation (`.re`) or Markdown (`.md`) source and builds AST nodes for each element (`compile_to_ast`, `build_ast_from_chapter`).
+  - `.re` files: `AST::Compiler` directly parses and builds AST
+  - `.md` files: `MarkdownCompiler` builds AST via Markly (see [Markdown Support](#markdown-support) section)
+- Delegates inline notation to `InlineProcessor`, block commands to `BlockProcessor`, and lists to `ListProcessor` for assembly.
+- Attaches `SnapshotLocation` containing position information such as line numbers to each node, making it available for error reporting and rendering.
+- Oversees the pipeline including reference resolution and post-processing, aggregating detected errors and notifying them as `CompileError`.
 
-### 入力走査とノード生成
+### Input Scanning and Node Generation
 
-#### Re:VIEWフォーマット（`.re`ファイル）
-- `build_ast_from_chapter` は `LineInput` を用いて 1 行ずつ解析し、見出し・段落・ブロックコマンド・リストなどを判定します（`lib/review/ast/compiler.rb` 内の `case` 分岐）。
-- 見出し (`compile_headline_to_ast`) ではレベル・タグ・ラベル・キャプションを解析し、`HeadlineNode` に格納します。
-- 段落 (`compile_paragraph_to_ast`) は空行で区切り、インライン要素を `InlineProcessor.parse_inline_elements` に渡して `ParagraphNode` の子として生成します。
-- ブロックコマンド (`compile_block_command_to_ast`) は `BlockProcessor` が `BlockNode`・`CodeBlockNode`・`TableNode` など適切なノードを返します。
-  - `BlockData`（`lib/review/ast/block_data.rb`）: `Data.define`を使用したイミュータブルなデータ構造で、ブロックコマンドの情報（名前・引数・行・ネストされたブロック・位置情報）をカプセル化し、IO読み取りとブロック処理の責務を分離します。
-  - `BlockContext` と `BlockReader`（`lib/review/ast/compiler/`）はブロックコマンドの解析と読み込みを担当します。
-- リスト系 (`compile_ul_to_ast` / `compile_ol_to_ast` / `compile_dl_to_ast`) は `ListProcessor` を通じて解析・組み立てが行われます。
+#### Re:VIEW Format (`.re` files)
+- `build_ast_from_chapter` uses `LineInput` to parse line by line, determining headings, paragraphs, block commands, lists, etc. (`case` branches in `lib/review/ast/compiler.rb`).
+- Headings (`compile_headline_to_ast`) parse level, tag, label, and caption, storing them in `HeadlineNode`.
+- Paragraphs (`compile_paragraph_to_ast`) are delimited by blank lines, passing inline elements to `InlineProcessor.parse_inline_elements` to generate children of `ParagraphNode`.
+- Block commands (`compile_block_command_to_ast`) use `BlockProcessor` to return appropriate nodes such as `BlockNode`, `CodeBlockNode`, `TableNode`, etc.
+  - `BlockData` (`lib/review/ast/block_data.rb`): An immutable data structure using `Data.define` that encapsulates block command information (name, arguments, lines, nested blocks, location info), separating IO reading from block processing responsibilities.
+  - `BlockContext` and `BlockReader` (`lib/review/ast/compiler/`) handle parsing and reading of block commands.
+- List types (`compile_ul_to_ast` / `compile_ol_to_ast` / `compile_dl_to_ast`) are parsed and assembled through `ListProcessor`.
 
-#### Markdownフォーマット（`.md`ファイル）
-- `MarkdownCompiler`が`Markly.parse`でMarkdownをCommonMark準拠のMarkly ASTに変換します（`lib/review/ast/markdown_compiler.rb`）。
-- `MarkdownAdapter`がMarkly ASTを走査し、各要素をRe:VIEW ASTノードに変換します（`lib/review/ast/markdown_adapter.rb`）。
-  - 見出し → `HeadlineNode`
-  - 段落 → `ParagraphNode`
-  - コードブロック → `CodeBlockNode` + `CodeLineNode`
-  - リスト → `ListNode` + `ListItemNode`
-  - テーブル → `TableNode` + `TableRowNode` + `TableCellNode`
-  - インライン要素（太字、イタリック、コード、リンクなど）→ `InlineNode` + `TextNode`
-- コラムマーカーは`MarkdownHtmlNode`を用いて検出され、`ColumnNode`に変換されます。
-- 変換後のASTは`.re`ファイルと同じ後処理パイプライン（参照解決など）を通ります。
+#### Markdown Format (`.md` files)
+- `MarkdownCompiler` uses `Markly.parse` to convert Markdown to a CommonMark-compliant Markly AST (`lib/review/ast/markdown_compiler.rb`).
+- `MarkdownAdapter` traverses the Markly AST and converts each element to Re:VIEW AST nodes (`lib/review/ast/markdown_adapter.rb`).
+  - Headings → `HeadlineNode`
+  - Paragraphs → `ParagraphNode`
+  - Code blocks → `CodeBlockNode` + `CodeLineNode`
+  - Lists → `ListNode` + `ListItemNode`
+  - Tables → `TableNode` + `TableRowNode` + `TableCellNode`
+  - Inline elements (bold, italic, code, links, etc.) → `InlineNode` + `TextNode`
+- Column markers are detected using `MarkdownHtmlNode` and converted to `ColumnNode`.
+- The converted AST goes through the same post-processing pipeline (reference resolution, etc.) as `.re` files.
 
-### 参照解決と後処理
-- `ReferenceResolver` は AST を Visitor として巡回し、`InlineNode` 配下の `ReferenceNode` を該当要素の情報に差し替えます（`lib/review/ast/reference_resolver.rb`）。解決結果は `ResolvedData` として保持され、Renderer はそれを整形して出力します。
-- 後処理パイプラインは次の順序で適用されます（`compile_to_ast` 参照）:
-  1. `TsizeProcessor`: `//tsize` 情報を事前に反映。
-  2. `FirstLineNumProcessor`: 行番号付きコードブロックの初期値を設定。
-  3. `NoindentProcessor` / `OlnumProcessor`: `//noindent`, `//olnum` の命令を段落やリストに属性として付与。
-  4. `ListStructureNormalizer`: `//beginchild` / `//endchild` を含むリスト構造を整形し、不要なブロックを除去。
-  5. `ListItemNumberingProcessor`: 番号付きリストの `item_number` を確定。
-  6. `AutoIdProcessor`: 非表示見出しやコラムに自動 ID・通し番号を付与。
+### Reference Resolution and Post-processing
+- `ReferenceResolver` traverses the AST as a Visitor and replaces `ReferenceNode` under `InlineNode` with information from corresponding elements (`lib/review/ast/reference_resolver.rb`). Resolution results are stored as `ResolvedData`, which Renderers format for output.
+- The post-processing pipeline is applied in the following order (see `compile_to_ast`):
+  1. `TsizeProcessor`: Pre-applies `//tsize` information.
+  2. `FirstLineNumProcessor`: Sets initial values for line-numbered code blocks.
+  3. `NoindentProcessor` / `OlnumProcessor`: Attaches `//noindent`, `//olnum` directives as attributes to paragraphs and lists.
+  4. `ListStructureNormalizer`: Formats list structures containing `//beginchild` / `//endchild` and removes unnecessary blocks.
+  5. `ListItemNumberingProcessor`: Determines `item_number` for numbered lists.
+  6. `AutoIdProcessor`: Assigns automatic IDs and sequential numbers to hidden headings and columns.
 
-## AST ノード階層と特徴
+## AST Node Hierarchy and Features
 
->  詳細は[ast_node.md](ast_node.md)を参照してください。 このセクションでは、AST/Rendererアーキテクチャを理解するために必要な概要のみを説明します。
+> See [ast_node.md](ast_node.md) for details. This section explains only the overview needed to understand the AST/Renderer architecture.
 
-### 基底クラス
+### Base Classes
 
-ASTノードは以下の2つの基底クラスから構成されます：
+AST nodes are composed of two base classes:
 
-- `AST::Node`（`lib/review/ast/node.rb`）: すべてのASTノードの抽象基底クラス
-  - 子ノードの管理（`add_child()`, `remove_child()` など）
-  - Visitorパターンのサポート（`accept(visitor)`, `visit_method_name()`）
-  - プレーンテキスト変換（`to_inline_text()`）
-  - 属性管理とJSONシリアライゼーション
+- `AST::Node` (`lib/review/ast/node.rb`): Abstract base class for all AST nodes
+  - Child node management (`add_child()`, `remove_child()`, etc.)
+  - Visitor pattern support (`accept(visitor)`, `visit_method_name()`)
+  - Plain text conversion (`to_inline_text()`)
+  - Attribute management and JSON serialization
 
-- `AST::LeafNode`（`lib/review/ast/leaf_node.rb`）: 終端ノードの基底クラス
-  - 子ノードを持たない（`add_child()`を呼ぶとエラー）
-  - `content`属性を持つ（常に文字列）
-  - 継承クラス: `TextNode`, `ImageNode`, `EmbedNode`, `FootnoteNode`, `TexEquationNode`
+- `AST::LeafNode` (`lib/review/ast/leaf_node.rb`): Base class for terminal nodes
+  - No children (calling `add_child()` raises an error)
+  - Has `content` attribute (always a string)
+  - Subclasses: `TextNode`, `ImageNode`, `EmbedNode`, `FootnoteNode`, `TexEquationNode`
 
-詳細な設計原則やメソッドの説明は[ast_node.md](ast_node.md)の「基底クラス」セクションを参照してください。
+See the "Base Classes" section in [ast_node.md](ast_node.md) for detailed design principles and method descriptions.
 
-### 主なノードタイプ
+### Major Node Types
 
-ASTは以下のような多様なノードタイプで構成されています：
+AST is composed of various node types:
 
-#### ドキュメント構造
-- `DocumentNode`: 章全体のルートノード
-- `HeadlineNode`: 見出し（レベル、ラベル、キャプションを保持）
-- `ParagraphNode`: 段落
-- `ColumnNode`, `MinicolumnNode`: コラム要素
+#### Document Structure
+- `DocumentNode`: Root node for the entire chapter
+- `HeadlineNode`: Headings (holds level, label, caption)
+- `ParagraphNode`: Paragraphs
+- `ColumnNode`, `MinicolumnNode`: Column elements
 
-#### リスト
-- `ListNode`: リスト全体（`:ul`, `:ol`, `:dl`）
-- `ListItemNode`: リスト項目（ネストレベル、番号、定義用語を保持）
+#### Lists
+- `ListNode`: Entire list (`:ul`, `:ol`, `:dl`)
+- `ListItemNode`: List items (holds nesting level, number, definition term)
 
-詳細は[ast_list_processing.md](ast_list_processing.md)を参照してください。
+See [ast_list_processing.md](ast_list_processing.md) for details.
 
-#### テーブル
-- `TableNode`: テーブル全体
-- `TableRowNode`: 行（ヘッダー/本文を区別）
-- `TableCellNode`: セル
+#### Tables
+- `TableNode`: Entire table
+- `TableRowNode`: Rows (distinguishes header/body)
+- `TableCellNode`: Cells
 
-#### コードブロック
-- `CodeBlockNode`: コードブロック（言語、キャプション情報）
-- `CodeLineNode`: コードブロック内の各行
+#### Code Blocks
+- `CodeBlockNode`: Code blocks (language, caption info)
+- `CodeLineNode`: Each line within code block
 
-#### インライン要素
-- `InlineNode`: インライン命令（`@<b>`, `@<code>` など）
-- `TextNode`: プレーンテキスト
-- `ReferenceNode`: 参照（`@<img>`, `@<list>` など、後で解決される）
+#### Inline Elements
+- `InlineNode`: Inline commands (`@<b>`, `@<code>`, etc.)
+- `TextNode`: Plain text
+- `ReferenceNode`: References (`@<img>`, `@<list>`, etc., resolved later)
 
-#### その他
-- `ImageNode`: 画像（LeafNode）
-- `BlockNode`: 汎用ブロック要素
-- `FootnoteNode`: 脚注（LeafNode）
-- `EmbedNode`, `TexEquationNode`: 埋め込みコンテンツ（LeafNode）
-- `CaptionNode`: キャプション要素
+#### Others
+- `ImageNode`: Images (LeafNode)
+- `BlockNode`: Generic block elements
+- `FootnoteNode`: Footnotes (LeafNode)
+- `EmbedNode`, `TexEquationNode`: Embedded content (LeafNode)
+- `CaptionNode`: Caption elements
 
-各ノードの詳細な属性、メソッド、使用例については[ast_node.md](ast_node.md)を参照してください。
+See [ast_node.md](ast_node.md) for detailed attributes, methods, and usage examples for each node.
 
-### シリアライゼーション
+### Serialization
 
-すべてのノードは`serialize_to_hash`を実装し、`JSONSerializer`がJSON形式での保存/復元を提供します（`lib/review/ast/json_serializer.rb`）。これによりASTのデバッグ、外部ツールとの連携、AST構造の分析が可能になります。
+All nodes implement `serialize_to_hash`, and `JSONSerializer` provides saving/restoring in JSON format (`lib/review/ast/json_serializer.rb`). This enables AST debugging, integration with external tools, and AST structure analysis.
 
-## インライン・参照処理
+## Inline and Reference Processing
 
-- `InlineProcessor`（`lib/review/ast/inline_processor.rb`）は `InlineTokenizer` と協調し、`@<cmd>{...}` / `@<cmd>$...$` / `@<cmd>|...|` を解析して `InlineNode` や `TextNode` を生成します。特殊コマンド（`ruby`, `href`, `kw`, `img`, `list`, `table`, `eq`, `fn` など）は専用メソッドで AST を構築します。
-- 参照解決後のデータは Renderer での字幕生成やリンク作成に利用されます。
+- `InlineProcessor` (`lib/review/ast/inline_processor.rb`) works with `InlineTokenizer` to parse `@<cmd>{...}` / `@<cmd>$...$` / `@<cmd>|...|` and generate `InlineNode` and `TextNode`. Special commands (`ruby`, `href`, `kw`, `img`, `list`, `table`, `eq`, `fn`, etc.) build AST with dedicated methods.
+- Data after reference resolution is used for caption generation and link creation in Renderers.
 
-## リスト処理パイプライン
+## List Processing Pipeline
 
->  詳細は[ast_list_processing.md](ast_list_processing.md)を参照してください。 このセクションでは、アーキテクチャ理解に必要な概要のみを説明します。
+> See [ast_list_processing.md](ast_list_processing.md) for details. This section explains only the overview needed for architecture understanding.
 
-リスト処理は以下のコンポーネントで構成されています：
+List processing consists of the following components:
 
-### 主要コンポーネント
+### Main Components
 
-- ListParser: Re:VIEW記法のリストを解析し、`ListItemData`構造体を生成（`lib/review/ast/list_parser.rb`）
-- NestedListAssembler: `ListItemData`からネストされたAST構造（`ListNode`/`ListItemNode`）を構築
-- ListProcessor: パーサーとアセンブラーを統括し、コンパイラーへの統一的なインターフェースを提供（`lib/review/ast/list_processor.rb`）
+- ListParser: Parses Re:VIEW list notation and generates `ListItemData` structures (`lib/review/ast/list_parser.rb`)
+- NestedListAssembler: Builds nested AST structure (`ListNode`/`ListItemNode`) from `ListItemData`
+- ListProcessor: Oversees parser and assembler, providing a unified interface to the compiler (`lib/review/ast/list_processor.rb`)
 
-### 後処理
+### Post-processing
 
-- ListStructureNormalizer: `//beginchild`/`//endchild`の正規化と連続リストの統合（`lib/review/ast/compiler/list_structure_normalizer.rb`）
-- ListItemNumberingProcessor: 番号付きリストの各項目に`item_number`を付与（`lib/review/ast/compiler/list_item_numbering_processor.rb`）
+- ListStructureNormalizer: Normalizes `//beginchild`/`//endchild` and merges consecutive lists (`lib/review/ast/compiler/list_structure_normalizer.rb`)
+- ListItemNumberingProcessor: Assigns `item_number` to each item in numbered lists (`lib/review/ast/compiler/list_item_numbering_processor.rb`)
 
-詳細な処理フロー、データ構造、設計原則については[ast_list_processing.md](ast_list_processing.md)を参照してください。
+See [ast_list_processing.md](ast_list_processing.md) for detailed processing flow, data structures, and design principles.
 
-## AST::Visitor と Indexer
+## AST::Visitor and Indexer
 
-- `AST::Visitor`（`lib/review/ast/visitor.rb`）は AST を走査するための基底クラスです。
-  - 動的ディスパッチ: 各ノードの `visit_method_name()` メソッドが適切な訪問メソッド名（`:visit_headline`, `:visit_paragraph` など）を返し、Visitorの対応するメソッドを呼び出します。
-  - 主要メソッド: `visit(node)`, `visit_all(nodes)`, `extract_text(node)` (private), `process_inline_content(node)` (private)
-  - 継承クラス: `Renderer::Base`, `ReferenceResolver`, `Indexer` などがこれを継承し、AST の走査と処理を実現しています。
-- `AST::Indexer`（`lib/review/ast/indexer.rb`）は `Visitor` を継承し、AST 走査中に図表・リスト・コードブロック・数式などのインデックスを構築します。参照解決や連番付与に利用され、Renderer は AST を走査する際に Indexer を通じてインデックス情報を取得します。
+- `AST::Visitor` (`lib/review/ast/visitor.rb`) is the base class for traversing AST.
+  - Dynamic dispatch: Each node's `visit_method_name()` method returns the appropriate visit method name (`:visit_headline`, `:visit_paragraph`, etc.) and calls the corresponding method in the Visitor.
+  - Main methods: `visit(node)`, `visit_all(nodes)`, `extract_text(node)` (private), `process_inline_content(node)` (private)
+  - Subclasses: `Renderer::Base`, `ReferenceResolver`, `Indexer`, etc. inherit from this to realize AST traversal and processing.
+- `AST::Indexer` (`lib/review/ast/indexer.rb`) inherits from `Visitor` and builds indexes for figures, tables, lists, code blocks, equations, etc. during AST traversal. Used for reference resolution and sequential numbering, Renderers obtain index information through Indexer when traversing AST.
 
-## Renderer 層
+## Renderer Layer
 
-- `Renderer::Base`（`lib/review/renderer/base.rb`）は `AST::Visitor` を継承し、`render`・`render_children`・`render_inline_element` などの基盤処理を提供します。各フォーマット固有のクラスは `visit_*` メソッドをオーバーライドします。
-- `RenderingContext`（`lib/review/renderer/rendering_context.rb`）は主に HTML / LaTeX / IDGXML 系レンダラーでレンダリング中の状態（表・キャプション・定義リスト内など）とフットノートの収集を管理し、`footnotetext` への切り替えや入れ子状況の判定を支援します。
-- フォーマット別 Renderer:
-  - `HtmlRenderer` は HTMLBuilder と互換の出力を生成し、見出しアンカー・リスト整形・脚注処理を再現します（`lib/review/renderer/html_renderer.rb`）。`InlineElementHandler` と `InlineContext`（`lib/review/renderer/html/`）を用いてインライン要素の文脈依存処理を行います。
-  - `LatexRenderer` は LaTeXBuilder の挙動（セクションカウンタ・TOC・環境制御・脚注）を再現しつつ `RenderingContext` で扱いを整理しています（`lib/review/renderer/latex_renderer.rb`）。`InlineElementHandler` と `InlineContext`（`lib/review/renderer/latex/`）を用いてインライン要素の文脈依存処理を行います。
-  - `IdgxmlRenderer`, `MarkdownRenderer`, `PlaintextRenderer` も同様に `Renderer::Base` を継承し、AST からの直接出力を実現します。
-  - `TopRenderer` はテキストベースの原稿フォーマットに変換し、校正記号を付与します（`lib/review/renderer/top_renderer.rb`）。
-- `renderer/rendering_context.rb` とそれを利用するレンダラー（HTML / LaTeX / IDGXML）は `FootnoteCollector` を用いて脚注のバッチ処理を行い、Builder 時代の複雑な状態管理を置き換えています。
+- `Renderer::Base` (`lib/review/renderer/base.rb`) inherits from `AST::Visitor` and provides foundational processing such as `render`, `render_children`, `render_inline_element`. Format-specific classes override `visit_*` methods.
+- `RenderingContext` (`lib/review/renderer/rendering_context.rb`) manages state during rendering (inside tables, captions, definition lists, etc.) and footnote collection, mainly for HTML/LaTeX/IDGXML renderers, supporting switching to `footnotetext` and determining nesting conditions.
+- Format-specific Renderers:
+  - `HtmlRenderer` generates output compatible with HTMLBuilder, reproducing heading anchors, list formatting, footnote processing (`lib/review/renderer/html_renderer.rb`). Uses `InlineElementHandler` and `InlineContext` (`lib/review/renderer/html/`) for context-dependent inline element processing.
+  - `LatexRenderer` reproduces LaTeXBuilder behavior (section counters, TOC, environment control, footnotes) while organizing handling with `RenderingContext` (`lib/review/renderer/latex_renderer.rb`). Uses `InlineElementHandler` and `InlineContext` (`lib/review/renderer/latex/`) for context-dependent inline element processing.
+  - `IdgxmlRenderer`, `MarkdownRenderer`, `PlaintextRenderer` also inherit from `Renderer::Base` to realize direct output from AST.
+  - `TopRenderer` converts to text-based manuscript format and adds proofreading marks (`lib/review/renderer/top_renderer.rb`).
+- `renderer/rendering_context.rb` and renderers using it (HTML/LaTeX/IDGXML) use `FootnoteCollector` for batch processing of footnotes, replacing complex state management from the Builder era.
 
-## Markdown サポート
+## Markdown Support
 
->  詳細は[ast_markdown.md](ast_markdown.md)を参照してください。 このセクションでは、アーキテクチャ理解に必要な概要のみを説明します。
+> See [ast_markdown.md](ast_markdown.md) for details. This section explains only the overview needed for architecture understanding.
 
-Re:VIEWはGitHub Flavored Markdown（GFM）をサポートしており、`.md`ファイルをRe:VIEW ASTに変換できます。
+Re:VIEW supports GitHub Flavored Markdown (GFM) and can convert `.md` files to Re:VIEW AST.
 
-### アーキテクチャ
+### Architecture
 
-Markdownサポートは以下の3つの主要コンポーネントで構成されています：
+Markdown support consists of three main components:
 
-- MarkdownCompiler（`lib/review/ast/markdown_compiler.rb`）: Markdownドキュメント全体をRe:VIEW ASTにコンパイルする統括クラス。Marklyパーサーを初期化し、GFM拡張機能（strikethrough, table, autolink, tagfilter）を有効化します。
-- MarkdownAdapter（`lib/review/ast/markdown_adapter.rb`）: Markly AST（CommonMark準拠）をRe:VIEW ASTに変換するアダプター層。各Markdown要素を対応するRe:VIEW ASTノードに変換し、コラムスタック・リストスタック・テーブルスタックを管理します。
-- MarkdownHtmlNode（`lib/review/ast/markdown_html_node.rb`）: Markdown内のHTML要素を解析し、特別な意味を持つHTMLコメント（コラムマーカーなど）を識別するための補助ノード。最終的なASTには含まれず、変換処理中にのみ使用されます。
+- MarkdownCompiler (`lib/review/ast/markdown_compiler.rb`): Oversees compiling entire Markdown documents to Re:VIEW AST. Initializes Markly parser and enables GFM extensions (strikethrough, table, autolink, tagfilter).
+- MarkdownAdapter (`lib/review/ast/markdown_adapter.rb`): Adapter layer that converts Markly AST (CommonMark compliant) to Re:VIEW AST. Converts each Markdown element to corresponding Re:VIEW AST nodes and manages column stack, list stack, and table stack.
+- MarkdownHtmlNode (`lib/review/ast/markdown_html_node.rb`): Auxiliary node for parsing HTML elements in Markdown and identifying HTML comments with special meaning (column markers, etc.). Not included in final AST, used only during conversion processing.
 
-### 変換処理の流れ
+### Conversion Process Flow
 
 ```
-Markdown文書 → Markly.parse → Markly AST
+Markdown document → Markly.parse → Markly AST
                                     ↓
                           MarkdownAdapter.convert
                                     ↓
                              Re:VIEW AST
                                     ↓
-                          参照解決・後処理
+                          Reference resolution & post-processing
                                     ↓
-                             Renderer群
+                             Renderers
 ```
 
-### サポート機能
+### Supported Features
 
-- GFM拡張: 取り消し線、テーブル、オートリンク、タグフィルタリング
-- Re:VIEW独自拡張:
-  - コラム構文（HTMLコメント: `<!-- column: Title -->` / `<!-- /column -->`）
-  - コラム構文（見出し: `### [column] Title` / `### [/column]`）
-  - 自動コラムクローズ（見出しレベルに基づく）
-  - スタンドアローン画像の検出（段落内の単独画像をブロックレベルの`ImageNode`に変換）
+- GFM extensions: Strikethrough, tables, autolink, tag filtering
+- Re:VIEW-specific extensions:
+  - Column syntax (HTML comment: `<!-- column: Title -->` / `<!-- /column -->`)
+  - Column syntax (heading: `### [column] Title` / `### [/column]`)
+  - Automatic column closing (based on heading level)
+  - Standalone image detection (converts single images in paragraphs to block-level `ImageNode`)
 
-### 制限事項
+### Limitations
 
-Markdownでは以下のRe:VIEW固有機能はサポートされていません：
-- `//list`（キャプション付きコードブロック）→ 通常のコードブロックとして扱われます
-- `//table`（キャプション付き表）→ GFMテーブルは使用できますが、キャプションやラベルは付けられません
-- `//footnote`（脚注）
-- 一部のインライン命令（`@<kw>`, `@<bou>` など）
+The following Re:VIEW-specific features are not supported in Markdown:
+- `//list` (code block with caption) → Treated as regular code block
+- `//table` (table with caption) → GFM tables can be used but cannot have captions or labels
+- `//footnote` (footnotes)
+- Some inline commands (`@<kw>`, `@<bou>`, etc.)
 
-詳細は[ast_markdown.md](ast_markdown.md)を参照してください。
+See [ast_markdown.md](ast_markdown.md) for details.
 
-## 既存ツールとの統合
+## Integration with Existing Tools
 
-- EPUB/PDF/IDGXML などの Maker クラス（`AST::Command::EpubMaker`, `AST::Command::PdfMaker`, `AST::Command::IdgxmlMaker`）は、それぞれ内部に `RendererConverterAdapter` クラスを定義して Renderer を従来の Converter インターフェースに適合させています（`lib/review/ast/command/epub_maker.rb`, `pdf_maker.rb`, `idgxml_maker.rb`）。各 Adapter は章単位で対応する Renderer（`HtmlRenderer`, `LatexRenderer`, `IdgxmlRenderer`）を生成し、出力をそのまま組版パイプラインへ渡します。
-- `lib/review/ast/command/compile.rb` は `review-ast-compile` CLI を提供し、`--target` で指定したフォーマットに対して AST→Renderer パイプラインを直接実行します。`--check` モードでは AST 生成と検証のみを行います。
+- Maker classes for EPUB/PDF/IDGXML, etc. (`AST::Command::EpubMaker`, `AST::Command::PdfMaker`, `AST::Command::IdgxmlMaker`) each define `RendererConverterAdapter` classes internally to adapt Renderer to the traditional Converter interface (`lib/review/ast/command/epub_maker.rb`, `pdf_maker.rb`, `idgxml_maker.rb`). Each Adapter generates corresponding Renderers (`HtmlRenderer`, `LatexRenderer`, `IdgxmlRenderer`) per chapter and passes output directly to the typesetting pipeline.
+- `lib/review/ast/command/compile.rb` provides the `review-ast-compile` CLI, directly executing the AST→Renderer pipeline for the format specified with `--target`. In `--check` mode, only AST generation and validation are performed.
 
-## JSON / 開発支援ツール
+## JSON / Development Support Tools
 
-- `JSONSerializer` と `AST::Dumper`（`lib/review/ast/dumper.rb`）は AST を JSON へシリアライズし、デバッグや外部ツールとの連携に利用できます。`Options` により位置情報や簡易モードの有無を制御可能です。
-- `AST::ReviewGenerator`（`lib/review/ast/review_generator.rb`）は AST から Re:VIEW 記法を再生成し、双方向変換や差分検証に利用されます。
-- `lib/review/ast/diff/html.rb` / `idgxml.rb` / `latex.rb` は Builder と Renderer の出力差異をハッシュ比較し、`test/ast/test_html_renderer_builder_comparison.rb` などで利用されています。
+- `JSONSerializer` and `AST::Dumper` (`lib/review/ast/dumper.rb`) serialize AST to JSON, available for debugging and integration with external tools. `Options` control presence of location information and simple mode.
+- `AST::ReviewGenerator` (`lib/review/ast/review_generator.rb`) regenerates Re:VIEW notation from AST, used for bidirectional conversion and diff verification.
+- `lib/review/ast/diff/html.rb` / `idgxml.rb` / `latex.rb` perform hash comparison of Builder and Renderer output differences, used in `test/ast/test_html_renderer_builder_comparison.rb`, etc.
 
-## テストによる保証
+## Test Guarantees
 
-- `test/ast/test_ast_comprehensive.rb` / `test_ast_complex_integration.rb` は章全体を AST に変換し、ノード構造とレンダリング結果を検証します。
-- `test/ast/test_html_renderer_inline_elements.rb` や `test_html_renderer_join_lines_by_lang.rb` はインライン要素・改行処理など HTML 特有の仕様を確認しています。
-- `test/ast/test_list_structure_normalizer.rb`, `test_list_processor.rb` は複雑なリストや `//beginchild` の正規化を網羅します。
-- `test/ast/test_ast_comprehensive_inline.rb` は AST→Renderer の往復で特殊なインライン命令が崩れないことを保証します。
-- `test/ast/test_markdown_adapter.rb`, `test_markdown_compiler.rb` はMarkdownのAST変換が正しく動作することを検証します。
+- `test/ast/test_ast_comprehensive.rb` / `test_ast_complex_integration.rb` convert entire chapters to AST and verify node structure and rendering results.
+- `test/ast/test_html_renderer_inline_elements.rb` and `test_html_renderer_join_lines_by_lang.rb` verify HTML-specific specifications such as inline elements and line break processing.
+- `test/ast/test_list_structure_normalizer.rb`, `test_list_processor.rb` comprehensively cover complex lists and `//beginchild` normalization.
+- `test/ast/test_ast_comprehensive_inline.rb` ensures special inline commands don't break in AST→Renderer round trips.
+- `test/ast/test_markdown_adapter.rb`, `test_markdown_compiler.rb` verify Markdown AST conversion works correctly.
 
-これらの実装とテストにより、AST を中心とした新しいパイプラインと Renderer 群は従来 Builder と互換の出力を維持しつつ、構造化されたデータモデルとユーティリティを提供しています。
-
-## 関連ドキュメント
-
-Re:VIEWのAST/Rendererアーキテクチャについてさらに学ぶには、以下のドキュメントを参照してください：
-
-| ドキュメント | 説明 |
-|------------|------|
-| [ast.md](ast.md) | 入門ドキュメント: AST/Rendererの概要と基本的な使い方。最初に読むべきドキュメント。 |
-| [ast_node.md](ast_node.md) | ノード詳細: 各ASTノードの詳細な仕様、属性、メソッド、使用例。 |
-| [ast_list_processing.md](ast_list_processing.md) | リスト処理: リスト解析・組み立てパイプラインの詳細な説明。 |
-| [ast_markdown.md](ast_markdown.md) | Markdownサポート: GitHub Flavored Markdownのサポート機能と使用方法。 |
-| [ast_architecture.md](ast_architecture.md) | 本ドキュメント: AST/Rendererアーキテクチャ全体の概要と設計。 |
-
-### 推奨される学習パス
-
-1. 初心者: [ast.md](ast.md) → [ast_node.md](ast_node.md) の基本セクション
-2. 中級者: [ast_architecture.md](ast_architecture.md) → [ast_list_processing.md](ast_list_processing.md)
-3. Markdown利用者: [ast_markdown.md](ast_markdown.md)
-4. 上級者/開発者: 全ドキュメント + ソースコードとテスト
+Through these implementations and tests, the new AST-centric pipeline and Renderer suite maintain output compatible with traditional Builders while providing structured data models and utilities.
