@@ -11,7 +11,7 @@ module ReVIEW
     class BlockProcessor
       class TableProcessor
         # Data structure representing table structure (intermediate representation)
-        TableStructure = Data.define(:header_lines, :body_lines, :first_cell_header) do
+        TableStructure = Struct.new(:header_lines, :body_lines, :first_cell_header, keyword_init: true) do
           # @param lines [Array<String>] Raw table content lines
           # @return [TableStructure] Parsed table structure
           # @raise [ReVIEW::CompileError] If table is empty or invalid

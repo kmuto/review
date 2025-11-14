@@ -10,7 +10,7 @@ module ReVIEW
   module AST
     class BlockProcessor
       # Data structure representing code block structure (intermediate representation)
-      CodeBlockStructure = Data.define(:id, :caption_node, :lang, :line_numbers, :code_type, :lines, :original_text) do
+      CodeBlockStructure = Struct.new(:id, :caption_node, :lang, :line_numbers, :code_type, :lines, :original_text, keyword_init: true) do
         # @param context [BlockContext] Block context
         # @param config [Hash] Code block configuration
         # @return [CodeBlockStructure] Parsed code block structure

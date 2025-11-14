@@ -10,17 +10,17 @@ require 'review/exception'
 
 module ReVIEW
   module AST
-    # Token classes using Ruby 3.2+ Data class for immutable, structured tokens
+    # Token classes using Struct for immutable, structured tokens
 
     # Text token for plain text content
-    TextToken = Data.define(:content) do
+    TextToken = Struct.new(:content, keyword_init: true) do
       def type
         :text
       end
     end
 
     # Inline element token for @<command>{content} syntax
-    InlineToken = Data.define(:command, :content, :start_pos, :end_pos) do
+    InlineToken = Struct.new(:command, :content, :start_pos, :end_pos, keyword_init: true) do
       def type
         :inline
       end
