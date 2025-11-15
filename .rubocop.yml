@@ -326,5 +326,6 @@ Gemspec/RequiredRubyVersion:
 Gemspec/DevelopmentDependencies:
   EnforcedStyle: gemspec
   Exclude:
+    - Gemfile
     - samples/syntax-book/Gemfile
     - samples/debug-book/Gemfile
