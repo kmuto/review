@@ -8,6 +8,8 @@ require 'review/book/chapter'
 require 'review/configure'
 require 'stringio'
 
+return unless Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.1.0')
+
 class TestMarkdownCompiler < Test::Unit::TestCase
   def setup
     @config = ReVIEW::Configure.values

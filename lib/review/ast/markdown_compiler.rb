@@ -9,7 +9,13 @@
 require_relative 'compiler'
 require_relative 'markdown_adapter'
 require_relative 'inline_tokenizer'
-require 'markly'
+
+# markly requires Ruby >= 3.1
+begin
+  require 'markly'
+rescue LoadError
+  # markly is not available
+end
 
 module ReVIEW
   module AST
@@ -29,6 +35,11 @@ module ReVIEW
       # @param reference_resolution [Boolean] Whether to resolve references (default: true)
       # @return [DocumentNode] The compiled AST root
       def compile_to_ast(chapter, reference_resolution: true)
+        # Check if markly is available
+        unless defined?(Markly)
+          raise ReVIEW::CompileError, 'Markdown compilation requires markly gem, which is only available for Ruby >= 3.1. Please upgrade Ruby or use .re files instead.'
+        end
+
         @chapter = chapter
 
         # Create AST root

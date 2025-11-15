@@ -8,6 +8,8 @@ require 'review/renderer/latex_renderer'
 require 'review/book'
 require 'review/book/chapter'
 
+return unless Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.1.0')
+
 class TestMarkdownColumn < Test::Unit::TestCase
   include ReVIEW
 

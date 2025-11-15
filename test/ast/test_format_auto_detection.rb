@@ -4,6 +4,18 @@ require_relative '../test_helper'
 require 'review/ast/compiler'
 require 'review/book'
 
+# Skip Markdown tests if Ruby < 3.1 (markly requires Ruby >= 3.1)
+# Note: Some tests use Markdown format detection and compilation
+if Gem::Version.new(RUBY_VERSION) < Gem::Version.new('3.1.0')
+  # Define empty test class to avoid load errors
+  class TestFormatAutoDetection < Test::Unit::TestCase
+    def test_skipped
+      omit('Markdown tests require Ruby >= 3.1')
+    end
+  end
+  return
+end
+
 class TestFormatAutoDetection < Test::Unit::TestCase
   def setup
     @config = ReVIEW::Configure.values

@@ -8,6 +8,8 @@ require 'review/book/chapter'
 require 'review/configure'
 require 'stringio'
 
+return unless Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.1.0')
+
 # Tests for Indexer#extract_and_set_chapter_title functionality
 # This feature extracts chapter titles from Markdown files
 class TestIndexerChapterTitle < Test::Unit::TestCase

@@ -9,6 +9,9 @@ require 'review/ast/review_generator'
 require 'review/configure'
 require 'review/book'
 require 'review/book/chapter'
+
+return unless Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.1.0')
+
 require 'markly'
 
 # Advanced validation tests for MarkdownRenderer

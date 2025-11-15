@@ -9,6 +9,8 @@ require 'review/configure'
 require 'review/book'
 require 'review/book/chapter'
 
+return unless Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.1.0')
+
 # Fixture-based tests for MarkdownRenderer
 #
 # These tests compare the output of MarkdownRenderer with pre-generated

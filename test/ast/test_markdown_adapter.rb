@@ -8,6 +8,9 @@ require 'review/book'
 require 'review/book/chapter'
 require 'review/configure'
 require 'stringio'
+
+return unless Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.1.0')
+
 require 'markly'
 
 class TestMarkdownAdapter < Test::Unit::TestCase

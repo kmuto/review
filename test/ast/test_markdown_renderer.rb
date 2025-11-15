@@ -9,6 +9,8 @@ require 'review/configure'
 require 'review/book'
 require 'review/book/chapter'
 
+return unless Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.1.0')
+
 class TestMarkdownRenderer < Test::Unit::TestCase
   def setup
     @config = ReVIEW::Configure.values
@@ -157,7 +159,6 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     assert_equal('markdown', markdown_renderer.target_name)
   end
 
-  # Individual inline element tests
   def test_inline_bold
     content = "= Chapter\n\nThis is @<b>{bold text}.\n"
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
@@ -658,7 +659,6 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     assert_match(/\* OL1-UL1/, result)
   end
 
-  # Raw/Embed tests
   def test_raw_markdown_targeted
     content = <<~EOB
       = Chapter
@@ -701,7 +701,6 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     assert_no_match(%r{<span>HTML</span>}, result)
   end
 
-  # Table tests
   def test_table_basic
     content = <<~EOB
       = Chapter
@@ -758,7 +757,6 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     assert_match(/`Code`/, result)
   end
 
-  # Image tests
   def test_image_with_caption
     content = <<~EOB
       = Chapter
@@ -793,7 +791,6 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     assert_match(/!\[\]\(icon\.png\)/, result)
   end
 
-  # Text escaping tests
   def test_text_with_asterisks
     content = "= Chapter\n\nText with *asterisks* and **double** asterisks.\n"
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
@@ -814,7 +811,6 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     assert_match(/\*\*text with \\\* asterisk\*\*/, result)
   end
 
-  # Column tests
   def test_column_basic
     content = <<~EOB
       = Chapter
@@ -834,7 +830,6 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     assert_match(/Column content here\./, result)
   end
 
-  # Footnote tests
   def test_footnote_basic
     content = <<~EOB
       = Chapter
@@ -888,7 +883,6 @@ class TestMarkdownRenderer < Test::Unit::TestCase
     assert_match(/This is line one\. This is line two\. This is line three\./, result)
   end
 
-  # Adjacent inline element tests
   def test_adjacent_different_types_bold_and_italic
     content = "= Chapter\n\nText with @<b>{bold}@<i>{italic} adjacent.\n"
     chapter = ReVIEW::Book::Chapter.new(@book, 1, 'test', 'test.re', StringIO.new(content))
