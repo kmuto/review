@@ -160,7 +160,7 @@ module ReVIEW
 
           config_file = File.join(book_dir, 'config.yml')
           if File.exist?(config_file)
-            yaml_config = YAML.load_file(config_file, permitted_classes: [Date, Time, Symbol])
+            yaml_config = YAML.safe_load_file(config_file, permitted_classes: [Date, Time, Symbol])
             book_config.merge!(yaml_config) if yaml_config
           end
 

@@ -202,7 +202,7 @@ module ReVIEW
 
           begin
             require 'yaml'
-            catalog = YAML.load_file(catalog_file)
+            catalog = YAML.safe_load_file(catalog_file)
 
             if catalog['CHAPS']
               catalog['CHAPS'].each_with_index do |chapter_file, index|
