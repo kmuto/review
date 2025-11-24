@@ -20,15 +20,11 @@ module ReVIEW
     attr_reader :filename
 
     def lineno
-      @f.lineno
+      @f&.lineno
     end
 
     def string
-      begin
-        "#{@filename}:#{@f.lineno}"
-      rescue StandardError
-        "#{@filename}:nil"
-      end
+      "#{@filename}:#{@f&.lineno || 'nil'}"
     end
 
     alias_method :to_s, :string

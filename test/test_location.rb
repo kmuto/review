@@ -29,6 +29,7 @@ class LocationTest < Test::Unit::TestCase
   def test_to_s_nil
     location = ReVIEW::Location.new('foo', nil)
     assert_equal 'foo:nil', location.to_s
+    assert_equal nil, location.lineno
   end
 
   def test_snapshot
