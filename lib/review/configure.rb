@@ -153,6 +153,23 @@ module ReVIEW
         },
         'textmaker' => {
           'th_bold' => nil
+        },
+        # for VivliostyleMaker
+        'vivliostylemaker' => {
+          'use_npx' => true,
+          'vivliostyle_path' => './node_modules/.bin/vivliostyle',
+          'timeout' => 600,
+          'math_format' => 'mathjax',
+          'size' => 'JIS-B5',
+          'theme' => nil,
+          'css' => [],
+          'press_ready' => false,
+          'book' => true,
+          'hook_beforeprocess' => nil,
+          'hook_afterbody' => nil,
+          'hook_aftercopyimage' => nil,
+          'hook_beforevivliostyle' => nil,
+          'hook_aftervivliostyle' => nil
         }
       ]
       conf.maker = nil

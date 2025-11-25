@@ -446,7 +446,7 @@ module ReVIEW
         when 'imgmath'
           render_imgmath_format(content)
         else
-          # Fallback: render as preformatted text
+          # Unknown format: fallback to preformatted text
           %Q(<pre>#{escape(content)}\n</pre>\n)
         end
       end
