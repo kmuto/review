@@ -163,6 +163,7 @@ module ReVIEW
           'size' => 'JIS-B5',
           'theme' => nil,
           'css' => [],
+          'colophon' => true, # Use colophon
           'press_ready' => false,
           'book' => true,
           'hook_beforeprocess' => nil,

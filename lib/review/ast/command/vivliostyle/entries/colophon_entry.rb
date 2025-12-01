@@ -25,35 +25,74 @@ module ReVIEW
 
             def render
               template_path = @context.template_path('vivliostyle/_colophon.html.erb')
-              if template_path && File.exist?(template_path)
-                ReVIEW::Template.generate(path: template_path, binding: binding)
-              else
-                fallback_colophon
-              end
+              ReVIEW::Template.generate(path: template_path, binding: binding)
             end
 
             private
 
-            def fallback_colophon
-              items = []
-              (config['colophon_order'] || []).each do |key|
-                value = config.name_of(key)
-                next unless value
+            # ISBN with hyphens
+            def isbn_hyphen
+              str = config['isbn'].to_s
+              return nil if str.empty?
 
-                label = I18n.t("colophon_#{key}", nil) || key
-                items << "<dt>#{h(label)}</dt><dd>#{h(value)}</dd>"
+              if /\A\d{10}\Z/.match?(str)
+                "#{str[0..0]}-#{str[1..5]}-#{str[6..8]}-#{str[9..9]}"
+              elsif /\A\d{13}\Z/.match?(str)
+                "#{str[0..2]}-#{str[3..3]}-#{str[4..8]}-#{str[9..11]}-#{str[12..12]}"
+              else
+                str
               end
-
-              <<~HTML
-                <div class="colophon">
-                  <h1>#{h(config.name_of('booktitle'))}</h1>
-                  <dl>
-                    #{items.join("\n")}
-                  </dl>
-                  <p class="date">#{h(config['date'].to_s)}</p>
-                </div>
-              HTML
             end
+
+            # Generate colophon history section
+            def colophon_history
+              @col_history = build_col_history
+              template_path = @context.template_path('vivliostyle/_colophon_history.html.erb')
+              ReVIEW::Template.generate(path: template_path, binding: binding)
+            end
+
+            # Accessor for template
+            def col_history
+              @col_history ||= build_col_history
+            end
+
+            def build_col_history
+              history = []
+              if config['history']
+                config['history'].each_with_index do |items, edit|
+                  items.each_with_index do |item, rev|
+                    editstr = edit == 0 ? I18n.t('first_edition') : I18n.t('nth_edition', (edit + 1).to_s)
+                    revstr = I18n.t('nth_impression', (rev + 1).to_s)
+                    if /\A\d+-\d+-\d+\Z/.match?(item)
+                      history << I18n.t('published_by1', [date_to_s(item), editstr + revstr])
+                    elsif /\A(\d+-\d+-\d+)[\s　](.+)/.match?(item)
+                      # custom date with string
+                      item.match(/\A(\d+-\d+-\d+)[\s　](.+)/) do |m|
+                        history << I18n.t('published_by3', [date_to_s(m[1]), m[2]])
+                      end
+                    else
+                      # free format
+                      history << item
+                    end
+                  end
+                end
+              end
+              history
+            end
+
+            def date_to_s(date)
+              require 'date'
+              d = Date.parse(date)
+              d.strftime(I18n.t('date_format'))
+            end
+
+            # Join array with separator
+            def join_with_separator(ary, sep)
+              return '' if ary.nil? || ary.empty?
+
+              ary.join(sep)
+            end
+
           end
         end
       end
