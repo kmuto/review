@@ -232,9 +232,9 @@ module ReVIEW
         @table_rows = []
         @table_header_count = 0
 
-        # Add div wrapper with ID
-        table_id = normalize_id(node.id)
-        result = %Q(<div id="#{table_id}">\n\n)
+        # Add div wrapper with ID if present
+        id_attr = node.id ? %Q( id="#{normalize_id(node.id)}") : ''
+        result = "<div#{id_attr}>\n\n"
 
         # Add caption if present
         caption = render_caption_inline(node.caption_node)
@@ -1010,11 +1010,6 @@ module ReVIEW
         end
 
         result
-      end
-
-      # Normalize ID for use in HTML anchors (same as HtmlRenderer)
-      def normalize_id(id)
-        id.to_s.gsub(/[^a-zA-Z0-9_-]/, '_')
       end
 
       # Get text formatter for reference formatting

@@ -806,11 +806,6 @@ module ReVIEW
         %Q(<span class="#{css_class}"><a href="./#{chapter_id}#{extname}##{normalize_id(data.item_id)}">#{text}</a></span>)
       end
 
-      # Normalize ID for HTML/XML attributes
-      def normalize_id(id)
-        id.to_s.gsub(/[^a-zA-Z0-9_-]/, '_')
-      end
-
       def visit_footnote(node)
         # Handle FootnoteNode - render as footnote or endnote definition
         # Note: This renders the footnote/endnote definition block at document level.

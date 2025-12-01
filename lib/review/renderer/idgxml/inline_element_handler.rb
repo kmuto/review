@@ -549,11 +549,6 @@ module ReVIEW
         def escape(str)
           @ctx.escape(str)
         end
-
-        def normalize_id(id)
-          # Normalize ID for XML attributes
-          id.to_s.gsub(/[^a-zA-Z0-9_-]/, '_')
-        end
       end
     end
   end

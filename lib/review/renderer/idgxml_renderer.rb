@@ -947,11 +947,6 @@ module ReVIEW
 
       # Helpers
 
-      def normalize_id(id)
-        # Normalize ID for XML attributes
-        id.to_s.gsub(/[^a-zA-Z0-9_-]/, '_')
-      end
-
       def get_chap(chapter = @chapter)
         if config['secnolevel'] && config['secnolevel'] > 0 &&
            !chapter.number.nil? && !chapter.number.to_s.empty?
