@@ -30,15 +30,8 @@ module ReVIEW
               # Use npm theme (will be resolved by Vivliostyle CLI)
               debug("Using Vivliostyle theme: #{theme}")
             else
-              # Use bundled theme-review.css
-              css_src = @context.template_path('vivliostyle/theme-review.css')
-              if css_src && File.exist?(css_src)
-                FileUtils.cp(css_src, @context.build_path)
-                @context.add_stylesheet('theme-review.css')
-                debug('Using bundled theme-review.css')
-              else
-                warn 'theme-review.css not found, no default stylesheet applied'
-              end
+              # Copy all CSS files from vivliostyle template directory
+              copy_bundled_stylesheets
             end
 
             # Copy additional CSS files from vivliostylemaker config
@@ -88,6 +81,29 @@ module ReVIEW
 
           def config
             @context.config
+          end
+
+          # Copy all CSS files from templates/vivliostyle/ directory
+          def copy_bundled_stylesheets
+            vivliostyle_template_dir = @context.template_path('vivliostyle')
+            return unless vivliostyle_template_dir && File.directory?(vivliostyle_template_dir)
+
+            css_files = Dir.glob(File.join(vivliostyle_template_dir, '*.css'))
+            if css_files.empty?
+              warn 'No CSS files found in vivliostyle template directory'
+              return
+            end
+
+            css_files.each do |css_src|
+              basename = File.basename(css_src)
+              FileUtils.cp(css_src, @context.build_path)
+              debug("Copied #{basename}")
+
+              # Only add theme-review.css to stylesheet list (others are @imported)
+              if basename == 'theme-review.css'
+                @context.add_stylesheet(basename)
+              end
+            end
           end
 
           def copy_images_recursive(src_dir, dest_dir, exts)
