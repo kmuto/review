@@ -31,6 +31,25 @@ module ReVIEW
         original_text.split("\n")
       end
 
+      # Get plain text content for syntax highlighting
+      # Uses original_text from each CodeLineNode
+      def plain_text
+        children.map do |line_node|
+          line_node.respond_to?(:original_text) ? line_node.original_text : ''
+        end.join("\n") + "\n"
+      end
+
+      # Check if code block contains inline elements (e.g., @<b>{}, @<i>{})
+      # When inline elements are present, syntax highlighting should be disabled
+      # to allow proper rendering of the inline markup
+      def has_inline_elements?
+        children.any? do |line_node|
+          next false unless line_node.respond_to?(:children)
+
+          line_node.children.any? { |child| child.is_a?(AST::InlineNode) }
+        end
+      end
+
       # Get processed lines by reconstructing from AST (for builders that need inline processing)
       def processed_lines
         children.map do |line_node|

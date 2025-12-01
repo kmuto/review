@@ -562,8 +562,7 @@ module ReVIEW
       end
 
       def visit_code_block_emlist(node)
-        lines_content = render_children(node)
-        processed_content = format_code_content(lines_content, node.lang)
+        processed_content = format_code_content(node)
 
         code_block_wrapper(
           node,
@@ -575,8 +574,7 @@ module ReVIEW
       end
 
       def visit_code_block_emlistnum(node)
-        lines_content = render_children(node)
-        numbered_lines = format_emlistnum_content(lines_content, node.lang, node)
+        numbered_lines = format_emlistnum_content(node)
 
         code_block_wrapper(
           node,
@@ -588,8 +586,7 @@ module ReVIEW
       end
 
       def visit_code_block_list(node)
-        lines_content = render_children(node)
-        processed_content = format_code_content(lines_content, node.lang)
+        processed_content = format_code_content(node)
 
         code_block_wrapper(
           node,
@@ -601,8 +598,7 @@ module ReVIEW
       end
 
       def visit_code_block_listnum(node)
-        lines_content = render_children(node)
-        numbered_lines = format_listnum_content(lines_content, node.lang, node)
+        numbered_lines = format_listnum_content(node)
 
         code_block_wrapper(
           node,
@@ -614,8 +610,7 @@ module ReVIEW
       end
 
       def visit_code_block_source(node)
-        lines_content = render_children(node)
-        processed_content = format_code_content(lines_content, node.lang)
+        processed_content = format_code_content(node)
 
         code_block_wrapper(
           node,
@@ -627,8 +622,7 @@ module ReVIEW
       end
 
       def visit_code_block_cmd(node)
-        lines_content = render_children(node)
-        processed_content = format_code_content(lines_content, node.lang)
+        processed_content = format_code_content(node, default_lang: 'shell-session')
 
         code_block_wrapper(
           node,
@@ -682,42 +676,49 @@ module ReVIEW
         classes.join(' ')
       end
 
-      def format_code_content(lines_content, lang = nil)
-        lines = lines_content.split("\n")
-        body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+      def format_code_content(node, default_lang: nil)
+        lang = node.lang || default_lang
 
-        highlight(body: body, lexer: lang, format: 'html')
+        # Disable highlighting if code block contains inline elements (e.g., @<b>{})
+        # to allow proper rendering of inline markup
+        if highlight? && !node.has_inline_elements?
+          highlight(body: node.plain_text, lexer: lang, format: 'html')
+        else
+          # render_children already escapes text, no need to escape again
+          lines_content = render_children(node)
+          lines = lines_content.split("\n")
+          lines.inject('') { |i, j| i + detab(j) + "\n" }
+        end
       end
 
-      def format_emlistnum_content(lines_content, lang = nil, node = nil)
-        lines = lines_content.split("\n")
-        lines.pop if lines.last && lines.last.empty?
-
-        body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+      def format_emlistnum_content(node)
+        lang = node.lang
         first_line_number = node&.first_line_num || 1
 
-        if highlight?
-          highlight(body: body, lexer: lang, format: 'html', linenum: true, options: { linenostart: first_line_number })
+        # Disable highlighting if code block contains inline elements
+        if highlight? && !node.has_inline_elements?
+          highlight(body: node.plain_text, lexer: lang, format: 'html', linenum: true, options: { linenostart: first_line_number })
         else
+          lines_content = render_children(node)
+          lines = lines_content.split("\n")
+          lines.pop if lines.last && lines.last.empty?
           lines.map.with_index(first_line_number) do |line, i|
             "#{i.to_s.rjust(2)}: #{detab(line)}"
           end.join("\n") + "\n"
         end
       end
 
-      def format_listnum_content(lines_content, lang = nil, node = nil)
-        lines = lines_content.split("\n")
-        lines.pop if lines.last && lines.last.empty?
-
-        body = lines.inject('') { |i, j| i + detab(j) + "\n" }
+      def format_listnum_content(node)
+        lang = node.lang
         first_line_number = node&.first_line_num || 1
 
-        highlighted = highlight(body: body, lexer: lang, format: 'html', linenum: true,
-                                options: { linenostart: first_line_number })
-
-        if highlight?
-          highlighted
+        # Disable highlighting if code block contains inline elements
+        if highlight? && !node.has_inline_elements?
+          highlight(body: node.plain_text, lexer: lang, format: 'html', linenum: true, options: { linenostart: first_line_number })
         else
+          lines_content = render_children(node)
+          lines = lines_content.split("\n")
+          lines.pop if lines.last && lines.last.empty?
           lines.map.with_index(first_line_number) do |line, i|
             "#{i.to_s.rjust(2)}: #{detab(line)}"
           end.join("\n") + "\n"
