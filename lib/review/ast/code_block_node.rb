@@ -42,11 +42,11 @@ module ReVIEW
       # Check if code block contains inline elements (e.g., @<b>{}, @<i>{})
       # When inline elements are present, syntax highlighting should be disabled
       # to allow proper rendering of the inline markup
-      def has_inline_elements?
+      def contains_inline?
         children.any? do |line_node|
           next false unless line_node.respond_to?(:children)
 
-          line_node.children.any? { |child| child.is_a?(AST::InlineNode) }
+          line_node.children.any?(AST::InlineNode)
         end
       end
 

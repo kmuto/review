@@ -685,7 +685,7 @@ module ReVIEW
 
         # Disable highlighting if code block contains inline elements (e.g., @<b>{})
         # to allow proper rendering of inline markup
-        if highlight? && !node.has_inline_elements?
+        if highlight? && !node.contains_inline?
           highlight(body: node.plain_text, lexer: lang, format: 'html')
         else
           # render_children already escapes text, no need to escape again
@@ -700,7 +700,7 @@ module ReVIEW
         first_line_number = node&.first_line_num || 1
 
         # Disable highlighting if code block contains inline elements
-        if highlight? && !node.has_inline_elements?
+        if highlight? && !node.contains_inline?
           highlight(body: node.plain_text, lexer: lang, format: 'html', linenum: true, options: { linenostart: first_line_number })
         else
           lines_content = render_children(node)
@@ -717,7 +717,7 @@ module ReVIEW
         first_line_number = node&.first_line_num || 1
 
         # Disable highlighting if code block contains inline elements
-        if highlight? && !node.has_inline_elements?
+        if highlight? && !node.contains_inline?
           highlight(body: node.plain_text, lexer: lang, format: 'html', linenum: true, options: { linenostart: first_line_number })
         else
           lines_content = render_children(node)
