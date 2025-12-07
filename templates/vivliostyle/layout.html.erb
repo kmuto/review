@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="<%= @language %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="generator" content="Re:VIEW">
+<% if @javascripts.present? %>
+<%   @javascripts.each do |js| %>
+  <%= js %>
+<%   end %>
+<% end %>
+<% if @stylesheets.present? %>
+<%   @stylesheets.each do |style| %>
+  <link rel="stylesheet" type="text/css" href="<%= style %>">
+<%   end %>
+<% end %>
+  <title><%= h(@title) %></title>
+</head>
+<body>
+<%= @body %>
+</body>
+</html>

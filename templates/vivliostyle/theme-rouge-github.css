@@ -1,0 +1,258 @@
+/*
+ * Syntax Highlighting (Rouge - GitHub theme)
+ * For use with Re:VIEW Vivliostyle output
+ * Uses CSS custom properties defined in theme-review.css
+ * License: CC0-1.0
+ */
+
+/* ========================================
+ * Rouge Table Structure (Line Numbers)
+ * ======================================== */
+
+/* Remove all borders from Rouge tables */
+.highlight table,
+.highlight table tbody,
+.highlight table tr,
+.highlight table td,
+.highlight table th,
+.highlight .rouge-table,
+.highlight .rouge-table tbody,
+.highlight .rouge-table tr,
+.highlight .rouge-table td,
+.rouge-table,
+.rouge-table tbody,
+.rouge-table tr,
+.rouge-table td,
+pre .rouge-table,
+pre .rouge-table tbody,
+pre .rouge-table tr,
+pre .rouge-table td,
+pre table.highlight,
+pre table.highlight tbody,
+pre table.highlight tr,
+pre table.highlight td {
+  border: none !important;
+  border-collapse: collapse;
+  background: transparent;
+}
+
+.highlight table td,
+.highlight .rouge-table td,
+.rouge-table td,
+pre .rouge-table td,
+pre table.highlight td {
+  padding: 0;
+  vertical-align: top;
+}
+
+.highlight table pre,
+.highlight .rouge-table pre,
+.rouge-table pre,
+pre .rouge-table pre,
+pre table.highlight pre {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none !important;
+  border-radius: 0;
+}
+
+/* Line number gutter */
+.highlight .rouge-gutter,
+.highlight .gl,
+.rouge-gutter,
+.lineno {
+  width: 2em;
+  min-width: 2em;
+  max-width: 3em;
+  padding-right: 0.8em;
+  text-align: right;
+  color: var(--vs-hl-comment);
+  user-select: none;
+  border-right: none !important;
+  background: transparent;
+}
+
+.highlight .rouge-gutter pre,
+.highlight .gl pre,
+.rouge-gutter pre,
+pre.lineno {
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none !important;
+  border-radius: 0;
+}
+
+/* Code content area */
+.highlight .rouge-code,
+.highlight .rouge-code pre,
+.rouge-code,
+.rouge-code pre {
+  width: 100%;
+  padding-left: 0.5em;
+  background: transparent;
+}
+
+/* ========================================
+ * Syntax Highlighting Colors
+ * ======================================== */
+
+/* Base */
+.highlight,
+.highlight .w {
+  color: var(--vs-hl-text);
+  background-color: var(--vs-hl-bg);
+}
+
+/* Keywords */
+.highlight .k,
+.highlight .kd,
+.highlight .kn,
+.highlight .kp,
+.highlight .kr,
+.highlight .kt,
+.highlight .kv,
+.highlight .kc {
+  color: var(--vs-hl-keyword);
+}
+
+/* Strings */
+.highlight .s,
+.highlight .sa,
+.highlight .sc,
+.highlight .dl,
+.highlight .sd,
+.highlight .s2,
+.highlight .se,
+.highlight .sh,
+.highlight .sx,
+.highlight .s1,
+.highlight .ss {
+  color: var(--vs-hl-string);
+}
+
+/* Numbers and Literals */
+.highlight .l,
+.highlight .ld,
+.highlight .m,
+.highlight .mb,
+.highlight .mf,
+.highlight .mh,
+.highlight .mi,
+.highlight .il,
+.highlight .mo,
+.highlight .mx {
+  color: var(--vs-hl-number);
+}
+
+/* Functions and Methods */
+.highlight .nf,
+.highlight .fm,
+.highlight .nd {
+  color: var(--vs-hl-function);
+}
+
+/* Classes, Modules, Constants */
+.highlight .nc,
+.highlight .nn,
+.highlight .no,
+.highlight .nb {
+  color: var(--vs-hl-class);
+}
+
+/* Tags and Attributes (HTML/XML) */
+.highlight .nt,
+.highlight .na,
+.highlight .sr {
+  color: var(--vs-hl-tag);
+}
+
+/* Variables */
+.highlight .nv,
+.highlight .vc,
+.highlight .vg,
+.highlight .vi,
+.highlight .vm {
+  color: var(--vs-hl-variable);
+}
+
+/* Operators */
+.highlight .o,
+.highlight .ow {
+  color: var(--vs-hl-operator);
+}
+
+/* Comments */
+.highlight .c,
+.highlight .ch,
+.highlight .cd,
+.highlight .cm,
+.highlight .cp,
+.highlight .cpf,
+.highlight .c1,
+.highlight .cs {
+  color: var(--vs-hl-comment);
+}
+
+/* Misc */
+.highlight .sb,
+.highlight .bp,
+.highlight .ne,
+.highlight .nl,
+.highlight .py {
+  color: var(--vs-hl-number);
+}
+
+.highlight .gh,
+.highlight .gu {
+  color: var(--vs-hl-number);
+  font-weight: bold;
+}
+
+.highlight .gl,
+.highlight .gt {
+  color: var(--vs-hl-comment);
+}
+
+.highlight .ni,
+.highlight .si {
+  color: var(--vs-hl-text);
+}
+
+/* Text styles */
+.highlight .ge {
+  color: var(--vs-hl-text);
+  font-style: italic;
+}
+
+.highlight .gs {
+  color: var(--vs-hl-text);
+  font-weight: bold;
+}
+
+.highlight .ges {
+  font-weight: bold;
+  font-style: italic;
+}
+
+/* Diff */
+.highlight .gi {
+  color: var(--vs-hl-diff-add);
+  background-color: var(--vs-hl-diff-add-bg);
+}
+
+.highlight .gd {
+  color: var(--vs-hl-diff-del);
+  background-color: var(--vs-hl-diff-del-bg);
+}
+
+.highlight .gr {
+  color: var(--vs-hl-error-text);
+}
+
+/* Error */
+.highlight .err {
+  color: var(--vs-hl-error-text);
+  background-color: var(--vs-hl-error-bg);
+}

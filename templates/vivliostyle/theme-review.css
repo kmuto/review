@@ -1,0 +1,743 @@
+/*
+ * Re:VIEW Vivliostyle Theme
+ * Based on @vivliostyle/theme-techbook structure
+ * License: CC0-1.0
+ */
+
+/* Import Syntax Highlighting theme (Rouge - GitHub) */
+@import url("theme-rouge-github.css");
+
+/* ========================================
+ * CSS Custom Properties (Vivliostyle standard)
+ * ======================================== */
+:root {
+  /* Colors - Dark Gray theme */
+  --vs-color-primary: #2d3748;
+  --vs-color-body: #1a202c;
+  --vs-color-bg: transparent;
+  --vs-color-anchor: #4a5568;
+  --vs-color-blockquote-border: #a0aec0;
+  --vs-color-blockquote-bg: #f7fafc;
+  --vs-color-inline-code-bg: #edf2f7;
+  --vs-color-inline-code-border: #e2e8f0;
+  --vs-color-heading: #2d3748;
+  --vs-color-border: #cbd5e0;
+
+  /* Syntax Highlighting - GitHub Light Theme */
+  --vs-hl-bg: #f8f8f8;
+  --vs-hl-text: #24292f;
+  --vs-hl-comment: #6e7781;
+  --vs-hl-keyword: #cf222e;
+  --vs-hl-string: #0a3069;
+  --vs-hl-number: #0550ae;
+  --vs-hl-function: #8250df;
+  --vs-hl-class: #953800;
+  --vs-hl-tag: #116329;
+  --vs-hl-attribute: #116329;
+  --vs-hl-variable: #0550ae;
+  --vs-hl-operator: #0550ae;
+  --vs-hl-diff-add: #116329;
+  --vs-hl-diff-add-bg: #dafbe1;
+  --vs-hl-diff-del: #82071e;
+  --vs-hl-diff-del-bg: #ffebe9;
+  --vs-hl-error-bg: #82071e;
+  --vs-hl-error-text: #f6f8fa;
+
+  /* Typography */
+  --vs-font-family: "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Yu Mincho", "YuMincho", "Noto Serif CJK JP", "Noto Serif JP", serif;
+  --vs-font-family-mono: "Menlo", "Consolas", "Courier New", "Courier", "Hiragino Kaku Gothic ProN", "MS Gothic", "Yu Gothic", monospace;
+  --vs-font-size: 10pt;
+  --vs-line-height: 1.7;
+
+  /* Headings */
+  --vs-heading-font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "YuGothic", "Noto Sans CJK JP", "Noto Sans JP", sans-serif;
+  --vs-heading-font-weight: 600;
+  --vs-h1-font-size: 24pt;
+  --vs-h2-font-size: 16pt;
+  --vs-h3-font-size: 14pt;
+  --vs-h4-font-size: 12pt;
+  --vs-h5-font-size: 11pt;
+  --vs-h6-font-size: 10pt;
+
+  /* Page */
+  --vs-page-width: 182mm;
+  --vs-page-height: 257mm;
+  --vs-page-margin-top: 25mm;
+  --vs-page-margin-bottom: 25mm;
+  --vs-page-margin-inside: 22mm;
+  --vs-page-margin-outside: 22mm;
+}
+
+/* ========================================
+ * Reset
+ * ======================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ========================================
+ * Page Settings
+ * ======================================== */
+@page {
+  size: var(--vs-page-width) var(--vs-page-height);
+  margin-top: var(--vs-page-margin-top);
+  margin-bottom: var(--vs-page-margin-bottom);
+
+  @top-left {
+    content: env(pub-title);
+    font-size: 9pt;
+    color: #666;
+  }
+  @top-right {
+    content: env(doc-title);
+    font-size: 9pt;
+    color: #666;
+  }
+  @bottom-center {
+    content: counter(page);
+    font-size: 9pt;
+  }
+}
+
+@page :left {
+  margin-left: var(--vs-page-margin-outside);
+  margin-right: var(--vs-page-margin-inside);
+
+  @top-left {
+    content: env(pub-title);
+  }
+  @top-right {
+    content: none;
+  }
+}
+
+@page :right {
+  margin-left: var(--vs-page-margin-inside);
+  margin-right: var(--vs-page-margin-outside);
+
+  @top-left {
+    content: none;
+  }
+  @top-right {
+    content: env(doc-title);
+  }
+}
+
+@page :first {
+  @top-left { content: none; }
+  @top-right { content: none; }
+}
+
+/* ========================================
+ * Base Typography
+ * ======================================== */
+html {
+  orphans: 1;
+  widows: 1;
+}
+
+body {
+  font-family: var(--vs-font-family);
+  font-size: var(--vs-font-size);
+  line-height: var(--vs-line-height);
+  color: var(--vs-color-body);
+  background-color: var(--vs-color-bg);
+  text-align: justify;
+  text-justify: inter-character;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* ========================================
+ * Headings
+ * ======================================== */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--vs-heading-font-family);
+  line-height: 1.4;
+  color: var(--vs-color-heading);
+  text-align: left;
+  text-justify: auto;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--vs-heading-font-weight);
+}
+
+h1 {
+  font-size: var(--vs-h1-font-size);
+  break-before: right;
+  margin-bottom: 1em;
+  padding-top: 1em;
+  padding-bottom: 0.5em;
+}
+
+h2 {
+  font-size: var(--vs-h2-font-size);
+  margin-top: 2em;
+  margin-bottom: 0.8em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  padding-left: 0.5em;
+  border-radius: 3pt;
+  background-color: var(--vs-color-border);
+}
+
+h3 {
+  font-size: var(--vs-h3-font-size);
+  margin-top: 1.5em;
+  margin-bottom: 0.6em;
+  padding-bottom: 0.3em;
+  border-bottom: 1pt solid var(--vs-color-border);
+}
+
+h4 {
+  font-size: var(--vs-h4-font-size);
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+}
+
+h5 {
+  font-size: var(--vs-h5-font-size);
+  margin-top: 1em;
+  margin-bottom: 0.4em;
+}
+
+h6 {
+  font-size: var(--vs-h6-font-size);
+  margin-top: 1em;
+  margin-bottom: 0.3em;
+}
+
+/* ========================================
+ * Paragraphs
+ * ======================================== */
+p {
+  margin: 0;
+  text-indent: 1em;
+}
+
+h1 + p, h2 + p, h3 + p, h4 + p, h5 + p, h6 + p,
+hr + p, .noindent {
+  text-indent: 0;
+}
+
+/* ========================================
+ * Links
+ * ======================================== */
+a {
+  color: var(--vs-color-anchor);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+/* ========================================
+ * Code
+ * ======================================== */
+pre, code {
+  font-family: var(--vs-font-family-mono);
+}
+
+code {
+  background-color: var(--vs-color-inline-code-bg);
+  border: 1pt solid var(--vs-color-inline-code-border);
+  border-radius: 3pt;
+  padding: 0.1em 0.3em;
+  font-size: 0.9em;
+}
+
+pre {
+  background-color: #f8f8f8;
+  border: 1pt solid #ddd;
+  border-radius: 4pt;
+  padding: 1em;
+  margin: 1em 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 9pt;
+  line-height: 1.4;
+  text-align: left;
+}
+
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* ========================================
+ * Lists
+ * ======================================== */
+ul, ol {
+  margin: 1em 0;
+  padding-left: 2em;
+}
+
+li {
+  margin: 0.3em 0;
+  text-align: left;
+}
+
+dl {
+  margin: 1em 0;
+}
+
+dt {
+  font-weight: bold;
+  margin-top: 0.5em;
+}
+
+dd {
+  margin-left: 2em;
+  margin-top: 0.3em;
+}
+
+/* ========================================
+ * Blockquote
+ * ======================================== */
+blockquote {
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  border-left: 4pt solid var(--vs-color-blockquote-border);
+  background-color: var(--vs-color-blockquote-bg);
+}
+
+blockquote p {
+  text-indent: 0;
+}
+
+/* ========================================
+ * Tables
+ * ======================================== */
+table {
+  border-collapse: collapse;
+  margin: 1em 0;
+  width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
+}
+
+th, td {
+  border: 0.3pt solid var(--vs-color-border);
+  padding: 0.5em;
+  text-align: left;
+  word-break: break-all;
+}
+
+th {
+  background-color: var(--vs-color-inline-code-bg);
+  font-weight: bold;
+}
+
+/* Zebra striping for table rows */
+tbody tr:nth-child(even) {
+  background-color: var(--vs-color-blockquote-bg);
+}
+
+/* ========================================
+ * Images and Figures
+ * ======================================== */
+figure {
+  margin: 1em 0;
+  text-align: center;
+}
+
+figure img {
+  max-width: 100%;
+  height: auto;
+}
+
+figcaption {
+  font-size: 0.9em;
+  margin-top: 0.5em;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ========================================
+ * Footnotes
+ * ======================================== */
+.footnote {
+  float: footnote;
+  font-size: 8pt;
+}
+
+::footnote-marker {
+  font-size: 8pt;
+}
+
+::footnote-call {
+  font-size: 8pt;
+  vertical-align: super;
+  line-height: 0;
+}
+
+/* ========================================
+ * Re:VIEW Specific Classes
+ * ======================================== */
+
+/* Section number */
+.secno {
+  color: var(--vs-color-primary);
+  margin-right: 0.3em;
+}
+
+/* Lead paragraph */
+.lead {
+  margin-bottom: 1.5em;
+  margin-left: 3em;
+}
+
+/* Column */
+.column {
+  margin: 1.5em 0;
+  padding: 1em 1.2em;
+  border: 1pt solid var(--vs-color-border);
+  border-radius: 4pt;
+  background-color: var(--vs-color-blockquote-bg);
+  break-inside: avoid;
+  word-break: break-all;
+}
+
+.column h1, .column h2, .column h3,
+.column h4, .column h5, .column h6 {
+  break-before: auto;
+  margin-top: 0;
+  border: none;
+  padding: 0;
+}
+
+.xcolumn {
+  margin: 1.5em 0;
+  padding: 1em 1.2em;
+  border: 2pt solid var(--vs-color-primary);
+  border-radius: 4pt;
+  break-inside: avoid;
+  word-break: break-all;
+}
+
+/* Minicolumns */
+.reference, .supplement, .syntax {
+  margin: 1em 0;
+  padding: 0.8em 1em;
+  background-color: var(--vs-color-blockquote-bg);
+  border-left: 3pt solid var(--vs-color-border);
+  break-inside: avoid;
+}
+
+/* Callout blocks (note, memo, tip, etc.) */
+.note, .memo, .tip, .info,
+.warning, .important, .caution, .notice {
+  margin: 1em 0;
+  padding: 0.8em 1em;
+  border-left: 4pt solid;
+  background-color: var(--vs-color-blockquote-bg);
+  break-inside: avoid;
+}
+
+.note { border-color: #4a5568; }
+.memo { border-color: #718096; }
+.tip { border-color: #48bb78; }
+.info { border-color: #4299e1; }
+.warning { border-color: #ecc94b; }
+.important { border-color: #f56565; }
+.caution { border-color: #ed8936; }
+.notice { border-color: #a0aec0; }
+
+.note-header, .memo-header, .tip-header, .info-header,
+.warning-header, .important-header, .caution-header, .notice-header {
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  color: var(--vs-color-heading);
+}
+
+.note p, .memo p, .tip p, .info p,
+.warning p, .important p, .caution p, .notice p {
+  text-indent: 0;
+}
+
+/* Code listings */
+.caption-code, .emlist-code, .emlistnum-code,
+.source-code, .cmd-code, .code {
+  margin: 1em 0;
+}
+
+.caption-code .caption,
+.emlist-code .caption,
+.source-code .caption {
+  font-size: 0.9em;
+  font-weight: bold;
+  margin-bottom: 0.3em;
+  color: var(--vs-color-heading);
+}
+
+pre.list, pre.emlist, pre.source {
+  background-color: var(--vs-color-inline-code-bg);
+  border: none;
+  padding: 0.8em 1em;
+  margin: 0;
+  font-size: 9pt;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+pre.cmd {
+  background-color: #1a202c;
+  color: #e2e8f0;
+  border: none;
+  border-radius: 4pt;
+  padding: 0.8em 1em;
+  margin: 0;
+  font-size: 9pt;
+  line-height: 1.5;
+}
+
+/* Dummy image placeholder */
+pre.dummyimage {
+  background-color: #e2e8f0;
+  border: 2pt dashed var(--vs-color-border);
+  padding: 2em;
+  text-align: center;
+  color: #718096;
+}
+
+/* Image container */
+.image {
+  margin: 1.5em 0;
+  text-align: center;
+}
+
+.image img {
+  max-width: 100%;
+  height: auto;
+}
+
+.image .caption {
+  font-size: 0.9em;
+  margin-top: 0.5em;
+  color: var(--vs-color-heading);
+}
+
+/* Image table */
+.imgtable {
+  margin: 1.5em 0;
+  text-align: center;
+}
+
+/* Table container */
+.table {
+  margin: 1.5em 0;
+}
+
+.table .caption {
+  font-size: 0.9em;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  color: var(--vs-color-heading);
+}
+
+/* Equation */
+.equation, .caption-equation {
+  margin: 1em 0;
+  text-align: center;
+}
+
+.caption-equation .caption {
+  font-size: 0.9em;
+  margin-top: 0.5em;
+}
+
+/* Bibliography */
+.bibpaper {
+  margin: 0.5em 0;
+  padding-left: 2em;
+  text-indent: -2em;
+}
+
+.bibref {
+  font-style: italic;
+}
+
+/* References */
+.listref, .tableref, .imgref, .eqref {
+  /* inherit default link styles */
+}
+
+/* Paragraph alignment */
+.noindent {
+  text-indent: 0;
+}
+
+.flushright {
+  text-align: right;
+  text-indent: 0;
+}
+
+.center {
+  text-align: center;
+  text-indent: 0;
+}
+
+/* Page break */
+.pagebreak {
+  break-before: page;
+}
+
+/* Draft comment */
+.draft-comment {
+  background-color: #fef3c7;
+  border: 1pt solid #f59e0b;
+  padding: 0.5em;
+  margin: 0.5em 0;
+  font-size: 0.9em;
+}
+
+/* Endnotes */
+.endnotes {
+  margin-top: 2em;
+  border-top: 1pt solid var(--vs-color-border);
+  padding-top: 1em;
+}
+
+.endnote {
+  font-size: 0.9em;
+  margin: 0.3em 0;
+}
+
+/* Footnote reference link */
+a.noteref {
+  font-size: 0.8em;
+  vertical-align: super;
+  line-height: 0;
+}
+
+/* Cover page */
+.cover {
+  page: cover;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.cover-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+@page cover {
+  margin: 0;
+  padding: 0;
+  @top-left { content: none; }
+  @top-right { content: none; }
+  @bottom-center { content: none; }
+}
+
+/* Colophon (imprint) page */
+.colophon {
+  page: colophon;
+  break-inside: avoid;
+  min-height: 100vh; /* ページ全体の高さと同等にする */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: 2rem;
+}
+
+@page colophon {
+  @top-left { content: none; }
+  @top-right { content: none; }
+  @bottom-center { content: none; }
+}
+
+.colophon .colophon-inner {
+  margin-top: auto;
+}
+
+.colophon .title {
+  font-family: var(--vs-heading-font-family);
+  font-size: var(--vs-h2-font-size);
+  font-weight: var(--vs-heading-font-weight);
+  margin-bottom: 1em;
+  text-align: center;
+}
+
+.colophon .subtitle {
+  font-size: 0.8em;
+  font-weight: normal;
+}
+
+.colophon .pubhistory {
+  margin: 1.5em 0;
+  text-align: center;
+}
+
+.colophon .pubhistory p {
+  margin: 0.3em 0;
+  text-indent: 0;
+}
+
+.colophon table.colophon-table {
+  width: auto;
+  margin: 1.5em auto;
+  border-collapse: collapse;
+}
+
+.colophon table.colophon-table tr {
+  background-color: transparent;
+}
+
+.colophon table.colophon-table th,
+.colophon table.colophon-table td {
+  border: none;
+  padding: 0.3em 1em;
+  text-align: left;
+  vertical-align: top;
+}
+
+.colophon table.colophon-table th {
+  background: none;
+  font-weight: normal;
+  white-space: nowrap;
+}
+
+.colophon .copyright {
+  margin-top: 2em;
+  text-align: center;
+  font-size: 0.9em;
+  text-indent: 0;
+}
+
+/* ========================================
+ * Screen Media
+ * ======================================== */
+@media screen {
+  body {
+    max-width: 50rem;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+
+  h1 {
+    break-before: auto;
+  }
+
+  .footnote {
+    float: none;
+    display: block;
+    font-size: 0.85em;
+    border-top: 1pt solid #ccc;
+    padding-top: 0.5em;
+    margin-top: 1em;
+  }
+}
