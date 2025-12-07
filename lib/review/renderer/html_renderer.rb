@@ -440,8 +440,7 @@ module ReVIEW
       def render_math_format(content, math_format)
         case math_format
         when 'mathjax'
-          # Use $$ for display mode like HTMLBuilder
-          "$$#{content.gsub('<', '\lt{}').gsub('>', '\gt{}').gsub('&', '&amp;')}$$\n"
+          render_mathjax_format(content)
         when 'mathml'
           render_mathml_format(content)
         when 'imgmath'
@@ -450,6 +449,11 @@ module ReVIEW
           # Fallback: render as preformatted text
           %Q(<pre>#{escape(content)}\n</pre>\n)
         end
+      end
+
+      # Render math content using MathJax (display mode with $$)
+      def render_mathjax_format(content)
+        "$$#{content.gsub('<', '\lt{}').gsub('>', '\gt{}').gsub('&', '&amp;')}$$\n"
       end
 
       def render_mathml_format(content)
