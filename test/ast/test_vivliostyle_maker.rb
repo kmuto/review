@@ -206,7 +206,7 @@ class VivliostyleEntryTest < Test::Unit::TestCase
   end
 end
 
-class VivliostyleRunnerTest < Test::Unit::TestCase # rubocop:disable Naming/ClassAndModuleCamelCase
+class VivliostyleRunnerTest < Test::Unit::TestCase
   def setup
     @tmpdir = Dir.mktmpdir
     @log_io = StringIO.new

@@ -92,7 +92,6 @@ module ReVIEW
 
               ary.join(sep)
             end
-
           end
         end
       end
