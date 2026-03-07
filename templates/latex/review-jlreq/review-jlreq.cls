@@ -219,6 +219,7 @@
   hidelinks,
   setpagesize=false,
 ]{hyperref}
+\@ifundefined{AtBeginShipout}{\RequirePackage{atbegshi}}\relax
 
 \def\recls@tmp{uplatex}\ifx\recls@tmp\recls@engine
   \RequirePackage{pxjahyper}

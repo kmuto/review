@@ -1,10 +1,31 @@
 \ProvidesClass{review-base}[2021/09/06]
 % jlreq用基本設定
-\hypersetup{
+\def\recls@tmp{luatex}\ifx\recls@tmp\recls@driver
+  \hypersetup{
     pdftitle={\review@booktitlename},
     pdfauthor={\ifdefined\review@autnames\review@autnames\fi},
     pdfcreator={Re:VIEW \review@reviewversion, with LaTeX}
-}
+  }
+\else
+  \def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
+    \hypersetup{
+      pdftitle={\review@booktitlename},
+      pdfauthor={\ifdefined\review@autnames\review@autnames\fi},
+      pdfcreator={Re:VIEW \review@reviewversion, with LaTeX}
+    }
+  \else
+    \newcommand*\PDFDocumentInformation[1]{%
+      \AtBeginShipoutFirst{\special{pdf:docinfo <<#1>>}}}
+    \@onlypreamble\PDFDocumentInformation
+    \PDFDocumentInformation{
+      /Title    (\review@booktitlename)
+      \ifdefined\review@autnames /Author   (\review@autnames)\fi
+      % /Subject  ()
+      % /Keywords (,,)
+      /Creator  (Re:VIEW \review@reviewversion, with LaTeX)
+    }
+  \fi
+\fi
 
 \RequirePackage{pxrubrica}
 \@ifpackagelater{pxrubrica}{2017/04/20}{% true

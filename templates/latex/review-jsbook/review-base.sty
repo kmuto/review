@@ -380,11 +380,26 @@
 \fi
 
 % PDF meta information
+\def\recls@tmp{ebook}\ifx\recls@cameraready\recls@tmp
 \hypersetup{
     pdftitle={\review@booktitlename},
     pdfauthor={\ifdefined\review@autnames\review@autnames\fi},
     pdfcreator={Re:VIEW \review@reviewversion, with LaTeX}
+  }
+\else
+\newcommand*\PDFDocumentInformation[1]{%
+  \AtBeginShipoutFirst{\special{pdf:docinfo <<#1>>}}}
+\@onlypreamble\PDFDocumentInformation
+
+% for non hyperref. escaped character will be displayed funny...
+\PDFDocumentInformation{
+  /Title    (\review@booktitlename)
+  \ifdefined\review@autnames /Author   (\review@autnames)\fi
+  % /Subject  ()
+  % /Keywords (,,)
+  /Creator  (Re:VIEW \review@reviewversion, with LaTeX)
 }
+\fi
 
 %% maxwidth is the original width if it is less than linewidth
 %% otherwise use linewidth (to make sure the graphics do not exceed the margin)
