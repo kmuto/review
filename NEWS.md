@@ -1,3 +1,53 @@
+# Version 5.11.0
+## Bug fixes
+* Fixed errors occurring with ruby-zip v3.x ([#1941], [#1942]).
+* Fixed a build error when using review-jsbook in combination with TeXLive 2026 or later ([#1960]).
+
+## Enhancements
+* Added support for Ruby 3.4 ([#1933], [#1939]).
+* Enabled support for `//firstlinenum` in PLAINTEXTBuilder and TOPBuilder ([#1931]).
+* LATEXBuilder: Fixed an issue where internal anchor links starting with `#...` in `@<href>` op would break ([#1955]).
+
+## Docs
+* Fixed typos across various documents ([#1928]).
+* Updated `format.md` ([#1948]).
+
+## Others
+* Removed Travis CI configuration ([#1943]).
+* Improved testing methods and related implementations ([#1945], [#1953], [#1954], [#1957], [#1958]).
+* Applied suggestions from RuboCop 1.80.1 ([#1946]).
+* Added `ReVIEW::SnapshotLocation` for retrieving immutable location information ([#1949]).
+* Added `ReVIEW::LineInput.from_string` method to create `ReVIEW::LineInput` objects from strings ([#1950]).
+* Added `ReVIEW::Highlighter` class to handle syntax highlighting processes ([#1951]).
+* IndexBuilder: Added support for processing `@<ref>` and `@<labelref>` ([#1952]).
+
+## Contributors
+* [@kachick](https://github.com/kachick)
+* [@kurank](https://github.com/kurank)
+* [@y-yagi](https://github.com/y-yagi)
+* [@munepi](https://github.com/munepi)
+
+[#1928]: https://github.com/kmuto/review/pull/1928
+[#1931]: https://github.com/kmuto/review/pull/1931
+[#1933]: https://github.com/kmuto/review/issues/1933
+[#1939]: https://github.com/kmuto/review/pull/1939
+[#1941]: https://github.com/kmuto/review/pull/1941
+[#1942]: https://github.com/kmuto/review/pull/1942
+[#1943]: https://github.com/kmuto/review/pull/1943
+[#1945]: https://github.com/kmuto/review/pull/1945
+[#1946]: https://github.com/kmuto/review/pull/1946
+[#1948]: https://github.com/kmuto/review/pull/1948
+[#1949]: https://github.com/kmuto/review/pull/1949
+[#1950]: https://github.com/kmuto/review/pull/1950
+[#1951]: https://github.com/kmuto/review/pull/1951
+[#1952]: https://github.com/kmuto/review/pull/1952
+[#1953]: https://github.com/kmuto/review/pull/1953
+[#1954]: https://github.com/kmuto/review/pull/1954
+[#1955]: https://github.com/kmuto/review/pull/1955
+[#1957]: https://github.com/kmuto/review/pull/1957
+[#1958]: https://github.com/kmuto/review/pull/1958
+[#1960]: https://github.com/kmuto/review/issues/1960
+
 # Version 5.10.0
 ## Bug Fixes
 * Fixed an issue where specifying both a subdirectory and a custom page would cause an error ([#1913], [#1914]).
