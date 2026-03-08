@@ -398,6 +398,7 @@
   hidelinks,
   setpagesize=false,
 ]{hyperref}
+\@ifundefined{AtBeginShipout}{\RequirePackage{atbegshi}}\relax
 \RequirePackage{pxjahyper}
 
 %% better line breaks for long urls
