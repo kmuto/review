@@ -47,6 +47,7 @@
 [#1957]: https://github.com/kmuto/review/pull/1957
 [#1958]: https://github.com/kmuto/review/pull/1958
 [#1960]: https://github.com/kmuto/review/issues/1960
+[#1961]: https://github.com/kmuto/review/pull/1961
 
 # Version 5.10.0
 ## Bug Fixes
