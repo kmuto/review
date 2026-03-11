@@ -1,3 +1,54 @@
+# Version 5.11.0
+## バグ修正
+* ruby-zip v3 系でのエラーに対処しました ([#1941], [#1942])
+* LATEXBuilder: `@<href>` インライン命令で `#...` の内部アンカーリンクが壊れるのを修正しました ([#1955])
+* review-jsbook と新しい TeXLive 2026 以降の組み合わせにおいて、ビルドエラーが発生する問題を修正しました ([#1960], [#1961])
+
+## 機能強化
+* Ruby 3.4 に対応しました ([#1933], [#1939])
+* PLAINTEXTBuilder および TOPBuilder において `//firstlinenum` を利用できるようになりました ([#1931])
+
+## ドキュメント
+* 各ドキュメントのタイプミスを修正しました ([#1928])
+* `format.md` を更新しました ([#1948])
+
+## その他
+* Travis CI の設定を削除しました([#1943])
+* テストの手法およびそれに関連する実装を改善しました ([#1945], [#1953], [#1954], [#1957], [#1958])
+* RuboCop 1.80.1 の指摘を反映しました ([#1946])
+* イミュータブルな位置情報を取得するための `ReVIEW::SnapshotLocation` を追加しました ([#1949])
+* 文字列から `ReVIEW::LineInput` オブジェクトを作成できる `ReVIEW::LineInput.from_string` メソッドを追加しました ([#1950])
+* ハイライト関連の処理を行うクラス `ReVIEW::Highlighter` を追加しました ([#1951])
+* IndexBuilder において `@<ref>` および `@<labelref>` を処理対象にしました ([#1952])
+
+## コントリビューターのみなさん
+* [@kachick](https://github.com/kachick)
+* [@kurank](https://github.com/kurank)
+* [@y-yagi](https://github.com/y-yagi)
+* [@munepi](https://github.com/munepi)
+
+[#1928]: https://github.com/kmuto/review/pull/1928
+[#1931]: https://github.com/kmuto/review/pull/1931
+[#1933]: https://github.com/kmuto/review/issues/1933
+[#1939]: https://github.com/kmuto/review/pull/1939
+[#1941]: https://github.com/kmuto/review/pull/1941
+[#1942]: https://github.com/kmuto/review/pull/1942
+[#1943]: https://github.com/kmuto/review/pull/1943
+[#1945]: https://github.com/kmuto/review/pull/1945
+[#1946]: https://github.com/kmuto/review/pull/1946
+[#1948]: https://github.com/kmuto/review/pull/1948
+[#1949]: https://github.com/kmuto/review/pull/1949
+[#1950]: https://github.com/kmuto/review/pull/1950
+[#1951]: https://github.com/kmuto/review/pull/1951
+[#1952]: https://github.com/kmuto/review/pull/1952
+[#1953]: https://github.com/kmuto/review/pull/1953
+[#1954]: https://github.com/kmuto/review/pull/1954
+[#1955]: https://github.com/kmuto/review/pull/1955
+[#1957]: https://github.com/kmuto/review/pull/1957
+[#1958]: https://github.com/kmuto/review/pull/1958
+[#1960]: https://github.com/kmuto/review/issues/1960
+[#1961]: https://github.com/kmuto/review/pull/1961
+
 # Version 5.10.0
 ## バグ修正
 * サブディレクトリとカスタムページを両方指定するとエラーが発生するバグを修正しました([#1913],[#1914])
