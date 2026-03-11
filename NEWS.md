@@ -1,7 +1,7 @@
 # Version 5.11.0
 ## Bug fixes
 * Fixed errors occurring with ruby-zip v3.x ([#1941], [#1942]).
-* Fixed a build error when using review-jsbook in combination with TeXLive 2026 or later ([#1960]).
+* Fixed a build error when using review-jsbook in combination with TeXLive 2026 or later ([#1960], [#1961]).
 
 ## Enhancements
 * Added support for Ruby 3.4 ([#1933], [#1939]).
