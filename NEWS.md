@@ -1,12 +1,12 @@
 # Version 5.11.0
 ## Bug fixes
 * Fixed errors occurring with ruby-zip v3.x ([#1941], [#1942]).
+* LATEXBuilder: Fixed an issue where internal anchor links starting with `#...` in `@<href>` op would break ([#1955]).
 * Fixed a build error when using review-jsbook in combination with TeXLive 2026 or later ([#1960], [#1961]).
 
 ## Enhancements
 * Added support for Ruby 3.4 ([#1933], [#1939]).
 * Enabled support for `//firstlinenum` in PLAINTEXTBuilder and TOPBuilder ([#1931]).
-* LATEXBuilder: Fixed an issue where internal anchor links starting with `#...` in `@<href>` op would break ([#1955]).
 
 ## Docs
 * Fixed typos across various documents ([#1928]).
