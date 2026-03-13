@@ -971,4 +971,19 @@ EOT
       assert_equal true, true
     end
   end
+
+  def test_accept_missing_file_in_verify_target_images
+    epubmaker_instance do |epubmaker, tmpdir|
+      epubmaker.config['epubmaker']['verify_target_images'] = true
+      epubmaker.config['coverimage'] = 'cover.png'
+
+      epubmaker.producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'missing.html', title: 'MISSING', level: 1)
+      epubmaker.producer.contents << ReVIEW::EPUBMaker::Content.new(file: 'missing.css')
+      epubmaker.verify_target_images(tmpdir)
+
+      expect = %w[images/cover.png]
+      assert_equal expect, epubmaker.config['epubmaker']['force_include_images']
+      assert_equal true, true
+    end
+  end
 end
