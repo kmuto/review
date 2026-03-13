@@ -1,0 +1,57 @@
+# frozen_string_literal: true
+
+# Copyright (c) 2025 Kenshi Muto, Masayoshi Takahashi
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+
+require_relative 'node'
+
+module ReVIEW
+  module AST
+    # CodeLineNode - Represents a line in a code block
+    #
+    # A code line can contain text nodes and inline elements.
+    # Line numbers are tracked for numbered code blocks (listnum, emlistnum).
+    class CodeLineNode < Node
+      def initialize(location:, line_number: nil, original_text: '', **kwargs)
+        super(location: location, **kwargs)
+        @line_number = line_number
+        @original_text = original_text
+        @children = []
+      end
+
+      attr_reader :line_number, :original_text, :children
+
+      def to_h
+        result = super
+        result[:line_number] = line_number
+        result[:original_text] = original_text
+        result
+      end
+
+      def serialize_to_hash(options = nil)
+        hash = super
+        hash[:line_number] = line_number if line_number
+        hash[:original_text] = original_text
+        hash
+      end
+
+      def self.deserialize_from_hash(hash)
+        node = new(
+          location: ReVIEW::AST::JSONSerializer.restore_location(hash),
+          line_number: hash['line_number'],
+          original_text: hash['original_text']
+        )
+        if hash['children']
+          hash['children'].each do |child_hash|
+            child = ReVIEW::AST::JSONSerializer.deserialize_from_hash(child_hash)
+            node.add_child(child) if child.is_a?(ReVIEW::AST::Node)
+          end
+        end
+        node
+      end
+    end
+  end
+end

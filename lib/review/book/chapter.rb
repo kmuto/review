@@ -149,7 +149,9 @@ module ReVIEW
       private
 
       def on_file?(contents)
-        contents.map(&:strip).include?("#{id}#{@book.ext}")
+        contents.map(&:strip).include?("#{id}#{@book.ext}") ||
+          contents.map(&:strip).include?("#{id}.re") ||
+          contents.map(&:strip).include?("#{id}.md")
       end
 
       # backward compatibility

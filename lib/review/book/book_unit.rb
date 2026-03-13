@@ -68,6 +68,22 @@ module ReVIEW
         end
       end
 
+      # Set indexes using AST-based indexing
+      def ast_indexes=(indexes)
+        @footnote_index = indexes[:footnote_index] if indexes[:footnote_index]
+        @endnote_index = indexes[:endnote_index] if indexes[:endnote_index]
+        @list_index = indexes[:list_index] if indexes[:list_index]
+        @table_index = indexes[:table_index] if indexes[:table_index]
+        @equation_index = indexes[:equation_index] if indexes[:equation_index]
+        @image_index = indexes[:image_index] if indexes[:image_index]
+        @icon_index = indexes[:icon_index] if indexes[:icon_index]
+        @numberless_image_index = indexes[:numberless_image_index] if indexes[:numberless_image_index]
+        @indepimage_index = indexes[:indepimage_index] if indexes[:indepimage_index]
+        @headline_index = indexes[:headline_index] if indexes[:headline_index]
+        @column_index = indexes[:column_index] if indexes[:column_index]
+        @book.bibpaper_index = indexes[:bibpaper_index] if @book.present? && indexes[:bibpaper_index]
+      end
+
       def dirname
         @path && File.dirname(@path)
       end

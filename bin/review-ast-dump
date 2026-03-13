@@ -1,0 +1,106 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Copyright (c) 2025 Kenshi Muto, Masayoshi Takahashi
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+
+require 'pathname'
+
+bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift((bindir + '../lib').realpath)
+
+require 'review/init'
+require 'review/ast/dumper'
+require 'review/ast/json_serializer'
+require 'optparse'
+
+def parse_options
+  config = ReVIEW::Configure.values
+  output_file = nil
+  serializer_options = ReVIEW::AST::JSONSerializer::Options.new
+
+  opts = OptionParser.new
+  opts.version = ReVIEW::VERSION
+  opts.banner = "Usage: #{File.basename($PROGRAM_NAME, '.*')} [options] CHAPTER.re\n" \
+                'Dump Re:VIEW document as AST in JSON format'
+
+  opts.on('-c', '--config=FILE', 'specify config file') do |file|
+    config.deep_merge!(ReVIEW::Configure.create(yamlfile: file).values)
+  end
+
+  opts.on('-o', '--output=FILE', 'output to FILE instead of stdout') do |file|
+    output_file = file
+  end
+
+  opts.on('--[no-]pretty', 'pretty print JSON (default: true)') do |v|
+    serializer_options.pretty = v
+  end
+
+  opts.on('--[no-]location', 'include location information (default: true)') do |v|
+    serializer_options.include_location = v
+  end
+
+  opts.on('--indent=INDENT', 'indentation for pretty print (default: "  ")') do |v|
+    serializer_options.indent = v
+  end
+
+  opts.on('--compact', 'compact output (no location, no pretty print)') do
+    serializer_options.pretty = false
+    serializer_options.include_location = false
+  end
+
+  opts.on('--help', 'print help and exit') do
+    puts opts.help
+    exit 0
+  end
+
+  begin
+    opts.parse!
+  rescue OptionParser::InvalidOption => e
+    $stderr.puts e.message
+    $stderr.puts opts.help
+    exit 1
+  end
+
+  if ARGV.empty?
+    $stderr.puts 'No input files.'
+    $stderr.puts opts.help
+    exit 1
+  end
+
+  [config, output_file, serializer_options]
+end
+
+def dump_files(dumper, output_file)
+  ARGV.each do |path|
+    output = dumper.dump_file(path)
+
+    if output_file
+      File.write(output_file, output)
+      $stderr.puts "Output written to: #{output_file}"
+    else
+      puts output
+    end
+  end
+end
+
+def main
+  config, output_file, serializer_options = parse_options
+  dumper = ReVIEW::AST::Dumper.new(config: config, serializer_options: serializer_options)
+
+  begin
+    dump_files(dumper, output_file)
+  rescue ReVIEW::ApplicationError, ReVIEW::FileNotFound => e
+    $stderr.puts "Error: #{e.message}"
+    exit 1
+  rescue StandardError => e
+    $stderr.puts "Fatal error: #{e.class}: #{e.message}"
+    $stderr.puts e.backtrace if $DEBUG
+    exit 1
+  end
+end
+
+main

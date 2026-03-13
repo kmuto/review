@@ -1,0 +1,107 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Copyright (c) 2025 Kenshi Muto, Masayoshi Takahashi
+#
+# This program is free software.
+# You can distribute or modify this program under the terms of
+# the GNU LGPL, Lesser General Public License version 2.1.
+
+require 'pathname'
+
+bindir = Pathname.new(__FILE__).realpath.dirname
+$LOAD_PATH.unshift((bindir + '../lib').realpath)
+
+require 'review/init'
+require 'review/ast'
+require 'review/ast/json_serializer'
+require 'review/ast/review_generator'
+require 'optparse'
+require 'json'
+
+def main
+  options = {
+    output: nil
+  }
+
+  parser = OptionParser.new do |opts|
+    opts.banner = 'Usage: review-ast2re [options] FILE'
+    opts.version = ReVIEW::VERSION
+
+    opts.on('-o', '--output FILE', 'Output file (default: stdout)') do |file|
+      options[:output] = file
+    end
+
+    opts.on_tail('-h', '--help', 'Show this message') do
+      puts opts
+      exit
+    end
+  end
+
+  begin
+    parser.parse!
+  rescue OptionParser::InvalidOption => e
+    $stderr.puts "Error: #{e.message}"
+    puts parser
+    exit 1
+  end
+
+  if ARGV.empty? && $stdin.tty?
+    $stderr.puts 'Error: No input file specified'
+    puts parser
+    exit 1
+  end
+
+  input_file = ARGV[0] || '-'
+
+  # Read JSON AST
+  begin
+    if input_file == '-'
+      json_data = $stdin.read
+    else
+      unless File.exist?(input_file)
+        $stderr.puts "Error: Input file not found: #{input_file}"
+        exit 1
+      end
+      json_data = File.read(input_file)
+    end
+  rescue StandardError => e
+    $stderr.puts "Error reading input file: #{e.message}"
+    exit 1
+  end
+
+  # Deserialize JSON to AST
+  begin
+    ast_root = ReVIEW::AST::JSONSerializer.deserialize(json_data)
+  rescue JSON::ParserError => e
+    $stderr.puts "Error parsing JSON: #{e.message}"
+    exit 1
+  rescue StandardError => e
+    $stderr.puts "Error deserializing AST: #{e.message}"
+    exit 1
+  end
+
+  # Generate Re:VIEW text
+  begin
+    generator = ReVIEW::AST::ReVIEWGenerator.new
+    review_text = generator.generate(ast_root)
+  rescue StandardError => e
+    $stderr.puts "Error generating Re:VIEW text: #{e.message}"
+    $stderr.puts e.backtrace if ENV['DEBUG']
+    exit 1
+  end
+
+  # Output result
+  begin
+    if options[:output]
+      File.write(options[:output], review_text)
+    else
+      puts review_text
+    end
+  rescue StandardError => e
+    $stderr.puts "Error writing output: #{e.message}"
+    exit 1
+  end
+end
+
+main

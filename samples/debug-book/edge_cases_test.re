@@ -277,6 +277,8 @@ class ValidationError extends Error {
 対策として@<list>{empty_and_special_cases}で示したnullチェックが重要。
 //}
 
+//blankline
+
 == まとめ
 
 このエッジケーステストでは以下を検証:
