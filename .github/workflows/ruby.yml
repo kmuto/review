@@ -22,9 +22,6 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-    - name: fix ImageMagick policy.xml on Linux
-      if: runner.os == 'Linux'
-      run: sudo sed -i 's/none/read|write/g' /etc/ImageMagick-6/policy.xml
     - name: Build and test with Rake
       run: |
         bundle exec rake test
