@@ -93,5 +93,17 @@ atbegshi
 iftex
 ifptex
 
-# math image generation (test_img_math)
+# math image generation (lib/review/img_math.rb)
 dvipng
+anyfontsize
+pdfcrop
+
+# for hyperref
+infwarerr
+epstopdf-pkg
+kvoptions
+
+# for XeLaTeX / LuaLaTeX
+fontspec
+zxjatype
+bxcjkjatype

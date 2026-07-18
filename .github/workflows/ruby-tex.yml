@@ -19,28 +19,71 @@ jobs:
         texlive: ['2023', '2025', 'latest']
         include:
           - texlive: '2023'
-            texlive_version: '2023'
-            repository: https://texlive.info/historic/systems/texlive/2023/tlnet-final/
+            repository: https://texlive.info/historic/systems/texlive/2023/tlnet-final
           - texlive: '2025'
-            texlive_version: '2025'
-            repository: https://texlive.info/historic/systems/texlive/2025/tlnet-final/
+            repository: https://texlive.info/historic/systems/texlive/2025/tlnet-final
           - texlive: 'latest'
-            texlive_version: 'latest'
             experimental: true
     steps:
     - uses: actions/checkout@v7
     - name: Install non-TeX tools in ubuntu
       if: runner.os == 'Linux'
       run: |
-        sudo apt-get update -y -qq && sudo apt-get install -y -qq poppler-utils libfuse2
-    - name: Install TeXLive ${{ matrix.texlive }}
-      uses: zauguin/install-texlive@v4
+        sudo apt-get update -y -qq && sudo apt-get install -y -qq ghostscript poppler-utils libfuse2
+    - name: Cache TeXLive ${{ matrix.texlive }}
+      id: texlive-cache
+      uses: actions/cache@v4
       with:
-        texlive_version: ${{ matrix.texlive_version }}
-        repository: ${{ matrix.repository }}
-        package_file: .github/tl_packages
-    - name: Set up Japanese font maps
-      run: kanji-config-updmap-sys haranoaji
+        path: ~/texlive
+        key: texlive-${{ runner.os }}-${{ matrix.texlive }}-${{ hashFiles('.github/tl_packages') }}
+    - name: Install TeXLive ${{ matrix.texlive }}
+      if: steps.texlive-cache.outputs.cache-hit != 'true'
+      env:
+        TL_REPOSITORY: ${{ matrix.repository || 'https://mirror.ctan.org/systems/texlive/tlnet' }}
+      run: |
+        set -euxo pipefail
+        mkdir -p "${RUNNER_TEMP}/install-tl"
+        curl -fsSL "${TL_REPOSITORY}/install-tl-unx.tar.gz" |
+          tar xz -C "${RUNNER_TEMP}/install-tl" --strip-components=1
+        # minimum profile, added some packages
+        cat > "${RUNNER_TEMP}/texlive.profile" <<EOF
+        selected_scheme scheme-infraonly
+        TEXDIR ${HOME}/texlive
+        TEXMFLOCAL ${HOME}/texlive/texmf-local
+        TEXMFSYSVAR ${HOME}/texlive/texmf-var
+        TEXMFSYSCONFIG ${HOME}/texlive/texmf-config
+        TEXMFVAR ${HOME}/texlive/texmf-var
+        TEXMFCONFIG ${HOME}/texlive/texmf-config
+        TEXMFHOME ${HOME}/texlive/texmf-home
+        instopt_portable 1
+        instopt_adjustpath 0
+        tlpdbopt_install_docfiles 0
+        tlpdbopt_install_srcfiles 0
+        tlpdbopt_autobackup 0
+        tlpdbopt_create_formats 1
+        EOF
+        perl "${RUNNER_TEMP}/install-tl/install-tl" \
+          --profile "${RUNNER_TEMP}/texlive.profile" \
+          --repository "${TL_REPOSITORY}"
+        export PATH="${HOME}/texlive/bin/x86_64-linux:${PATH}"
+        tlmgr install $(sed -e 's/#.*//' -e '/^\s*$/d' .github/tl_packages)
+        kanji-config-updmap-sys haranoaji
+    - name: Add TeXLive to PATH
+      run: echo "${HOME}/texlive/bin/x86_64-linux" >> "${GITHUB_PATH}"
+    # check commands
+    - name: Verify TeXLive commands
+      run: |
+        set -u
+        missing=0
+        for cmd in uplatex platex lualatex dvipdfmx dvipng pdfcrop mendex extractbb kpsewhich gs pdftocairo; do
+          if version=$("$cmd" --version 2>&1 | head -1); then
+            printf '  ok      %-10s %s\n' "$cmd" "$version"
+          else
+            printf '  MISSING %s\n' "$cmd"
+            missing=1
+          fi
+        done
+        exit $missing
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
@@ -65,4 +108,4 @@ jobs:
         export PATH=${GITHUB_WORKSPACE}/vendor/imagemagick:${PATH}
         gem install bundler --no-document
         bundle install --retry 3
-        bundle exec rake
+        bundle exec ruby test/run_test.rb --verbose
