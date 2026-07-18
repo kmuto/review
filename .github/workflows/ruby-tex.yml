@@ -10,17 +10,38 @@ jobs:
   build:
 
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental || false }}
     strategy:
       fail-fast: false
       matrix:
         ruby: ['3.2']
-        os: [ubuntu-22.04]
+        os: [ubuntu-latest]
+        texlive: ['2023', '2025']
+        include:
+          - ruby: '3.2'
+            os: ubuntu-latest
+            texlive: 'latest'
+            experimental: true
     steps:
-    - uses: actions/checkout@v2
-    - name: Install TeXLive 2021 in ubuntu
+    - uses: actions/checkout@v7
+    - name: Install non-TeX tools in ubuntu
       if: runner.os == 'Linux'
       run: |
-        sudo apt-get update -y -qq && sudo apt-get install -y -qq texlive-lang-japanese texlive-fonts-recommended texlive-fonts-extra texlive-luatex texlive-extra-utils texlive-latex-extra dvipng poppler-utils libfuse2
+        sudo apt-get update -y -qq && sudo apt-get install -y -qq poppler-utils libfuse2
+    - name: Install TeXLive ${{ matrix.texlive }}
+      uses: TeX-Live/setup-texlive-action@v4
+      with:
+        version: ${{ matrix.texlive }}
+        packages: |
+          scheme-small
+          collection-langjapanese
+          collection-latexextra
+          collection-fontsrecommended
+          collection-luatex
+          collection-binextra
+          dvipng
+    - name: Set up Japanese font maps
+      run: kanji-config-updmap-sys haranoaji
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
@@ -37,9 +58,9 @@ jobs:
       if: runner.os == 'Linux'
       run: sudo sed -i 's/none/read|write/g' /etc/ImageMagick-6/policy.xml
     - name: use Node.js 18.x
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v7
       with:
-        node-version: 18
+        node-version: 24
     - name: Build and test with Rake
       run: |
         export PATH=${GITHUB_WORKSPACE}/vendor/imagemagick:${PATH}
