@@ -16,11 +16,16 @@ jobs:
       matrix:
         ruby: ['3.2']
         os: [ubuntu-latest]
-        texlive: ['2023', '2025']
+        texlive: ['2023', '2025', 'latest']
         include:
-          - ruby: '3.2'
-            os: ubuntu-latest
-            texlive: 'latest'
+          - texlive: '2023'
+            texlive_version: '2023'
+            repository: https://texlive.info/historic/systems/texlive/2023/tlnet-final/
+          - texlive: '2025'
+            texlive_version: '2025'
+            repository: https://texlive.info/historic/systems/texlive/2025/tlnet-final/
+          - texlive: 'latest'
+            texlive_version: 'latest'
             experimental: true
     steps:
     - uses: actions/checkout@v7
@@ -29,17 +34,11 @@ jobs:
       run: |
         sudo apt-get update -y -qq && sudo apt-get install -y -qq poppler-utils libfuse2
     - name: Install TeXLive ${{ matrix.texlive }}
-      uses: TeX-Live/setup-texlive-action@v4
+      uses: zauguin/install-texlive@v4
       with:
-        version: ${{ matrix.texlive }}
-        packages: |
-          scheme-small
-          collection-langjapanese
-          collection-latexextra
-          collection-fontsrecommended
-          collection-luatex
-          collection-binextra
-          dvipng
+        texlive_version: ${{ matrix.texlive_version }}
+        repository: ${{ matrix.repository }}
+        package_file: .github/tl_packages
     - name: Set up Japanese font maps
       run: kanji-config-updmap-sys haranoaji
     - name: Set up Ruby

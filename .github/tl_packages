@@ -1,0 +1,97 @@
+# engines (uplatex -> dvipdfmx, lualatex)
+latex
+latex-bin
+latexconfig
+l3kernel
+l3packages
+ptex
+uptex
+platex
+uplatex
+platex-tools
+ptex-base
+uptex-base
+ptex-fonts
+uptex-fonts
+dvipdfmx
+dvips
+luatex
+
+# Japanese typesetting
+japanese-otf
+pxbase
+pxpgfmark
+pxjahyper
+pxrubrica
+plautopatch
+endnotesj
+jsclasses
+
+# review-jlreq / jlreq and its undeclared dependencies
+jlreq
+luatexja
+everyhook
+svn-prov
+filehook
+
+# CJK fonts and CMaps
+haranoaji
+haranoaji-extra
+ptex-fontmaps
+adobemapping
+lm
+cm-super
+ec
+type1cm
+
+# Base 35 PostScript fonts (review-base.sty uses T1/phv)
+psnfss
+helvetic
+times
+courier
+
+# packages required by review-base.sty / review-style.sty
+hyperref
+caption
+needspace
+bigfoot
+graphics
+graphics-def
+graphics-cfg
+xcolor
+colortbl
+framed
+wrapfig
+ascmac
+float
+amsmath
+amsfonts
+amscls
+tools
+makeindex
+listings
+fancyhdr
+multirow
+ulem
+
+# packages required by review-tcbox.sty / techbooster styles
+tcolorbox
+pgf
+varwidth
+environ
+trimspaces
+tikzfill
+pdfcol
+fancyvrb
+upquote
+
+# support packages for the vendored styles
+etoolbox
+xkeyval
+everypage
+atbegshi
+iftex
+ifptex
+
+# math image generation (test_img_math)
+dvipng
