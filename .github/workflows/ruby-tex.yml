@@ -29,7 +29,7 @@ jobs:
     - name: Install non-TeX tools in ubuntu
       if: runner.os == 'Linux'
       run: |
-        sudo apt-get update -y -qq && sudo apt-get install -y -qq ghostscript poppler-utils libfuse2
+        sudo apt-get update -y -qq && sudo apt-get install -y -qq ghostscript poppler-utils
     - name: Cache TeXLive ${{ matrix.texlive }}
       id: texlive-cache
       uses: actions/cache@v4
@@ -88,24 +88,12 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
-    - name: use vendor's imagemagick
-      run: |
-        export PATH=${GITHUB_WORKSPACE}/vendor/imagemagick:${PATH}
-        chmod 755 ${GITHUB_WORKSPACE}/vendor/imagemagick/magick
-        ln -s ${GITHUB_WORKSPACE}/vendor/imagemagick/magick ${GITHUB_WORKSPACE}/vendor/imagemagick/compare
-        which compare
-        magick -version
-        compare -version
-    - name: fix ImageMagick policy.xml on Linux
-      if: runner.os == 'Linux'
-      run: sudo sed -i 's/none/read|write/g' /etc/ImageMagick-6/policy.xml
     - name: use Node.js 18.x
       uses: actions/setup-node@v7
       with:
         node-version: 24
     - name: Build and test with Rake
       run: |
-        export PATH=${GITHUB_WORKSPACE}/vendor/imagemagick:${PATH}
         gem install bundler --no-document
         bundle install --retry 3
         bundle exec ruby test/run_test.rb --verbose
