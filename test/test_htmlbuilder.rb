@@ -1435,7 +1435,7 @@ EOS
     expected = <<-EOS
 <div id="samplelist" class="code">
 <p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
-<table class="highlight rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+<table class="highlight rouge-table"><tbody><tr><td class="rouge-gutter gl" aria-hidden="true"><pre class="lineno">1
 2
 3
 4
@@ -1469,7 +1469,7 @@ EOS
     expected = <<-EOB
 <div id="samplelist" class="code">
 <p class="caption">リスト1.1: this is <b>test</b>&lt;&amp;&gt;_</p>
-<table class="highlight rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">100
+<table class="highlight rouge-table"><tbody><tr><td class="rouge-gutter gl" aria-hidden="true"><pre class="lineno">100
 101
 102
 103

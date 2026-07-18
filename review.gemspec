@@ -27,7 +27,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency('logger')
   gem.add_dependency('nkf')
   gem.add_dependency('rexml')
-  gem.add_dependency('rouge')
+  gem.add_dependency('rouge', '>= 5.0')
   gem.add_dependency('rubyzip')
   gem.add_dependency('tty-logger')
   gem.add_development_dependency('chunky_png')
