@@ -138,7 +138,8 @@
 
 % トンボ設定
 \if@pdftombo
-  \RequirePackage[trimmarks_paper=\recls@tombopaper,bleed_margin=\recls@tombobleed]{jlreq-trimmarks}
+  \edef\recls@trimmarksopt{trimmarks_paper=\recls@tombopaper,bleed_margin=\recls@tombobleed}%
+  \expandafter\RequirePackage\expandafter[\recls@trimmarksopt]{jlreq-trimmarks}
   % https://github.com/abenori/jlreq/blob/master/jlreq-trimmarks-ja.md を参照
   \jlreqtrimmarkssetup{banner={}}
   % 隠しノンブル
