@@ -2472,6 +2472,19 @@ EOS
     assert_equal '「1.2 bar」', hd
   end
 
+  def test_table_with_cell_empty_for_this_builder
+    actual = compile_block("//table{\n@<raw>{|latex|\\quad}\tbbb\n------------\nccc\tddd\n//}\n")
+    expected = <<-EOS
+<div class="table">
+<table>
+<tr><th></th><th>bbb</th></tr>
+<tr><td>ccc</td><td>ddd</td></tr>
+</table>
+</div>
+EOS
+    assert_equal expected, actual
+  end
+
   def test_table
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     expected = <<-EOS
