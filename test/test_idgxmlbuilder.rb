@@ -119,6 +119,16 @@ class IDGXMLBuidlerTest < Test::Unit::TestCase
     assert_equal %Q(<table><tbody><tr><b>1</b>\t<i>2</i></tr><tr type="lastline"><b>3</b>\t<i>4</i>&lt;&gt;&amp;</tr></tbody></table>), actual
   end
 
+  def test_table_with_short_row
+    # A row with fewer cells than the widest one is padded out, so the number
+    # of <td> matches the aid:tcols this table declares to InDesign.
+    actual = compile_block("//table{\naaa\tbbb\n------------\nccc\n//}\n")
+    expected = <<-EOS.chomp
+<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="2"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">aaa</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">bbb</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172">ccc</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="14.172"></td></tbody></table>
+EOS
+    assert_equal expected, actual
+  end
+
   def test_table
     actual = compile_block("//table{\naaa\tbbb\n------------\nccc\tddd<>&\n//}\n")
     expected = <<-EOS.chomp
@@ -193,7 +203,7 @@ EOS
   def test_table_row_separator
     src = "//table{\n1\t2\t\t3  4| 5\n------------\na b\tc  d   |e\n//}\n"
     expected = <<-EOS.chomp
-<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="3"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">1</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">2</td><td xyh="3,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">3  4| 5</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">a b</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">c  d   |e</td></tbody></table>
+<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="3"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">1</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">2</td><td xyh="3,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">3  4| 5</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">a b</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448">c  d   |e</td><td xyh="3,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="9.448"></td></tbody></table>
 EOS
     actual = compile_block(src)
     assert_equal expected, actual
@@ -201,7 +211,7 @@ EOS
     @config['table_row_separator'] = 'singletab'
     actual = compile_block(src)
     expected = <<-EOS.chomp
-<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="4"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">1</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">2</td><td xyh="3,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086"></td><td xyh="4,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">3  4| 5</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">a b</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">c  d   |e</td></tbody></table>
+<table><tbody xmlns:aid5="http://ns.adobe.com/AdobeInDesign/5.0/" aid:table="table" aid:trows="2" aid:tcols="4"><td xyh="1,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">1</td><td xyh="2,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">2</td><td xyh="3,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086"></td><td xyh="4,1,1" aid:table="cell" aid:theader="1" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">3  4| 5</td><td xyh="1,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">a b</td><td xyh="2,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086">c  d   |e</td><td xyh="3,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086"></td><td xyh="4,2,1" aid:table="cell" aid:crows="1" aid:ccols="1" aid:ccolwidth="7.086"></td></tbody></table>
 EOS
     assert_equal expected, actual
 

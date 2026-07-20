@@ -542,8 +542,19 @@ module ReVIEW
         @col = col2 if col2 > @col
       end
       app_error 'no rows in the table' if rows.empty?
+
+      rows.map! { |row| pad_table_row(row) } if @tablewidth
+
       [sepidx, rows]
     end
+
+    def pad_table_row(row)
+      missing = @col - row.split(table_row_separator_regexp).length
+      return row if missing <= 0
+
+      row + ("\tDUMMYCELLSPLITTER" * missing)
+    end
+    private :pad_table_row
 
     def table_rows(sepidx, rows)
       cellwidth = []
