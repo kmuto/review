@@ -101,6 +101,11 @@ class TOPBuidlerTest < Test::Unit::TestCase
     assert_equal 'test ▲inline<&;\\ test☆ test2', actual
   end
 
+  def test_inline_em
+    actual = compile_inline('test @<em>{inline test} test2')
+    assert_equal 'test ▲inline test☆ test2', actual
+  end
+
   def test_inline_b
     actual = compile_inline('test @<b>{inline test} test2')
     assert_equal 'test ★inline test☆ test2', actual
