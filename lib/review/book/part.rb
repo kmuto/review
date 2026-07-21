@@ -43,8 +43,8 @@ module ReVIEW
         @path = name
         if io
           @content = io.read
-        elsif @path.present? && File.exist?(File.join(@book.config['contentdir'], @path))
-          @content = File.read(File.join(@book.config['contentdir'], @path), mode: 'rt:BOM|utf-8')
+        elsif @path.present? && File.exist?(File.join(@book.contentdir, @path))
+          @content = File.read(File.join(@book.contentdir, @path), mode: 'rt:BOM|utf-8')
           @name = File.basename(name, '.re')
         else
           @content = ''
@@ -80,7 +80,7 @@ module ReVIEW
 
       def volume
         if @number && file?
-          Volume.count_file(File.join(@book.config['contentdir'], @path))
+          Volume.count_file(File.join(@book.contentdir, @path))
         else
           Volume.new(0, 0, 0)
         end

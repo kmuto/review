@@ -17,6 +17,58 @@ class PartTest < Test::Unit::TestCase
     assert_equal 'name', part.name
   end
 
+  # A part's .re is resolved against the book's directory, not the process's working directory.
+  def test_content_is_read_relative_to_the_book_not_the_working_directory
+    Dir.mktmpdir do |bookdir|
+      File.write(File.join(bookdir, 'part1.re'), "= Part Title\n\nThe part body.\n")
+
+      Dir.mktmpdir do |elsewhere|
+        Dir.chdir(elsewhere) do
+          book = Book::Base.new(bookdir)
+          part = Book::Part.new(book, 1, [], 'part1.re')
+
+          assert_equal "= Part Title\n\nThe part body.\n", part.content
+          assert_equal 'part1', part.name
+        end
+      end
+    end
+  end
+
+  # The same path is used to measure the part, so it moves with the content.
+  def test_volume_is_measured_relative_to_the_book
+    Dir.mktmpdir do |bookdir|
+      File.write(File.join(bookdir, 'part1.re'), "= Part Title\n")
+
+      Dir.mktmpdir do |elsewhere|
+        Dir.chdir(elsewhere) do
+          book = Book::Base.new(bookdir)
+          part = Book::Part.new(book, 1, [], 'part1.re')
+
+          assert_operator(part.volume.bytes, :>, 0)
+        end
+      end
+    end
+  end
+
+  # With contentdir set, the .re lives under it, still inside the book.
+  def test_content_honours_contentdir
+    Dir.mktmpdir do |bookdir|
+      FileUtils.mkdir_p(File.join(bookdir, 'contents'))
+      File.write(File.join(bookdir, 'contents', 'part1.re'), "= In contentdir\n")
+
+      Dir.mktmpdir do |elsewhere|
+        Dir.chdir(elsewhere) do
+          config = ReVIEW::Configure.values
+          config['contentdir'] = 'contents'
+          book = Book::Base.new(bookdir, config: config)
+          part = Book::Part.new(book, 1, [], 'part1.re')
+
+          assert_equal "= In contentdir\n", part.content
+        end
+      end
+    end
+  end
+
   def test_each_chapter
     part = Book::Part.new(nil, nil, [1, 2, 3])
 
