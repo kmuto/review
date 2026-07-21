@@ -413,6 +413,8 @@ module ReVIEW
       "▲#{str}☆"
     end
 
+    alias_method :inline_em, :inline_i
+
     def inline_b(str)
       "★#{str}☆"
     end
