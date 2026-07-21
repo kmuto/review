@@ -244,7 +244,7 @@ module ReVIEW
           sepidx ||= idx
           next
         end
-        rows.push(line.strip.split(table_row_separator_regexp).map { |s| s.sub(/\A\./, '') })
+        rows.push(line.rstrip.split(table_row_separator_regexp).map { |s| s.sub(/\A\./, '') })
       end
       rows = adjust_n_cols(rows)
       app_error 'no rows in the table' if rows.empty?
