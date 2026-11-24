@@ -745,4 +745,47 @@ EOS
       assert_equal expected, File.read(File.join(tmpdir, 'part1.html'))
     end
   end
+
+  def test_stage1_opf_escape
+    @producer.config.merge!('title' => 'Sample<>Book',
+                            'aut' => ['Smith & Sons', { 'name' => 'A<B', 'file-as' => 'B&A' }],
+                            'pbl' => [{ 'name' => 'P&P', 'file-as' => 'P<P' }])
+    @producer.modify_config
+    output = @producer.instance_eval { @epub.opf }
+    expect = <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<package version="3.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" xml:lang="en">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+    <dc:title id="title">Sample&lt;&gt;Book</dc:title>
+    <dc:language id="language">en</dc:language>
+    <dc:date id="date">2011-01-01</dc:date>
+    <meta property="dcterms:modified">2014-12-13T14:15:16Z</meta>
+    <dc:identifier id="BookId">http://example.jp/</dc:identifier>
+    <dc:creator id="aut-0">Smith &amp; Sons</dc:creator>
+    <meta refines="#aut-0" property="role" scheme="marc:relators">aut</meta>
+    <dc:creator id="aut-1">A&lt;B</dc:creator>
+    <meta refines="#aut-1" property="role" scheme="marc:relators">aut</meta>
+    <meta refines="#aut-1" property="file-as">B&amp;A</meta>
+    <dc:contributor id="pbl-0">P&amp;P</dc:contributor>
+    <meta refines="#pbl-0" property="role" scheme="marc:relators">pbl</meta>
+    <meta refines="#pbl-0" property="file-as">P&lt;P</meta>
+    <dc:publisher id="pub-pbl-0">P&amp;P</dc:publisher>
+    <meta refines="#pub-pbl-0" property="role" scheme="marc:relators">pbl</meta>
+    <meta refines="#pub-pbl-0" property="file-as">P&lt;P</meta>
+  </metadata>
+  <manifest>
+    <item properties="nav" id="sample-toc.html" href="sample-toc.html" media-type="application/xhtml+xml"/>
+    <item id="sample" href="sample.html" media-type="application/xhtml+xml"/>
+  </manifest>
+  <spine page-progression-direction="ltr">
+    <itemref idref="sample" linear="no"/>
+  </spine>
+  <guide>
+    <reference type="cover" title="Cover" href="sample.html"/>
+    <reference type="toc" title="Table of Contents" href="sample-toc.html"/>
+  </guide>
+</package>
+EOT
+    assert_equal expect, output
+  end
 end

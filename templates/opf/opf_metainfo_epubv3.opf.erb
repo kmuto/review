@@ -1,6 +1,6 @@
 <%# --- DC items --- %>
 <% @dc_items.each do |item| %>
-    <<%= item[:tag] %> id="<%= item[:id] %>"><%= item[:val] %></<%= item[:tag] %>>
+    <<%= item[:tag] %> id="<%= item[:id] %>"><%= h(item[:val].to_s) %></<%= item[:tag] %>>
 <%   item[:refines].each do | refine | %>
     <meta refines="#<%= item[:id] %>" property="<%= refine[:name] %>"><%= h(refine[:val]) %></meta>
 <%   end %>
@@ -13,12 +13,12 @@
 <% end %>
 <%# --- creator --- %>
 <% @creators.each do |creator| %>
-    <dc:creator id="<%= creator[:id] %>"><%= creator[:val] %></dc:creator>
+    <dc:creator id="<%= creator[:id] %>"><%= h(creator[:val].to_s) %></dc:creator>
 <%   creator[:refines].each do |refine| %>
 <%     if refine[:scheme] %>
-    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>" scheme="<%= refine[:scheme] %>"><%= refine[:val] %></meta>
+    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>" scheme="<%= refine[:scheme] %>"><%= h(refine[:val].to_s) %></meta>
 <%     else %>
-    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>"><%= refine[:val] %></meta>
+    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>"><%= h(refine[:val].to_s) %></meta>
 <%     end %>
 <%   end %>
 <% end %>
@@ -27,18 +27,18 @@
     <dc:contributor id="<%= contributer[:id] %>"><%= h(contributer[:val]) %></dc:contributor>
 <%   contributer[:refines].each do |refine| %>
 <%     if refine[:scheme] %>
-    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>" scheme="<%= refine[:scheme] %>"><%= refine[:val] %></meta>
+    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>" scheme="<%= refine[:scheme] %>"><%= h(refine[:val].to_s) %></meta>
 <%     else %>
-    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>"><%= refine[:val] %></meta>
+    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>"><%= h(refine[:val].to_s) %></meta>
 <%     end %>
 <%   end %>
 <%   if contributer[:pub_id] %>
     <dc:publisher id="<%= contributer[:pub_id] %>"><%= h(contributer[:pub_val]) %></dc:publisher>
 <%     contributer[:pub_refines].each do |refine| %>
 <%       if refine[:scheme] %>
-    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>" scheme="<%= refine[:scheme] %>"><%= refine[:val] %></meta>
+    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>" scheme="<%= refine[:scheme] %>"><%= h(refine[:val].to_s) %></meta>
 <%       else %>
-    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>"><%= refine[:val] %></meta>
+    <meta refines="#<%= refine[:id] %>" property="<%= refine[:property]%>"><%= h(refine[:val].to_s) %></meta>
 <%       end %>
 <%     end %>
 <%   end %>
