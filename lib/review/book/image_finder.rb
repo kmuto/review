@@ -20,7 +20,13 @@ module ReVIEW
         @basedir = @book.imagedir
         @chapid = chapter.id
         @builder = @book.config['builder']
-        @entries = dir_entries.map { |path| entry_object(path) }
+        # The entries and their index are built once per book and shared by all finders.
+        @entries = @book.cache.fetch(:image_finder_entries) do
+          dir_entries.map { |path| entry_object(path) }.freeze
+        end
+        @entries_by_basename = @book.cache.fetch(:image_finder_entries_by_basename) do
+          @entries.group_by { |entry| entry[:basename] }.each_value(&:freeze).freeze
+        end
       end
 
       def entry_object(path)
@@ -35,29 +41,29 @@ module ReVIEW
 
       def add_entry(path)
         path.sub!(%r{^\./}, '')
-        unless @entries.find { |entry| entry[:path] == path }
-          @entries << entry_object(path)
+        entry = entry_object(path)
+        candidates = @entries_by_basename[entry[:basename]]
+        return @entries if candidates&.any? { |candidate| candidate[:path] == path }
+
+        if @entries.frozen?
+          # Generated images belong to this finder. Keep the book's index intact.
+          @entries = @entries.dup
+          @entries_by_basename = @entries_by_basename.transform_values(&:dup)
         end
+        (@entries_by_basename[entry[:basename]] ||= []) << entry
+        @entries << entry
         @entries
       end
 
       def find_path(id)
-        targets = target_list(id)
-        targets.each do |target|
+        target_list(id).each do |target|
+          candidates = @entries_by_basename[target]
+          next unless candidates
+
           @book.image_types.each do |ext|
-            entries = @entries.select do |entry|
-              entry[:basename] == target
-            end
-
-            unless entries
-              break
-            end
-
-            entries.find do |entry|
-              if entry[:downcase] == "#{target}#{ext}"
-                return entry[:path]
-              end
-            end
+            name = "#{target}#{ext}"
+            entry = candidates.find { |candidate| candidate[:downcase] == name }
+            return entry[:path] if entry
           end
         end
 

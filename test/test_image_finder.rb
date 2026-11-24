@@ -14,6 +14,8 @@ class ImageFinderTest < Test::Unit::TestCase
       FileUtils.mkdir_p(ENV['TMPDIR'])
     end
     @dir = Dir.mktmpdir
+    @book = Book::Base.new(@dir, config: { 'builder' => 'builder', 'imagedir' => @dir })
+    @book.image_types = ['.jpg']
   end
 
   def teardown
@@ -23,9 +25,7 @@ class ImageFinderTest < Test::Unit::TestCase
   end
 
   def finder
-    book = Book::Base.new(@dir, config: { 'builder' => 'builder', 'imagedir' => @dir })
-    book.image_types = ['.jpg']
-    ch = Book::Chapter.new(book, 1, 'ch01', nil)
+    ch = Book::Chapter.new(@book, 1, 'ch01', nil)
     ReVIEW::Book::ImageFinder.new(ch)
   end
 
@@ -84,5 +84,49 @@ class ImageFinderTest < Test::Unit::TestCase
   def test_entry_object
     assert_equal({ basename: 'ch01/Foo', downcase: 'ch01/Foo.jpg', path: 'ch01/Foo.JPG' },
                  finder.entry_object('ch01/Foo.JPG'))
+  end
+
+  def test_path_priority_before_extension_priority
+    jpg = File.join(@dir, 'ch01-foo.JPG')
+    png = File.join(@dir, 'ch01-foo.png')
+    FileUtils.touch([jpg, png, File.join(@dir, 'foo.gif')])
+    images = finder
+    @book.image_types = %w[.gif .png .jpg]
+    assert_equal(png, images.find_path('foo'))
+    @book.image_types = %w[.gif .jpg .png]
+    assert_equal(jpg, images.find_path('foo'))
+    assert_nil(images.find_path('Foo'))
+  end
+
+  def test_added_image_is_local_to_finder
+    original = File.join(@dir, 'foo.jpg')
+    FileUtils.touch(original)
+    images = finder
+    assert_equal(original, images.find_path('foo'))
+
+    generated = File.join(@dir, 'ch01-foo.jpg')
+    FileUtils.touch(generated)
+    images.add_entry(generated)
+    assert_equal(generated, images.find_path('foo'))
+    assert_equal([original, generated], images.add_entry(generated).map { |entry| entry[:path] })
+    assert_equal(original, finder.find_path('foo'))
+
+    @book.cache.reset
+    assert_equal(generated, finder.find_path('foo'))
+  end
+
+  def test_adding_another_extension_is_local_to_finder
+    jpg = File.join(@dir, 'foo.jpg')
+    png = File.join(@dir, 'foo.png')
+    FileUtils.touch(jpg)
+    @book.image_types = %w[.png .jpg]
+    images = finder
+    other = finder
+    assert_equal([jpg], images.add_entry(jpg).map { |entry| entry[:path] })
+
+    FileUtils.touch(png)
+    images.add_entry(png)
+    assert_equal(png, images.find_path('foo'))
+    assert_equal(jpg, other.find_path('foo'))
   end
 end
