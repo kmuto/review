@@ -114,4 +114,19 @@ class ImageFinderTest < Test::Unit::TestCase
     @book.cache.reset
     assert_equal(generated, finder.find_path('foo'))
   end
+
+  def test_adding_another_extension_is_local_to_finder
+    jpg = File.join(@dir, 'foo.jpg')
+    png = File.join(@dir, 'foo.png')
+    FileUtils.touch(jpg)
+    @book.image_types = %w[.png .jpg]
+    images = finder
+    other = finder
+    assert_equal([jpg], images.add_entry(jpg).map { |entry| entry[:path] })
+
+    FileUtils.touch(png)
+    images.add_entry(png)
+    assert_equal(png, images.find_path('foo'))
+    assert_equal(jpg, other.find_path('foo'))
+  end
 end

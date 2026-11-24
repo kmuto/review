@@ -20,9 +20,12 @@ module ReVIEW
         @basedir = @book.imagedir
         @chapid = chapter.id
         @builder = @book.config['builder']
-        @paths = dir_entries
+        # The entries and their index are built once per book and shared by all finders.
+        @entries = @book.cache.fetch(:image_finder_entries) do
+          dir_entries.map { |path| entry_object(path) }.freeze
+        end
         @entries_by_basename = @book.cache.fetch(:image_finder_entries_by_basename) do
-          build_entries.group_by { |entry| entry[:basename] }
+          @entries.group_by { |entry| entry[:basename] }.each_value(&:freeze).freeze
         end
       end
 
@@ -38,17 +41,17 @@ module ReVIEW
 
       def add_entry(path)
         path.sub!(%r{^\./}, '')
-        unless @entries
-          # Generated images belong to this finder. Keep the book's index intact.
-          @entries = build_entries
-          @entries_by_basename = @entries.group_by { |entry| entry[:basename] }
-        end
         entry = entry_object(path)
-        candidates = (@entries_by_basename[entry[:basename]] ||= [])
-        unless candidates.any? { |candidate| candidate[:path] == path }
-          candidates << entry
-          @entries << entry
+        candidates = @entries_by_basename[entry[:basename]]
+        return @entries if candidates&.any? { |candidate| candidate[:path] == path }
+
+        if @entries.frozen?
+          # Generated images belong to this finder. Keep the book's index intact.
+          @entries = @entries.dup
+          @entries_by_basename = @entries_by_basename.transform_values(&:dup)
         end
+        (@entries_by_basename[entry[:basename]] ||= []) << entry
+        @entries << entry
         @entries
       end
 
@@ -87,12 +90,6 @@ module ReVIEW
           # 6. <basedir>/<id>.<ext>
           "#{@basedir}/#{id}"
         ]
-      end
-
-      private
-
-      def build_entries
-        @paths.map { |path| entry_object(path) }
       end
     end
   end
