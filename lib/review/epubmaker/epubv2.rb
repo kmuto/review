@@ -38,7 +38,7 @@ module ReVIEW
         @dc_items = DC_ITEMS.map do |item|
           if config[item]
             if config[item].is_a?(Array)
-              config.names_of(item).map { |_v| { tag: "dc:#{item}", val: item_sub } }
+              config.names_of(item).map { |v| { tag: "dc:#{item}", val: v.to_s } }
             else
               { tag: "dc:#{item}", val: config.name_of(item).to_s }
             end

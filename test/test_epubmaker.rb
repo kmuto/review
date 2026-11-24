@@ -109,6 +109,13 @@ EOT
     assert_equal expect, output
   end
 
+  def test_stage1_opf_dc_array
+    @producer.config['subject'] = ['Ruby & Rails', 'Publishing']
+    @producer.modify_config
+    output = @producer.instance_eval { @epub.opf }
+    assert_include(output, "    <dc:subject>Ruby &amp; Rails</dc:subject>\n    <dc:subject>Publishing</dc:subject>\n")
+  end
+
   def test_stage1_ncx
     output = @producer.instance_eval { @epub.ncx([]) }
     expect = <<EOT
