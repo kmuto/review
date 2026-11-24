@@ -166,7 +166,9 @@ module ReVIEW
       end
 
       # Return colophon content.
-      def colophon
+      # +base_dir+ is the original root dir, used to look up layouts/.
+      def colophon(base_dir: nil)
+        @workdir = base_dir if base_dir
         @title = h(ReVIEW::I18n.t('colophontitle'))
         @isbn_hyphen = isbn_hyphen
 

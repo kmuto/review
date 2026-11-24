@@ -971,4 +971,19 @@ EOT
       assert_equal true, true
     end
   end
+
+  def test_verify_target_images_with_generated_colophon
+    epubmaker_instance do |epubmaker, tmpdir|
+      epubmaker.config['epubmaker']['verify_target_images'] = true
+      epubmaker.config['colophon'] = true
+
+      epubmaker.copy_backmatter(tmpdir)
+      assert File.exist?(File.join(tmpdir, 'colophon.html'))
+
+      # the registered colophon must be readable before Producer#produce runs
+      epubmaker.push_contents(tmpdir)
+      assert_equal ['colophon.html'], epubmaker.producer.contents.map(&:file)
+      assert_nothing_raised { epubmaker.verify_target_images(tmpdir) }
+    end
+  end
 end

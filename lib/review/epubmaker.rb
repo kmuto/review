@@ -605,6 +605,8 @@ module ReVIEW
       if @config['colophon']
         if @config['colophon'].is_a?(String)
           copy_static_file('colophon', basetmpdir, destfilename: "colophon.#{@config['htmlext']}") # override pre-built colophon
+        else
+          build_colophonpage(basetmpdir, "colophon.#{@config['htmlext']}")
         end
         @htmltoc.add_item(1,
                           "colophon.#{@config['htmlext']}",
@@ -621,6 +623,12 @@ module ReVIEW
       end
 
       true
+    end
+
+    # Write the auto-generated colophon here rather than waiting for Producer#produce,
+    # because verify_target_images reads every registered file before that.
+    def build_colophonpage(basetmpdir, htmlfile)
+      File.write(File.join(basetmpdir, htmlfile), @producer.colophon(base_dir: @basedir))
     end
 
     def write_buildlogtxt(basetmpdir, htmlfile, reviewfile)

@@ -107,6 +107,12 @@ module ReVIEW
 
       alias_method :importImageInfo, :import_imageinfo
 
+      # Return colophon content.
+      # +base_dir+ is original root dir.
+      def colophon(base_dir: nil)
+        @epub.colophon(base_dir: base_dir)
+      end
+
       # Produce EPUB file +epubfile+.
       # +work_dir+ points the directory has contents (default: current directory.)
       # +tmpdir+ defines temporary directory.
