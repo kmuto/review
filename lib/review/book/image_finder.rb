@@ -20,7 +20,10 @@ module ReVIEW
         @basedir = @book.imagedir
         @chapid = chapter.id
         @builder = @book.config['builder']
-        @entries = dir_entries.map { |path| entry_object(path) }
+        @paths = dir_entries
+        @entries_by_basename = @book.cache.fetch(:image_finder_entries_by_basename) do
+          build_entries.group_by { |entry| entry[:basename] }
+        end
       end
 
       def entry_object(path)
@@ -35,29 +38,29 @@ module ReVIEW
 
       def add_entry(path)
         path.sub!(%r{^\./}, '')
-        unless @entries.find { |entry| entry[:path] == path }
-          @entries << entry_object(path)
+        unless @entries
+          # Generated images belong to this finder. Keep the book's index intact.
+          @entries = build_entries
+          @entries_by_basename = @entries.group_by { |entry| entry[:basename] }
+        end
+        entry = entry_object(path)
+        candidates = (@entries_by_basename[entry[:basename]] ||= [])
+        unless candidates.any? { |candidate| candidate[:path] == path }
+          candidates << entry
+          @entries << entry
         end
         @entries
       end
 
       def find_path(id)
-        targets = target_list(id)
-        targets.each do |target|
+        target_list(id).each do |target|
+          candidates = @entries_by_basename[target]
+          next unless candidates
+
           @book.image_types.each do |ext|
-            entries = @entries.select do |entry|
-              entry[:basename] == target
-            end
-
-            unless entries
-              break
-            end
-
-            entries.find do |entry|
-              if entry[:downcase] == "#{target}#{ext}"
-                return entry[:path]
-              end
-            end
+            name = "#{target}#{ext}"
+            entry = candidates.find { |candidate| candidate[:downcase] == name }
+            return entry[:path] if entry
           end
         end
 
@@ -84,6 +87,12 @@ module ReVIEW
           # 6. <basedir>/<id>.<ext>
           "#{@basedir}/#{id}"
         ]
+      end
+
+      private
+
+      def build_entries
+        @paths.map { |path| entry_object(path) }
       end
     end
   end
