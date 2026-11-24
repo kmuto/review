@@ -353,4 +353,16 @@ EOS
     actual = ReVIEW::LaTeXBox.new.tcbox(@config)
     assert_equal expected, actual
   end
+
+  def test_copy_sty_erb
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        Dir.mkdir('sty')
+        File.write(File.join('sty', 'mybook.sty.erb'), %q(\def\mybookname{<%= @config['bookname'] %>}) + "\n")
+        copybase = File.join(dir, 'build')
+        @maker.copy_sty(File.join(dir, 'sty'), copybase, 'erb')
+        assert_equal "\\def\\mybookname{sample}\n", File.read(File.join(copybase, 'mybook.sty'))
+      end
+    end
+  end
 end

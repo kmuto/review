@@ -540,7 +540,7 @@ module ReVIEW
           FileUtils.mkdir_p(copybase)
           if extname == 'erb'
             File.open(File.join(copybase, fname.sub(/\.erb\Z/, '')), 'w') do |f|
-              f.print erb_content(File.join(dirname, fname))
+              f.print ReVIEW::Template.generate(path: fname, mode: '-', binding: binding, template_dir: dirname)
             end
           elsif @config['pdfmaker']['use_symlink']
             FileUtils.ln_s(File.join(dirname, fname), copybase)
